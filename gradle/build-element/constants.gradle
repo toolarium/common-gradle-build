@@ -1,0 +1,19 @@
+/*
+ * comstants.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+
+ext.MAX_LINELENGTH = 88
+ext.LINE = '****************************************************************************************'
+ext.INDENT = "  "
+ext.styler = 'black red green yellow blue magenta cyan white' .split().toList().withIndex(30).collectEntries { key, val -> [(key) : { "\033[${val}m${it}\033[0m" }] }
+ext.dateTimestamp = new java.text.SimpleDateFormat("dd.MM.yyyy").format(new Date())
+
+ext.settingsGradleFile = './settings.gradle'
+ext.gradlePropertiesFile = './gradle.properties'
+ext.buildGradleFile = './build.gradle'
+
+ext.LICENSE="MIT License: https://mit-license.org"
+ext.targetCompatibility = 1.8

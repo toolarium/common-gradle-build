@@ -1,0 +1,92 @@
+/*
+ * java.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+
+apply plugin: 'java'
+//apply plugin: 'checkstyle'
+
+
+/***************************************************************************************
+ * compile
+ ***************************************************************************************/
+tasks.withType(JavaCompile) {
+	options.encoding = 'UTF-8'
+	options.compilerArgs << '-Xlint:unchecked'
+	options.deprecation = true
+}
+
+
+/***************************************************************************************
+ * jar
+ ***************************************************************************************/
+jar {
+	// include license file
+	into 'META-INF', {
+		from 'LICENSE.txt'
+	}
+
+	// define proper manifest
+	manifest {
+	def dateTimestamp = new java.text.SimpleDateFormat("dd.MM.yyyy").format(new Date())
+
+		attributes 'Specification-Title'   : rootProject.name,
+				   'Specification-Version' : project.version,
+				   'Implementation-Title'  : rootProject.name,
+				   'Implementation-Version': project.version + ' / ' + dateTimestamp,
+				   'Built-By'			   : System.properties['user.name'],
+				   'Build-Timestamp'	   : new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
+				   'Created-By'			   : "Gradle ${gradle.gradleVersion}",
+				   'Build-Jdk'			   : "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
+				   'Build-OS'			   : "${System.properties['os.name']} ${System.properties['os.arch']} ${System.properties['os.version']}"
+	}
+}
+
+
+/***************************************************************************************
+ * sources
+ ***************************************************************************************/
+task sourcesJar(type: Jar, dependsOn: classes) {
+	if (!project.hasProperty('rootPackageName')) {
+		project.ext."rootPackageName" = rootProject.name
+		println("Set root package name to ${rootPackageName}")
+	}
+
+	archiveAppendix = 'sources'
+	from sourceSets.main.allJava, {
+		include "jptools/**" 
+	
+		// include license file
+		into 'META-INF', {
+			from 'LICENSE.txt'
+		}	
+		
+	// define proper manifest
+	manifest {
+	def dateTimestamp = new java.text.SimpleDateFormat("dd.MM.yyyy").format(new Date())
+
+		attributes 'Specification-Title'   : rootProject.name,
+				   'Specification-Version' : project.version,
+				   'Implementation-Title'  : rootProject.name,
+				   'Implementation-Version': project.version + ' / ' + dateTimestamp,
+				   'Built-By'			   : System.properties['user.name'],
+				   'Build-Timestamp'	   : new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
+				   'Created-By'			   : "Gradle ${gradle.gradleVersion}",
+				   'Build-Jdk'			   : "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
+				   'Build-OS'			   : "${System.properties['os.name']} ${System.properties['os.arch']} ${System.properties['os.version']}"
+	}
+		
+	}
+ }
+
+ 
+/***************************************************************************************
+ * artefacts
+ ***************************************************************************************/
+artifacts {
+	archives jar
+	archives sourcesJar
+	archives javadocJar
+}

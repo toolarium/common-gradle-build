@@ -1,0 +1,24 @@
+/*
+ * signing.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+ 
+apply plugin: 'signing'
+
+
+/***************************************************************************************
+ * Signing
+ ***************************************************************************************/
+signing {
+	required {
+		// signing is required if this is a release version and the artifacts are to be published
+		!version.toString().endsWith('-SNAPSHOT') && tasks.withType(PublishToMavenRepository).find {
+			 gradle.taskGraph.hasTask it
+		}
+	}
+	
+	//sign publishing.publications.mavenJava
+	sign publishing.publications
+}

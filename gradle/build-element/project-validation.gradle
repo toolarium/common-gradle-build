@@ -1,0 +1,121 @@
+/*
+ * project-validation.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+
+ apply from: "${commonGradleBuildElementPath}/constants.gradle"
+
+
+/***************************************************************************************
+ * project validation
+ ***************************************************************************************/
+tasks.register("projectValidation") { 
+	group = 'Verification'
+	description = 'Project validation'
+
+	// check mandatory files
+    def createSettingsGralde = !new File( settingsGradleFile ).exists()
+    def createGradleProperties = !new File( gradlePropertiesFile ).exists()
+    def createBuildGradle = !new File( buildGradleFile ).exists()
+
+	// validate properties
+	ext.isValidProject = !createSettingsGralde && !createGradleProperties && !createBuildGradle && project.hasProperty('rootGroupId') && project.hasProperty('rootPackageName') && project.hasProperty('rootDescription')
+	if (!isValidProject) {
+		println("${styler['red'](LINE)}")
+
+		if (createSettingsGralde) {
+			println("${INDENT}> Set root project name to ${styler['cyan'](rootProject.name)}, created file ${styler['cyan'](settingsGradleFile)}...")
+			if (createGradleProperties || createBuildGradle || !project.hasProperty('rootPackageName') || !project.hasProperty('rootGroupId') || !project.hasProperty('rootDescription')) 
+				println("")
+		}
+
+		if (createGradleProperties) {
+			println("${INDENT}> Created file ${styler['cyan'](gradlePropertiesFile)}...")
+			if (createBuildGradle || !project.hasProperty('rootPackageName') || !project.hasProperty('rootGroupId') || !project.hasProperty('rootDescription')) 
+				println("")
+		}
+
+		if (createBuildGradle) {
+			println("${INDENT}> Created file ${styler['cyan'](buildGradleFile)}...")
+			if (!project.hasProperty('rootPackageName') || !project.hasProperty('rootGroupId') || !project.hasProperty('rootDescription')) 
+				println("")
+		}
+		
+		if (!project.hasProperty('rootPackageName')) {
+			project.ext."rootPackageName" = rootProject.name
+			println("${INDENT}> Set root package name to ${styler['cyan'](rootPackageName)}, please define it in the gradle.properties:")
+			println("${INDENT}e.g ${styler['yellow']('rootPackageName')} = $rootPackageName")
+			ext.rootPackageName = rootPackageName
+			
+			if (!project.hasProperty('rootGroupId') || !project.hasProperty('rootDescription')) 
+				println("")
+		}
+
+		if (!project.hasProperty('rootGroupId')) {
+			project.ext."rootGroupId" = rootProject.name			
+			println("${INDENT}> Set rootGroupId to ${styler['cyan'](rootPackageName)}, please define it in the gradle.properties:")
+			println("${INDENT}e.g ${styler['yellow']('rootGroupId')} = $rootPackageName")
+			ext.rootGroupId = rootPackageName
+			
+			if (!project.hasProperty('rootDescription')) 
+				println("")
+		}
+
+		if (!project.hasProperty('rootDescription')) {
+			project.ext."project.description" = rootProject.name
+			println("${INDENT}> Set the description to ${styler['cyan'](rootPackageName)}, please define it in the gradle.properties:")
+			println("${INDENT}e.g ${styler['yellow']('rootDescription')} = '...'")
+			ext.rootDescription = rootPackageName
+		}
+		
+		// if it doesn't exist
+		if (createSettingsGralde) {
+			new File('.', settingsGradleFile).withWriterAppend { w ->
+				w << "rootProject.name    = \'${rootProject.name}\'\n"
+			}
+		}
+		
+		if (createGradleProperties) {
+			new File('.', gradlePropertiesFile).withWriterAppend { w ->
+				w << "rootPackageName     = ${rootPackageName}\n" \
+				<< "rootGroupId         = ${rootGroupId}\n" \
+				<< "rootDescription     = ${rootDescription}\n" \
+				<< "//sourceCompatibility = 1.8\n" \
+				<< "//targetCompatibility = 1.8\n" \
+				<< "org.gradle.jvmargs  = -Xmx1g -XX:MaxHeapSize=1g -XX:MaxPermSize=256m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8\n"				  
+			}
+		}	
+
+		if (createBuildGradle) {
+			new File('.', buildGradleFile).withWriterAppend { w ->
+				w << "/*\n" \
+				<< " * build.gradle\n" \
+				<< "\n" \
+				<< " * Copyright by ${rootProject.name}, all rights reserved.\n" \
+				<< " * ${LICENSE}\n" \
+				<< " */\n" \
+				<< "apply from: 'gradle/jptools.gradle'\n" \
+				<< "\n" \
+				<< "\n" \
+				<< "/${LINE}\n" \
+				<< " * Define project dependencies\n" \
+				<< " ${LINE}/\n" \
+				<< "dependencies {\n" \
+				<< "\t//implementation 'net.sf.jptools:jptools:1.7.0'\n" \
+				<< "}\n"
+			}
+		}	
+		
+		println("${styler['red'](LINE)}")
+	}
+
+	/*
+	if (rootProject.name != projectName) {
+		println("${INDENT}Current folder do not match with the project name:")
+		println("${INDENT}[${styler['cyan'](rootProject.name)}] ${styler['yellow']('!=')} [${styler['cyan'](projectName)}]")
+		println("${styler['cyan'](LINE)}")
+	}
+	*/
+} 

@@ -1,0 +1,21 @@
+/*
+ * repository.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+ 
+apply plugin: 'maven-publish'
+
+
+/***************************************************************************************
+ * Repositories
+ ***************************************************************************************/
+repositories {
+	mavenCentral()
+	google()
+	jcenter()
+	maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+	//maven { url "https://oss.sonatype.org/content/repositories/staging" }
+	//maven { url "https://oss.sonatype.org/content/repositories/public" }
+}
