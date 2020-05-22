@@ -1,0 +1,25 @@
+/*
+ * @@fileName@@
+ *
+ * Copyright by @@rootProject.name@@, all rights reserved.
+ * @@LICENSE@@
+ */
+ @@packageName@@
+
+ 
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+
+/**
+ * @@className@@Test
+ */
+public class @@className@@Test {
+	/**
+	 * Test @@className@@ method
+	 */
+    @Test void testSomeLibraryMethod() {
+        @@className@@ classUnderTest = new @@className@@();
+        assertTrue(classUnderTest.someLibraryMethod(), "someLibraryMethod should return 'true'");
+    }
+}

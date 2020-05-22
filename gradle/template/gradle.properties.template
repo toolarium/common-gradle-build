@@ -1,0 +1,7 @@
+rootPackageName     = @@rootPackageName@@
+rootGroupId         = @@rootGroupId@@
+rootDescription     = @@rootDescription@@
+rootUrl             = @@rootUrl@@
+//sourceCompatibility = @@sourceCompatibility@@
+//targetCompatibility = @@targetCompatibility@@
+org.gradle.jvmargs  = @@jvmarg@@

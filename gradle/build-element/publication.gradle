@@ -1,5 +1,5 @@
 /*
- * repository.gradle
+ * publication.gradle
  *
  * Copyright by toolarium, all rights reserved.
  * MIT License: https://mit-license.org
@@ -9,13 +9,48 @@ apply plugin: 'maven-publish'
 
 
 /***************************************************************************************
- * Repositories
+ * Repository publishing
  ***************************************************************************************/
-repositories {
-	mavenCentral()
-	google()
-	jcenter()
-	maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
-	maven { url "https://oss.sonatype.org/content/repositories/staging" }
-	//maven { url "https://oss.sonatype.org/content/repositories/public" }
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = "${rootProject.name}"
+			groupId= "${rootGroupId}"
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+            versionMapping {
+                usage('java-api') {
+                    fromResolutionOf('runtimeClasspath')
+                }
+                usage('java-runtime') {
+                    fromResolutionResult()
+                }
+            }
+			
+			// after staging go to -> https://oss.sonatype.org/#stagingRepositories -> close
+            pom {
+                name = "${rootProject.name}"
+                description = "${rootDescription}"
+                url = "${rootUrl}"
+				
+                licenses {
+                    license {
+                        name = "${LICENSE}"
+                        url = "${LICENSE_URL}"
+                    }
+                }
+            }
+        }
+	}
+	
+	repositories {
+        maven {
+            url "${mavenUrl}"
+            credentials {
+                    username "${mavenUsername}"
+                    password "${mavenPassword}"
+            }
+        }
+    }
 }

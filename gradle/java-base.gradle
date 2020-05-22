@@ -1,0 +1,31 @@
+/*
+ * java-library.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+
+if (!project.hasProperty('commonGradleUrl')) {
+    ext.commonGradleUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
+}
+
+apply from: "${commonGradleUrl}/base.gradle"
+apply from: "${commonGradleBuildElementPath}/javadoc.gradle"
+apply from: "${commonGradleBuildElementPath}/java.gradle"
+apply from: "${commonGradleBuildElementPath}/eclipse.gradle"
+apply from: "${commonGradleBuildElementPath}/test.gradle"
+apply from: "${commonGradleBuildElementPath}/repository.gradle"
+apply from: "${commonGradleBuildElementPath}/signing.gradle"
+//apply plugin: 'checkstyle'
+
+defaultTasks 'clean', 'build'
+
+ 
+/***************************************************************************************
+ * artefacts
+ ***************************************************************************************/
+artifacts {
+	archives jar
+	archives sourcesJar
+	archives javadocJar
+}

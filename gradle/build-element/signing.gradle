@@ -12,6 +12,10 @@ apply plugin: 'signing'
  * Signing
  ***************************************************************************************/
 signing {
+	if (!project.hasProperty('signing.keyId') || !project.hasProperty('signing.password') || !project.hasProperty('signing.secretKeyRingFile')) {
+		throw new GradleException('ERROR: signing.keyId, signing.password and signing.secretKeyRingFile has to be proper defined, suggested in the .gradle/gradle.properties file!')
+	}
+
 	required {
 		// signing is required if this is a release version and the artifacts are to be published
 		!version.toString().endsWith('-SNAPSHOT') && tasks.withType(PublishToMavenRepository).find {

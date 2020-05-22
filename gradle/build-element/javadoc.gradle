@@ -24,7 +24,7 @@ task javadocJar(type: Jar) {
 		}
 	}
 
-	if (JavaVersion.current().isJava8Compatible()) {
+	if (JavaVersion.current().isJava9Compatible()) {
 		allprojects {
 			tasks.withType(Javadoc) {
 				options.addBooleanOption('html5', true)

@@ -1,0 +1,76 @@
+/*
+ * version.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+
+apply from: "${commonGradleBuildElementPath}/constants.gradle"
+
+
+/***************************************************************************************
+ * readVersion: see https://semver.org/ or https://de.wikipedia.org/wiki/Versionsnummer
+ ***************************************************************************************/
+task readVersion { 	
+	group = 'Verification'
+	description = 'Read the version'
+
+	// read version number
+	logger.info "Read version file " + versionFile
+		
+	def props = new Properties()	
+	file(versionFile).withInputStream { props.load(it) }	
+	project.ext.majorVersionNumber = props.getProperty("major.number").trim()
+	project.ext.minorVersionNumber = props.getProperty("minor.number").trim()
+	project.ext.revisionVersionNumber = props.getProperty("revision.number").trim()
+	
+	if (props.getProperty("build.number")!=null)
+	    project.ext.buildVersionNumber = props.getProperty("build.number").trim()
+
+	project.version = project.ext.majorVersionNumber + "." + project.ext.minorVersionNumber + "." + project.ext.revisionVersionNumber
+	if (project.ext.buildVersionNumber !=null && !project.ext.buildVersionNumber.isEmpty()) {
+		project.version = project.version + "-" +  project.ext.buildVersionNumber
+	}
+	
+	if (project.ext.buildVersionNumber.indexOf(SNAPSHOT_TAG_NAME)<0) {
+		project.ext.isReleaseVersion = true
+		logger.info "It is a release verison: " + project.version
+	} else {
+		project.ext.isReleaseVersion = false
+		logger.info "It is a snapshot verison: " + project.version
+	}
+	project.ext.isSnapshotVersion = !project.ext.isReleaseVersion
+}
+
+
+/***************************************************************************************
+ * updateVersion
+ ***************************************************************************************/
+task updateVersion { 
+	group = 'Verification'
+	description = 'Update the version'
+
+	doLast {
+		logger.info "Write file " + versionFile + " -> " + majorVersionNumber
+		new File('.', versionFile).withWriter { w ->
+			w << "major.number        = ${project.ext.majorVersionNumber}" << NELINE \
+			<< "minor.number        = ${project.ext.minorVersionNumber}" << NELINE \
+			<< "revision.number     = ${project.ext.revisionVersionNumber}" << NELINE \
+			<< "build.number        = ${project.ext.buildVersionNumber}" << NELINE 
+		}
+	}
+}
+
+
+/***************************************************************************************
+ * increaseBuildVersion
+ ***************************************************************************************/
+task increaseBuildVersion { 
+	group = 'Verification'
+	description = 'Increase the build version'
+
+	doLast {
+		project.ext.revisionVersionNumber = project.ext.revisionVersionNumber + 1
+		readVersion.execute()
+	}
+}

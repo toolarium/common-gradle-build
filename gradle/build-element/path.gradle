@@ -1,0 +1,62 @@
+/*
+ * path.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+
+if (project.hasProperty('rootDirectory')) {
+	ext.rootDirectory = project.getProperty('rootDirectory')
+} else {
+    ext.rootDirectory = "."
+}
+logger.info "Define root directory to: " + ext.rootDirectory
+
+ext.settingsGradleFile = "$rootDirectory/settings.gradle"
+ext.gradlePropertiesFile = "$rootDirectory/gradle.properties"
+ext.buildGradleFile = "$rootDirectory/build.gradle"
+ext.versionFile = "$rootDirectory/VERSION"
+
+if (project.hasProperty('readmeFileName')) {
+	ext.readmeFile = project.getProperty('readmeFileName')
+} else {
+	ext.readmeFile = "$rootDirectory/README.md"
+}
+
+if (project.hasProperty('licenseFileName')) {
+	ext.licenseFile = project.getProperty('licenseFileName')
+} else {
+	ext.licenseFile = "$rootDirectory/LICENSE"
+}
+
+if (project.hasProperty('srcDirectory')) {
+	ext.srcDirectory = project.getProperty('srcDirectory')
+} else {
+    ext.srcDirectory = "${rootDirectory}/src"
+}
+logger.info "Define src directory to: " + ext.srcDirectory
+
+if (project.hasProperty('srcMainDirectory')) {
+	ext.srcMainDirectory = project.getProperty('srcMainDirectory')
+} else {
+    ext.srcMainDirectory = "${srcDirectory}/main"
+}
+logger.info "Define src main directory to: " + ext.srcMainDirectory
+
+if (project.hasProperty('srcTestDirectory')) {
+	ext.srcTestDirectory = project.getProperty('srcTestDirectory')
+} else {
+    ext.srcTestDirectory = "${srcDirectory}/test"
+}
+logger.info "Define src test directory to: " + ext.srcTestDirectory
+
+// Would be nice to use function e.g. below but currently I don't work: setProperty("kkk", "99")
+def setProperty(String propertyName, String propertyDefaultValue) {	
+	if (project.hasProperty("$propertyName")) {
+		ext.$propertyName = project.getProperty("${propertyName}")
+	} else {
+		ext.$propertyName = propertyDefaultValue
+	}
+	
+	logger.info "Define ${propertyName} to: ${propertyName}"	
+}

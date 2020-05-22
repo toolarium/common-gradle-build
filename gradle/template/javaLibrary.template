@@ -1,0 +1,20 @@
+/*
+ * @@fileName@@
+ *
+ * Copyright by @@rootProject.name@@, all rights reserved.
+ * @@LICENSE@@
+ */
+ @@packageName@@
+ 
+ 
+/**
+ * @@className@@
+ */
+public class @@className@@ {
+    /**
+	 * Library method
+	*/
+	public boolean someLibraryMethod() {
+		return true;
+	}
+}

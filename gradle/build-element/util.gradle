@@ -1,0 +1,46 @@
+/*
+ * util.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+
+ 
+/** 
+ * Get the os name
+ */
+def getOsName(project) {
+    final String osName = System.getProperty("os.name").toLowerCase();
+
+    if (osName.contains("linux")) {
+        return ("linux");
+    } else if (osName.contains("mac os x") || osName.contains("darwin") || osName.contains("osx")) {
+        return ("macos");
+    } else if (osName.contains("windows")) {
+        return ("windows");
+    } else if (osName.contains("sunos") || osName.contains("solaris")) {
+        return ("solaris");
+    } else if (osName.contains("freebsd")) {
+        return ("freebsd");
+    }
+    return ("unix");
+}
+
+
+/** 
+ * Get the arch type
+ */
+def getOsArch(project) {
+    final String osArch = System.getProperty("os.arch");
+
+    if ("x86".equals(osArch)) {
+        return ("i386");
+    }
+    else if ("x86_64".equals(osArch)) {
+        return ("amd64");
+    }
+    else if ("powerpc".equals(osArch)) {
+        return ("ppc");
+    }
+    return (osArch);
+}

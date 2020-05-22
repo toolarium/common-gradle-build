@@ -7,13 +7,53 @@
 
 ext.MAX_LINELENGTH = 88
 ext.LINE = '****************************************************************************************'
+ext.NELINE = '\n'
 ext.INDENT = "  "
-ext.styler = 'black red green yellow blue magenta cyan white' .split().toList().withIndex(30).collectEntries { key, val -> [(key) : { "\033[${val}m${it}\033[0m" }] }
-ext.dateTimestamp = new java.text.SimpleDateFormat("dd.MM.yyyy").format(new Date())
+ext.SNAPSHOT_TAG_NAME = "SNAPSHOT"
+ext.STYLER = 'black red green yellow blue magenta cyan white' .split().toList().withIndex(30).collectEntries { key, val -> [(key) : { "\033[${val}m${it}\033[0m" }] }
+ext.DATETIMESTAMP = new java.text.SimpleDateFormat("dd.MM.yyyy").format(new Date())
+ext.YEAR = new java.text.SimpleDateFormat("yyyy").format(new Date())
 
-ext.settingsGradleFile = './settings.gradle'
-ext.gradlePropertiesFile = './gradle.properties'
-ext.buildGradleFile = './build.gradle'
+// version default settings
+ext.majorVersionNumber = 0
+ext.minorVersionNumber = 0
+ext.revisionVersionNumber = 1
+ext.buildVersionNumber = SNAPSHOT_TAG_NAME
+ext.isReleaseVersion = false
 
-ext.LICENSE="MIT License: https://mit-license.org"
-ext.targetCompatibility = 1.8
+// project specific topics
+if (!project.hasProperty('LICENSE')) {
+	ext.LICENSE="MIT License: https://mit-license.org"
+}
+
+if (!project.hasProperty('LICENSE_URL')) {
+	ext.LICENSE_URL="https://mit-license.org"
+}
+
+// compile settings
+if (!project.hasProperty('targetCompatibility')) {
+	ext.targetCompatibility = 1.8
+}
+
+if (!project.hasProperty('sourceCompatibility')) {
+	ext.sourceCompatibility = 1.8
+}
+
+if (!project.hasProperty('ENCODING')) {
+	ext.ENCODING='UTF-8'
+}
+
+// use as default the sonatype repository -> url, username and password
+if (!project.hasProperty('mavenUrl')) {
+	ext.mavenUrl='https://oss.sonatype.org/service/local/staging/deploy/maven2'
+}
+
+if (!project.hasProperty('mavenUsername')) {
+	ext.mavenUsername="${sonatypeUsername}"
+}
+
+if (!project.hasProperty('mavenPassword')) {
+	ext.mavenPassword="${sonatypePassword}"
+}
+
+ext.GRADLE_PROPERTIES_JVMARGS = "-Xmx1g -XX:MaxHeapSize=1g -XX:MaxPermSize=256m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=$ENCODING"

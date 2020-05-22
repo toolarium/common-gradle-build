@@ -5,117 +5,315 @@
  * MIT License: https://mit-license.org
  */
 
- apply from: "${commonGradleBuildElementPath}/constants.gradle"
+apply from: "${commonGradleBuildElementPath}/constants.gradle"
+apply from: "${commonGradleBuildElementPath}/path.gradle"
 
 
 /***************************************************************************************
  * project validation
  ***************************************************************************************/
-tasks.register("projectValidation") { 
+task projectValidation { 
 	group = 'Verification'
 	description = 'Project validation'
-
+	
 	// check mandatory files
-    def createSettingsGralde = !new File( settingsGradleFile ).exists()
-    def createGradleProperties = !new File( gradlePropertiesFile ).exists()
-    def createBuildGradle = !new File( buildGradleFile ).exists()
+    def createSettingsGralde = !new File(settingsGradleFile).exists()
+    def createGradleProperties = !new File(gradlePropertiesFile).exists()
+    def createBuildGradle = !new File(buildGradleFile).exists()
 
+    def createSrcDirectory = !new File(srcDirectory).exists()
+    def createSrcMainDirectory = !new File(srcMainDirectory).exists()
+    def createSrcTestDirectory = !new File(srcTestDirectory).exists()
+	ext.createDirectories = createSrcDirectory || createSrcMainDirectory || createSrcTestDirectory
+	def createVersionFile = !new File(versionFile).exists()
+	def createReadmeFile = !new File(readmeFile).exists()
+	def createLicenseFile = !new File(licenseFile).exists()
+	
+	if (project.hasProperty('isValidLanguageProject')) {
+	}
+	
 	// validate properties
-	ext.isValidProject = !createSettingsGralde && !createGradleProperties && !createBuildGradle && project.hasProperty('rootGroupId') && project.hasProperty('rootPackageName') && project.hasProperty('rootDescription')
-	if (!isValidProject) {
-		println("${styler['red'](LINE)}")
+	gradle.ext.isValidProject = !createSettingsGralde \
+								&& !createGradleProperties \
+								&& !createBuildGradle \
+								&& project.hasProperty('rootGroupId') && project.hasProperty('rootPackageName') && project.hasProperty('rootDescription') \
+								&& !createVersionFile \
+								&& !createReadmeFile \
+								&& !createLicenseFile \
+								&& !createDirectories
+								
+	if (!gradle.ext.isValidProject) {
+		println("${STYLER['red'](LINE)}")
 
 		if (createSettingsGralde) {
-			println("${INDENT}> Set root project name to ${styler['cyan'](rootProject.name)}, created file ${styler['cyan'](settingsGradleFile)}...")
-			if (createGradleProperties || createBuildGradle || !project.hasProperty('rootPackageName') || !project.hasProperty('rootGroupId') || !project.hasProperty('rootDescription')) 
+			println("${INDENT}> Set root project name to ${STYLER['cyan'](rootProject.name)}, created file ${STYLER['cyan'](settingsGradleFile)}...")
+			if (createGradleProperties || createBuildGradle || !project.hasProperty('rootPackageName') || !project.hasProperty('rootGroupId') || !project.hasProperty('rootDescription') || createVersionFile || createReadmeFile || createLicenseFile || createDirectories) 
 				println("")
 		}
 
 		if (createGradleProperties) {
-			println("${INDENT}> Created file ${styler['cyan'](gradlePropertiesFile)}...")
-			if (createBuildGradle || !project.hasProperty('rootPackageName') || !project.hasProperty('rootGroupId') || !project.hasProperty('rootDescription')) 
+			println("${INDENT}> Created file ${STYLER['cyan'](gradlePropertiesFile)}...")
+			if (createBuildGradle || !project.hasProperty('rootPackageName') || !project.hasProperty('rootGroupId') || !project.hasProperty('rootDescription')  || createVersionFile || createReadmeFile || createLicenseFile || createDirectories) 
 				println("")
 		}
 
 		if (createBuildGradle) {
-			println("${INDENT}> Created file ${styler['cyan'](buildGradleFile)}...")
-			if (!project.hasProperty('rootPackageName') || !project.hasProperty('rootGroupId') || !project.hasProperty('rootDescription')) 
+			println("${INDENT}> Created file ${STYLER['cyan'](buildGradleFile)}...")
+			if (!project.hasProperty('rootPackageName') || !project.hasProperty('rootGroupId') || !project.hasProperty('rootDescription') || createVersionFile || createReadmeFile || createLicenseFile || createDirectories) 
 				println("")
 		}
 		
 		if (!project.hasProperty('rootPackageName')) {
-			project.ext."rootPackageName" = rootProject.name
-			println("${INDENT}> Set root package name to ${styler['cyan'](rootPackageName)}, please define it in the gradle.properties:")
-			println("${INDENT}e.g ${styler['yellow']('rootPackageName')} = $rootPackageName")
+			project.ext."rootPackageName" = "${rootProject.name}".replace('-', '.').replace('_', '.') 
+			println("${INDENT}> Set root package name to ${STYLER['cyan'](rootPackageName)}, please define it in the gradle.properties:")
+			println("${INDENT}e.g ${STYLER['yellow']('rootPackageName')} = $rootPackageName")
 			ext.rootPackageName = rootPackageName
 			
-			if (!project.hasProperty('rootGroupId') || !project.hasProperty('rootDescription')) 
+			if (!project.hasProperty('rootGroupId') || !project.hasProperty('rootDescription') || createVersionFile || createReadmeFile || createLicenseFile || createDirectories) 
 				println("")
 		}
 
 		if (!project.hasProperty('rootGroupId')) {
 			project.ext."rootGroupId" = rootProject.name			
-			println("${INDENT}> Set rootGroupId to ${styler['cyan'](rootPackageName)}, please define it in the gradle.properties:")
-			println("${INDENT}e.g ${styler['yellow']('rootGroupId')} = $rootPackageName")
+			println("${INDENT}> Set rootGroupId to ${STYLER['cyan'](rootPackageName)}, please define it in the gradle.properties:")
+			println("${INDENT}e.g ${STYLER['yellow']('rootGroupId')} = $rootPackageName")
 			ext.rootGroupId = rootPackageName
 			
-			if (!project.hasProperty('rootDescription')) 
+			if (!project.hasProperty('rootDescription') || createVersionFile || createReadmeFile || createLicenseFile || createDirectories) 
 				println("")
 		}
 
 		if (!project.hasProperty('rootDescription')) {
 			project.ext."project.description" = rootProject.name
-			println("${INDENT}> Set the description to ${styler['cyan'](rootPackageName)}, please define it in the gradle.properties:")
-			println("${INDENT}e.g ${styler['yellow']('rootDescription')} = '...'")
-			ext.rootDescription = rootPackageName
+			println("${INDENT}> Set the description to ${STYLER['cyan'](rootPackageName)}, please define it in the gradle.properties:")
+			println("${INDENT}e.g ${STYLER['yellow']('rootDescription')} = '...'")
+			ext.rootDescription = rootProject.name
+			ext.description = rootPackageName
+	
+			//if (createVersionFile || createReadmeFile || createLicenseFile || createDirectories) 
+			println("")
 		}
 		
+		if (createVersionFile) {
+			logger.info "Write file " + versionFile + "..."
+			new File('.', versionFile).withWriter { w ->
+				w << "major.number        = ${project.ext.majorVersionNumber}" << NELINE \
+				<< "minor.number        = ${project.ext.minorVersionNumber}" << NELINE \
+				<< "revision.number     = ${project.ext.revisionVersionNumber}" << NELINE \
+				<< "build.number        = ${project.ext.buildVersionNumber}" << NELINE 
+			}	
+			
+			println("${INDENT}> Created file ${STYLER['cyan'](versionFile)}...")
+			if (createReadmeFile || createLicenseFile || createDirectories) 
+				println("")
+		}
+
+		if (createReadmeFile) {
+			logger.info "Write file " + readmeFile + "..."
+		    def readmeTemplate = 'README.template'
+			if (new File("${commonGradleTemplatePath}", "${readmeTemplate}").exists()) {
+				println("${INDENT}> Create ${STYLER['cyan'](readmeFile)} from template ${readmeTemplate}.")
+				copy {
+					from "${commonGradleTemplatePath}"
+					include "${readmeTemplate}"
+					into "."
+					rename { String fileName -> fileName.replace(readmeTemplate, readmeFile) }
+					filter { line -> line.replaceAll('@@YEAR@@', "${YEAR}".toString()) }
+					filter { line -> line.replaceAll('@@NAME@@', "${rootProject.name}".toString()) }
+					filter { line -> line.replaceAll('@@rootProject.name@@', "${rootProject.name}".toString()) }					
+					filter { line -> line.replaceAll('@@rootDescription@@', "${rootDescription}".toString()) }					
+					filter { line -> line.replaceAll('@@LINE@@', "${LINE}".toString()) }
+				}
+			} else {
+				println("${INDENT}> Create ${STYLER['cyan'](readmeFile)} with default values.")
+				
+				new File('.', readmeFile).withWriter { w ->
+					w << "# Welcome to ${rootProject.name}" << NELINE \
+					<< "${rootDescription}" << NELINE 
+				}	
+			}
+			
+			if (createLicenseFile || createDirectories) 
+				println("")
+		}
+
+		if (createLicenseFile) {
+			logger.info "Write file " + licenseFile + "..."
+		    def licenseTemplate = 'LICENSE.template'
+			if (new File("${commonGradleTemplatePath}", "${licenseTemplate}").exists()) {
+				println("${INDENT}> Create ${STYLER['cyan'](licenseFile)} from template ${licenseTemplate}.")
+				copy {
+					from "${commonGradleTemplatePath}"
+					include "${licenseTemplate}"
+					into "."
+					rename { String fileName -> fileName.replace(licenseTemplate, licenseFile) }
+					filter { line -> line.replaceAll('@@YEAR@@', "${YEAR}".toString()) }
+					filter { line -> line.replaceAll('@@NAME@@', "${rootProject.name}".toString()) }
+					filter { line -> line.replaceAll('@@rootProject.name@@', "${rootProject.name }".toString()) }					
+					filter { line -> line.replaceAll('@@LINE@@', "${LINE}".toString()) }
+				}
+			} else {
+				println("${INDENT}> Create ${STYLER['cyan'](licenseFile)} with default values.")
+				new File('.', licenseFile).withWriter { w ->
+					w << "MIT License" << NELINE \
+					<< "" << NELINE \
+					<< "Copyright (c) ${YEAR} ${rootProject.name}" << NELINE \
+					<< "" << NELINE \
+					<< "Permission is hereby granted, free of charge, to any person obtaining a copy" << NELINE \
+					<< "of this software and associated documentation files (the \"Software\"), to deal" << NELINE \
+					<< "in the Software without restriction, including without limitation the rights" << NELINE \
+					<< "to use, copy, modify, merge, publish, distribute, sublicense, and/or sell" << NELINE \
+					<< "copies of the Software, and to permit persons to whom the Software is" << NELINE \
+					<< "furnished to do so, subject to the following conditions:" << NELINE \
+					<< "" << NELINE \
+					<< "The above copyright notice and this permission notice shall be included in all" << NELINE \
+					<< "copies or substantial portions of the Software." << NELINE \
+					<< "" << NELINE \
+					<< "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR" << NELINE \
+					<< "IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY," << NELINE \
+					<< "FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE" << NELINE \
+					<< "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER" << NELINE \
+					<< "LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM," << NELINE \
+					<< "OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE" << NELINE \
+					<< "SOFTWARE." << NELINE
+				}				
+			}
+			
+			if (createDirectories) 
+				println("")
+		}
+		
+		if (createDirectories) {
+			if (createSrcDirectory) {
+				println("${INDENT}> Create directory ${STYLER['cyan'](srcDirectory)}.")
+				new File( srcDirectory ).mkdirs()
+			}
+
+			if (createSrcMainDirectory) {
+				println("${INDENT}> Create directory ${STYLER['cyan'](srcMainDirectory)}.")
+				new File( srcMainDirectory ).mkdirs()
+			}
+
+			if (createSrcTestDirectory) {
+				println("${INDENT}> Create directory ${STYLER['cyan'](srcTestDirectory)}.")
+				new File( srcTestDirectory ).mkdirs()
+			}
+		}
+
 		// if it doesn't exist
 		if (createSettingsGralde) {
-			new File('.', settingsGradleFile).withWriterAppend { w ->
-				w << "rootProject.name    = \'${rootProject.name}\'\n"
+		    def settingsGradleTemplate = 'settings.gradle.template'
+			if (new File("${commonGradleTemplatePath}", "${settingsGradleTemplate}").exists()) {
+				println("${INDENT}> Create ${STYLER['cyan'](settingsGradleFile)} from template ${settingsGradleTemplate}.")
+				copy {
+					from "${commonGradleTemplatePath}"
+					include "${settingsGradleTemplate}"
+					into "."
+					rename { String fileName -> fileName.replace(settingsGradleTemplate, settingsGradleFile) }
+					filter { line -> line.replaceAll('@@rootProject.name@@', "${rootProject.name }".toString()) }					
+					filter { line -> line.replaceAll('@@rootGroupId@@', "${rootGroupId}".toString()) }
+					filter { line -> line.replaceAll('@@rootPackageName@@', "${rootPackageName}".toString()) }
+					filter { line -> line.replaceAll('@@rootDescription@@', "${rootDescription}".toString()) }
+					filter { line -> line.replaceAll('@@sourceCompatibility@@', "${sourceCompatibility}".toString()) }
+					filter { line -> line.replaceAll('@@targetCompatibility@@', "${targetCompatibility}".toString()) }
+					filter { line -> line.replaceAll('@@jvmarg@@', "${GRADLE_PROPERTIES_JVMARGS}".toString()) }
+					filter { line -> line.replaceAll('@@YEAR@@', "${YEAR}".toString()) }
+					filter { line -> line.replaceAll('@@LINE@@', "${LINE}".toString()) }
+				}
+			} else {		
+				println("${INDENT}> Create ${STYLER['cyan'](settingsGradleFile)} with default values.")
+				new File('.', settingsGradleFile).withWriterAppend { w ->
+					w << "rootProject.name    = \'${rootProject.name}\'" << NELINE
+				}
 			}
 		}
 		
 		if (createGradleProperties) {
-			new File('.', gradlePropertiesFile).withWriterAppend { w ->
-				w << "rootPackageName     = ${rootPackageName}\n" \
-				<< "rootGroupId         = ${rootGroupId}\n" \
-				<< "rootDescription     = ${rootDescription}\n" \
-				<< "//sourceCompatibility = 1.8\n" \
-				<< "//targetCompatibility = 1.8\n" \
-				<< "org.gradle.jvmargs  = -Xmx1g -XX:MaxHeapSize=1g -XX:MaxPermSize=256m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8\n"				  
+		    def gradlePropertiesTemplate = 'gradle.properties.template'
+			if (new File("${commonGradleTemplatePath}", "${gradlePropertiesTemplate}").exists()) {
+				println("${INDENT}> Create ${STYLER['cyan'](gradlePropertiesFile)} from template ${gradlePropertiesTemplate}.")
+				copy {
+					from "${commonGradleTemplatePath}"
+					include "${gradlePropertiesTemplate}"
+					into "."
+					rename { String fileName -> fileName.replace(gradlePropertiesTemplate, gradlePropertiesFile) }
+					filter { line -> line.replaceAll('@@rootProject.name@@', "${rootProject.name }".toString()) }					
+					filter { line -> line.replaceAll('@@rootPackageName@@', "${rootPackageName}".toString()) }
+					filter { line -> line.replaceAll('@@rootGroupId@@', "${rootGroupId}".toString()) }
+					filter { line -> line.replaceAll('@@rootDescription@@', "${rootDescription}".toString()) }
+					filter { line -> line.replaceAll('@@rootUrl@@', "${rootUrl}".toString()) }					
+					filter { line -> line.replaceAll('@@sourceCompatibility@@', "${sourceCompatibility}".toString()) }
+					filter { line -> line.replaceAll('@@targetCompatibility@@', "${targetCompatibility}".toString()) }
+					filter { line -> line.replaceAll('@@jvmarg@@', "${GRADLE_PROPERTIES_JVMARGS}".toString()) }
+					filter { line -> line.replaceAll('@@YEAR@@', "${YEAR}".toString()) }
+					filter { line -> line.replaceAll('@@LINE@@', "${LINE}".toString()) }
+				}
+			} else {		
+				println("${INDENT}> Create ${STYLER['cyan'](gradlePropertiesFile)} with default values.")
+				new File('.', gradlePropertiesFile).withWriterAppend { w ->
+					w << "rootPackageName     = ${rootPackageName}" << NELINE \
+					<< "rootGroupId         = ${rootGroupId}" << NELINE \
+					<< "rootDescription     = ${rootDescription}" << NELINE \
+					<< "rootUrl             = ${rootUrl}" << NELINE \
+					<< "//sourceCompatibility = ${sourceCompatibility}" << NELINE \
+					<< "//targetCompatibility = ${targetCompatibility}" << NELINE \
+					<< "org.gradle.jvmargs  = ${GRADLE_PROPERTIES_JVMARGS}" << NELINE
+				}
 			}
 		}	
 
 		if (createBuildGradle) {
-			new File('.', buildGradleFile).withWriterAppend { w ->
-				w << "/*\n" \
-				<< " * build.gradle\n" \
-				<< "\n" \
-				<< " * Copyright by ${rootProject.name}, all rights reserved.\n" \
-				<< " * ${LICENSE}\n" \
-				<< " */\n" \
-				<< "apply from: 'gradle/jptools.gradle'\n" \
-				<< "\n" \
-				<< "\n" \
-				<< "/${LINE}\n" \
-				<< " * Define project dependencies\n" \
-				<< " ${LINE}/\n" \
-				<< "dependencies {\n" \
-				<< "\t//implementation 'net.sf.jptools:jptools:1.7.0'\n" \
-				<< "}\n"
+		    def buildGradle = 'build.gradle.template'
+			if (new File("${commonGradleTemplatePath}", "${buildGradle}").exists()) {
+				println("${INDENT}> Create ${STYLER['cyan'](buildGradleFile)} from template ${buildGradle}.")
+				copy {
+					from "${commonGradleTemplatePath}"
+					include "${buildGradle}"
+					into "."
+					rename { String fileName -> fileName.replace(buildGradle, buildGradleFile) }
+					filter { line -> line.replaceAll('@@rootProject.name@@', "${rootProject.name }".toString()) }					
+					filter { line -> line.replaceAll('@@rootPackageName@@', "${rootPackageName}".toString()) }
+					filter { line -> line.replaceAll('@@rootGroupId@@', "${rootGroupId}".toString()) }
+					filter { line -> line.replaceAll('@@rootDescription@@', "${rootDescription}".toString()) }
+					filter { line -> line.replaceAll('@@sourceCompatibility@@', "${sourceCompatibility}".toString()) }
+					filter { line -> line.replaceAll('@@targetCompatibility@@', "${targetCompatibility}".toString()) }
+					filter { line -> line.replaceAll('@@jvmarg@@', "${GRADLE_PROPERTIES_JVMARGS}".toString()) }
+					filter { line -> line.replaceAll('@@YEAR@@', "${YEAR}".toString()) }
+					filter { line -> line.replaceAll('@@LINE@@', "${LINE}".toString()) }
+				}
+			} else {		
+				println("${INDENT}> Create ${STYLER['cyan'](buildGradleFile)} with default values.")
+				new File('.', buildGradleFile).withWriterAppend { w ->
+					w << "/*\n" \
+					<< " * build.gradle" << NELINE \
+					<< " * " << NELINE \
+					<< " * Copyright by ${rootProject.name}, all rights reserved." << NELINE \
+					<< " * ${LICENSE}" << NELINE \
+					<< " */" << NELINE \
+					<< "apply from: 'gradle/jptools.gradle'" << NELINE \
+					<< NELINE \
+					<< NELINE \
+					<< "/${LINE}" << NELINE \
+					<< " * Define project dependencies" << NELINE \
+					<< " ${LINE}/" << NELINE \
+					<< "dependencies {" << NELINE \
+					<< "\t//implementation 'net.sf.jptools:jptools:1.7.0'" << NELINE \
+					<< "}" << NELINE
+				}
 			}
 		}	
 		
-		println("${styler['red'](LINE)}")
+		//wrapper.execute()
+		println("${STYLER['red'](LINE)}")
 	}
-
+	
 	/*
 	if (rootProject.name != projectName) {
 		println("${INDENT}Current folder do not match with the project name:")
-		println("${INDENT}[${styler['cyan'](rootProject.name)}] ${styler['yellow']('!=')} [${styler['cyan'](projectName)}]")
-		println("${styler['cyan'](LINE)}")
+		println("${INDENT}[${STYLER['cyan'](rootProject.name)}] ${STYLER['yellow']('!=')} [${STYLER['cyan'](projectName)}]")
+		println("${STYLER['cyan'](LINE)}")
 	}
 	*/
 } 
+
+

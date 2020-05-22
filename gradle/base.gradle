@@ -1,0 +1,21 @@
+/*
+ * base.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+
+if (!project.hasProperty('commonGradleUrl')) {
+    ext.commonGradleUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
+}
+
+if (!project.hasProperty('commonGradleBuildElementPath')) {
+	ext.commonGradleBuildElementPath="${commonGradleUrl}/build-element"
+}
+
+if (!project.hasProperty('commonGradleTemplatePath')) {
+	ext.commonGradleTemplatePath="${commonGradleUrl}/template"
+}
+
+apply from: "${commonGradleBuildElementPath}/project-validation.gradle"
+apply from: "${commonGradleBuildElementPath}/init.gradle"
