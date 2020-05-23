@@ -1,0 +1,49 @@
+/*
+ * signing.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+ 
+apply plugin: 'signing'
+apply plugin: 'java'
+
+
+/***************************************************************************************
+ * Signing
+ ***************************************************************************************/
+signing {
+	required {
+		// signing is required if this is a release version and the artifacts are to be published
+		!version.toString().endsWith('-SNAPSHOT') && tasks.withType(PublishToMavenRepository).find {
+			 gradle.taskGraph.hasTask it
+		}
+
+		def userHomeDirectory = ''
+		if (project.hasProperty('userHomeDirectory')) {
+			userHomeDirectory = project.getProperty('userHomeDirectory')
+		}		
+		
+		def signingKeyId = "signing.keyId"
+		def signingPassword = "signing.password"
+		def signingSecretKeyRingFile = "signing.secretKeyRingFile"
+		def configFileName = "${userHomeDirectory}.gradle/gradle.properties file"
+
+		if (!project.hasProperty(signingKeyId) || !project.hasProperty(signingPassword) || !project.hasProperty(signingSecretKeyRingFile)) {
+			def signingFileNames = "${STYLER['cyan'](signingKeyId)},  ${STYLER['cyan'](signingPassword)} and ${STYLER['cyan'](signingSecretKeyRingFile)}"
+			
+			println("${STYLER['red'](LINE)}")
+			println("${INDENT}${STYLER['red']('ERROR')}: ${signingFileNames} has to be ")
+			println("${INDENT}       configured, e.g. in ${STYLER['cyan'](configFileName)}!")
+			println("${STYLER['red'](LINE)}")
+		
+			//signingKeyId = console.readLine("PGP Key Id: ")
+			//signingPassword = console.readPassword("PGP Private Key Password: ")		
+			//signingSecretKeyRingFile = console.readLine("PGP Secret Key Ring File (absolute path): ")
+			throw new GradleException("ERROR: ${signingKeyId}, ${signingPassword} and ${signingSecretKeyRingFile} has to be configured, e.g. in ${configFileName}!")
+		}
+	}
+	
+	//sign publishing.publications.mavenJava
+	sign publishing.publications
+}

@@ -10,12 +10,13 @@ if (!project.hasProperty('commonGradleUrl')) {
 }
 
 apply from: "${commonGradleUrl}/base.gradle"
-apply from: "${commonGradleBuildElementPath}/javadoc.gradle"
-apply from: "${commonGradleBuildElementPath}/java.gradle"
-apply from: "${commonGradleBuildElementPath}/eclipse.gradle"
-apply from: "${commonGradleBuildElementPath}/test.gradle"
-apply from: "${commonGradleBuildElementPath}/repository.gradle"
-apply from: "${commonGradleBuildElementPath}/signing.gradle"
+apply from: "${commonGradleBuildElementPath}/java/javadoc.gradle"
+apply from: "${commonGradleBuildElementPath}/java/java.gradle"
+apply from: "${commonGradleBuildElementPath}/java/eclipse.gradle"
+apply from: "${commonGradleBuildElementPath}/java/test.gradle"
+apply from: "${commonGradleBuildElementPath}/java/repository.gradle"
+apply from: "${commonGradleBuildElementPath}/java/signing.gradle"
+apply from: "${commonGradleBuildElementPath}/java/publication.gradle"
 //apply plugin: 'checkstyle'
 
 defaultTasks 'clean', 'build'

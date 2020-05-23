@@ -4,31 +4,23 @@
  * Copyright by toolarium, all rights reserved.
  * MIT License: https://mit-license.org
  */
-apply from: "${commonGradleBuildElementPath}/version.gradle"
+
+apply from: "${commonGradleBuildElementPath}/base/initialisation.gradle"
+apply from: "${commonGradleBuildElementPath}/base/version.gradle"
+apply from: "${commonGradleBuildElementPath}/base/util.gradle"
 
 
 /***************************************************************************************
  * Init
  ***************************************************************************************/
 init {
-	dependsOn projectValidation, readVersion
-
-	// get hostname
-	ext.hostname = System.env['hostname']
-	if (hostname==null || hostname.isEmpty()) {
-		hostname = System.env['HOSTNAME']
-		if (hostname==null || hostname.isEmpty())
-			ext.hostname = System.env['COMPUTERNAME']
-	}
+	ext.hostname = getHostName()
 	
-	if (hostname==null || hostname.isEmpty())
-		ext.hostname = "localhost";
-		
 	def headerLength = INDENT.length() + 11 + rootProject.name.length() + rootGroupId.length()
-    def header = "${INDENT}Project ${STYLER['yellow'](rootProject.name)}"
-    def length = MAX_LINELENGTH - headerLength - INDENT.length()
+	def header = "${INDENT}Project ${STYLER['yellow'](rootProject.name)}"
+	def length = MAX_LINELENGTH - headerLength - INDENT.length()
 	if (length > 0 && project.hasProperty('rootDescription')) {
-	    header = header + " ($rootGroupId)"
+		header = header + " ($rootGroupId)"
 		def printDescription = rootDescription
 		if (printDescription.length() > length) 
 			printDescription = printDescription.substring(0, length - 5) + "..."		
@@ -36,9 +28,13 @@ init {
 		header += ": " + printDescription
 	}
 
+	// TODO: why encoding don't corresponds to 
+	def encoding = System.properties['file.encoding']
+	encoding = ENCODING
+	
 	println("${STYLER['cyan'](LINE)}")	
 	println("${header}")	
-	println("${INDENT}Version ${STYLER['cyan'](project.version)}, ${STYLER['cyan'](DATETIMESTAMP)} (${System.properties['user.name']}, ${System.properties['user.language']}, ${System.properties['file.encoding']}, ${TimeZone.getDefault().getID()})")
+	println("${INDENT}Version ${STYLER['cyan'](project.version)}, ${STYLER['cyan'](DATETIMESTAMP)} (${System.properties['user.name']}, $encoding, ${System.properties['user.language']}, ${TimeZone.getDefault().getID()})")
 	println("${INDENT}Java v${STYLER['cyan'](System.properties['java.version'])}, target ${STYLER['cyan'](targetCompatibility)} (${System.properties['java.vendor']}-${System.properties['java.vm.version']}), ${System.properties['os.name']} (${System.properties['os.arch']}) on ${hostname}")
 	println("${INDENT}Java home: ${System.env['JAVA_HOME']}, PID: ${java.lang.ProcessHandle.current().pid()}") //, working path: ${System.properties['user.dir']}")
 	//println("${INDENT}Memory: ${Runtime.getRuntime().maxMemory()}")

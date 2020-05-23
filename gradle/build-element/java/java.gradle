@@ -9,7 +9,7 @@ apply plugin: 'java'
 
 
 /***************************************************************************************
- * compile
+ * Compile
  ***************************************************************************************/
 tasks.withType(JavaCompile) {
 	options.encoding = "${ENCODING}"
@@ -19,14 +19,14 @@ tasks.withType(JavaCompile) {
 
 
 /***************************************************************************************
- * jar
+ * Build jar file
  ***************************************************************************************/
 jar {
-	// include license file
+	// include readme, license and version files
 	into 'META-INF', {
-		from 'LICENSE'
-		from 'VERSION'
-		from 'README.md'
+		//from "${readmeFile}"  // 'README.md'
+		from "${licenseFile}" // 'LICENSE'
+		from "${versionFile}" // 'VERSION'
 	}
 
 	// define proper manifest
@@ -47,38 +47,42 @@ jar {
 
 
 /***************************************************************************************
- * sources
+ * Build sources jar file
  ***************************************************************************************/
 task sourcesJar(type: Jar, dependsOn: classes) {
+	group = 'Build'
+	description = 'Assembles the sources into a jar file'
+
 	if (!project.hasProperty('rootPackageName')) {
 		project.ext."rootPackageName" = rootProject.name
 		println("Set root package name to ${rootPackageName}")
 	}
 
-	archiveAppendix = 'sources'
+	archiveClassifier = 'sources'
+	//archiveAppendix = 'sources'
 	from sourceSets.main.allJava, {
-		//include "${rootPackageName}/**" 
-	
-		// include license file
-		into 'META-INF', {
-			from 'LICENSE'
-			from 'VERSION'
-			from 'README.md'
-		}	
-		
-		// define proper manifest
-		manifest {
-			def dateTimestamp = new java.text.SimpleDateFormat("dd.MM.yyyy").format(new Date())
-
-			attributes 	'Specification-Title'   : rootProject.name,
-						'Specification-Version' : project.version,
-						'Implementation-Title'  : rootProject.name,
-						'Implementation-Version': project.version + ' / ' + dateTimestamp,
-						'Built-By'			   	: System.properties['user.name'],
-						'Build-Timestamp'	   	: new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
-						'Created-By'		   	: "Gradle ${gradle.gradleVersion}",
-						'Build-Jdk'			   	: "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
-						'Build-OS'			   	: "${System.properties['os.name']} ${System.properties['os.arch']} ${System.properties['os.version']}"
-		}		
+		include "${rootPackageName}/**" 
 	}
+	
+	// include readme, license and version files
+	into 'META-INF', {
+		//from "${readmeFile}"  // 'README.md'
+		from "${licenseFile}" // 'LICENSE'
+		from "${versionFile}" // 'VERSION'
+	}
+	
+	// define proper manifest
+	manifest {
+		def dateTimestamp = new java.text.SimpleDateFormat("dd.MM.yyyy").format(new Date())
+
+		attributes 	'Specification-Title'   : rootProject.name,
+					'Specification-Version' : project.version,
+					'Implementation-Title'  : rootProject.name,
+					'Implementation-Version': project.version + ' / ' + dateTimestamp,
+					'Built-By'			   	: System.properties['user.name'],
+					'Build-Timestamp'	   	: new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
+					'Created-By'		   	: "Gradle ${gradle.gradleVersion}",
+					'Build-Jdk'			   	: "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
+					'Build-OS'			   	: "${System.properties['os.name']} ${System.properties['os.arch']} ${System.properties['os.version']}"
+	}		
  }

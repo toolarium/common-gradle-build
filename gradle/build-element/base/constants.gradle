@@ -45,15 +45,28 @@ if (!project.hasProperty('ENCODING')) {
 
 // use as default the sonatype repository -> url, username and password
 if (!project.hasProperty('mavenUrl')) {
-	ext.mavenUrl='https://oss.sonatype.org/service/local/staging/deploy/maven2'
+	ext.mavenUrl='https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+}
+
+// use as default the sonatype repository -> url, username and password
+if (!project.hasProperty('mavenSnapshotUrl')) {
+	ext.mavenSnapshotUrl='https://oss.sonatype.org/content/repositories/snapshots/'
 }
 
 if (!project.hasProperty('mavenUsername')) {
-	ext.mavenUsername="${sonatypeUsername}"
+	if (project.hasProperty('sonatypeUsername')){
+		ext.mavenUsername=sonatypeUsername
+	}
 }
 
 if (!project.hasProperty('mavenPassword')) {
-	ext.mavenPassword="${sonatypePassword}"
+	if (project.hasProperty('sonatypePassword')){
+		ext.mavenPassword=sonatypePassword
+	}
+}
+
+if (!project.hasProperty('rootUrl')) {
+	ext.rootUrl = ''
 }
 
 ext.GRADLE_PROPERTIES_JVMARGS = "-Xmx1g -XX:MaxHeapSize=1g -XX:MaxPermSize=256m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=$ENCODING"

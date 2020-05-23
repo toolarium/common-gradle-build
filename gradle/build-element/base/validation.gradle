@@ -1,0 +1,42 @@
+/*
+ * validation.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+
+ 
+/***************************************************************************************
+ * Project validation
+ ***************************************************************************************/
+task projectValidation { 
+	group = 'Verification'
+	description = 'Project validation'
+
+	doFirst {
+		def createSrcDirectory = !new File(srcDirectory).exists()
+		def createSrcMainDirectory = !new File(srcMainDirectory).exists()
+		def createSrcTestDirectory = !new File(srcTestDirectory).exists()
+		ext.createDirectories = createSrcDirectory || createSrcMainDirectory || createSrcTestDirectory
+	
+		if (createDirectories) {
+			if (createSrcDirectory) {
+				println("${INDENT}> Create directory ${STYLER['cyan'](srcDirectory)}.")
+				new File( srcDirectory ).mkdirs()
+			}
+
+			if (createSrcMainDirectory) {
+				println("${INDENT}> Create directory ${STYLER['cyan'](srcMainDirectory)}.")
+				new File( srcMainDirectory ).mkdirs()
+			}
+
+			if (createSrcTestDirectory) {
+				println("${INDENT}> Create directory ${STYLER['cyan'](srcTestDirectory)}.")
+				new File( srcTestDirectory ).mkdirs()
+			}
+		}
+		
+		// validate properties
+		gradle.ext.isValidProject = false
+	}
+}

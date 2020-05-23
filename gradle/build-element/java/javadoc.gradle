@@ -1,0 +1,57 @@
+/*
+ * javadoc.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+
+ apply plugin: 'java'
+
+
+/***************************************************************************************
+ * Build javadoc jar file
+ ***************************************************************************************/
+task javadocJar(type: Jar) {
+	group = 'Build'
+	description = 'Assembles the javadoc into a jar file'
+	from javadoc
+	archiveClassifier = 'javadoc'
+	
+	if (JavaVersion.current().isJava8Compatible()) {
+		allprojects {
+			tasks.withType(Javadoc) {
+				options.addStringOption('Xdoclint:none', '-quiet')
+			}
+		}
+	}
+
+	if (JavaVersion.current().isJava9Compatible()) {
+		allprojects {
+			tasks.withType(Javadoc) {
+				options.addBooleanOption('html5', true)
+			}
+		}
+	}	
+	
+	// include readme, license and version files
+	into 'META-INF', {
+		//from "${readmeFile}"  // 'README.md'
+		from "${licenseFile}" // 'LICENSE'
+		from "${versionFile}" // 'VERSION'
+	}
+
+	// define proper manifest
+	manifest {
+		def dateTimestamp = new java.text.SimpleDateFormat("dd.MM.yyyy").format(new Date())
+
+		attributes 'Specification-Title'   : rootProject.name,
+				   'Specification-Version' : project.version,
+				   'Implementation-Title'  : rootProject.name,
+				   'Implementation-Version': project.version + ' / ' + dateTimestamp,
+				   'Built-By'			   : System.properties['user.name'],
+				   'Build-Timestamp'	   : new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
+				   'Created-By'			   : "Gradle ${gradle.gradleVersion}",
+				   'Build-Jdk'			   : "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
+				   'Build-OS'			   : "${System.properties['os.name']} ${System.properties['os.arch']} ${System.properties['os.version']}"
+	}	
+}

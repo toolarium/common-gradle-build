@@ -4,7 +4,7 @@
  * Copyright by @@rootProject.name@@, all rights reserved.
  * @@LICENSE@@
  */
- @@packageName@@
+package @@packageName@@;
 
  
 import org.junit.jupiter.api.Test;
@@ -12,14 +12,14 @@ import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
- * @@className@@Test
+ * @@className@@
  */
-public class @@className@@Test {
-	/**
-	 * Test @@className@@ method
-	 */
+public class @@className@@ {
+    /**
+     * Test @@classNameUnderTest@@ method
+     */
     @Test void testSomeLibraryMethod() {
-        @@className@@ classUnderTest = new @@className@@();
+        @@classNameUnderTest@@ classUnderTest = new @@classNameUnderTest@@();
         assertTrue(classUnderTest.someLibraryMethod(), "someLibraryMethod should return 'true'");
     }
 }

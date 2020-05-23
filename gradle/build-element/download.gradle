@@ -5,7 +5,20 @@
  * MIT License: https://mit-license.org
  */
 
-apply from: "${commonGradleBuildElementPath}/constants.gradle"
+apply from: "${commonGradleBuildElementPath}/base/constants.gradle"
+
+/*
+https://stackoverflow.com/questions/24276627/can-gradle-create-the-java-project-directory-structure
+https://michelkraemer.com/recipes-for-gradle-download/
+https://github.com/michel-kraemer/gradle-download-task/blob/master/examples/directoryGitHub.gradle
+https://github.com/michel-kraemer/gradle-download-task
+https://stackoverflow.com/questions/23023069/gradle-download-and-unzip-file-from-url/34327202
+
+git:
+https://medium.com/widgetlabs-engineering/using-a-maven-repository-in-a-private-github-repository-with-gradle-46ab73f198a6
+https://api.github.com/repos/toolarium/common-gradle-build/contents/
+
+*/
 
 /*
 buildscript {
@@ -42,6 +55,7 @@ task download {
 /***************************************************************************************
  * download
  ***************************************************************************************/
+ /*
 task downloadCommonGradleVersion { 	
 	group = 'Verification'
 	description = 'Read the version'
@@ -57,3 +71,4 @@ task downloadCommonGradleVersion {
 	}
 	
 }
+*/

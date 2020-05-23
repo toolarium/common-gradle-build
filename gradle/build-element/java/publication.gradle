@@ -12,7 +12,27 @@ apply plugin: 'maven-publish'
  * Repository publishing
  ***************************************************************************************/
 publishing {
-    publications {
+	def description = ''
+	if (project.hasProperty('rootDescription')) {
+		description = project.getProperty('rootDescription')
+	}
+
+	def mavenUsername = ''
+	if (project.hasProperty('mavenUsername')) {
+		mavenUsername = project.getProperty('mavenUsername')
+	}
+
+	def mavenPassword = ''
+	if (project.hasProperty('mavenPassword')) {
+		mavenPassword = project.getProperty('mavenPassword')
+	}
+
+	def deployUrl = mavenUrl
+	if (project.ext.isSnapshotVersion) {
+		deployUrl = mavenSnapshotUrl
+	}
+	
+	publications {
         mavenJava(MavenPublication) {
             artifactId = "${rootProject.name}"
 			groupId= "${rootGroupId}"
@@ -31,7 +51,7 @@ publishing {
 			// after staging go to -> https://oss.sonatype.org/#stagingRepositories -> close
             pom {
                 name = "${rootProject.name}"
-                description = "${rootDescription}"
+                description = description
                 url = "${rootUrl}"
 				
                 licenses {
@@ -46,10 +66,10 @@ publishing {
 	
 	repositories {
         maven {
-            url "${mavenUrl}"
+            url deployUrl
             credentials {
-                    username "${mavenUsername}"
-                    password "${mavenPassword}"
+                    username mavenUsername
+                    password mavenPassword
             }
         }
     }

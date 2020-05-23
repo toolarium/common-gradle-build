@@ -10,7 +10,7 @@ if (!project.hasProperty('commonGradleUrl')) {
 }
 
 apply from: "${commonGradleUrl}/java-base.gradle"
-/*
+
 if (project.hasProperty('srcMainJavaDirectory')) {
 	ext.srcMainJavaDirectory = project.getProperty('srcMainJavaDirectory')
 } else {
@@ -38,76 +38,82 @@ if (project.hasProperty('srcTestResourcesDirectory')) {
     ext.srcTestResourcesDirectory = "${srcTestDirectory}/resources"
 }
 logger.info "Define src test resources directory to: " + ext.srcTestResourcesDirectory
-*/
 
-task projectLanguageValidation() { 
-	group = 'Verification'
-	description = 'Java project validation'
 
-	def createSrcDirectory = !new File(srcDirectory).exists()
-	def createSrcMainDirectory = !new File(srcMainDirectory).exists()
-	def createSrcTestDirectory = !new File(srcTestDirectory).exists()
+/***************************************************************************************
+ * project java validation
+ ***************************************************************************************/
+projectValidation {
+	doLast {
+		def createSrcDirectory = !new File(srcDirectory).exists()
+		def createSrcMainDirectory = !new File(srcMainDirectory).exists()
+		def createSrcTestDirectory = !new File(srcTestDirectory).exists()
 
-	def createSrcMainJavaDirectory = !new File(srcMainJavaDirectory).exists()
-	def createSrcTestJavaDirectory = !new File(srcTestJavaDirectory).exists()
-	def createSrcMainResourcesDirectory = !new File(srcMainResourcesDirectory).exists()
-	def createSrcTestResourcesDirectory = !new File(srcTestResourcesDirectory).exists()
+		def createSrcMainJavaDirectory = !new File(srcMainJavaDirectory).exists()
+		def createSrcTestJavaDirectory = !new File(srcTestJavaDirectory).exists()
+		def createSrcMainResourcesDirectory = !new File(srcMainResourcesDirectory).exists()
+		def createSrcTestResourcesDirectory = !new File(srcTestResourcesDirectory).exists()
 
-	ext.isValidLanguageProject = !createSrcMainJavaDirectory && !createSrcTestJavaDirectory && !createSrcMainResourcesDirectory && !createSrcTestResourcesDirectory
-	if (createSrcMainJavaDirectory) {
-		println("${INDENT}> Create directory ${STYLER['cyan'](srcMainJavaDirectory)}.")
-		new File( srcMainJavaDirectory ).mkdirs()				
-		new File( srcMainJavaDirectory + '/' + rootPackageName.replace('.', '/') ).mkdirs()				
-	}
+		ext.isValidLanguageProject = !createSrcMainJavaDirectory && !createSrcTestJavaDirectory
+		if (createSrcMainJavaDirectory) {
+			println("${INDENT}> Create directory ${STYLER['cyan'](srcMainJavaDirectory)}.")
+			new File( srcMainJavaDirectory ).mkdirs()				
+			new File( srcMainJavaDirectory + '/' + rootPackageName.replace('.', '/') ).mkdirs()				
+		}
 
-	if (createSrcMainResourcesDirectory) {
-		println("${INDENT}> Create directory ${STYLER['cyan'](srcMainResourcesDirectory)}.")
-		new File( srcMainResourcesDirectory ).mkdirs()				
-	}
+		if (createSrcMainResourcesDirectory) {
+			println("${INDENT}> Create directory ${STYLER['cyan'](srcMainResourcesDirectory)}.")
+			new File( srcMainResourcesDirectory ).mkdir()				
+		}
 
-	if (createSrcTestJavaDirectory) {
-		println("${INDENT}> Create directory ${STYLER['cyan'](srcTestJavaDirectory)}.")
-		new File( srcTestJavaDirectory ).mkdirs()		
-		new File( srcTestJavaDirectory + '/' + rootPackageName.replace('.', '/') ).mkdirs()				
-	}
+		if (createSrcTestJavaDirectory) {
+			println("${INDENT}> Create directory ${STYLER['cyan'](srcTestJavaDirectory)}.")
+			new File( srcTestJavaDirectory ).mkdirs()		
+			new File( srcTestJavaDirectory + '/' + rootPackageName.replace('.', '/') ).mkdirs()				
+		}
 
-	if (createSrcTestResourcesDirectory) {
-		println("${INDENT}> Create directory ${STYLER['cyan'](srcTestResourcesDirectory)}.")
-		new File( srcTestResourcesDirectory ).mkdirs()				
-	}
-	
-	if (!isValidLanguageProject) {
-		def javaLibraryTemplate = 'javaLibrary.template'
-		def slashedRootPackageName = rootPackageName.replace('.', '/')
-		def className = 'MyLibrary'
-		if (new File("${commonGradleTemplatePath}", "${javaLibraryTemplate}").exists()) {
-			println("${INDENT}> Create ${STYLER['cyan'](settingsGradleFile)} from template ${javaLibraryTemplate}.")
-			copy {
-				from "${commonGradleTemplatePath}"
-				include "${javaLibraryTemplate}"
-				into "${createSrcMainJavaDirectory}"
-				rename { String fileName -> fileName.replace("${javaLibraryTemplate}", "${slashedRootPackageName}/${className}.java".toString() ) }
-				filter { line -> line.replaceAll('@@className@@', "${className}".toString()) }
-				filter { line -> line.replaceAll('@@fileName@@', "${className}.java".toString()) }
-				filter { line -> line.replaceAll('@@packageName@@', "${rootPackageName}".toString()) }
-				filter { line -> line.replaceAll('@@LICENSE@@', "${LICENSE}".toString()) }
+		if (createSrcTestResourcesDirectory) {
+			println("${INDENT}> Create directory ${STYLER['cyan'](srcTestResourcesDirectory)}.")
+			new File( srcTestResourcesDirectory ).mkdir()
+		}
+
+		if (!isValidLanguageProject) {
+			def javaLibraryTemplate = 'javaLibrary.template'
+			def slashedRootPackageName = rootPackageName.replace('.', '/')
+			def className = 'MyLibrary'
+
+			if (new File("${commonGradleTemplatePath}", "${javaLibraryTemplate}").exists()) {
+				println("${INDENT}> Create file ${STYLER['cyan']("${srcMainJavaDirectory}/${slashedRootPackageName}/${className}.java")} from template ${javaLibraryTemplate}.")
+				copy {
+					from "${commonGradleTemplatePath}"
+					include "${javaLibraryTemplate}"
+					into "${srcMainJavaDirectory}"
+					rename { String fileName -> fileName.replace("${javaLibraryTemplate}", "${slashedRootPackageName}/${className}.java".toString() ) }
+					filter { line -> line.replaceAll('@@rootProject.name@@', "${rootProject.name}".toString()) }					
+					filter { line -> line.replaceAll('@@className@@', "${className}".toString()) }
+					filter { line -> line.replaceAll('@@fileName@@', "${className}.java".toString()) }
+					filter { line -> line.replaceAll('@@packageName@@', "${rootPackageName}".toString()) }
+					filter { line -> line.replaceAll('@@LICENSE@@', "${LICENSE}".toString()) }
+				}
+			} 
+
+			def javaLibraryTestTemplate = 'javaLibraryTest.template'
+			def testClassName = "${className}Test"
+			if (new File("${commonGradleTemplatePath}", "${javaLibraryTestTemplate}").exists()) {
+				println("${INDENT}> Create file ${STYLER['cyan']("${srcTestJavaDirectory}/${slashedRootPackageName}/${testClassName}.java")} from template ${javaLibraryTestTemplate}.")
+				copy {
+					from "${commonGradleTemplatePath}"
+					include "${javaLibraryTestTemplate}"
+					into "${srcTestJavaDirectory}"
+					rename { String fileName -> fileName.replace("${javaLibraryTestTemplate}", "${slashedRootPackageName}/${testClassName}.java".toString() ) }
+					filter { line -> line.replaceAll('@@rootProject.name@@', "${rootProject.name}".toString()) }					
+					filter { line -> line.replaceAll('@@className@@', "${testClassName}".toString()) }
+					filter { line -> line.replaceAll('@@classNameUnderTest@@', "${className}".toString()) }				
+					filter { line -> line.replaceAll('@@fileName@@', "${testClassName}.java".toString()) }
+					filter { line -> line.replaceAll('@@packageName@@', "${rootPackageName}".toString()) }
+					filter { line -> line.replaceAll('@@LICENSE@@', "${LICENSE}".toString()) }
+				}
 			}
 		} 
-
-		def javaLibraryTestTemplate = 'javaLibraryTest.template'
-		def testClassName = "${className}Test"
-		if (new File("${commonGradleTemplatePath}", "${javaLibraryTestTemplate}").exists()) {
-			println("${INDENT}> Create ${STYLER['cyan'](settingsGradleFile)} from template ${javaLibraryTestTemplate}.")
-			copy {
-				from "${commonGradleTemplatePath}"
-				include "${javaLibraryTestTemplate}"
-				into "${createSrcTestJavaDirectory}"
-				rename { String fileName -> fileName.replace("${javaLibraryTestTemplate}", "${slashedRootPackageName}/${testClassName}.java".toString() ) }
-				filter { line -> line.replaceAll('@@className@@', "${testClassName}".toString()) }
-				filter { line -> line.replaceAll('@@fileName@@', "${testClassName}.java".toString()) }
-				filter { line -> line.replaceAll('@@packageName@@', "${rootPackageName}".toString()) }
-				filter { line -> line.replaceAll('@@LICENSE@@', "${LICENSE}".toString()) }
-			}
-		}
-	} 
+	}
 }

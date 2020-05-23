@@ -12,7 +12,7 @@ test.outputs.upToDateWhen {false}
  * Test
  ***************************************************************************************/
 test {
-	systemProperty "file.encoding", "utf-8"
+	systemProperty "file.encoding", "${ENCODING}"
 	useJUnitPlatform()	
 }
 

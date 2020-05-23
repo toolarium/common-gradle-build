@@ -5,6 +5,9 @@
  * MIT License: https://mit-license.org
  */
 
+apply from: "${commonGradleBuildElementPath}/base/util.gradle"
+
+
 if (project.hasProperty('rootDirectory')) {
 	ext.rootDirectory = project.getProperty('rootDirectory')
 } else {
@@ -50,6 +53,17 @@ if (project.hasProperty('srcTestDirectory')) {
 }
 logger.info "Define src test directory to: " + ext.srcTestDirectory
 
+// set user home directory
+if (project.hasProperty('userHomeDirectory')) {	
+	ext.userHomeDirectory=project.getProperty('userHomeDirectory')
+} else {
+	if ("windows" == getOsName()) {
+		ext.userHomeDirectory='%USERPROFILE%/'			
+	} else {
+		ext.userHomeDirectory = '~/'
+	}
+}
+
 // Would be nice to use function e.g. below but currently I don't work: setProperty("kkk", "99")
 def setProperty(String propertyName, String propertyDefaultValue) {	
 	if (project.hasProperty("$propertyName")) {
@@ -60,3 +74,4 @@ def setProperty(String propertyName, String propertyDefaultValue) {
 	
 	logger.info "Define ${propertyName} to: ${propertyName}"	
 }
+

@@ -1,36 +1,29 @@
 /*
- * project-validation.gradle
+ * initialisation.gradle
  *
  * Copyright by toolarium, all rights reserved.
  * MIT License: https://mit-license.org
  */
 
-apply from: "${commonGradleBuildElementPath}/constants.gradle"
-apply from: "${commonGradleBuildElementPath}/path.gradle"
+apply from: "${commonGradleBuildElementPath}/base/constants.gradle"
+apply from: "${commonGradleBuildElementPath}/base/path.gradle"
+apply from: "${commonGradleBuildElementPath}/base/util.gradle"
 
 
 /***************************************************************************************
- * project validation
+ * Project initialisation
  ***************************************************************************************/
-task projectValidation { 
+task projectInitialisation { 
 	group = 'Verification'
-	description = 'Project validation'
-	
-	// check mandatory files
-    def createSettingsGralde = !new File(settingsGradleFile).exists()
-    def createGradleProperties = !new File(gradlePropertiesFile).exists()
-    def createBuildGradle = !new File(buildGradleFile).exists()
+	description = 'Project initialisation'
 
-    def createSrcDirectory = !new File(srcDirectory).exists()
-    def createSrcMainDirectory = !new File(srcMainDirectory).exists()
-    def createSrcTestDirectory = !new File(srcTestDirectory).exists()
-	ext.createDirectories = createSrcDirectory || createSrcMainDirectory || createSrcTestDirectory
+	// check mandatory files
+	def createSettingsGralde = !new File(settingsGradleFile).exists()
+	def createGradleProperties = !new File(gradlePropertiesFile).exists()
+	def createBuildGradle = !new File(buildGradleFile).exists()
 	def createVersionFile = !new File(versionFile).exists()
 	def createReadmeFile = !new File(readmeFile).exists()
 	def createLicenseFile = !new File(licenseFile).exists()
-	
-	if (project.hasProperty('isValidLanguageProject')) {
-	}
 	
 	// validate properties
 	gradle.ext.isValidProject = !createSettingsGralde \
@@ -39,27 +32,26 @@ task projectValidation {
 								&& project.hasProperty('rootGroupId') && project.hasProperty('rootPackageName') && project.hasProperty('rootDescription') \
 								&& !createVersionFile \
 								&& !createReadmeFile \
-								&& !createLicenseFile \
-								&& !createDirectories
+								&& !createLicenseFile 
 								
 	if (!gradle.ext.isValidProject) {
 		println("${STYLER['red'](LINE)}")
 
 		if (createSettingsGralde) {
 			println("${INDENT}> Set root project name to ${STYLER['cyan'](rootProject.name)}, created file ${STYLER['cyan'](settingsGradleFile)}...")
-			if (createGradleProperties || createBuildGradle || !project.hasProperty('rootPackageName') || !project.hasProperty('rootGroupId') || !project.hasProperty('rootDescription') || createVersionFile || createReadmeFile || createLicenseFile || createDirectories) 
+			if (createGradleProperties || createBuildGradle || !project.hasProperty('rootPackageName') || !project.hasProperty('rootGroupId') || !project.hasProperty('rootDescription') || createVersionFile || createReadmeFile || createLicenseFile) 
 				println("")
 		}
 
 		if (createGradleProperties) {
 			println("${INDENT}> Created file ${STYLER['cyan'](gradlePropertiesFile)}...")
-			if (createBuildGradle || !project.hasProperty('rootPackageName') || !project.hasProperty('rootGroupId') || !project.hasProperty('rootDescription')  || createVersionFile || createReadmeFile || createLicenseFile || createDirectories) 
+			if (createBuildGradle || !project.hasProperty('rootPackageName') || !project.hasProperty('rootGroupId') || !project.hasProperty('rootDescription')  || createVersionFile || createReadmeFile || createLicenseFile) 
 				println("")
 		}
 
 		if (createBuildGradle) {
 			println("${INDENT}> Created file ${STYLER['cyan'](buildGradleFile)}...")
-			if (!project.hasProperty('rootPackageName') || !project.hasProperty('rootGroupId') || !project.hasProperty('rootDescription') || createVersionFile || createReadmeFile || createLicenseFile || createDirectories) 
+			if (!project.hasProperty('rootPackageName') || !project.hasProperty('rootGroupId') || !project.hasProperty('rootDescription') || createVersionFile || createReadmeFile || createLicenseFile) 
 				println("")
 		}
 		
@@ -69,7 +61,7 @@ task projectValidation {
 			println("${INDENT}e.g ${STYLER['yellow']('rootPackageName')} = $rootPackageName")
 			ext.rootPackageName = rootPackageName
 			
-			if (!project.hasProperty('rootGroupId') || !project.hasProperty('rootDescription') || createVersionFile || createReadmeFile || createLicenseFile || createDirectories) 
+			if (!project.hasProperty('rootGroupId') || !project.hasProperty('rootDescription') || createVersionFile || createReadmeFile || createLicenseFile) 
 				println("")
 		}
 
@@ -79,7 +71,7 @@ task projectValidation {
 			println("${INDENT}e.g ${STYLER['yellow']('rootGroupId')} = $rootPackageName")
 			ext.rootGroupId = rootPackageName
 			
-			if (!project.hasProperty('rootDescription') || createVersionFile || createReadmeFile || createLicenseFile || createDirectories) 
+			if (!project.hasProperty('rootDescription') || createVersionFile || createReadmeFile || createLicenseFile) 
 				println("")
 		}
 
@@ -89,8 +81,8 @@ task projectValidation {
 			println("${INDENT}e.g ${STYLER['yellow']('rootDescription')} = '...'")
 			ext.rootDescription = rootProject.name
 			ext.description = rootPackageName
-	
-			//if (createVersionFile || createReadmeFile || createLicenseFile || createDirectories) 
+
+			//if (createVersionFile || createReadmeFile || createLicenseFile) 
 			println("")
 		}
 		
@@ -104,13 +96,14 @@ task projectValidation {
 			}	
 			
 			println("${INDENT}> Created file ${STYLER['cyan'](versionFile)}...")
-			if (createReadmeFile || createLicenseFile || createDirectories) 
+			if (createReadmeFile || createLicenseFile) 
 				println("")
 		}
 
 		if (createReadmeFile) {
 			logger.info "Write file " + readmeFile + "..."
-		    def readmeTemplate = 'README.template'
+			// https://gist.github.com/PurpleBooth/109311bb0361f32d87a2
+			def readmeTemplate = 'README.template'
 			if (new File("${commonGradleTemplatePath}", "${readmeTemplate}").exists()) {
 				println("${INDENT}> Create ${STYLER['cyan'](readmeFile)} from template ${readmeTemplate}.")
 				copy {
@@ -133,13 +126,13 @@ task projectValidation {
 				}	
 			}
 			
-			if (createLicenseFile || createDirectories) 
+			if (createLicenseFile) 
 				println("")
 		}
 
 		if (createLicenseFile) {
 			logger.info "Write file " + licenseFile + "..."
-		    def licenseTemplate = 'LICENSE.template'
+			def licenseTemplate = 'LICENSE.template'
 			if (new File("${commonGradleTemplatePath}", "${licenseTemplate}").exists()) {
 				println("${INDENT}> Create ${STYLER['cyan'](licenseFile)} from template ${licenseTemplate}.")
 				copy {
@@ -178,31 +171,11 @@ task projectValidation {
 					<< "SOFTWARE." << NELINE
 				}				
 			}
-			
-			if (createDirectories) 
-				println("")
 		}
 		
-		if (createDirectories) {
-			if (createSrcDirectory) {
-				println("${INDENT}> Create directory ${STYLER['cyan'](srcDirectory)}.")
-				new File( srcDirectory ).mkdirs()
-			}
-
-			if (createSrcMainDirectory) {
-				println("${INDENT}> Create directory ${STYLER['cyan'](srcMainDirectory)}.")
-				new File( srcMainDirectory ).mkdirs()
-			}
-
-			if (createSrcTestDirectory) {
-				println("${INDENT}> Create directory ${STYLER['cyan'](srcTestDirectory)}.")
-				new File( srcTestDirectory ).mkdirs()
-			}
-		}
-
 		// if it doesn't exist
 		if (createSettingsGralde) {
-		    def settingsGradleTemplate = 'settings.gradle.template'
+			def settingsGradleTemplate = 'settings.gradle.template'
 			if (new File("${commonGradleTemplatePath}", "${settingsGradleTemplate}").exists()) {
 				println("${INDENT}> Create ${STYLER['cyan'](settingsGradleFile)} from template ${settingsGradleTemplate}.")
 				copy {
@@ -229,7 +202,7 @@ task projectValidation {
 		}
 		
 		if (createGradleProperties) {
-		    def gradlePropertiesTemplate = 'gradle.properties.template'
+			def gradlePropertiesTemplate = 'gradle.properties.template'
 			if (new File("${commonGradleTemplatePath}", "${gradlePropertiesTemplate}").exists()) {
 				println("${INDENT}> Create ${STYLER['cyan'](gradlePropertiesFile)} from template ${gradlePropertiesTemplate}.")
 				copy {
@@ -263,7 +236,7 @@ task projectValidation {
 		}	
 
 		if (createBuildGradle) {
-		    def buildGradle = 'build.gradle.template'
+			def buildGradle = 'build.gradle.template'
 			if (new File("${commonGradleTemplatePath}", "${buildGradle}").exists()) {
 				println("${INDENT}> Create ${STYLER['cyan'](buildGradleFile)} from template ${buildGradle}.")
 				copy {
@@ -315,5 +288,3 @@ task projectValidation {
 	}
 	*/
 } 
-
-

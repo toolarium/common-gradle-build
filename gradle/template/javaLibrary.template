@@ -4,17 +4,18 @@
  * Copyright by @@rootProject.name@@, all rights reserved.
  * @@LICENSE@@
  */
- @@packageName@@
+package @@packageName@@;
  
  
 /**
  * @@className@@
  */
 public class @@className@@ {
+
     /**
-	 * Library method
-	*/
-	public boolean someLibraryMethod() {
-		return true;
-	}
+     * Library method
+     */
+    public boolean someLibraryMethod() {
+        return true;
+    }
 }

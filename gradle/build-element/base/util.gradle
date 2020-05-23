@@ -5,11 +5,33 @@
  * MIT License: https://mit-license.org
  */
 
+// see https://stackoverflow.com/questions/27777591/how-to-define-and-call-custom-methods-in-build-gradle/38032000
  
+/** 
+ * Get the hostname
+ */
+ext.getHostName = { ->
+	String hostname;
+	
+	// get hostname
+	hostname = System.env['hostname']
+	if (hostname==null || hostname.isEmpty()) {
+		hostname = System.env['HOSTNAME']
+		if (hostname==null || hostname.isEmpty())
+			hostname = System.env['COMPUTERNAME']
+	}
+	
+	if (hostname==null || hostname.isEmpty())
+		hostname = "localhost";
+		
+	return hostname;
+}
+ 
+
 /** 
  * Get the os name
  */
-def getOsName(project) {
+ext.getOsName = { ->
     final String osName = System.getProperty("os.name").toLowerCase();
 
     if (osName.contains("linux")) {
@@ -30,7 +52,7 @@ def getOsName(project) {
 /** 
  * Get the arch type
  */
-def getOsArch(project) {
+ext.getOsArch = { ->
     final String osArch = System.getProperty("os.arch");
 
     if ("x86".equals(osArch)) {

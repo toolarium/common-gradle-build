@@ -9,13 +9,13 @@ apply plugin: 'maven-publish'
 
 
 /***************************************************************************************
- * Repositories
+ * Defines supported repositories
  ***************************************************************************************/
 repositories {
 	mavenCentral()
 	google()
 	jcenter()
 	maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
-	//maven { url "https://oss.sonatype.org/content/repositories/staging" }
+	maven { url "https://oss.sonatype.org/content/repositories/staging" }
 	//maven { url "https://oss.sonatype.org/content/repositories/public" }
 }

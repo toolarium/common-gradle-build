@@ -4,6 +4,8 @@
  * Copyright by toolarium, all rights reserved.
  * MIT License: https://mit-license.org
  */
+ 
+// see http://sorcersoft.org/project/site/gradle/userguide/userguide.html
 
 if (!project.hasProperty('commonGradleUrl')) {
     ext.commonGradleUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
@@ -17,5 +19,47 @@ if (!project.hasProperty('commonGradleTemplatePath')) {
 	ext.commonGradleTemplatePath="${commonGradleUrl}/template"
 }
 
-apply from: "${commonGradleBuildElementPath}/project-validation.gradle"
-apply from: "${commonGradleBuildElementPath}/init.gradle"
+apply from: "${commonGradleBuildElementPath}/base/init.gradle"
+apply from: "${commonGradleBuildElementPath}/base/validation.gradle"
+apply from: "${commonGradleBuildElementPath}/release.gradle"
+apply from: "${commonGradleBuildElementPath}/download.gradle"
+
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// check every time
+tasks.matching { it != projectValidation }.all { it.dependsOn projectValidation }
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+/*
+gradle.afterProject {
+    println '=== initialized in afterProject'
+}
+
+gradle.buildFinished { buildResult ->
+  println "BUILD FINISHED"
+}
+*/
+
+// when ready
+gradle.taskGraph.whenReady { taskGraph ->
+
+	// in case we deploy check credentials
+    if (taskGraph.hasTask(":release") || taskGraph.hasTask(":publish")) {
+		if (!project.hasProperty('mavenUsername') || !project.hasProperty('mavenPassword')) {
+			def userHomeDirectory = ''
+			if (project.hasProperty('userHomeDirectory')) {
+				userHomeDirectory = project.getProperty('userHomeDirectory')
+			}
+			
+			def configFileName = "${userHomeDirectory}.gradle/gradle.properties file"
+			def credentialsMessage = "${STYLER['cyan']('mavenUsername')} and ${STYLER['cyan']('mavenPassword')}"
+			println("${STYLER['red'](LINE)}")
+			println("${INDENT}${STYLER['red']('ERROR')}: ${credentialsMessage} has to be ")
+			println("${INDENT}       configured, e.g. in ${STYLER['cyan'](configFileName)}!")
+			println("${STYLER['red'](LINE)}")
+			
+			throw new GradleException("ERROR: ${mavenUsername} and ${mavenPassword} has to be configured, e.g. in ${configFileName}!")
+		}
+    } 
+}

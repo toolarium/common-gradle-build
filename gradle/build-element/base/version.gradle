@@ -5,11 +5,12 @@
  * MIT License: https://mit-license.org
  */
 
-apply from: "${commonGradleBuildElementPath}/constants.gradle"
+apply from: "${commonGradleBuildElementPath}/base/constants.gradle"
+apply from: "${commonGradleBuildElementPath}/base/path.gradle"
 
 
 /***************************************************************************************
- * readVersion: see https://semver.org/ or https://de.wikipedia.org/wiki/Versionsnummer
+ * Read version: see https://semver.org/ 
  ***************************************************************************************/
 task readVersion { 	
 	group = 'Verification'
@@ -20,13 +21,31 @@ task readVersion {
 		
 	def props = new Properties()	
 	file(versionFile).withInputStream { props.load(it) }	
-	project.ext.majorVersionNumber = props.getProperty("major.number").trim()
-	project.ext.minorVersionNumber = props.getProperty("minor.number").trim()
-	project.ext.revisionVersionNumber = props.getProperty("revision.number").trim()
 	
-	if (props.getProperty("build.number")!=null)
-	    project.ext.buildVersionNumber = props.getProperty("build.number").trim()
+	def majorNumber = props.getProperty("major.number")
+	if (majorNumber!=null)
+		project.ext.majorVersionNumber = majorNumber.trim()
+	else
+		project.ext.majorVersionNumber = 0
 
+	def minorNumber = props.getProperty("minor.number")
+	if (minorNumber!=null)
+		project.ext.minorVersionNumber = minorNumber.trim()
+	else
+		project.ext.minorVersionNumber = 0
+		
+	def revisionNumber = props.getProperty("revision.number")
+	if (revisionNumber!=null)
+		project.ext.revisionVersionNumber = revisionNumber.trim()
+	else
+		project.ext.revisionVersionNumber = 1
+
+	def buildNumber = props.getProperty("build.number")
+	if (buildNumber!=null)
+		project.ext.buildVersionNumber = buildNumber.trim()
+	else
+		project.ext.buildVersionNumber = ''
+		
 	project.version = project.ext.majorVersionNumber + "." + project.ext.minorVersionNumber + "." + project.ext.revisionVersionNumber
 	if (project.ext.buildVersionNumber !=null && !project.ext.buildVersionNumber.isEmpty()) {
 		project.version = project.version + "-" +  project.ext.buildVersionNumber
@@ -44,7 +63,7 @@ task readVersion {
 
 
 /***************************************************************************************
- * updateVersion
+ * Update version
  ***************************************************************************************/
 task updateVersion { 
 	group = 'Verification'
@@ -63,7 +82,7 @@ task updateVersion {
 
 
 /***************************************************************************************
- * increaseBuildVersion
+ * Increase build version
  ***************************************************************************************/
 task increaseBuildVersion { 
 	group = 'Verification'
