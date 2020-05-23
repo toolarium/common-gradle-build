@@ -9,4 +9,10 @@ This project helps you to have a fast and stable gradle build.
 ```
 apply from: "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/java-library.gradle"
 ```
+
+or as shorten URL:
+```
+apply from: "https://git.io/JfaaU"
+```
+
 4. Start *gradle*: ``` gradle ```
