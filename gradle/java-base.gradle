@@ -19,6 +19,22 @@ apply from: "${commonGradleBuildElementPath}/java/javaversion.gradle"
 defaultTasks 'clean', 'build'
 
 
+/** 
+ * Create the package path
+ */
+ext.createPackagePath = { basePath, packageName ->
+	def slashedRootPackageName = packageName.replace('.', '/')
+	def buildJavaSourcPath = basePath;
+	String[] s = slashedRootPackageName.split('/')				
+	for (int i = 0; i<s.length; i++) {
+		buildJavaSourcPath += "/" + s[i]
+		new File(buildJavaSourcPath).mkdirs()					
+	}
+
+	return buildJavaSourcPath;
+}
+
+
 /***************************************************************************************
  * artefacts
  ***************************************************************************************/
@@ -65,19 +81,12 @@ tasks.withType(JavaCompile) {
 			new File(generatedCommonGradleBuildResourcesSources).mkdirs()
 			setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBuildResourcesSources", generatedCommonGradleBuildResourcesSources)
 			logInfo("Generate resources source directory is [" + colorize(HIGHLITE_LEVEL, generatedCommonGradleBuildResourcesSources) + colorize(INFO_LEVEL, "]"))
+
+			// create path in generated source
+			def generatedCommonGradleBuildJavaSourcPath = createPackagePath(generatedCommonGradleBuildJavaSources, rootPackageName)			
+			setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBuildJavaSourcPath", generatedCommonGradleBuildJavaSourcPath)
 			
-			def slashedRootPackageName = rootPackageName.replace('.', '/')
-			def generatedCommonGradleBuildJavaSourcPath = generatedCommonGradleBuildJavaSources;
-			String[] s = slashedRootPackageName.split('/')				
-			for (int i = 0; i<s.length; i++) {
-				generatedCommonGradleBuildJavaSourcPath += "/" + s[i]
-				new File(generatedCommonGradleBuildJavaSourcPath).mkdirs()					
-			}				
-			logInfo("Generate java package source directory is [" + colorize(HIGHLITE_LEVEL, generatedCommonGradleBuildJavaSourcPath) + colorize(HIGHLITE_LEVEL, "]"))
-			slashedRootPackageName = "/" + rootPackageName.replace('.', '/') + "/"
-			
-			setCommonGradleDefaultPropertyIfNull("srcGeneratedMainPackageDirectory", generatedCommonGradleBuildJavaSourcPath)
-		
+			// create java version
 			createJavaVersion()
 		} else {
 		    logInfo("Ignore:" + destinationDir.getName())

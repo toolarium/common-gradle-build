@@ -30,13 +30,14 @@ projectValidation {
 			def className = 'MyLibrary'
 			def commonGradleTemplateJavaPath = project.getProperty('commonGradleTemplateJavaPath')
 			
+			def mainJavaSourcPath = createPackagePath(srcMainJavaDirectory, rootPackageName)			
 			if (new File("${commonGradleTemplateJavaPath}", "${javaLibraryTemplate}").exists()) {
-				printInfo("> Create file " + colorize(HIGHLITE_LEVEL, "${srcMainJavaDirectory}/${slashedRootPackageName}/${className}.java") + " from template ${javaLibraryTemplate}.")
+				printInfo("> Create file " + colorize(HIGHLITE_LEVEL, "${mainJavaSourcPath}/${className}.java") + " from template ${javaLibraryTemplate}.")
 				copy {
 					from "${commonGradleTemplateJavaPath}"
 					include "${javaLibraryTemplate}"
-					into "${srcMainJavaDirectory}"
-					rename { String fileName -> fileName.replace("${javaLibraryTemplate}", "${slashedRootPackageName}/${className}.java".toString() ) }
+					into "${mainJavaSourcPath}"
+					rename { String fileName -> fileName.replace("${javaLibraryTemplate}", "${className}.java".toString() ) }
 					filter { line -> line.replaceAll('@@rootProject.name@@', "${rootProject.name}".toString()) }					
 					filter { line -> line.replaceAll('@@className@@', "${className}".toString()) }
 					filter { line -> line.replaceAll('@@fileName@@', "${className}.java".toString()) }
@@ -44,8 +45,8 @@ projectValidation {
 					filter { line -> line.replaceAll('@@LICENSE@@', "${LICENSE}".toString()) }
 				}
 			} else {
-				printInfo("> Create file " + colorize(HIGHLITE_LEVEL, "${srcMainJavaDirectory}/${slashedRootPackageName}/${className}.java") + " with default values.")
-				new File("${srcMainJavaDirectory}/${slashedRootPackageName}", "${className}.java").withWriter { w ->
+				printInfo("> Create file " + colorize(HIGHLITE_LEVEL, "${mainJavaSourcPath}/${className}.java") + " with default values.")
+				new File(mainJavaSourcPath, "${className}.java").withWriter { w ->
 					w << "/*" << NELINE \
 						<< " * ${className}.java" << NELINE \
 						<< " *" << NELINE \
@@ -71,15 +72,16 @@ projectValidation {
 				}			
 			}
 			
+			def testJavaSourcPath = createPackagePath(srcTestJavaDirectory, rootPackageName)			
 			def javaLibraryTestTemplate = 'javaLibraryTest.template'
 			def testClassName = "${className}Test"
 			if (new File("${commonGradleTemplateJavaPath}", "${javaLibraryTestTemplate}").exists()) {
-				printInfo("> Create file " + colorize(HIGHLITE_LEVEL, "${srcTestJavaDirectory}/${slashedRootPackageName}/${testClassName}.java") + " from template ${javaLibraryTestTemplate}.")
+				printInfo("> Create file " + colorize(HIGHLITE_LEVEL, "${testJavaSourcPath}/${testClassName}.java") + " from template ${javaLibraryTestTemplate}.")
 				copy {
 					from "${commonGradleTemplateJavaPath}"
 					include "${javaLibraryTestTemplate}"
-					into "${srcTestJavaDirectory}"
-					rename { String fileName -> fileName.replace("${javaLibraryTestTemplate}", "${slashedRootPackageName}/${testClassName}.java".toString() ) }
+					into "${testJavaSourcPath}"
+					rename { String fileName -> fileName.replace("${javaLibraryTestTemplate}", "${testClassName}.java".toString() ) }
 					filter { line -> line.replaceAll('@@rootProject.name@@', "${rootProject.name}".toString()) }					
 					filter { line -> line.replaceAll('@@className@@', "${testClassName}".toString()) }
 					filter { line -> line.replaceAll('@@classNameUnderTest@@', "${className}".toString()) }				
@@ -88,8 +90,8 @@ projectValidation {
 					filter { line -> line.replaceAll('@@LICENSE@@', "${LICENSE}".toString()) }
 				}
 			} else {
-				printInfo("> Create file " + colorize(HIGHLITE_LEVEL, "${srcTestJavaDirectory}/${slashedRootPackageName}/${testClassName}.java") + " with default values.")
-				new File("${srcTestJavaDirectory}/${slashedRootPackageName}", "${testClassName}.java").withWriter { w ->
+				printInfo("> Create file " + colorize(HIGHLITE_LEVEL, "${testJavaSourcPath}/${testClassName}.java") + " with default values.")
+				new File(testJavaSourcPath, "${testClassName}.java").withWriter { w ->
 					w << "/*" << NELINE \
 						<< " * ${testClassName}.java" << NELINE \
 						<< " *" << NELINE \

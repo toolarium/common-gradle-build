@@ -10,7 +10,7 @@
  * Create version file 
  ***************************************************************************************/
 ext.createJavaVersion = { ->
-	def generatedCommonGradleBuildJavaSourcPath = project.getProperty('srcGeneratedMainPackageDirectory');
+	def generatedCommonGradleBuildJavaSourcPath = project.getProperty('generatedCommonGradleBuildJavaSourcPath');
 	def javaVersionFile = "Version.java"
 	logInfo("Write file " + colorize(HIGHLITE_LEVEL, generatedCommonGradleBuildJavaSourcPath + "/" + javaVersionFile) + colorize(INFO_LEVEL, "..."))
 	def javaVersionTemplate = 'JavaVersion.template'
