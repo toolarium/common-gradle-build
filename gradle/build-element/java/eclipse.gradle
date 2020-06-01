@@ -29,3 +29,145 @@ eclipse {
 		*/
 	}
 }
+
+
+/***************************************************************************************
+ * Create eclipse file 
+ ***************************************************************************************/
+ext.createEclipseFiles = { overwrite = false ->
+	def rootDirectory = project.getProperty('rootDirectory');
+	def classpathFile = ".classpath"
+	
+	if (overwrite || !new File("${rootDirectory}", "${classpathFile}").exists()) {
+		def commonGradleTemplateJavaPath= project.getProperty('commonGradleTemplateJavaPath')
+		logInfo("Write file " + colorize(HIGHLITE_LEVEL, rootDirectory + "/" + classpathFile) + colorize(INFO_LEVEL, "..."))
+		def eclipseClasspathTemplate = 'eclipse-classpath.template'
+		def srcMainDirectoryName = project.getProperty('srcMainDirectoryName')
+		def srcTestDirectoryName = project.getProperty('srcTestDirectoryName')
+		def srcMainDirectory = project.getProperty('srcMainDirectory')
+		def srcTestDirectory = project.getProperty('srcTestDirectory')
+		def generatedCommonGradleBuildJavaSources = project.getProperty('generatedCommonGradleBuildJavaSources')
+		def generatedCommonGradleBuildResourcesSources = project.getProperty('generatedCommonGradleBuildResourcesSources')
+		
+		if (new File("${commonGradleTemplateJavaPath}", "${eclipseClasspathTemplate}").exists()) {
+			printInfo("> Create " + colorize(HIGHLITE_LEVEL, classpathFile) + " from template ${eclipseClasspathTemplate}.")
+			copy {
+				from "${commonGradleTemplateJavaPath}"
+				include "${eclipseClasspathTemplate}"
+				into "${rootDirectory}"
+				rename { String fileName -> fileName.replace(eclipseClasspathTemplate, classpathFile) }
+				filter { line -> line.replaceAll('@@rootProject.name@@', "${rootProject.name }".toString()) }					
+				filter { line -> line.replaceAll('@@PROJECT_NAME@@', "${rootProject.name}".toString()) }
+				filter { line -> line.replaceAll('@@GROUP_ID@@', "${project.ext.rootGroupId}".toString()) }
+				filter { line -> line.replaceAll('@@COMPONENT_ID@@', "${project.ext.rootComponent}".toString()) }
+				filter { line -> line.replaceAll('@@PACKAGE@@', "${project.ext.rootPackageName}".toString()) }
+				filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.rootDescription}".toString()) }
+				filter { line -> line.replaceAll('@@URL@@', "${project.ext.rootUrl}".toString()) }
+				filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.LICENSE}".toString()) }
+				filter { line -> line.replaceAll('@@SRC_MAIN@@', "${srcMainDirectory}".toString()) }
+				filter { line -> line.replaceAll('@@SRC_TEST@@', "${srcTestDirectory}".toString()) }
+				filter { line -> line.replaceAll('@@MAIN@@', "${srcMainDirectoryName}".toString()) }
+				filter { line -> line.replaceAll('@@TEST@@', "${srcTestDirectoryName}".toString()) }
+				filter { line -> line.replaceAll('@@SRC_GEN_MAIN@@', "${generatedCommonGradleBuildJavaSources}".toString()) }
+				filter { line -> line.replaceAll('@@SRC_GEN_RESOURCES@@', "${generatedCommonGradleBuildResourcesSources}".toString()) }
+				
+			}
+		} else {
+			printInfo("> Create " + colorize(HIGHLITE_LEVEL, classpathFile) + " with default values.")
+			new File(rootDirectory, classpathFile).withWriter { w ->
+				w << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << NELINE \
+					<< "<classpath>" << NELINE \
+					<< "	<classpathentry kind=\"src\" output=\"build/eclipse/${srcMainDirectoryName}\" path=\"${srcMainDirectory}/java\">" << NELINE \
+					<< "		<attributes>" << NELINE \
+					<< "			<attribute name=\"gradle_scope\" value=\"${srcMainDirectoryName}\"/>" << NELINE \
+					<< "			<attribute name=\"gradle_used_by_scope\" value=\"${srcMainDirectoryName},${srcTestDirectoryName}\"/>" << NELINE \
+					<< "		</attributes>" << NELINE \
+					<< "	</classpathentry>" << NELINE \
+					<< "	<classpathentry kind=\"src\" output=\"build/eclipse/${srcMainDirectoryName}\" path=\"${srcMainDirectory}/resources\">" << NELINE \
+					<< "		<attributes>" << NELINE \
+					<< "			<attribute name=\"gradle_scope\" value=\"${srcMainDirectoryName}\"/>" << NELINE \
+					<< "			<attribute name=\"gradle_used_by_scope\" value=\"${srcMainDirectoryName},${srcTestDirectoryName}\"/>" << NELINE \
+					<< "		</attributes>" << NELINE \
+					<< "	</classpathentry>" << NELINE \
+					<< "	<classpathentry kind=\"src\" output=\"build/eclipse/${srcMainDirectoryName}\" path=\"${generatedCommonGradleBuildJavaSources}\">" << NELINE \
+					<< "		<attributes>" << NELINE \
+					<< "			<attribute name=\"gradle_scope\" value=\"${srcMainDirectoryName}\"/>" << NELINE \
+					<< "			<attribute name=\"gradle_used_by_scope\" value=\"${srcMainDirectoryName},${srcTestDirectoryName}\"/>" << NELINE \
+					<< "		</attributes>" << NELINE \
+					<< "	</classpathentry>" << NELINE \
+					<< "	<classpathentry kind=\"src\" output=\"build/eclipse/${srcMainDirectoryName}\" path=\"${generatedCommonGradleBuildResourcesSources}\">" << NELINE \
+					<< "		<attributes>" << NELINE \
+					<< "			<attribute name=\"gradle_scope\" value=\"${srcMainDirectoryName}\"/>" << NELINE \
+					<< "			<attribute name=\"gradle_used_by_scope\" value=\"${srcMainDirectoryName},${srcTestDirectoryName}\"/>" << NELINE \
+					<< "		</attributes>" << NELINE \
+					<< "	</classpathentry>" << NELINE \
+					<< "	<classpathentry kind=\"src\" output=\"build/eclipse/${srcTestDirectoryName}\" path=\"${srcTestDirectory}/java\">" << NELINE \
+					<< "		<attributes>" << NELINE \
+					<< "			<attribute name=\"gradle_scope\" value=\"${srcTestDirectoryName}\"/>" << NELINE \
+					<< "			<attribute name=\"gradle_used_by_scope\" value=\"${srcTestDirectoryName}\"/>" << NELINE \
+					<< "			<attribute name=\"test\" value=\"true\"/>" << NELINE \
+					<< "		</attributes>" << NELINE \
+					<< "	</classpathentry>" << NELINE \
+					<< "	<classpathentry kind=\"src\" output=\"build/eclipse/${srcTestDirectoryName}\" path=\"${srcTestDirectory}/resources\">" << NELINE \
+					<< "		<attributes>" << NELINE \
+					<< "			<attribute name=\"gradle_scope\" value=\"${srcTestDirectoryName}\"/>" << NELINE \
+					<< "			<attribute name=\"gradle_used_by_scope\" value=\"${srcTestDirectoryName}\"/>" << NELINE \
+					<< "			<attribute name=\"test\" value=\"true\"/>" << NELINE \
+					<< "		</attributes>" << NELINE \
+					<< "	</classpathentry>" << NELINE \
+					<< "	<classpathentry kind=\"con\" path=\"org.eclipse.buildship.core.gradleclasspathcontainer\"/>" << NELINE \
+					<< "	<classpathentry kind=\"output\" path=\"build/eclipse/classes\"/>" << NELINE \
+					<< "	<!-- <classpathentry kind=\"con\" path=\"org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11/\"/> -->" << NELINE \
+					<< "	<!-- <classpathentry kind=\"con\" path=\"org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8/\"/> -->" << NELINE \
+					<< "</classpath>" << NELINE
+			}			
+		}
+	}
+
+	def projectFile = ".project"
+	if (overwrite || !new File("${rootDirectory}", "${projectFile}").exists()) {
+		logInfo("Write file " + colorize(HIGHLITE_LEVEL, rootDirectory + "/" + projectFile) + colorize(INFO_LEVEL, "..."))
+		def eclipseProjectTemplate = 'eclipse-project.template'	
+		if (new File("${commonGradleTemplateJavaPath}", "${eclipseProjectTemplate}").exists()) {
+			printInfo("> Create " + colorize(HIGHLITE_LEVEL, projectFile) + " from template ${eclipseProjectTemplate}.")
+			copy {
+				from "${commonGradleTemplateJavaPath}"
+				include "${eclipseProjectTemplate}"
+				into "${rootDirectory}"
+				rename { String fileName -> fileName.replace(eclipseProjectTemplate, projectFile) }
+				filter { line -> line.replaceAll('@@rootProject.name@@', "${rootProject.name }".toString()) }					
+				filter { line -> line.replaceAll('@@PROJECT_NAME@@', "${rootProject.name}".toString()) }
+				filter { line -> line.replaceAll('@@GROUP_ID@@', "${project.ext.rootGroupId}".toString()) }
+				filter { line -> line.replaceAll('@@COMPONENT_ID@@', "${project.ext.rootComponent}".toString()) }
+				filter { line -> line.replaceAll('@@PACKAGE@@', "${project.ext.rootPackageName}".toString()) }
+				filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.rootDescription}".toString()) }
+				filter { line -> line.replaceAll('@@URL@@', "${project.ext.rootUrl}".toString()) }
+				filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.LICENSE}".toString()) }
+				filter { line -> line.replaceAll('@@MAIN@@', "${srcMainDirectoryName}".toString()) }
+				filter { line -> line.replaceAll('@@TEST@@', "${srcTestDirectoryName}".toString()) }
+			}
+		} else {
+			printInfo("> Create " + colorize(HIGHLITE_LEVEL, projectFile) + " with default values.")
+			new File(rootDirectory, projectFile).withWriter { w ->
+				w << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << NELINE \
+					<< "<projectDescription>" << NELINE \
+					<< "	<name>${rootProject.name}</name>" << NELINE \
+					<< "	<comment>${rootDescription}</comment>" << NELINE \
+					<< "	<projects/>" << NELINE \
+					<< "	<buildSpec>" << NELINE \
+					<< "		<buildCommand>" << NELINE \
+					<< "			<name>org.eclipse.jdt.core.javabuilder</name>" << NELINE \
+					<< "			<arguments/>" << NELINE \
+					<< "		</buildCommand>" << NELINE \
+					<< "	</buildSpec>" << NELINE \
+					<< "	<natures>" << NELINE \
+					<< "		<nature>org.eclipse.jdt.core.javanature</nature>" << NELINE \
+					<< "		<nature>org.eclipse.buildship.core.gradleprojectnature</nature>" << NELINE \
+					<< "	</natures>" << NELINE \
+					<< " 	<linkedResources/>" << NELINE \
+					<< " 	<filteredResources/>" << NELINE \
+					<< "</projectDescription>" << NELINE
+			}			
+		}
+	}
+}

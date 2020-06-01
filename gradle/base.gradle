@@ -15,27 +15,29 @@ if (!project.hasProperty('commonGradleBuildElementPath')) {
 	ext.commonGradleBuildElementPath="${commonGradleUrl}/build-element"
 }
 
-if (!project.hasProperty('commonGradleTemplatePath')) {
-	ext.commonGradleTemplatePath="${commonGradleUrl}/template"
-}
-
+// base imports
+apply from: "${commonGradleBuildElementPath}/base/defaults.gradle"
 apply from: "${commonGradleBuildElementPath}/base/init.gradle"
-apply from: "${commonGradleBuildElementPath}/base/validation.gradle"
+apply from: "${commonGradleBuildElementPath}/base/gradle.gradle"
 apply from: "${commonGradleBuildElementPath}/release.gradle"
 apply from: "${commonGradleBuildElementPath}/download.gradle"
+apply from: "${commonGradleBuildElementPath}/scm/git.gradle"
 
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// check every time
-tasks.matching { it != projectValidation }.all { it.dependsOn projectValidation }
+// add dependencies to all tasks except some special ones
+tasks.matching { it != projectValidation }.all { 
+	if (it != help && it != tasks &&  it != wrapper && it !=projectValidation ) {
+		logDebug("Add dependency to " + it)
+		it.dependsOn projectValidation 
+	}
+}
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 
 /*
 gradle.afterProject {
     println '=== initialized in afterProject'
 }
-
 gradle.buildFinished { buildResult ->
   println "BUILD FINISHED"
 }
@@ -44,8 +46,50 @@ gradle.buildFinished { buildResult ->
 // when ready
 gradle.taskGraph.whenReady { taskGraph ->
 
+	if (project.hasProperty('INIT_SHOW_SCM') && project.getProperty('INIT_SHOW_SCM')) {
+		def branchName = getGitBranchName()
+		def commitHash = getGitCommitHash()
+		if (branchName!=null && !branchName.trim().isEmpty() && commitHash!=null && !commitHash.trim().isEmpty()) {
+			printInfo("Git branch: " + colorize(HIGHLITE_LEVEL, branchName) + ", commit: " + colorize(HIGHLITE_LEVEL, commitHash))
+			project.ext.set(scmVersionNumber, commitHash)
+			printLine()
+		}
+	}
+
 	// in case we deploy check credentials
     if (taskGraph.hasTask(":release") || taskGraph.hasTask(":publish")) {
+		if (project.ext.isSnapshotVersion) {
+			if (!project.ext.buildVersionNumber.endsWith(SNAPSHOT_TAG_NAME) || project.ext.isReleaseVersion) {
+				printLine(ERROR_LEVEL)
+				def errorMessage = ""
+				if (project.ext.isReleaseVersion) {
+					errorMessage += " Inconsistent status (either we build a snapshot version or a release version)!"
+				}
+				if (!project.ext.buildVersionNumber.endsWith(SNAPSHOT_TAG_NAME)) {
+					errorMessage += " Snapshot version has to end with " + SNAPSHOT_TAG_NAME + "!"
+				}
+				printInfo(colorize(ERROR_LEVEL, 'ERROR') + ":" + message)
+				printLine(ERROR_LEVEL)
+				throw new GradleException("ERROR:" + errorMessage)
+			}
+		}	
+		
+		if (project.ext.isReleaseVersion) {
+			if (!project.ext.buildVersionNumber.endsWith(SNAPSHOT_TAG_NAME) || project.ext.isSnapshotVersion) {
+				printLine(ERROR_LEVEL)
+				def errorMessage = ""
+				if (project.ext.isSnapshotVersion) {
+					errorMessage += " Inconsistent status (either we build a snapshot version or a release version)!"
+				}
+				if (project.ext.buildVersionNumber.endsWith(SNAPSHOT_TAG_NAME)) {
+					errorMessage += " Release version don't end with " + SNAPSHOT_TAG_NAME + "!"
+				}
+				printInfo(colorize(ERROR_LEVEL, 'ERROR') + ":" + message)
+				printLine(ERROR_LEVEL)
+				throw new GradleException("ERROR:" + errorMessage)
+			}
+		}
+		
 		if (!project.hasProperty('mavenUsername') || !project.hasProperty('mavenPassword')) {
 			def userHomeDirectory = ''
 			if (project.hasProperty('userHomeDirectory')) {
@@ -53,13 +97,25 @@ gradle.taskGraph.whenReady { taskGraph ->
 			}
 			
 			def configFileName = "${userHomeDirectory}.gradle/gradle.properties file"
-			def credentialsMessage = "${STYLER['cyan']('mavenUsername')} and ${STYLER['cyan']('mavenPassword')}"
-			println("${STYLER['red'](LINE)}")
-			println("${INDENT}${STYLER['red']('ERROR')}: ${credentialsMessage} has to be ")
-			println("${INDENT}       configured, e.g. in ${STYLER['cyan'](configFileName)}!")
-			println("${STYLER['red'](LINE)}")
+			def credentialsMessage = colorize(HIGHLITE_LEVEL, 'mavenUsername') + " and " + colorize(HIGHLITE_LEVEL, 'mavenPassword')
+			printLine(ERROR_LEVEL)
+			printInfo(colorize(ERROR_LEVEL, 'ERROR') + ": ${credentialsMessage} has to be ")
+			printInfo("       configured, e.g. in " + colorize(HIGHLITE_LEVEL, configFileName) + "!")
+			printLine(ERROR_LEVEL)
 			
 			throw new GradleException("ERROR: ${mavenUsername} and ${mavenPassword} has to be configured, e.g. in ${configFileName}!")
 		}
     } 
+}
+
+
+/***************************************************************************************
+ * project validation
+ ***************************************************************************************/
+projectValidation {
+	doLast {
+		if (project.hasProperty('INIT_SCM') && project.getProperty('INIT_SCM')) {
+			createGitFiles()
+		}	
+	}
 }

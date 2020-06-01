@@ -6,18 +6,18 @@
  */
 
 apply from: "${commonGradleBuildElementPath}/base/initialisation.gradle"
-apply from: "${commonGradleBuildElementPath}/base/version.gradle"
-apply from: "${commonGradleBuildElementPath}/base/util.gradle"
 
 
 /***************************************************************************************
  * Init
  ***************************************************************************************/
 init {
-	ext.hostname = getHostName()
+	// initialize the project mandatory settings and environment
+	projectInitialisation()
 	
+	def hostname = getHostName()	
 	def headerLength = INDENT.length() + 11 + rootProject.name.length() + rootGroupId.length()
-	def header = "${INDENT}Project ${STYLER['yellow'](rootProject.name)}"
+	def header = "Project " + colorize(TITLE_LEVEL, rootProject.name)
 	def length = MAX_LINELENGTH - headerLength - INDENT.length()
 	if (length > 0 && project.hasProperty('rootDescription')) {
 		header = header + " ($rootGroupId)"
@@ -28,15 +28,69 @@ init {
 		header += ": " + printDescription
 	}
 
-	// TODO: why encoding don't corresponds to 
-	def encoding = System.properties['file.encoding']
-	encoding = ENCODING
+	def isUnlimitedJurisdictionMsg = ""
+	if (!isUnlimitedJurisdiction()) {
+	    isUnlimitedJurisdictionMsg = colorize(ERROR_LEVEL, '*')
+	}
 	
-	println("${STYLER['cyan'](LINE)}")	
-	println("${header}")	
-	println("${INDENT}Version ${STYLER['cyan'](project.version)}, ${STYLER['cyan'](DATETIMESTAMP)} (${System.properties['user.name']}, $encoding, ${System.properties['user.language']}, ${TimeZone.getDefault().getID()})")
-	println("${INDENT}Java v${STYLER['cyan'](System.properties['java.version'])}, target ${STYLER['cyan'](targetCompatibility)} (${System.properties['java.vendor']}-${System.properties['java.vm.version']}), ${System.properties['os.name']} (${System.properties['os.arch']}) on ${hostname}")
-	println("${INDENT}Java home: ${System.env['JAVA_HOME']}, PID: ${java.lang.ProcessHandle.current().pid()}") //, working path: ${System.properties['user.dir']}")
-	//println("${INDENT}Memory: ${Runtime.getRuntime().maxMemory()}")
-	println("${STYLER['cyan'](LINE)}")
+	// TODO: why encoding don't corresponds to 
+	def encoding = ENCODING
+	if (encoding==null || encoding.isEmpty()) {
+	    System.properties['file.encoding']
+	}
+	
+	def pid = getProcessNumber()
+	def processNumber = ""
+	if (pid!=null && !pid.isEmpty()) {
+		processNumber = ", PID: " + pid
+	} 
+	
+	def vendorName = System.properties['java.vendor'].replace(" Corporation", "")
+
+	def userInfo = ""
+	def javaInfo = ""
+	if (INIT_SHOW_JAVA) {
+		userInfo = "(${System.properties['user.name']}, $encoding, ${System.properties['user.language']}, ${TimeZone.getDefault().getID()})"
+		javaInfo = "Java v" + colorize(HIGHLITE_LEVEL, System.properties['java.version']) + "${isUnlimitedJurisdictionMsg}, target " + colorize(HIGHLITE_LEVEL, targetCompatibility) + " (${vendorName}-${System.properties['java.vm.version']}), "
+	}
+	
+		def osInfo = "${System.properties['os.name']} (${System.properties['os.arch']}) on ${hostname}"
+
+	// read the version
+	readVersion()
+
+	printLine()
+	
+	printInfo("${header}")	
+	printInfo("Version " + colorize(HIGHLITE_LEVEL, project.version) + ", ${BUILD_TIMESTAMP_SHORT} ${userInfo}")
+	printInfo("${javaInfo}${osInfo}")
+	
+	if (INIT_SHOW_JAVA) {
+		def runtimeMemory = Runtime.getRuntime().maxMemory()
+		def memory = Math.round(runtimeMemory / 1024 / 1024 / 1024 * 100 ) / 100
+		printInfo("Java home: ${System.properties['java.home']}${processNumber}, Max memory: ${memory}G")
+	}
+	
+	if (INIT_SHOW_PATH) {
+		printInfo("Path: ${System.properties['user.dir']}, Temp: ${System.properties['java.io.tmpdir']}")
+	}
+
+	if (INIT_SHOW_GRADLE) {
+		printInfo("Gradle: ${gradle.gradleVersion}")
+	}
+
+	printLine()
+}
+
+
+/***************************************************************************************
+ * Project validation
+ ***************************************************************************************/
+task projectValidation { 
+	group = 'Verification'
+	description = 'Project validation'
+
+	doFirst {
+		logInfo("Project validation....")
+	}
 }

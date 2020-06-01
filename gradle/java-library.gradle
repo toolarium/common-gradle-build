@@ -11,33 +11,11 @@ if (!project.hasProperty('commonGradleUrl')) {
 
 apply from: "${commonGradleUrl}/java-base.gradle"
 
-if (project.hasProperty('srcMainJavaDirectory')) {
-	ext.srcMainJavaDirectory = project.getProperty('srcMainJavaDirectory')
-} else {
-    ext.srcMainJavaDirectory = "${srcMainDirectory}/java"
-}
-logger.info "Define src main java directory to: " + ext.srcMainJavaDirectory
-
-if (project.hasProperty('srcMainResourcesDirectory')) {
-	ext.srcMainResourcesDirectory = project.getProperty('srcMainResourcesDirectory')
-} else {
-    ext.srcMainResourcesDirectory = "${srcMainDirectory}/resources"
-}
-logger.info "Define src main resources directory to: " + ext.srcMainResourcesDirectory
-
-if (project.hasProperty('srcTestJavaDirectory')) {
-	ext.srcTestJavaDirectory = project.getProperty('srcTestJavaDirectory')
-} else {
-    ext.srcTestJavaDirectory = "${srcTestDirectory}/java"
-}
-logger.info "Define src test java directory to: " + ext.srcTestJavaDirectory
-
-if (project.hasProperty('srcTestResourcesDirectory')) {
-	ext.srcTestResourcesDirectory = project.getProperty('srcTestResourcesDirectory')
-} else {
-    ext.srcTestResourcesDirectory = "${srcTestDirectory}/resources"
-}
-logger.info "Define src test resources directory to: " + ext.srcTestResourcesDirectory
+// define default java directories
+setCommonGradleDefaultPropertyIfNull("srcMainJavaDirectory", "${srcMainDirectory}/java")
+setCommonGradleDefaultPropertyIfNull("srcMainResourcesDirectory", "${srcMainDirectory}/resources")
+setCommonGradleDefaultPropertyIfNull("srcTestJavaDirectory", "${srcTestDirectory}/java")
+setCommonGradleDefaultPropertyIfNull("srcTestResourcesDirectory", "${srcTestDirectory}/resources")
 
 
 /***************************************************************************************
@@ -45,47 +23,17 @@ logger.info "Define src test resources directory to: " + ext.srcTestResourcesDir
  ***************************************************************************************/
 projectValidation {
 	doLast {
-		def createSrcDirectory = !new File(srcDirectory).exists()
-		def createSrcMainDirectory = !new File(srcMainDirectory).exists()
-		def createSrcTestDirectory = !new File(srcTestDirectory).exists()
-
-		def createSrcMainJavaDirectory = !new File(srcMainJavaDirectory).exists()
-		def createSrcTestJavaDirectory = !new File(srcTestJavaDirectory).exists()
-		def createSrcMainResourcesDirectory = !new File(srcMainResourcesDirectory).exists()
-		def createSrcTestResourcesDirectory = !new File(srcTestResourcesDirectory).exists()
-
-		ext.isValidLanguageProject = !createSrcMainJavaDirectory && !createSrcTestJavaDirectory
-		if (createSrcMainJavaDirectory) {
-			println("${INDENT}> Create directory ${STYLER['cyan'](srcMainJavaDirectory)}.")
-			new File( srcMainJavaDirectory ).mkdirs()				
-			new File( srcMainJavaDirectory + '/' + rootPackageName.replace('.', '/') ).mkdirs()				
-		}
-
-		if (createSrcMainResourcesDirectory) {
-			println("${INDENT}> Create directory ${STYLER['cyan'](srcMainResourcesDirectory)}.")
-			new File( srcMainResourcesDirectory ).mkdir()				
-		}
-
-		if (createSrcTestJavaDirectory) {
-			println("${INDENT}> Create directory ${STYLER['cyan'](srcTestJavaDirectory)}.")
-			new File( srcTestJavaDirectory ).mkdirs()		
-			new File( srcTestJavaDirectory + '/' + rootPackageName.replace('.', '/') ).mkdirs()				
-		}
-
-		if (createSrcTestResourcesDirectory) {
-			println("${INDENT}> Create directory ${STYLER['cyan'](srcTestResourcesDirectory)}.")
-			new File( srcTestResourcesDirectory ).mkdir()
-		}
-
-		if (!isValidLanguageProject) {
+		if (project.getProperty('IS_NEW')) {
+			logInfo("Create at least one java file...")
 			def javaLibraryTemplate = 'javaLibrary.template'
 			def slashedRootPackageName = rootPackageName.replace('.', '/')
 			def className = 'MyLibrary'
-
-			if (new File("${commonGradleTemplatePath}", "${javaLibraryTemplate}").exists()) {
-				println("${INDENT}> Create file ${STYLER['cyan']("${srcMainJavaDirectory}/${slashedRootPackageName}/${className}.java")} from template ${javaLibraryTemplate}.")
+			def commonGradleTemplateJavaPath = project.getProperty('commonGradleTemplateJavaPath')
+			
+			if (new File("${commonGradleTemplateJavaPath}", "${javaLibraryTemplate}").exists()) {
+				printInfo("> Create file " + colorize(HIGHLITE_LEVEL, "${srcMainJavaDirectory}/${slashedRootPackageName}/${className}.java") + " from template ${javaLibraryTemplate}.")
 				copy {
-					from "${commonGradleTemplatePath}"
+					from "${commonGradleTemplateJavaPath}"
 					include "${javaLibraryTemplate}"
 					into "${srcMainJavaDirectory}"
 					rename { String fileName -> fileName.replace("${javaLibraryTemplate}", "${slashedRootPackageName}/${className}.java".toString() ) }
@@ -95,14 +43,40 @@ projectValidation {
 					filter { line -> line.replaceAll('@@packageName@@', "${rootPackageName}".toString()) }
 					filter { line -> line.replaceAll('@@LICENSE@@', "${LICENSE}".toString()) }
 				}
-			} 
-
+			} else {
+				printInfo("> Create file " + colorize(HIGHLITE_LEVEL, "${srcMainJavaDirectory}/${slashedRootPackageName}/${className}.java") + " with default values.")
+				new File("${srcMainJavaDirectory}/${slashedRootPackageName}", "${className}.java").withWriter { w ->
+					w << "/*" << NELINE \
+						<< " * ${className}.java" << NELINE \
+						<< " *" << NELINE \
+						<< " * Copyright by ${rootProject.name}, all rights reserved." << NELINE \
+						<< " * ${LICENSE}" << NELINE \
+						<< "*/" << NELINE \
+						<< "package ${rootPackageName};" << NELINE \
+						<< "" << NELINE \
+						<< "" << NELINE \
+						<< "/**" << NELINE \
+						<< " * ${className}" << NELINE \
+						<< " */" << NELINE \
+						<< "public class ${className} {" << NELINE \
+						<< "" << NELINE \
+						<< "    /**" << NELINE \
+						<< "     * Library method" << NELINE \
+						<< "     */" << NELINE \
+						<< "    public boolean someLibraryMethod() {" << NELINE \
+						<< "        return true;" << NELINE \
+						<< "    }" << NELINE \
+						<< "}" << NELINE \
+						<< "" << NELINE
+				}			
+			}
+			
 			def javaLibraryTestTemplate = 'javaLibraryTest.template'
 			def testClassName = "${className}Test"
-			if (new File("${commonGradleTemplatePath}", "${javaLibraryTestTemplate}").exists()) {
-				println("${INDENT}> Create file ${STYLER['cyan']("${srcTestJavaDirectory}/${slashedRootPackageName}/${testClassName}.java")} from template ${javaLibraryTestTemplate}.")
+			if (new File("${commonGradleTemplateJavaPath}", "${javaLibraryTestTemplate}").exists()) {
+				printInfo("> Create file " + colorize(HIGHLITE_LEVEL, "${srcTestJavaDirectory}/${slashedRootPackageName}/${testClassName}.java") + " from template ${javaLibraryTestTemplate}.")
 				copy {
-					from "${commonGradleTemplatePath}"
+					from "${commonGradleTemplateJavaPath}"
 					include "${javaLibraryTestTemplate}"
 					into "${srcTestJavaDirectory}"
 					rename { String fileName -> fileName.replace("${javaLibraryTestTemplate}", "${slashedRootPackageName}/${testClassName}.java".toString() ) }
@@ -113,6 +87,37 @@ projectValidation {
 					filter { line -> line.replaceAll('@@packageName@@', "${rootPackageName}".toString()) }
 					filter { line -> line.replaceAll('@@LICENSE@@', "${LICENSE}".toString()) }
 				}
+			} else {
+				printInfo("> Create file " + colorize(HIGHLITE_LEVEL, "${srcTestJavaDirectory}/${slashedRootPackageName}/${testClassName}.java") + " with default values.")
+				new File("${srcTestJavaDirectory}/${slashedRootPackageName}", "${testClassName}.java").withWriter { w ->
+					w << "/*" << NELINE \
+						<< " * ${testClassName}.java" << NELINE \
+						<< " *" << NELINE \
+						<< " * Copyright by ${rootProject.name}, all rights reserved." << NELINE \
+						<< " * ${LICENSE}" << NELINE \
+						<< "*/" << NELINE \
+						<< "package ${rootPackageName};" << NELINE \
+						<< "" << NELINE \
+						<< "" << NELINE \
+						<< "import org.junit.jupiter.api.Test;" << NELINE \
+						<< "import static org.junit.jupiter.api.Assertions.*;" << NELINE \
+						<< "" << NELINE \
+						<< "" << NELINE \
+						<< "/**" << NELINE \
+						<< " * ${testClassName}" << NELINE \
+						<< " */" << NELINE \
+						<< "public class ${testClassName} {" << NELINE \
+						<< "" << NELINE \
+						<< "    /**" << NELINE \
+						<< "     * Test ${className} method" << NELINE \
+						<< "     */" << NELINE \
+						<< "    @Test void testSomeLibraryMethod() {" << NELINE \
+						<< "        ${className} classUnderTest = new ${className}();" << NELINE \
+						<< "        assertTrue(classUnderTest.someLibraryMethod(), \"someLibraryMethod should return 'true'\");" << NELINE \
+						<< "    }" << NELINE \
+						<< "}" << NELINE \
+						<< "" << NELINE
+				}			
 			}
 		} 
 	}

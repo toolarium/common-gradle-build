@@ -5,7 +5,104 @@
  * MIT License: https://mit-license.org
  */
 
-// see https://stackoverflow.com/questions/27777591/how-to-define-and-call-custom-methods-in-build-gradle/38032000
+
+/** 
+ * Get the arch type
+ */
+ext.parseInteger = { value, defaultValue = 0, type = "" ->
+	if (value == null) {
+		return defaultValue;
+	} else if (value instanceof Integer) {
+		return value
+	} else {
+		try {
+			return Integer.parseInt(("" + value).trim());
+		} catch (Exception e) {
+			if (type != null || type.isEmpty()) {
+				printWarn("Could not parse value of ${type}, it's not an integer [${value}]: " + e.getMessage())
+			} else {
+				printWarn("Could not parse value, it's not an integer [${value}]: " + e.getMessage())
+			}
+			return defaultValue;
+		}
+	}
+}
+
+
+/** 
+ * Get the arch type
+ */
+import org.gradle.api.JavaVersion;
+ext.parseVersion = { version ->
+	if (version == null) {
+		return null;
+	} 
+	
+	try {
+		return JavaVersion.toVersion(version)
+		
+		def input = version.toString().trim()
+		if (!input.startsWith("VERSION")) {
+			input = "VERSION_" + input.replace('.', '_')
+		}
+		
+		//return JavaVersion.toVersion(input)
+	} catch (IllegalArgumentException e) {
+		printInfo("Error in parseVersion: " + e.getMessage())
+	}
+}
+
+
+/** 
+ * Get the hostname
+ */
+ext.JAVA_LANG_PROCESS_HANDLE = "java.lang.ProcessHandle";
+ext.getProcessNumber = { ->
+	def processNumber = ""	
+	try {
+		try {
+			Class clazz = Class.forName(JAVA_LANG_PROCESS_HANDLE)
+			
+			try {
+				java.lang.reflect.Method method = clazz.getMethod("current", null)
+				processNumber = "" + method.invoke(null, null)
+				return processNumber
+			} catch(Exception e) {
+			}			
+		} catch (Exception e) {
+		}
+	} catch (Exception e) {
+	}
+	
+	if (java.lang.management.ManagementFactory.getRuntimeMXBean() != null) {
+		try {
+			String processName = java.lang.management.ManagementFactory.getRuntimeMXBean().getName();
+			if (processName != null && processName.length() > 0) {
+				try  {
+					processNumber = processName.split("@")[0]
+					return processNumber					
+				} catch(Exception e) {
+				}
+			}
+		
+			java.lang.management.RuntimeMXBean runtime = java.lang.management.ManagementFactory.getRuntimeMXBean();
+			java.lang.reflect.Field jvm = runtime.getClass().getDeclaredField("jvm")
+				
+			if (jvm!=null)  {
+				jvm.setAccessible(true);
+				sun.management.VMManagement mgmt = (sun.management.VMManagement)jvm.get(runtime);
+				java.lang.reflect.Method pidMethod = mgmt.getClass().getDeclaredMethod("getProcessId");
+				pidMethod.setAccessible(true)
+				processNumber = pidMethod.invoke(mgmt)
+				return processNumber
+			}
+		} catch (Exception e) {
+		}
+	}
+		
+	return processNumber
+}
+
  
 /** 
  * Get the hostname
@@ -32,20 +129,20 @@ ext.getHostName = { ->
  * Get the os name
  */
 ext.getOsName = { ->
-    final String osName = System.getProperty("os.name").toLowerCase();
+	final String osName = System.getProperty("os.name").toLowerCase();
 
-    if (osName.contains("linux")) {
-        return ("linux");
-    } else if (osName.contains("mac os x") || osName.contains("darwin") || osName.contains("osx")) {
-        return ("macos");
-    } else if (osName.contains("windows")) {
-        return ("windows");
-    } else if (osName.contains("sunos") || osName.contains("solaris")) {
-        return ("solaris");
-    } else if (osName.contains("freebsd")) {
-        return ("freebsd");
-    }
-    return ("unix");
+	if (osName.contains("linux")) {
+		return ("linux");
+	} else if (osName.contains("mac os x") || osName.contains("darwin") || osName.contains("osx")) {
+		return ("macos");
+	} else if (osName.contains("windows")) {
+		return ("windows");
+	} else if (osName.contains("sunos") || osName.contains("solaris")) {
+		return ("solaris");
+	} else if (osName.contains("freebsd")) {
+		return ("freebsd");
+	}
+	return ("unix");
 }
 
 
@@ -53,16 +150,38 @@ ext.getOsName = { ->
  * Get the arch type
  */
 ext.getOsArch = { ->
-    final String osArch = System.getProperty("os.arch");
+	final String osArch = System.getProperty("os.arch");
 
-    if ("x86".equals(osArch)) {
-        return ("i386");
-    }
-    else if ("x86_64".equals(osArch)) {
-        return ("amd64");
-    }
-    else if ("powerpc".equals(osArch)) {
-        return ("ppc");
-    }
-    return (osArch);
+	if ("x86".equals(osArch)) {
+		return ("i386");
+	}
+	else if ("x86_64".equals(osArch)) {
+		return ("amd64");
+	}
+	else if ("powerpc".equals(osArch)) {
+		return ("ppc");
+	}
+	return (osArch);
+}
+
+
+/** 
+ * Check is JDK is unlimited juristisction
+ */
+ext.isUnlimitedJurisdiction = { ->
+	def DEFAULT_CIPHER_NAME = "AESa"
+	def UNLIMITED_JURISDICTION_KEY_SIZE = 1024
+	
+	try
+	{
+		javax.crypto.Cipher.getInstance(DEFAULT_CIPHER_NAME);
+		if (javax.crypto.Cipher.getMaxAllowedKeyLength(DEFAULT_CIPHER_NAME) > UNLIMITED_JURISDICTION_KEY_SIZE) {
+			return true;
+		}
+	} catch (java.security.NoSuchAlgorithmException noe) {
+		return true
+	} catch( Exception e ) {
+	}
+
+	return false;
 }

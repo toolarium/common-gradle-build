@@ -5,78 +5,67 @@
  * MIT License: https://mit-license.org
  */
 
-apply from: "${commonGradleBuildElementPath}/base/constants.gradle"
-apply from: "${commonGradleBuildElementPath}/base/path.gradle"
-
 
 /***************************************************************************************
  * Read version: see https://semver.org/ 
  ***************************************************************************************/
-task readVersion { 	
-	group = 'Verification'
-	description = 'Read the version'
+ext.readVersion = { ->
 
 	// read version number
-	logger.info "Read version file " + versionFile
-		
+	logInfo("Read version file " + colorize(HIGHLITE_LEVEL, versionFile))
+
 	def props = new Properties()	
 	file(versionFile).withInputStream { props.load(it) }	
 	
 	def majorNumber = props.getProperty("major.number")
-	if (majorNumber!=null)
-		project.ext.majorVersionNumber = majorNumber.trim()
-	else
-		project.ext.majorVersionNumber = 0
+	if (majorNumber!=null) {
+		setCommonGradleProperty('majorVersionNumber', parseInteger(majorNumber, 0, 'major.number'))
+	}
 
 	def minorNumber = props.getProperty("minor.number")
-	if (minorNumber!=null)
-		project.ext.minorVersionNumber = minorNumber.trim()
-	else
-		project.ext.minorVersionNumber = 0
-		
-	def revisionNumber = props.getProperty("revision.number")
-	if (revisionNumber!=null)
-		project.ext.revisionVersionNumber = revisionNumber.trim()
-	else
-		project.ext.revisionVersionNumber = 1
-
-	def buildNumber = props.getProperty("build.number")
-	if (buildNumber!=null)
-		project.ext.buildVersionNumber = buildNumber.trim()
-	else
-		project.ext.buildVersionNumber = ''
-		
-	project.version = project.ext.majorVersionNumber + "." + project.ext.minorVersionNumber + "." + project.ext.revisionVersionNumber
-	if (project.ext.buildVersionNumber !=null && !project.ext.buildVersionNumber.isEmpty()) {
-		project.version = project.version + "-" +  project.ext.buildVersionNumber
+	if (minorNumber!=null) {
+		setCommonGradleProperty('minorVersionNumber', parseInteger(minorNumber, 0, 'minor.number'))
 	}
 	
-	if (project.ext.buildVersionNumber.indexOf(SNAPSHOT_TAG_NAME)<0) {
-		project.ext.isReleaseVersion = true
-		logger.info "It is a release verison: " + project.version
-	} else {
-		project.ext.isReleaseVersion = false
-		logger.info "It is a snapshot verison: " + project.version
+	def revisionNumber = props.getProperty("revision.number")
+	if (revisionNumber!=null) {
+		setCommonGradleProperty('revisionVersionNumber', parseInteger(revisionNumber, 1, 'revision.number'))
 	}
-	project.ext.isSnapshotVersion = !project.ext.isReleaseVersion
+
+	def buildNumber = props.getProperty("build.number")
+	if (buildNumber!=null) {
+		setCommonGradleProperty('buildVersionNumber', buildNumber.trim(), '')
+	}
+
+	project.version = project.getProperty('majorVersionNumber') + "." + project.getProperty('minorVersionNumber') + "." + project.getProperty('revisionVersionNumber')
+	def buildVersionNumber = project.getProperty('buildVersionNumber')
+	if (buildVersionNumber !=null && !buildVersionNumber.isEmpty()) {
+		project.version = project.version + "-" +  buildVersionNumber
+	}
+
+	if (!project.getProperty('buildVersionNumber').endsWith(SNAPSHOT_TAG_NAME)) {
+		setCommonGradleProperty('isReleaseVersion', true, true, false)
+		logInfo("It is a release verison: " + colorize(HIGHLITE_LEVEL, project.version))
+	} else {
+		setCommonGradleProperty('isReleaseVersion', false, false, false)
+		logInfo("It is a snapshot verison: " + colorize(HIGHLITE_LEVEL, project.version))
+	}
+	
+	setCommonGradleProperty('isSnapshotVersion', !project.getProperty('isReleaseVersion'))
+	setCommonGradleProperty('scmVersionNumber', '')
 }
 
 
 /***************************************************************************************
  * Update version
  ***************************************************************************************/
-task updateVersion { 
-	group = 'Verification'
-	description = 'Update the version'
-
-	doLast {
-		logger.info "Write file " + versionFile + " -> " + majorVersionNumber
-		new File('.', versionFile).withWriter { w ->
-			w << "major.number        = ${project.ext.majorVersionNumber}" << NELINE \
-			<< "minor.number        = ${project.ext.minorVersionNumber}" << NELINE \
-			<< "revision.number     = ${project.ext.revisionVersionNumber}" << NELINE \
-			<< "build.number        = ${project.ext.buildVersionNumber}" << NELINE 
-		}
+ext.updateVersion = { ->
+	logInfo("Write file " + versionFile + " -> " + project.getProperty('majorVersionNumber') + ", " + project.getProperty('minorVersionNumber') + ", " + project.getProperty('revisionVersionNumber') + ", " + project.getProperty('buildVersionNumber'))
+	new File('.', versionFile).withWriter { w ->
+		w << "major.number        = " << project.getProperty('majorVersionNumber') << NELINE \
+		<< "minor.number        = " << project.getProperty('minorVersionNumber') << NELINE \
+		<< "revision.number     = " << project.getProperty('revisionVersionNumber') << NELINE \
+		<< "build.number        = " << project.getProperty('buildVersionNumber') << NELINE 
 	}
 }
 
@@ -84,12 +73,9 @@ task updateVersion {
 /***************************************************************************************
  * Increase build version
  ***************************************************************************************/
-task increaseBuildVersion { 
-	group = 'Verification'
-	description = 'Increase the build version'
-
-	doLast {
-		project.ext.revisionVersionNumber = project.ext.revisionVersionNumber + 1
-		readVersion.execute()
-	}
+ext.increaseRevisionVersion = { ->
+	setCommonGradleProperty('revisionVersionNumber', 1 + project.getProperty('revisionVersionNumber'), 1)
+	logInfo("Increase revision number " + revisionVersionNumber + ": " + project.version)
+	updateVersion()
+	readVersion()
 }

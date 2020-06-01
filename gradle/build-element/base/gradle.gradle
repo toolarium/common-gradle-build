@@ -1,0 +1,63 @@
+/*
+ * gradle.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+
+ 
+/***************************************************************************************
+ * Read gradle wrapper version
+ ***************************************************************************************/
+ext.readGradleWrapperVersion = { ->
+	def versionFile = 'gradle/wrapper/gradle-wrapper.properties'
+	logInfo("Read gradle wrapper version file " + colorize(HIGHLITE_LEVEL, versionFile))
+
+	def props = new Properties()	
+	file(versionFile).withInputStream { props.load(it) }	
+	String url = props.getProperty('distributionUrl').toString()
+	
+	if (url!=null) {
+		String[] list = url.split('/');
+		
+		if (list!=null && list.length>0) {
+			def filename = list[list.length-1];			
+			if (filename != null) {
+				String[] filenameSplit = filename.split('-');
+				if (filenameSplit!=null && filenameSplit.length>1) {
+					return filenameSplit[1];
+				} else {
+					return filename;
+				}
+			}
+		}
+		
+		return url;
+	}
+	
+	return "";
+}
+ 
+
+/***************************************************************************************
+ * Install gradle wrapper if not exists
+ ***************************************************************************************/
+ext.gradleWrapperinstalled = false
+wrapper {
+	onlyIf { !new File("gradle").exists() \
+		|| !new File("gradle/wrapper").exists() \
+		|| !new File("gradle/wrapper/gradle-wrapper.jar").exists() \
+		|| !new File("gradle/wrapper/gradle-wrapper.properties").exists() \
+		|| !new File("gradlew.").exists() \
+		|| !new File("gradlew.bat").exists() }
+		
+	doLast {		
+		if (!gradleWrapperinstalled) {
+			gradleWrapperinstalled = true
+			printInfo("> Installed gradle wrapper version " + colorize(readGradleWrapperVersion()))
+		}
+	}
+}
+
+// dependency on project validation
+projectValidation.dependsOn wrapper

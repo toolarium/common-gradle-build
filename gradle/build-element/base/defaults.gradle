@@ -1,0 +1,98 @@
+/*
+ * defaults.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+
+apply from: "${commonGradleBuildElementPath}/base/constants.gradle"
+apply from: "${commonGradleBuildElementPath}/base/logger.gradle"
+apply from: "${commonGradleBuildElementPath}/base/property.gradle"
+apply from: "${commonGradleBuildElementPath}/base/util.gradle"
+apply from: "${commonGradleBuildElementPath}/base/version.gradle"
+
+logInfo(LINE)
+
+// version default settings
+setCommonGradleDefaultPropertyIfNull("majorVersionNumber", 0)
+setCommonGradleDefaultPropertyIfNull("minorVersionNumber", 0)
+setCommonGradleDefaultPropertyIfNull("revisionVersionNumber", 1)
+setCommonGradleDefaultPropertyIfNull("buildVersionNumber", SNAPSHOT_TAG_NAME)
+setCommonGradleDefaultPropertyIfNull("isReleaseVersion", false)
+setCommonGradleDefaultPropertyIfNull("scmVersionNumber", '')
+
+// project basic settings
+setCommonGradleDefaultPropertyIfNull("LICENSE", "MIT License: https://mit-license.org")
+setCommonGradleDefaultPropertyIfNull("LICENSE_URL", "https://mit-license.org")
+setCommonGradleDefaultPropertyIfNull("rootUrl", "")
+
+// software generation settings
+setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBuildSources", "build/generated/sources/common-gradle-build")
+
+// compile settings
+setCommonGradleDefaultPropertyIfNull("sourceCompatibility", JavaVersion.VERSION_1_8)
+setCommonGradleDefaultPropertyIfNull("targetCompatibility", JavaVersion.VERSION_1_8)
+setCommonGradleDefaultPropertyIfNull("ENCODING", "UTF-8")
+
+// remote repository (maven compliant) settings
+// use as default the sonatype repository -> url, username and password
+setCommonGradleDefaultPropertyIfNull("mavenUrl", "https://oss.sonatype.org/service/local/staging/deploy/maven2/")
+setCommonGradleDefaultPropertyIfNull("mavenSnapshotUrl", "https://oss.sonatype.org/content/repositories/snapshots/")
+
+if (!project.hasProperty('mavenUsername')) {
+	if (project.hasProperty('sonatypeUsername')){
+		setCommonGradleDefaultPropertyIfNull("mavenUsername", sonatypeUsername)
+	}
+}
+
+if (!project.hasProperty('mavenPassword')) {
+	if (project.hasProperty('sonatypePassword')){
+		setCommonGradleDefaultPropertyIfNull("mavenPassword", sonatypePassword, false)
+	}
+}
+
+// gradle jvm arguments
+setCommonGradleDefaultPropertyIfNull("GRADLE_PROPERTIES_JVMARGS", "-Xmx1g -XX:MaxHeapSize=1g -XX:MaxPermSize=256m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=${ENCODING}")
+
+// base path
+setCommonGradleDefaultPropertyIfNull("commonGradleBuildElementPath", "${commonGradleUrl}/build-element")
+setCommonGradleDefaultPropertyIfNull("rootDirectory", ".")
+
+// common files
+setCommonGradleDefaultPropertyIfNull("settingsGradleFile", "$rootDirectory/settings.gradle")
+setCommonGradleDefaultPropertyIfNull("gradlePropertiesFile", "$rootDirectory/gradle.properties")
+setCommonGradleDefaultPropertyIfNull("buildGradleFile", "$rootDirectory/build.gradle")
+setCommonGradleDefaultPropertyIfNull("versionFile", "$rootDirectory/VERSION")
+setCommonGradleDefaultPropertyIfNull("readmeFile", "$rootDirectory/README.md")
+setCommonGradleDefaultPropertyIfNull("licenseFile", "$rootDirectory/LICENSE")
+
+// src directories
+setCommonGradleDefaultPropertyIfNull("srcMainDirectoryName", "main")
+setCommonGradleDefaultPropertyIfNull("srcTestDirectoryName", "test")
+
+setCommonGradleDefaultPropertyIfNull("srcDirectory", "${rootDirectory}/src")
+setCommonGradleDefaultPropertyIfNull("srcMainDirectory", "${srcDirectory}/${srcMainDirectoryName}")
+setCommonGradleDefaultPropertyIfNull("srcTestDirectory", "${srcDirectory}/${srcTestDirectoryName}")
+
+// template directories
+setCommonGradleDefaultPropertyIfNull("commonGradleTemplatePathName", "template")
+setCommonGradleDefaultPropertyIfNull("commonGradleTemplatePath", "${commonGradleUrl}/${commonGradleTemplatePathName}")
+setCommonGradleDefaultPropertyIfNull("commonGradleTemplateBasePath", "${commonGradleTemplatePath}/base")
+setCommonGradleDefaultPropertyIfNull("commonGradleTemplateJavaPath", "${commonGradleTemplatePath}/java")
+setCommonGradleDefaultPropertyIfNull("commonGradleTemplateScmPath", "${commonGradleTemplatePath}/scm")
+
+// view init settings
+setCommonGradleDefaultPropertyIfNull("INIT_SHOW_JAVA", true)
+setCommonGradleDefaultPropertyIfNull("INIT_SHOW_PATH", false)
+setCommonGradleDefaultPropertyIfNull("INIT_SHOW_SCM", true)
+setCommonGradleDefaultPropertyIfNull("INIT_SCM", true)
+setCommonGradleDefaultPropertyIfNull("INIT_SHOW_GRADLE", false)
+setCommonGradleDefaultPropertyIfNull("INSTALL_GRADLE_WRAPPER", true)
+
+if ("windows" == getOsName()) {
+	setCommonGradleDefaultPropertyIfNull("userHomeDirectory", '%USERPROFILE%/')
+} else {
+	setCommonGradleDefaultPropertyIfNull("userHomeDirectory", '~/')
+}
+
+logInfo(LINE)

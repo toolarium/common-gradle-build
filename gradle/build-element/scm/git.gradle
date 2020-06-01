@@ -1,0 +1,282 @@
+/*
+ * git.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+
+buildscript {
+	repositories {
+		jcenter()
+	}
+	dependencies {
+		classpath 'org.ajoberstar.grgit:grgit-core:4.0.2'
+	}
+}
+
+ext.gitDirectoryIsAvailable = null
+
+/** 
+ * Get git instance
+ */
+def getGit() { 
+
+	if (ext.gitDirectoryIsAvailable==null) {
+		def gitDir = "$rootDirectory/.git"
+		ext.gitDirectoryIsAvailable = new File(gitDir).exists()
+		
+		if (ext.gitDirectoryIsAvailable)
+			logInfo("GIT directory exist.")
+		else
+			logInfo("GIT directory don't exist.")
+	}
+
+	if (!ext.gitDirectoryIsAvailable) {
+		ext.git = null;
+	}
+
+ 	try	
+	{
+		if (ext.gitDirectoryIsAvailable && (!project.hasProperty('git') || project.getProperty('git')==null)) {		
+			logInfo("Init GIT...")
+			ext.git = org.ajoberstar.grgit.Grgit.open(currentDir: projectDir)
+		}		
+	} catch (java.lang.IllegalStateException e) {
+		printLine(ERROR_LEVEL)
+		printInfo(colorize(ERROR_LEVEL, 'ERROR') + ": Can not access to git repository: " + e.getMessage() )
+		printLine(ERROR_LEVEL)
+		throw new GradleException("Can not access to git repository: " + e.getMessage())
+	}
+
+	/*
+    try {
+		def user = System.getProperty("gitUser", "")
+		def pass = System.getProperty("gitPass", "")
+		// TODO:
+		def credentials = new org.ajoberstar.grgit.Credentials(user, pass)
+
+		if (!project.hasProperty('git') || project.getProperty('git')==null) {
+			ext.git = org.ajoberstar.grgit.Grgit.open(currentDir: projectDir, credentials)
+		}		
+	} catch (IOException e) {
+		ext.git = null
+		
+		def configFileName = "${userHomeDirectory}.gradle/gradle.properties file"
+		def credentialsMessage = colorize(HIGHLITE_LEVEL, 'gitUser') + " and " + colorize(HIGHLITE_LEVEL, 'gitPass')
+		printLine(ERROR_LEVEL)
+		printInfo(colorize(ERROR_LEVEL, 'ERROR') + ": ${credentialsMessage} has to be ")
+		printInfo("       configured, e.g. in " + colorize(HIGHLITE_LEVEL, configFileName) + "!")
+		printLine(ERROR_LEVEL)
+		
+		throw new GradleException("Can not access to git repository: " + e.getMessage())
+	}
+	*/
+}
+
+
+/** 
+ * Read the git commit hash 
+ */
+ext.getGitIsAvailable = { ->
+    try {
+		getGit()
+		if (ext.gitDirectoryIsAvailable && ext.git!=null && ext.git.head()!=null) {
+			return true;
+		}
+	} catch (IOException e) {
+	}
+	
+	return false
+}
+
+
+/** 
+ * Read the git commit hash 
+ */
+ext.getGitCommitHash = { ->
+    try {
+		getGit()
+		def commitHashId = "";
+		if (commitHashId!=null && commitHashId.isEmpty() && getGitIsAvailable()) {
+			commitHashId = ext.git.head().id;
+			if (commitHashId!=null && commitHashId.length() > 9)
+				commitHashId = commitHashId.substring(0, 9)
+		}
+		
+		return commitHashId
+	} catch (IOException e) {
+	}
+	
+	return ""
+}
+
+
+/** 
+ * Read the git branch name
+ */
+ext.getGitBranchName = { ->
+    try {
+		getGit()
+		if (getGitIsAvailable() && ext.git.branch!=null && ext.git.branch.current()!=null) {
+			return ext.git.branch.current().name
+		}
+	} catch (IOException e) {
+	}
+	
+	return ""
+}
+
+
+/** 
+ * Read the git last tag name
+ */
+ext.getGitLastTagName = { ->
+    try {
+		getGit()
+		if (getGitIsAvailable() && ext.git.tag!=null) {
+			def listOfTags = ext.git.tag.list()
+		
+			def lastTag = ""
+			if (listOfTags!=null && !listOfTags.isEmpty()) {		
+				def tagNames = listOfTags.collect { ext.git.describe(commit: it.commit, tags: true) }
+				lastTag = tagNames.last()
+			}
+		
+			return lastTag
+		}
+	} catch (IOException e) {
+	}
+	
+	return ""
+}
+
+
+/**
+ * Set a tag name
+ */
+def setGitTagName(String tagName, String message) {
+    try {
+		getGit()
+		if (getGitIsAvailable() && ext.git.tag!=null) {
+			ext.git.tag.add(name: tagName, message: message)
+			ext.git.push(tags: true)            
+		}
+	} catch (IOException e) {
+	}
+}
+
+
+/**
+ * Create Set a tag name
+ */
+def createBranch(String versionNumber, String branchName) {
+/*
+  try {
+		getGit()		
+		if (getGitIsAvailable()) {
+			ext.git.checkout(op -> {
+				op.setCreateBranch(true)
+				op.setBranch(branchName)
+			})
+			
+			ext.git.add(op -> op.setPatterns(new HashSet<>(Arrays.asList("VERSOIN", "VERSION"))))
+			ext.git.commit(op -> op.setMessage("Release branch for " + versionNumber))
+			ext.git.push()
+		}
+	} catch (IOException e) {
+	}
+	
+	return branchName;
+	*/
+}
+
+
+/** 
+ * Read the git commit hash 
+ */
+def getGitCommitHashCmdline() {
+    try {
+		return "git rev-parse --short HEAD".execute().text.trim()
+	} catch (IOException e) {
+	}
+	
+	return ""
+}
+
+
+/** 
+ * Read the git branch name
+ */
+def getGitBranchNameCmdline() {
+    try {
+		return "git rev-parse --abbrev-ref HEAD".execute().text.trim()
+	} catch (IOException e) {
+	}
+	
+	return ""
+}
+
+
+/***************************************************************************************
+ * Initialize  eclipse file 
+ ***************************************************************************************/
+ext.createGitFiles = { overwrite = false ->
+	def rootDirectory = project.getProperty('rootDirectory');
+	def commonGradleTemplateScmPath= project.getProperty('commonGradleTemplateScmPath')
+	def gitIgnoreFile = '.gitignore'
+	
+	if (overwrite || !new File("${rootDirectory}", "${gitIgnoreFile}").exists()) {
+		def gitIgnoreFileTemplate = 'gitignore.template'
+		if (new File("${commonGradleTemplateScmPath}", "${gitIgnoreFileTemplate}").exists()) {
+			printInfo("> Create " + colorize(HIGHLITE_LEVEL, gitIgnoreFile) + " from template ${gitIgnoreFileTemplate}.")
+			copy {
+				from "${commonGradleTemplateScmPath}"
+				include "${gitIgnoreFileTemplate}"
+				into "${rootDirectory}"
+				rename { String fileName -> fileName.replace(gitIgnoreFileTemplate, gitIgnoreFile) }
+			}
+		} else {		
+			printInfo("> Create " + colorize(HIGHLITE_LEVEL, gitIgnoreFile) + " with default values.")
+			new File(rootDirectory, gitIgnoreFile).withWriterAppend { w ->
+				w << "# Ignore Gradle project-specific cache directory" << NELINE \
+				<< ".gradle" << NELINE \
+				<< NELINE \
+				<< "# Ignore Gradle build output directory" << NELINE \
+				<< "build" << NELINE \
+				<< NELINE \
+				<< "# Ignore logs output directory" << NELINE \
+				<< "logs" << NELINE \
+				<< NELINE \
+				<< "# Ignore temp output directory" << NELINE \
+				<< "temp" << NELINE \
+				<< NELINE
+			}
+		}
+	}
+		
+	def classpathFile = ".classpath"
+	def gitAttributeFile = '.gitattributes'
+	if (overwrite || !new File("${rootDirectory}", "${gitAttributeFile}").exists()) {
+		def gitAttributeFileTemplate = 'gitattributes.template'
+		if (new File("${commonGradleTemplateScmPath}", "${gitAttributeFileTemplate}").exists()) {
+			printInfo("> Create " + colorize(HIGHLITE_LEVEL, gitAttributeFile) + " from template ${gitAttributeFileTemplate}.")
+			copy {
+				from "${commonGradleTemplateScmPath}"
+				include "${gitAttributeFileTemplate}"
+				into "${rootDirectory}"
+				rename { String fileName -> fileName.replace(gitAttributeFileTemplate, gitAttributeFile) }
+			}
+		} else {		
+			printInfo("> Create " + colorize(HIGHLITE_LEVEL, gitAttributeFile) + " with default values.")
+			new File(rootDirectory, gitAttributeFile).withWriterAppend { w ->
+				w << "#" << NELINE \
+				<< "# https://help.github.com/articles/dealing-with-line-endings/" << NELINE \
+				<< "#" << NELINE \
+				<< "# These are explicitly windows files and should use crlf" << NELINE \
+				<< NELINE \
+				<< "*.bat           text eol=crlf" << NELINE \
+				<< NELINE
+			}
+		}
+	}
+}

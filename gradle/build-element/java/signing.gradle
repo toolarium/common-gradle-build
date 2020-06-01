@@ -30,12 +30,12 @@ signing {
 		def configFileName = "${userHomeDirectory}.gradle/gradle.properties file"
 
 		if (!project.hasProperty(signingKeyId) || !project.hasProperty(signingPassword) || !project.hasProperty(signingSecretKeyRingFile)) {
-			def signingFileNames = "${STYLER['cyan'](signingKeyId)},  ${STYLER['cyan'](signingPassword)} and ${STYLER['cyan'](signingSecretKeyRingFile)}"
+			def signingFileNames = colorize(HIGHLITE_LEVEL, signingKeyId) + ",  " + colorize(HIGHLITE_LEVEL, signingPassword) + " and " + colorize(HIGHLITE_LEVEL, signingSecretKeyRingFile)
 			
-			println("${STYLER['red'](LINE)}")
-			println("${INDENT}${STYLER['red']('ERROR')}: ${signingFileNames} has to be ")
-			println("${INDENT}       configured, e.g. in ${STYLER['cyan'](configFileName)}!")
-			println("${STYLER['red'](LINE)}")
+			printLine(ERROR_LEVEL)
+			printInfo(colorize(ERROR_LEVEL, 'ERROR') + ": ${signingFileNames} has to be ")
+			printInfo("       configured, e.g. in " + colorize(HIGHLITE_LEVEL, configFileName) + "!")
+			printLine(ERROR_LEVEL)
 		
 			//signingKeyId = console.readLine("PGP Key Id: ")
 			//signingPassword = console.readPassword("PGP Private Key Password: ")		

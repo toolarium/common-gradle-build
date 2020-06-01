@@ -1,0 +1,73 @@
+/*
+ * property.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+// see https://stackoverflow.com/questions/27777591/how-to-define-and-call-custom-methods-in-build-gradle/38032000
+
+
+/** 
+ * Set common gradle property default value if it is null
+ */
+ext.setCommonGradleDefaultPropertyIfNull = { propertyName, propertyDefaultValue, logValue = true ->
+	if (!project.hasProperty(propertyName)) {
+		project.ext.set(propertyName, propertyDefaultValue)
+	}
+
+	def type = propertyDefaultValue.getClass()
+	def message = "Set [" + colorize(HIGHLITE_LEVEL, propertyName) + colorize(INFO_LEVEL, '] ')
+	if (logValue) {
+		message += colorize(INFO_LEVEL, 'to: [') + colorize(HIGHLITE_LEVEL, project.getProperty(propertyName)) + colorize(INFO_LEVEL, '] as ') + colorize(INFO_LEVEL, type)
+	} else {
+		message += colorize(INFO_LEVEL, 'as ') + colorize(INFO_LEVEL, type)
+	}
+	
+	logInfo(message)
+}
+
+
+/** 
+ * Set common gradle property value
+ */
+ext.setCommonGradleProperty = { propertyName, propertytValue, propertyDefaultValue = '', logValue = true ->
+	def value = propertytValue;
+	if (propertytValue == null) {
+		value = propertyDefaultValue
+	}
+	
+	project.ext.set(propertyName, value)
+
+	def type = value.getClass()
+	def message = "Set [" + colorize(HIGHLITE_LEVEL, propertyName) + colorize(INFO_LEVEL, '] ')
+	if (logValue) {
+		message += colorize(INFO_LEVEL, 'to: [') + colorize(HIGHLITE_LEVEL, project.getProperty(propertyName)) + colorize(INFO_LEVEL, '] as ') + colorize(INFO_LEVEL, type)
+	} else {
+		message += colorize(INFO_LEVEL, 'as ') + colorize(INFO_LEVEL, type)
+	}
+	
+	logInfo(message)
+}
+
+
+/** 
+ * Set gradle property value
+ */
+ext.setGradleProperty = { propertyName, propertytValue, propertyDefaultValue = '', logValue = true ->
+	def value = propertytValue;
+	if (propertytValue == null) {
+		value = propertyDefaultValue
+	}
+	
+	project.set(propertyName, value)
+
+	def type = value.getClass()
+	def message = "Set [" + colorize(HIGHLITE_LEVEL, propertyName) + colorize(INFO_LEVEL, '] ')
+	if (logValue) {
+		message += colorize(INFO_LEVEL, 'to: [') + colorize(HIGHLITE_LEVEL, project.getProperty(propertyName)) + colorize(INFO_LEVEL, '] as ') + colorize(INFO_LEVEL, type)
+	} else {
+		message += colorize(INFO_LEVEL, 'as ') + colorize(INFO_LEVEL, type)
+	}
+	
+	logInfo(message)
+}

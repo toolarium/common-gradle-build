@@ -1,5 +1,6 @@
 rootPackageName     = @@rootPackageName@@
 rootGroupId         = @@rootGroupId@@
+rootComponent       = @@rootComponent@@
 rootDescription     = @@rootDescription@@
 rootUrl             = @@rootUrl@@
 //sourceCompatibility = @@sourceCompatibility@@

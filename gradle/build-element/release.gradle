@@ -14,6 +14,22 @@ task release (type: GradleBuild) {
     tasks = ['clean', 'build', 'publish']
 	group = 'Verification'
 	description = 'Publish project artifacts'
+	
+	/*
+	
+sed -i 's/1.0.0-SNAPSHOT/1.0.0/g' build.gradle
+git add VERSION
+git commit -m "Gradle Release v1.0.0"
+git push
+gradle build
+git tag -a v1.0.0 -m "Gradle Release Build v1.0.0"
+git push --tags
+sed -i 's/1.0.0/1.1.0-SNAPSHOT/g' build.gradle
+git add VERSION
+git commit -m "Gradle Release next development"
+git push	
+	*/
+	
 }
 
 /*

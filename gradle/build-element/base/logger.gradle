@@ -1,0 +1,63 @@
+/*
+ * logger.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+
+ 
+/** 
+ * Print line
+ */
+ext.colorize = { color = HIGHLITE_LEVEL, message ->
+	return "${STYLER[color](message)}"	
+}
+
+
+/** 
+ * Log debug message
+ */
+ext.logDebug = { message ->
+	logger.debug colorize(DEBUG_LEVEL, "${LOGPREFIX}${message}")
+}
+
+
+/** 
+ * Log info message
+ */
+ext.logInfo = { message ->
+	logger.info colorize(INFO_LEVEL, "${LOGPREFIX}${message}")
+}
+
+
+/** 
+ * Print warn message
+ */
+ext.printWarn = { message ->
+	def msg = "${LOGPREFIX}${message}"
+	println("${INDENT}" + colorize(WARN_LEVEL, msg))
+}
+
+
+/** 
+ * Print info message
+ */
+ext.printInfo = { message ->
+	println("${INDENT}" + message)
+}
+
+
+/** 
+ * Print newline
+ */
+ext.printNewline = { ->
+	println("")
+}
+
+
+/** 
+ * Print line
+ */
+ext.printLine = { color = HIGHLITE_LEVEL ->
+	println(colorize(color, LINE))	
+}
