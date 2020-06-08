@@ -27,16 +27,17 @@ if (!project.hasProperty('commonGradleUrl')) {
 
 			if (result!=null) {
 				ext.commonGradleUrl=localCache+"/" + result.getName() + "/gradle"
-			} else {
-				ext.commonGradleUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
 			}
 		}
 	} catch (Exception e) {
 		def msg = "Could not select cached version of the common-gradle-build: " + e.getMessage()
 		logger.warn msg
-		ext.commonGradleUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
 	}
 
+	if (!project.hasProperty('commonGradleUrl')) {
+		ext.commonGradleUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
+	}
+	
 	def logMsg = "==>Use common-gradle-build from " + ext.commonGradleUrl
 	logger.info logMsg
 }
