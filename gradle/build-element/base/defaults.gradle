@@ -33,6 +33,8 @@ setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBuildSources", "build
 setCommonGradleDefaultPropertyIfNull("sourceCompatibility", JavaVersion.VERSION_1_8)
 setCommonGradleDefaultPropertyIfNull("targetCompatibility", JavaVersion.VERSION_1_8)
 setCommonGradleDefaultPropertyIfNull("ENCODING", "UTF-8")
+setCommonGradleDefaultPropertyIfNull("compileJavaFork", false)
+setCommonGradleDefaultPropertyIfNull("compileJavaHome", "")
 
 // remote repository (maven compliant) settings
 // use as default the sonatype repository -> url, username and password
@@ -64,7 +66,15 @@ setCommonGradleDefaultPropertyIfNull("gradlePropertiesFile", "$rootDirectory/gra
 setCommonGradleDefaultPropertyIfNull("buildGradleFile", "$rootDirectory/build.gradle")
 setCommonGradleDefaultPropertyIfNull("versionFile", "$rootDirectory/VERSION")
 setCommonGradleDefaultPropertyIfNull("readmeFile", "$rootDirectory/README.md")
+setCommonGradleDefaultPropertyIfNull("includeReadmeFile", false)
 setCommonGradleDefaultPropertyIfNull("licenseFile", "$rootDirectory/LICENSE")
+setCommonGradleDefaultPropertyIfNull("includeLicenseFile", true)
+setCommonGradleDefaultPropertyIfNull("includeVersionFile", true)
+
+// config directories
+setCommonGradleDefaultPropertyIfNull("configDirectory", "$rootDirectory/config")
+setCommonGradleDefaultPropertyIfNull("configIgnoreEmptyPackages", true)
+setCommonGradleDefaultPropertyIfNull("configPackages", "")
 
 // src directories
 setCommonGradleDefaultPropertyIfNull("srcMainDirectoryName", "main")
@@ -83,16 +93,47 @@ setCommonGradleDefaultPropertyIfNull("commonGradleTemplateScmPath", "${commonGra
 
 // view init settings
 setCommonGradleDefaultPropertyIfNull("INIT_SHOW_JAVA", true)
-setCommonGradleDefaultPropertyIfNull("INIT_SHOW_PATH", false)
+setCommonGradleDefaultPropertyIfNull("INIT_SHOW_RUNTIME", false)
+setCommonGradleDefaultPropertyIfNull("INIT_SHOW_PATH", true)
+setCommonGradleDefaultPropertyIfNull("INIT_SHOW_TEMP", false)
 setCommonGradleDefaultPropertyIfNull("INIT_SHOW_SCM", true)
 setCommonGradleDefaultPropertyIfNull("INIT_SCM", true)
+setCommonGradleDefaultPropertyIfNull("INIT_CHECKSTYLE", true)
 setCommonGradleDefaultPropertyIfNull("INIT_SHOW_GRADLE", false)
 setCommonGradleDefaultPropertyIfNull("INSTALL_GRADLE_WRAPPER", true)
 
+// show created artefacts
+setCommonGradleDefaultPropertyIfNull("showCreatedArtefacts", true)
+
+setCommonGradleDefaultPropertyIfNull("userHomeDirectory", System.properties['user.home'].replace('\\', '/'))
 if ("windows" == getOsName()) {
 	setCommonGradleDefaultPropertyIfNull("userHomeDirectory", '%USERPROFILE%/')
 } else {
 	setCommonGradleDefaultPropertyIfNull("userHomeDirectory", '~/')
 }
+
+
+// gradle home properties file
+setCommonGradleDefaultPropertyIfNull("gradleHome", "$userHomeDirectory/.gradle")
+setCommonGradleDefaultPropertyIfNull("gradleHomePropertiesFile", "$gradleHome/gradle.properties")
+setCommonGradleDefaultPropertyIfNull("commonGradleBuildHome", "$gradleHome/common-gradle-build")
+setCommonGradleDefaultPropertyIfNull("commonGradleBuildHomeLastCheckFile", "$commonGradleBuildHome/lastCheck.properties")
+setCommonGradleDefaultPropertyIfNull("commonGradleBuildHomeLastCheckTimeout", 1000 * 60 * 60 * 24) // one day
+setCommonGradleDefaultPropertyIfNull("commonGradleBuildHomeVersionFileUrl", "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/VERSION")
+setCommonGradleDefaultPropertyIfNull("commonGradleBuildGitUrl", "https://github.com/toolarium/common-gradle-build.git")
+
+
+// checkstyle
+//setCommonGradleDefaultPropertyIfNull("checkstyleToolVersion", '8.27')
+setCommonGradleDefaultPropertyIfNull("checkstyleMaxWarnings", 0)
+setCommonGradleDefaultPropertyIfNull("checkstyleXMLReport", false)
+setCommonGradleDefaultPropertyIfNull("checkstyleHTMLReport", true)
+setCommonGradleDefaultPropertyIfNull("checkstyleConfiguration", "${configDirectory}/checkstyle/checkstyle.xml")
+setCommonGradleDefaultPropertyIfNull("checkstyleDefaultConfigurationUrl", 'https://raw.githubusercontent.com/checkstyle/checkstyle/master/src/main/resources/google_checks.xml')
+//setCommonGradleDefaultPropertyIfNull("checkstyleCustomStylesheet", "${configDirectory}/checkstyle/checkstyle.xml")
+
+// online connection url
+setCommonGradleDefaultPropertyIfNull("onlineCheckConnectionUrl", 'www.google.com')
+setCommonGradleDefaultPropertyIfNull("onlineCheckConnectionUrlTimeout", 1500)
 
 logInfo(LINE)

@@ -66,13 +66,21 @@ init {
 	printInfo("${javaInfo}${osInfo}")
 	
 	if (INIT_SHOW_JAVA) {
+		printInfo("Java home: ${System.properties['java.home'].replace('\\', '/')}")
+	}
+
+	if (INIT_SHOW_RUNTIME) {
 		def runtimeMemory = Runtime.getRuntime().maxMemory()
 		def memory = Math.round(runtimeMemory / 1024 / 1024 / 1024 * 100 ) / 100
-		printInfo("Java home: ${System.properties['java.home']}${processNumber}, Max memory: ${memory}G")
+		printInfo("PID: ${processNumber}, Max memory: ${memory}G")
 	}
 	
 	if (INIT_SHOW_PATH) {
-		printInfo("Path: ${System.properties['user.dir']}, Temp: ${System.properties['java.io.tmpdir']}")
+		printInfo("Path: ${System.properties['user.dir'].replace('\\', '/')}, Home: ${userHomeDirectory.replace('\\', '/')}")
+	}
+	
+	if (INIT_SHOW_TEMP) {		
+		printInfo("Temp: ${System.properties['java.io.tmpdir'].replace('\\', '/')}")
 	}
 
 	if (INIT_SHOW_GRADLE) {
@@ -92,5 +100,6 @@ task projectValidation {
 
 	doFirst {
 		logInfo("Project validation....")
+		downloadCommonGradleBuild()
 	}
 }

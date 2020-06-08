@@ -5,7 +5,7 @@
  * MIT License: https://mit-license.org
  */
 
-apply from: "${commonGradleUrl}/language-base.gradle"
+apply from: "${commonGradleBuildElementPath}/language-base.gradle"
 apply from: "${commonGradleBuildElementPath}/java/javadoc.gradle"
 apply from: "${commonGradleBuildElementPath}/java/java.gradle"
 apply from: "${commonGradleBuildElementPath}/java/eclipse.gradle"
@@ -14,7 +14,7 @@ apply from: "${commonGradleBuildElementPath}/java/repository.gradle"
 apply from: "${commonGradleBuildElementPath}/java/signing.gradle"
 apply from: "${commonGradleBuildElementPath}/java/publication.gradle"
 apply from: "${commonGradleBuildElementPath}/java/javaversion.gradle"
-//apply plugin: 'checkstyle'
+apply from: "${commonGradleBuildElementPath}/java/checkstyle.gradle"
 
 defaultTasks 'clean', 'build'
 

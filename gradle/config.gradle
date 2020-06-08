@@ -1,0 +1,52 @@
+/*
+ * config.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+
+if (!project.hasProperty('commonGradleUrl')) {
+    ext.commonGradleUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
+}
+
+if (!project.hasProperty('commonGradleBuildElementPath')) {
+	ext.commonGradleBuildElementPath="${commonGradleUrl}/build-element"
+}
+
+apply from: "${commonGradleBuildElementPath}/base.gradle"
+apply from: "${commonGradleBuildElementPath}/base/gradle.gradle"
+apply from: "${commonGradleBuildElementPath}/config/publication.gradle"
+apply from: "${commonGradleBuildElementPath}/java/signing.gradle"
+
+apply plugin: 'distribution'
+
+defaultTasks 'clean', 'build'
+
+
+ext.compileTimestamp = BUILD_TIMESTAMP
+/***************************************************************************************
+ * project config validation
+ ***************************************************************************************/
+projectValidation {
+	doLast {
+		if (project.getProperty('IS_NEW')) {
+			def configDirectory = project.getProperty('configDirectory')
+			if (!new File(configDirectory).exists()) {
+				new File(configDirectory).mkdirs()
+				printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, configDirectory) + ".")
+			}
+		} 
+	}
+}
+
+
+
+
+distributions {
+    configJar {
+        distributionBaseName = 'someName'
+        contents {
+            from 'config'
+        }
+    }
+}

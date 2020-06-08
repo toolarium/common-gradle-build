@@ -11,9 +11,10 @@
 /***************************************************************************************
  * Build javadoc jar file
  ***************************************************************************************/
-task javadocJar(type: Jar) {
+task javadocJar(type: Jar) { jar ->
 	group = 'Build'
 	description = 'Assembles the javadoc into a jar file'
+	onlyIf { return project.compileTimestamp != null }
 	from javadoc
 	archiveClassifier = 'javadoc'
 	
@@ -35,9 +36,17 @@ task javadocJar(type: Jar) {
 	
 	// include readme, license and version files
 	into 'META-INF', {
-		//from "${readmeFile}"  // 'README.md'
-		from "${licenseFile}" // 'LICENSE'
-		from "${versionFile}" // 'VERSION'
+		if (project.getProperty('includeReadmeFile')) {	
+			from "${readmeFile}"
+		}
+		
+		if (project.getProperty('includeLicenseFile')) {	
+			from "${licenseFile}" 
+		}
+		
+		if (project.getProperty('includeVersionFile')) {		
+			from "${versionFile}"
+		}
 	}
 
 	// define proper manifest
@@ -46,10 +55,20 @@ task javadocJar(type: Jar) {
 					'Specification-Version' : project.version,
 					'Implementation-Title'  : rootProject.name,
 					'Implementation-Version': project.version + project.ext.scmVersionNumber,
+					'Created-By'		   	: "Common Gradle Build ${commonGradleBuildVersion}, Gradle ${gradle.gradleVersion}",
 					'Built-By'			   	: System.properties['user.name'],
 					'Build-Timestamp'	   	: BUILD_TIMESTAMP,
-					'Created-By'		   	: "Gradle ${gradle.gradleVersion}",
 					'Build-JDK'			   	: "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
-					'Build-OS'			   	: "${System.properties['os.name']} (${System.properties['os.version']}), ${System.properties['os.arch']}"
+					'Build-OS'			   	: "${System.properties['os.name']} (${System.properties['os.version']}), ${System.properties['os.arch']}",
+					'Source-Compatibility'  : project.sourceCompatibility,
+					'Target-Compatibility'  : project.targetCompatibility
 	}	
+	
+	doLast {
+		if (project.getProperty('showCreatedArtefacts')) {
+			// jar.archiveFileName
+			def filename = preapreFilename(jar.archivePath.getPath())
+			printInfo("Created package " + colorize(HIGHLITE_LEVEL, filename) + ".")
+		}
+	}
 }

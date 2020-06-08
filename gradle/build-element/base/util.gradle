@@ -185,3 +185,51 @@ ext.isUnlimitedJurisdiction = { ->
 
 	return false;
 }
+
+
+/** 
+ * Check if remote resource is available
+ */
+ext.isServerAvailable = { serverAddress='www.google.com', timeout=1500 ->
+	try {
+		return java.net.InetAddress.getByName(serverAddress).isReachable(timeout)		
+	} catch( Exception e ) {
+	}
+
+	return false;
+}
+
+
+/** 
+ * Prepare relative path
+ */
+ext.preapreFilename = { file ->
+	def filename = file.trim().replace('\\', '/')
+	def workingDir = System.properties['user.dir'].replace('\\', '/')
+
+	if (filename.startsWith(workingDir)) {
+		filename = filename.substring(workingDir.length() + 1)
+	}
+	
+	return filename
+}
+
+
+/** 
+ * Copy and hash task
+ */
+ /*
+task copyAndHash(type: Copy) {
+  MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
+
+  into 'build/deploy'
+  from 'source'
+  eachFile { fileCopyDetails ->
+    sha1.digest(fileCopyDetails.file.bytes)
+  }
+  doLast {
+    Formatter hexHash = new Formatter()
+    sha1.digest().each { b -> hexHash.format('%02x', b) }
+    println hexHash
+  }
+}*/

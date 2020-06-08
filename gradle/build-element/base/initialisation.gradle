@@ -10,13 +10,14 @@
  * Project initialisation
  ***************************************************************************************/
 ext.projectInitialisation = { ->
-	// check mandatory files
+	// check mandatory files	
 	def createSettingsGralde = !new File(settingsGradleFile).exists()
 	def createGradleProperties = !new File(gradlePropertiesFile).exists()
 	def createBuildGradle = !new File(buildGradleFile).exists()
 	def createVersionFile = !new File(versionFile).exists()
 	def createReadmeFile = !new File(readmeFile).exists()
 	def createLicenseFile = !new File(licenseFile).exists()
+	def createGraldeHomeProperties = !new File(gradleHomePropertiesFile).exists()
 	
 	// validate properties
 	def isReady = !createSettingsGralde \
@@ -27,25 +28,32 @@ ext.projectInitialisation = { ->
 					&& !createReadmeFile \
 					&& !createLicenseFile 
 	setCommonGradleProperty('IS_NEW', !isReady)
-								
+	
+	def onlineCheckConnectionUrl = project.getProperty('onlineCheckConnectionUrl')
+	def onlineCheckConnectionUrlTimeout = project.getProperty('onlineCheckConnectionUrlTimeout')
+	setCommonGradleProperty('HAS_ONLINE_CONNECTION', isServerAvailable(onlineCheckConnectionUrl, onlineCheckConnectionUrlTimeout))
+
+	isReady = isReady \
+					&& !createGraldeHomeProperties
+
 	if (!isReady) {
 		printLine(ERROR_LEVEL)
 
 		if (createSettingsGralde) {
 			printInfo("Set root project name to " + colorize(HIGHLITE_LEVEL, rootProject.name) + ", created file " + colorize(HIGHLITE_LEVEL, settingsGradleFile) + "...")
-			if (createGradleProperties || createBuildGradle || !project.hasProperty('rootPackageName') || !project.hasProperty('rootGroupId') || !project.hasProperty('rootComponent') || !project.hasProperty('rootDescription') || createVersionFile || createReadmeFile || createLicenseFile) 
+			if (createGradleProperties || createBuildGradle || !project.hasProperty('rootPackageName') || !project.hasProperty('rootGroupId') || !project.hasProperty('rootComponent') || !project.hasProperty('rootDescription') || createVersionFile || createReadmeFile || createLicenseFile || createGraldeHomeProperties) 
 				printNewline()
 		}
 
 		if (createGradleProperties) {
 			printInfo("> Created file " + colorize(HIGHLITE_LEVEL, gradlePropertiesFile) + "...")
-			if (createBuildGradle || !project.hasProperty('rootPackageName') || !project.hasProperty('rootGroupId') || !project.hasProperty('rootComponent') || !project.hasProperty('rootDescription')  || createVersionFile || createReadmeFile || createLicenseFile) 
+			if (createBuildGradle || !project.hasProperty('rootPackageName') || !project.hasProperty('rootGroupId') || !project.hasProperty('rootComponent') || !project.hasProperty('rootDescription')  || createVersionFile || createReadmeFile || createLicenseFile || createGraldeHomeProperties) 
 				printNewline()
 		}
 
 		if (createBuildGradle) {
 			printInfo("> Created file " + colorize(HIGHLITE_LEVEL, buildGradleFile) + "...")
-			if (!project.hasProperty('rootPackageName') || !project.hasProperty('rootGroupId') || !project.hasProperty('rootComponent') || !project.hasProperty('rootDescription') || createVersionFile || createReadmeFile || createLicenseFile) 
+			if (!project.hasProperty('rootPackageName') || !project.hasProperty('rootGroupId') || !project.hasProperty('rootComponent') || !project.hasProperty('rootDescription') || createVersionFile || createReadmeFile || createLicenseFile || createGraldeHomeProperties) 
 				printNewline()
 		}
 		
@@ -54,7 +62,7 @@ ext.projectInitialisation = { ->
 			printInfo("> Set root package name to " + colorize(HIGHLITE_LEVEL, rootPackageName) + ", please define it in the gradle.properties:")
 			printInfo("e.g " + colorize(TITLE_LEVEL, 'rootPackageName') + " = $rootPackageName")
 			
-			if (!project.hasProperty('rootGroupId') || !project.hasProperty('rootComponent') || !project.hasProperty('rootDescription') || createVersionFile || createReadmeFile || createLicenseFile) 
+			if (!project.hasProperty('rootGroupId') || !project.hasProperty('rootComponent') || !project.hasProperty('rootDescription') || createVersionFile || createReadmeFile || createLicenseFile || createGraldeHomeProperties) 
 				printNewline()
 		}
 
@@ -63,7 +71,7 @@ ext.projectInitialisation = { ->
 			printInfo("> Set rootGroupId to " + colorize(HIGHLITE_LEVEL, rootPackageName) + ", please define it in the gradle.properties:")
 			printInfo("e.g " + colorize(TITLE_LEVEL, 'rootGroupId') + " = $rootPackageName")
 			
-			if (!project.hasProperty('rootComponent') || !project.hasProperty('rootDescription') || createVersionFile || createReadmeFile || createLicenseFile) 
+			if (!project.hasProperty('rootComponent') || !project.hasProperty('rootDescription') || createVersionFile || createReadmeFile || createLicenseFile || createGraldeHomeProperties) 
 				printNewline()
 		}
 
@@ -72,7 +80,7 @@ ext.projectInitialisation = { ->
 			printInfo("> Set rootComponent to " + colorize(HIGHLITE_LEVEL, rootProject.name) + ", please define it in the gradle.properties:")
 			printInfo("e.g " + colorize(TITLE_LEVEL, 'rootComponent') + " = $rootProject.name")
 			
-			if (!project.hasProperty('rootDescription') || createVersionFile || createReadmeFile || createLicenseFile) 
+			if (!project.hasProperty('rootDescription') || createVersionFile || createReadmeFile || createLicenseFile || createGraldeHomeProperties) 
 				printNewline()
 		}
 		
@@ -82,7 +90,7 @@ ext.projectInitialisation = { ->
 			printInfo("> Set the description to " + colorize(HIGHLITE_LEVEL, rootPackageName) + ", please define it in the gradle.properties:")
 			printInfo("e.g " + colorize(TITLE_LEVEL, 'rootDescription') + " = '...'")
 
-			//if (createVersionFile || createReadmeFile || createLicenseFile) 
+			//if (createVersionFile || createReadmeFile || createLicenseFile || createGraldeHomeProperties) 
 			printNewline()
 		}
 		
@@ -90,7 +98,7 @@ ext.projectInitialisation = { ->
 			printInfo("> Created file " + colorize(HIGHLITE_LEVEL, versionFile) + "...")
 			updateVersion()
 			
-			if (createReadmeFile || createLicenseFile) 
+			if (createReadmeFile || createLicenseFile || createGraldeHomeProperties) 
 				printNewline()
 		}
 
@@ -123,10 +131,10 @@ ext.projectInitialisation = { ->
 				}	
 			}
 			
-			if (createLicenseFile) 
+			if (createLicenseFile || createGraldeHomeProperties) 
 				printNewline()
 		}
-
+		
 		if (createLicenseFile) {
 			logInfo("Write file " + colorize(HIGHLITE_LEVEL, licenseFile) + colorize(INFO_LEVEL ,"..."))
 			def licenseTemplate = 'LICENSE.template'
@@ -172,7 +180,47 @@ ext.projectInitialisation = { ->
 				}				
 			}
 		}
-		
+
+		if (createGraldeHomeProperties) {
+			new File(gradleHomePropertiesFile).getParentFile().mkdirs()
+
+			logInfo("Write file " + colorize(HIGHLITE_LEVEL, gradleHomePropertiesFile) + colorize(INFO_LEVEL ,"..."))
+			def gradkeHomePropertiesTemplate = 'gradlehome.properties.template'
+			if (new File("${commonGradleTemplateBasePath}", "${gradkeHomePropertiesTemplate}").exists()) {
+				printInfo("> Create " + colorize(HIGHLITE_LEVEL, gradleHomePropertiesFile) + " from template ${gradkeHomePropertiesTemplate}.")
+				copy {
+					from "${commonGradleTemplateBasePath}"
+					include "${gradkeHomePropertiesTemplate}"
+					into userHomeDirectory
+					rename { String fileName -> fileName.replace(gradkeHomePropertiesTemplate, gradleHomePropertiesFile) }
+					filter { line -> line.replaceAll('@@YEAR@@', "${YEAR}".toString()) }
+					filter { line -> line.replaceAll('@@NAME@@', "${rootProject.name}".toString()) }
+					filter { line -> line.replaceAll('@@rootProject.name@@', "${rootProject.name }".toString()) }					
+					filter { line -> line.replaceAll('@@rootGroupId@@', "${rootGroupId}".toString()) }
+					filter { line -> line.replaceAll('@@rootComponent@@', "${rootComponent}".toString()) }					
+					filter { line -> line.replaceAll('@@rootPackageName@@', "${rootPackageName}".toString()) }
+					filter { line -> line.replaceAll('@@LINE@@', "${LINE}".toString()) }
+				}
+			} else {
+				printInfo("> Create " + colorize(HIGHLITE_LEVEL, gradleHomePropertiesFile) + " with default values.")
+				new File(gradleHomePropertiesFile).withWriterAppend { w ->
+					w << "/***************************************************************************************" << NELINE \
+					<< " * Maven credentials" << NELINE \
+					<< " ***************************************************************************************/" << NELINE \
+					<< "mavenUsername=" << NELINE \
+					<< "mavenPassword=" << NELINE \
+					<< "" << NELINE \
+					<< "" << NELINE \
+					<< "/***************************************************************************************" << NELINE \
+					<< " * Signing credentials" << NELINE \
+					<< " ***************************************************************************************/" << NELINE \
+					<< "signing.keyId=" << NELINE \
+					<< "signing.password=" << NELINE \
+					<< "signing.secretKeyRingFile=" << NELINE
+				}				
+			}
+		}
+
 		// if it doesn't exist
 		if (createSettingsGralde) {
 			def settingsGradleTemplate = 'settings.gradle.template'
@@ -288,11 +336,9 @@ ext.projectInitialisation = { ->
 			}
 		}	
 		
-		//wrapper.execute()
 		printLine(ERROR_LEVEL)
 	}
 
-	
 	/*
 	if (rootProject.name != projectName) {
 		printInfo("Current folder do not match with the project name:")

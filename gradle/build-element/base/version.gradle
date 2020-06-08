@@ -79,3 +79,34 @@ ext.increaseRevisionVersion = { ->
 	updateVersion()
 	readVersion()
 }
+
+
+/***************************************************************************************
+ * Read the remote version
+ ***************************************************************************************/
+ext.readRemoteVersion = { url ->
+
+	if (!HAS_ONLINE_CONNECTION) {
+		return ""
+	}
+	
+	Properties props = new Properties();
+	props.load(new URL(url).openStream())
+
+	def majorNumber = props.getProperty("major.number")
+	def minorNumber = props.getProperty("minor.number")
+	def revisionNumber = props.getProperty("revision.number")
+	def buildNumber = props.getProperty("build.number")
+	
+	def remoteVersion = majorNumber + "." + minorNumber;	
+	if (revisionNumber!=null) {
+		remoteVersion += "." + revisionNumber
+	} else if (buildNumber!=null) { 
+		remoteVersion += "." + buildNumber
+	}
+	
+	return remoteVersion
+}
+
+
+

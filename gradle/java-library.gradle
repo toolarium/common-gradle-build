@@ -9,7 +9,11 @@ if (!project.hasProperty('commonGradleUrl')) {
     ext.commonGradleUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
 }
 
-apply from: "${commonGradleUrl}/java-base.gradle"
+if (!project.hasProperty('commonGradleBuildElementPath')) {
+	ext.commonGradleBuildElementPath="${commonGradleUrl}/build-element"
+}
+
+apply from: "${commonGradleBuildElementPath}/java-base.gradle"
 
 // define default java directories
 setCommonGradleDefaultPropertyIfNull("srcMainJavaDirectory", "${srcMainDirectory}/java")

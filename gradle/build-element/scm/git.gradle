@@ -16,7 +16,7 @@ buildscript {
 
 ext.gitDirectoryIsAvailable = null
 
-/** 
+/** 	
  * Get git instance
  */
 def getGit() { 
@@ -50,6 +50,9 @@ def getGit() {
 
 	/*
     try {
+		GRGIT_USER=somebody
+		GRGIT_PASS=myauthtoken
+
 		def user = System.getProperty("gitUser", "")
 		def pass = System.getProperty("gitPass", "")
 		// TODO:
@@ -112,22 +115,6 @@ ext.getGitCommitHash = { ->
 
 
 /** 
- * Read the git branch name
- */
-ext.getGitBranchName = { ->
-    try {
-		getGit()
-		if (getGitIsAvailable() && ext.git.branch!=null && ext.git.branch.current()!=null) {
-			return ext.git.branch.current().name
-		}
-	} catch (IOException e) {
-	}
-	
-	return ""
-}
-
-
-/** 
  * Read the git last tag name
  */
 ext.getGitLastTagName = { ->
@@ -143,6 +130,22 @@ ext.getGitLastTagName = { ->
 			}
 		
 			return lastTag
+		}
+	} catch (IOException e) {
+	}
+	
+	return ""
+}
+
+
+/** 
+ * Read the git branch name
+ */
+ext.getGitBranchName = { ->
+    try {
+		getGit()
+		if (getGitIsAvailable() && ext.git.branch!=null && ext.git.branch.current()!=null) {
+			return ext.git.branch.current().name
 		}
 	} catch (IOException e) {
 	}
@@ -188,6 +191,54 @@ def createBranch(String versionNumber, String branchName) {
 	
 	return branchName;
 	*/
+}
+
+
+/**
+ * Clone a git repository
+ */
+ext.gitClone = { inputCloneDir, inputCloneUrl, overwrite = true ->
+	
+	def cloneDir = inputCloneDir.trim() //.replace('\', '/')
+	def cloneUrl = inputCloneUrl.trim()
+	def grgit = null
+	
+    try {
+		//project.getProperty('rootDirectory')+'/'
+		//def workingDir = System.properties['user.dir'].replace('\\', '/')		
+		if (!HAS_ONLINE_CONNECTION) {
+			printWarn("Could not checkout [" + colorize(HIGHLITE_LEVEL, cloneUrl) + colorize(WARN_LEVEL, "] because no online connection!"))
+			return
+		}
+
+		if (new File(cloneDir).exists()) {
+			if (overwrite) {
+				grgit = org.ajoberstar.grgit.Grgit.open(dir: cloneDir)
+				logInfo("GIT reset [" + colorize(HIGHLITE_LEVEL, cloneUrl) + colorize(INFO_LEVEL, "] in [") + colorize(HIGHLITE_LEVEL, cloneDir) + colorize(INFO_LEVEL, "]."))
+				grgit.reset(mode: 'hard', commit: 'origin/master')
+				logInfo("GIT clean [" + colorize(HIGHLITE_LEVEL, cloneDir) + colorize(INFO_LEVEL, "]."))
+				grgit.clean(directories: true)
+				logInfo("GIT pull [" + colorize(HIGHLITE_LEVEL, cloneDir) + colorize(INFO_LEVEL, "]."))
+				grgit.pull()			
+				return
+			} 
+			
+			printWarn("Checkout directory already exist [" + colorize(HIGHLITE_LEVEL, cloneDir) + colorize(WARN_LEVEL, "]!"))
+			return
+		}
+
+		logInfo("GIT checkout [" + colorize(HIGHLITE_LEVEL, cloneUrl) + colorize(INFO_LEVEL, "] into [") + colorize(HIGHLITE_LEVEL, cloneDir) + colorize(INFO_LEVEL, "]."))
+		grgit = org.ajoberstar.grgit.Grgit.clone(dir: cloneDir, uri: cloneUrl)
+	} catch (Exception e) {
+		printWarn("Could not checkout [" + colorize(HIGHLITE_LEVEL, cloneUrl) + colorize(WARN_LEVEL, "] into [") + colorize(HIGHLITE_LEVEL, cloneDir) + colorize(WARN_LEVEL, "]: " + e.getMessage()))
+	} finally {
+		if (grgit!=null) {
+			try {			
+				grgit.close()
+			} catch (Exception e) {
+			}
+		}
+	}	
 }
 
 

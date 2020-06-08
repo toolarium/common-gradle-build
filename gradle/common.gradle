@@ -1,0 +1,84 @@
+/*
+ * common.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+
+ 
+/***************************************************************************************
+ * check local cache
+ ***************************************************************************************/
+if (!project.hasProperty('commonGradleUrl')) {
+	try {
+		def localCache = System.properties['user.home'].replace('\\', '/') + "/.gradle/common-gradle-build/" 
+		if (new File(localCache).exists()) {
+			def result = null
+			File[] files = new File(localCache).listFiles();
+			if (files != null && files.length > 0) {
+				for (File file : files) {
+					if (file.isDirectory()) {
+						if (result ==null || (result.lastModified() < file.lastModified())) {
+							result = file
+						}
+					}
+				}
+			}
+
+			if (result!=null) {
+				ext.commonGradleUrl=localCache+"/" + result.getName() + "/gradle"
+			}
+		}
+	} catch (Exception e) {
+		logger.warn "Could not select cached version of the common-gradle-build: " + e.getMessage())
+		ext.commonGradleUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
+	}
+
+	logger.info "==>Use common-gradle-build from " + commonGradleUrl)
+}
+
+if (!project.hasProperty('commonGradleBuildElementPath')) {
+	ext.commonGradleBuildElementPath="${commonGradleUrl}/build-element"
+}
+
+
+/***************************************************************************************
+ * choose proper project type include
+ ***************************************************************************************/
+def includeFile = "${commonGradleUrl}/"
+
+// check project type
+def hasSrc = new File('src').exists()
+def hasConfig = new File('config').exists()
+def hasFiles = new File('.').listFiles().count { true }
+
+def hasSrcMain = hasSrc && new File('src/main').exists()
+def hasJavaSrc = hasSrcMain && new File('src/main/java').exists()
+def hasJavaSourceFiles = false
+
+if (hasJavaSrc) {
+	List filesPath = new ArrayList()
+	new File("src/main/java/").eachDirRecurse() { dir ->  
+		dir.eachFileMatch(~/.*.java/) { file -> filesPath.add( file.path ) }  
+	}  
+	
+	hasJavaSourceFiles = !filesPath.isEmpty()
+}
+
+//def isWebProject
+
+if (!hasSrc && hasConfig) {
+	includeFile += 'config.gradle'	
+} else if (!hasSrc || hasJavaSourceFiles) {
+	includeFile += 'java-library.gradle'
+} else {
+	includeFile += 'java-library.gradle'
+}
+
+
+/***************************************************************************************
+ * apply / include project type
+ ***************************************************************************************/
+if (includeFile!=null && !includeFile.isEmpty()) {
+	apply from: "$includeFile"
+}

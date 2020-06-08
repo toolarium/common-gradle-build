@@ -11,24 +11,47 @@ apply plugin: 'java'
 /***************************************************************************************
  * Compile
  ***************************************************************************************/
-tasks.withType(JavaCompile) {
+ext.compileTimestamp = null
+tasks.withType(JavaCompile) { compile ->
+
+	compileTimestamp = new Date()
 	options.encoding = "${ENCODING}"
 	options.compilerArgs << '-Xlint:unchecked'
 	options.deprecation = true
 	sourceCompatibility = project.getProperty('sourceCompatibility')
     targetCompatibility = project.getProperty('targetCompatibility')
+	
+	// set fork process
+	if (project.hasProperty('compileJavaFork')) {
+		compile.options.fork = project.getProperty('compileJavaFork')
+	}
 
-	def sourceVersion= parseVersion(sourceCompatibility)
-	def targetVersion= parseVersion(targetCompatibility)
+	// set compiler path
+	if (project.hasProperty('compileJavaHome') && project.getProperty('compileJavaHome')!=null) {
+		def compileJavaHome = project.getProperty('compileJavaHome')
+		if (!compileJavaHome.trim().isEmpty()) {
+			compile.options.forkOptions.javaHome = new File(compileJavaHome)
+		}
+	}
+	
+	// print source and target compatibility
+	def sourceVersion = parseVersion(sourceCompatibility)
+	def targetVersion = parseVersion(targetCompatibility)
 	if (!targetVersion.isCompatibleWith(sourceVersion)) {
 		logInfo("The target (" + colorize(HIGHLITE_LEVEL, targetCompatibility) + colorize(INFO_LEVEL, ") is not compatible with the source (" ) + colorize(HIGHLITE_LEVEL, sourceCompatibility) + colorize(INFO_LEVEL, ") compatibility!"))
 	}
 	
-	logInfo("Java compiler: sourceCompatibility: " + colorize(HIGHLITE_LEVEL, sourceCompatibility) \
+	def compileType = 'main'
+	if (compile.name.contains('Test')) {
+		compileType = 'test'
+	}
+	
+	logInfo("Java compiler (${compileType}): sourceCompatibility: " + colorize(HIGHLITE_LEVEL, sourceCompatibility) \
 			+ colorize(INFO_LEVEL, ", targetCompatibility: ") + colorize(HIGHLITE_LEVEL, targetCompatibility) \
 			+ colorize(INFO_LEVEL, ", encoding: ") + colorize(HIGHLITE_LEVEL, options.encoding) \
 			+ colorize(INFO_LEVEL, ", deprecation: ") + colorize(HIGHLITE_LEVEL, options.deprecation) \
 			+ colorize(INFO_LEVEL, ", fork: ") + colorize(HIGHLITE_LEVEL, options.fork) \
+			+ colorize(INFO_LEVEL, ", jdk: ") + colorize(HIGHLITE_LEVEL, options.forkOptions.javaHome) \
 			+ colorize(INFO_LEVEL, ", args: ") + colorize(HIGHLITE_LEVEL, options.allCompilerArgs))
 }
 
@@ -36,53 +59,25 @@ tasks.withType(JavaCompile) {
 /***************************************************************************************
  * Build jar file
  ***************************************************************************************/
-jar {
-	// include readme, license and version files
-	into 'META-INF', {
-		//from "${readmeFile}"  // 'README.md'
-		from "${licenseFile}" // 'LICENSE'
-		from "${versionFile}" // 'VERSION'
-	}
-
+jar { jar ->
+	onlyIf { return project.compileTimestamp != null }
+	
 	logInfo("Set root package name to [" + colorize(HIGHLITE_LEVEL, rootPackageName) + colorize(INFO_LEVEL, "]  -> ") + colorize(HIGHLITE_LEVEL, sourceSets.main.allJava.srcDirs))
-
-	// define proper manifest
-	manifest {
-		attributes 'Specification-Title'   : rootProject.name,
-				   'Specification-Version' : project.version,
-				   'Implementation-Title'  : rootProject.name,
-				   'Implementation-Version': project.version + project.ext.scmVersionNumber,
-				   'Built-By'			   : System.properties['user.name'],
-				   'Build-Timestamp'	   : BUILD_TIMESTAMP,
-				   'Created-By'			   : "Gradle ${gradle.gradleVersion}",
-				   'Build-JDK'			   : "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
-				   'Build-OS'			   : "${System.properties['os.name']} (${System.properties['os.version']}), ${System.properties['os.arch']}"
-	}
-}
-
-
-/***************************************************************************************
- * Build sources jar file
- ***************************************************************************************/
-task sourcesJar(type: Jar, dependsOn: classes) {
-	group = 'Build'
-	description = 'Assembles the sources into a jar file'
-
-	from sourceSets.main.allJava, {
-		//include "${rootPackageName}/**" 
-	}
 	
 	// include readme, license and version files
 	into 'META-INF', {
-		//from "${readmeFile}"  // 'README.md'
-		from "${licenseFile}" // 'LICENSE'
-		from "${versionFile}" // 'VERSION'
+		if (project.getProperty('includeReadmeFile')) {	
+			from "${readmeFile}"
+		}
+		
+		if (project.getProperty('includeLicenseFile')) {	
+			from "${licenseFile}" 
+		}
+		
+		if (project.getProperty('includeVersionFile')) {		
+			from "${versionFile}"
+		}
 	}
-
-	archiveClassifier = 'sources'
-	//archiveAppendix = 'sources'
-
-	logInfo("Set root package name to [" + colorize(HIGHLITE_LEVEL, rootPackageName) + colorize(INFO_LEVEL, "]  -> ") + colorize(HIGHLITE_LEVEL, sourceSets.main.allJava.srcDirs))
 
 	// define proper manifest
 	manifest {
@@ -90,10 +85,124 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 					'Specification-Version' : project.version,
 					'Implementation-Title'  : rootProject.name,
 					'Implementation-Version': project.version + project.ext.scmVersionNumber,
+					'Created-By'		   	: "Common Gradle Build ${commonGradleBuildVersion}, Gradle ${gradle.gradleVersion}",
 					'Built-By'			   	: System.properties['user.name'],
 					'Build-Timestamp'	   	: BUILD_TIMESTAMP,
-					'Created-By'		   	: "Gradle ${gradle.gradleVersion}",
 					'Build-JDK'			   	: "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
-					'Build-OS'			   	: "${System.properties['os.name']} (${System.properties['os.version']}), ${System.properties['os.arch']}"
-	}		
- }
+					'Build-OS'			   	: "${System.properties['os.name']} (${System.properties['os.version']}), ${System.properties['os.arch']}",
+					'Source-Compatibility'  : project.sourceCompatibility,
+					'Target-Compatibility'  : project.targetCompatibility
+					//'Main-Class'			: rootMainClass
+					//'Class-Path'			: configurations.runtimeClasspath.files.collect { it.getName() }.join(' ')					
+	}
+
+	doLast {
+		if (project.getProperty('showCreatedArtefacts')) {
+			// jar.archiveFileName
+			def filename = preapreFilename(jar.archivePath.getPath())
+			printInfo("Created package " + colorize(HIGHLITE_LEVEL, filename) + ".")
+		}
+	}
+}
+
+
+/***************************************************************************************
+ * Build sources jar file
+ ***************************************************************************************/
+task sourcesJar(type: Jar, dependsOn: classes) { jar ->
+	group = 'Build'
+	description = 'Assembles the sources into a jar file'
+	onlyIf { return project.compileTimestamp != null }
+
+	def configDirectory = project.getProperty("configDirectory")				
+	def srcDirectory = project.getProperty("srcDirectory")				
+
+	/*
+	def jarSourceIncludePath;
+	if (project.hasProperty('jarSourceIncludePath')) {
+		jarSourceIncludePath = project.getProperty('jarSourceIncludePath')
+	} else {
+		jarSourceIncludePath = rootPackageName.replace('.', '/')
+	}
+
+	from sourceSets.main.allJava, {
+		include "${jarSourceIncludePath}/**"
+	}
+	*/
+
+	into "${configDirectory}", {
+		from "${configDirectory}"
+	}
+
+	into 'gradle', {
+		from 'gradle'
+	}
+
+	into "${srcDirectory}", {
+		from "${srcDirectory}"
+	}
+
+	from '.classpath'
+	from '.project'
+	from '.settings'
+	from 'build.gradle'
+	from 'gradle.properties'
+	from 'gradlew'
+	from 'gradlew.bat'
+	from 'settings.gradle'
+
+	if (project.getProperty('includeLicenseFile')) {	
+		from "${licenseFile}"
+	}
+	
+	if (project.getProperty('includeReadmeFile')) {	
+		from "${readmeFile}" 
+	}
+	
+	if (project.getProperty('includeVersionFile')) {		
+		from "${versionFile}"
+	}
+	
+	logInfo("Set root package name to [" + colorize(HIGHLITE_LEVEL, rootPackageName) + colorize(INFO_LEVEL, "]  -> ") + colorize(HIGHLITE_LEVEL, sourceSets.main.allJava.srcDirs))
+	
+	// include readme, license and version files
+	into 'META-INF', {
+		if (project.getProperty('includeReadmeFile')) {	
+			from "${readmeFile}"  
+		}
+		
+		if (project.getProperty('includeLicenseFile')) {
+			from "${licenseFile}"
+		}
+		
+		if (project.getProperty('includeVersionFile')) {		
+			from "${versionFile}" 
+		}
+	}
+
+	archiveClassifier = 'sources'
+	//archiveAppendix = 'sources'
+
+	// define proper manifest
+	manifest {
+		attributes 	'Specification-Title'   : rootProject.name,
+					'Specification-Version' : project.version,
+					'Implementation-Title'  : rootProject.name,
+					'Implementation-Version': project.version + project.ext.scmVersionNumber,
+					'Created-By'		   	: "Common Gradle Build ${commonGradleBuildVersion}, Gradle ${gradle.gradleVersion}",
+					'Built-By'			   	: System.properties['user.name'],
+					'Build-Timestamp'	   	: BUILD_TIMESTAMP,
+					'Build-JDK'			   	: "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
+					'Build-OS'			   	: "${System.properties['os.name']} (${System.properties['os.version']}), ${System.properties['os.arch']}",
+					'Source-Compatibility'  : project.sourceCompatibility,
+					'Target-Compatibility'  : project.targetCompatibility
+	}
+	
+	doLast {
+		if (project.getProperty('showCreatedArtefacts')) {
+			// jar.archiveFileName
+			def filename = preapreFilename(jar.archivePath.getPath())
+			printInfo("Created package " + colorize(HIGHLITE_LEVEL, filename) + ".")
+		}
+	}
+}

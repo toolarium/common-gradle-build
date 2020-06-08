@@ -1,0 +1,117 @@
+/*
+ * config.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+
+def configPackages = project.getProperty("configPackages").split(",")
+def configDirectory = project.getProperty("configDirectory")				
+
+ 
+/***************************************************************************************
+ * config jar task
+ ***************************************************************************************/
+task configJar(type: Jar) { jar ->
+	group = 'Build'
+	description = 'Assembles the configuration into a jar file(s) depend on configPackages entries (default only one package)'
+	archiveClassifier = "config"
+
+	into "${configDirectory}", {
+		from "${configDirectory}"
+	}
+	
+	// include readme, license and version files
+	into 'META-INF', {
+		if (project.getProperty('includeReadmeFile')) {	
+			from "${readmeFile}"
+		}
+		
+		if (project.getProperty('includeLicenseFile')) {	
+			from "${licenseFile}" 
+		}
+		
+		if (project.getProperty('includeVersionFile')) {		
+			from "${versionFile}"
+		}		
+	}
+
+	// define proper manifest
+	manifest {
+		attributes 	'Specification-Title'   : rootProject.name,
+					'Specification-Version' : project.version,
+					'Implementation-Title'  : rootProject.name,
+					'Implementation-Version': project.version + project.ext.scmVersionNumber,
+					'Created-By'		   	: "Common Gradle Build ${commonGradleBuildVersion}, Gradle ${gradle.gradleVersion}",
+					'Built-By'			   	: System.properties['user.name'],
+					'Build-Timestamp'	   	: BUILD_TIMESTAMP,
+					'Build-JDK'			   	: "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
+					'Build-OS'			   	: "${System.properties['os.name']} (${System.properties['os.version']}), ${System.properties['os.arch']}"
+	}
+	
+	doLast {
+		if (project.getProperty('showCreatedArtefacts')) {
+			// jar.archiveFileName
+			def filename = preapreFilename(jar.archivePath.getPath())
+			printInfo("Created package " + colorize(HIGHLITE_LEVEL, filename) + ".")
+		}
+	}
+}
+ 
+configPackages.each { configName ->
+	def configTypeProperty = configName.trim()
+
+	if (configTypeProperty != null && !configTypeProperty.isEmpty()) {
+
+		def configDirectoryPath = "${configDirectory}/${configTypeProperty}"
+		def configFileExist = new File(configDirectoryPath).exists()
+		if (!project.getProperty("configIgnoreEmptyPackages") || configFileExist) {			
+			
+			def taskName = "configJar${configTypeProperty}"
+			tasks.create(name: taskName, type: Jar) { jar ->
+							
+				archiveClassifier = 'config-' + configTypeProperty	
+				def configIncludeFilter = '**'
+				logInfo("Add task $name: [" + colorize(HIGHLITE_LEVEL, configDirectoryPath) + colorize(INFO_LEVEL, "], filter: [") + colorize(HIGHLITE_LEVEL, configIncludeFilter) + colorize(INFO_LEVEL, "]"))
+				
+				into "${configDirectory}", {
+					from "${configDirectoryPath}", {
+						include "${configIncludeFilter}"		
+					}
+				}
+				
+				// include readme, license and version files
+				into 'META-INF', {
+					//from "${readmeFile}"  // 'README.md'
+					from "${licenseFile}" // 'LICENSE'
+					from "${versionFile}" // 'VERSION'
+				}
+
+				// define proper manifest
+				manifest {
+					attributes 	'Specification-Title'   : rootProject.name,
+								'Specification-Version' : project.version,
+								'Implementation-Title'  : rootProject.name,
+								'Implementation-Version': project.version + project.ext.scmVersionNumber,
+								'Created-By'		   	: "Common Gradle Build ${commonGradleBuildVersion}, Gradle ${gradle.gradleVersion}",
+								'Built-By'			   	: System.properties['user.name'],
+								'Build-Timestamp'	   	: BUILD_TIMESTAMP,
+								'Build-JDK'			   	: "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
+								'Build-OS'			   	: "${System.properties['os.name']} (${System.properties['os.version']}), ${System.properties['os.arch']}"
+				}
+
+				doLast {
+					if (project.getProperty('showCreatedArtefacts')) {
+						// jar.archiveFileName
+						def filename = preapreFilename(jar.archivePath.getPath())
+						printInfo("Created package " + colorize(HIGHLITE_LEVEL, filename) + ".")
+					}
+				}
+			}
+			
+			configJar.dependsOn taskName
+		} else if (!configFileExist) {
+			printWarn("Directory " + colorize(HIGHLITE_LEVEL, configDirectoryPath) + colorize(WARN_LEVEL, " is not available!"))
+		}		
+	}
+}

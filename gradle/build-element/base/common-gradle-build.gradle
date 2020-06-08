@@ -1,0 +1,123 @@
+/*
+ * common-gradle-build-version.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+
+
+/***************************************************************************************
+ * Read the remote version
+ ***************************************************************************************/
+ext.readRemoteVersion = { url ->
+
+	if (!HAS_ONLINE_CONNECTION) {
+		return ""
+	}
+	
+	def remoteVersion = null
+	try {
+		Properties props = new Properties();
+		props.load(new URL(url).openStream())
+
+		def majorNumber = props.getProperty("major.number")
+		def minorNumber = props.getProperty("minor.number")
+		def revisionNumber = props.getProperty("revision.number")
+		def buildNumber = props.getProperty("build.number")
+		
+		remoteVersion = majorNumber + "." + minorNumber;	
+		if (revisionNumber!=null) {
+			remoteVersion += "." + revisionNumber
+		} else if (buildNumber!=null) { 
+			remoteVersion += "." + buildNumber
+		}
+	} catch (Exception e) {
+		printWarn("Could not read remote version [" + colorize(HIGHLITE_LEVEL, url) + colorize(WARN_LEVEL, "]: " +e.getMessage())) 
+	}
+	
+	return remoteVersion
+}
+
+
+/***************************************************************************************
+ * Read last check
+ ***************************************************************************************/
+ext.readLastCheck = { ->
+	def lastCheck = null		
+	if (new File(commonGradleBuildHomeLastCheckFile).exists()) {
+		try {
+			Properties prop = new Properties()
+			prop.load(new FileInputStream(new File(commonGradleBuildHomeLastCheckFile)))
+			def value = prop.getProperty("lastCheck")
+
+			if (value!=null && !value.isEmpty()) {
+				lastCheck = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").parse(value)
+			}
+		} catch (Exception ex) {
+			printWarn("Could not read [" + colorize(HIGHLITE_LEVEL, commonGradleBuildHomeLastCheckFile) + colorize(WARN_LEVEL, "]: " + ex.getMessage())) 
+		}
+	}
+	
+	return lastCheck
+}
+
+
+/***************************************************************************************
+ * Write last check
+ ***************************************************************************************/
+ext.writeLastCheck = { versionNumber = null, lastCheck = BUILD_TIMESTAMP ->
+
+	if (lastCheck==null) {
+		return 
+	}
+
+	try {
+		Properties prop = new Properties()
+		prop.setProperty("lastCheck", lastCheck)
+		
+		if (versionNumber!=null) {
+			prop.setProperty("version", versionNumber)
+		}
+		
+		FileOutputStream stream = new FileOutputStream(commonGradleBuildHomeLastCheckFile)
+		prop.store(stream, null)
+		stream.close()
+	} catch (Exception e) {
+		printWarn("Could not write [" + colorize(HIGHLITE_LEVEL, commonGradleBuildHomeLastCheckFile) + colorize(WARN_LEVEL, "]: " +e.getMessage())) 
+	}
+}
+
+
+/***************************************************************************************
+ * Download common gradle build
+ ***************************************************************************************/
+ext.downloadCommonGradleBuild = { ->
+	if (!new File(gradleHome).exists()) {
+		logWarn("Could not access gradle home: " + colorize(HIGHLITE_LEVEL, gradleHome))
+		new File(gradleHome).mkdirs()			
+	} 
+
+	def timeout = 0
+	def lastCheck = readLastCheck()
+
+	if (lastCheck != null) {
+		timeout = new Date().getTime() - lastCheck.getTime()
+	}
+	
+	if ((lastCheck == null) || (timeout > project.getProperty('commonGradleBuildHomeLastCheckTimeout'))) {
+		def remoteVersion = readRemoteVersion(commonGradleBuildHomeVersionFileUrl)		
+		if (remoteVersion!=null && !remoteVersion.isEmpty()) {
+			logInfo("Remote version: " + colorize(HIGHLITE_LEVEL, remoteVersion))
+			
+			def commonGradleVersionHome = "${commonGradleBuildHome}/${remoteVersion}"
+			if (!new File(commonGradleVersionHome).exists()) {
+				printInfo("Download version " + colorize(HIGHLITE_LEVEL, remoteVersion) + " of the common-gradle-build...")
+				gitClone(commonGradleVersionHome, commonGradleBuildGitUrl)			
+			}
+		}
+			
+		writeLastCheck(remoteVersion)
+	} else {
+		logInfo("Don't check it's inside time range: " + colorize(HIGHLITE_LEVEL, timeout))
+	}	
+}

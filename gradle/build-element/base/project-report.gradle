@@ -1,0 +1,8 @@
+/*
+ * projectreport.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+ 
+apply plugin: 'project-report'
