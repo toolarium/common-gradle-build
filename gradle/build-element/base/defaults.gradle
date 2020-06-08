@@ -98,7 +98,7 @@ setCommonGradleDefaultPropertyIfNull("INIT_SHOW_PATH", true)
 setCommonGradleDefaultPropertyIfNull("INIT_SHOW_TEMP", false)
 setCommonGradleDefaultPropertyIfNull("INIT_SHOW_SCM", true)
 setCommonGradleDefaultPropertyIfNull("INIT_SCM", true)
-setCommonGradleDefaultPropertyIfNull("INIT_CHECKSTYLE", true)
+setCommonGradleDefaultPropertyIfNull("INIT_CHECKSTYLE", false)
 setCommonGradleDefaultPropertyIfNull("INIT_SHOW_GRADLE", false)
 setCommonGradleDefaultPropertyIfNull("INSTALL_GRADLE_WRAPPER", true)
 
