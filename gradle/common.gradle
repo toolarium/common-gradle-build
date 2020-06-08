@@ -35,7 +35,8 @@ if (!project.hasProperty('commonGradleUrl')) {
 		ext.commonGradleUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
 	}
 
-	logger.info "==>Use common-gradle-build from " + commonGradleUrl
+	def logMsg = "==>Use common-gradle-build from " + commonGradleUrl
+	logger.info logMsg
 }
 
 if (!project.hasProperty('commonGradleBuildElementPath')) {
