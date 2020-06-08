@@ -27,6 +27,8 @@ if (!project.hasProperty('commonGradleUrl')) {
 
 			if (result!=null) {
 				ext.commonGradleUrl=localCache+"/" + result.getName() + "/gradle"
+			} else {
+				ext.commonGradleUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
 			}
 		}
 	} catch (Exception e) {
