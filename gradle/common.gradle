@@ -30,7 +30,7 @@ if (!project.hasProperty('commonGradleUrl')) {
 			}
 		}
 	} catch (Exception e) {
-		logger.warn "Could not select cached version of the common-gradle-build: " + e.getMessage())
+		logger.warn "Could not select cached version of the common-gradle-build: " + e.getMessage()
 		ext.commonGradleUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
 	}
 
