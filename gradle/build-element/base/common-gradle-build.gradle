@@ -103,9 +103,10 @@ ext.downloadCommonGradleBuild = { ->
 	if (lastCheck != null) {
 		timeout = new Date().getTime() - lastCheck.getTime()
 	}
-	
+println("=>"+lastCheck)	
 	if ((lastCheck == null) || (timeout > project.getProperty('commonGradleBuildHomeLastCheckTimeout'))) {
 		def remoteVersion = readRemoteVersion(commonGradleBuildHomeVersionFileUrl)		
+println("=>"+remoteVersion)	
 		if (remoteVersion!=null && !remoteVersion.isEmpty()) {
 			logInfo("Remote version: " + colorize(HIGHLITE_LEVEL, remoteVersion))
 			
