@@ -107,7 +107,7 @@ projectValidation {
 						<< "*/" << NELINE \
 						<< "package ${projectRootPackageName};" << NELINE \
 						<< "" << NELINE \
-						<< "import static org.junit.jupiter.api.Assertions.assertTrue;" << NELINE \						
+						<< "import static org.junit.jupiter.api.Assertions.assertTrue;" << NELINE \
 						<< "" << NELINE \
 						<< "import org.junit.jupiter.api.Test;" << NELINE \
 						<< "" << NELINE \
