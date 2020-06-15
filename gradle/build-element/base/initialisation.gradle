@@ -234,26 +234,29 @@ ext.projectInitialisation = { ->
 				printInfo("> Create " + colorize(HIGHLITE_LEVEL, gradlePropertiesFile) + " with default values.")
 				new File('.', gradlePropertiesFile).withWriterAppend { w ->
 					w << "# base information" << NELINE \
-					<< "projectType             = ${projectType}" << NELINE \
-					<< "projectRootPackageName  = ${projectRootPackageName}" << NELINE \
-					<< "projectGroupId          = ${projectGroupId}" << NELINE \
-					<< "projectComponentId      = ${projectComponentId}" << NELINE \
-					<< "projectDescription      = ${projectDescription}" << NELINE \
-					<< "projectUrl              = ${projectUrl}" << NELINE \
-					<< "" << NELINE \
-					<< "# jvm information" << NELINE \
-					<< "org.gradle.jvmargs      = ${gradlePropertiesJvmArgs}" << NELINE \
+					<< "projectType              = ${projectType}" << NELINE \
+					<< "projectRootPackageName   = ${projectRootPackageName}" << NELINE \
+					<< "projectGroupId           = ${projectGroupId}" << NELINE \
+					<< "projectComponentId       = ${projectComponentId}" << NELINE \
+					<< "projectDescription       = ${projectDescription}" << NELINE \
+					<< "projectUrl               = ${projectUrl}" << NELINE \
 					<< "" << NELINE \
 					<< "# tool information" << NELINE \
 					<< "# checkstyleToolVersion = ${checkstyleToolVersion}" << NELINE \
 					<< "# testDependencyVersion = ${testDependencyVersion}" << NELINE \
 					<< "# sourceCompatibility   = ${sourceCompatibility}" << NELINE \
 					<< "# targetCompatibility   = ${targetCompatibility}" << NELINE \
+					<< "" << NELINE \
+					<< "# jvm information" << NELINE \
+					<< "org.gradle.jvmargs       = ${project.ext.gradlePropertiesJvmArgs}" << NELINE \
+					<< "org.gradle.logging.level = ${project.ext.gradlePropertiesLogLevel}" << NELINE \
+					<< "org.gradle.console       = ${project.ext.gradlePropertiesConsole}" << NELINE \
+					<< "org.gradle.warning.mode  = ${project.ext.gradlePropertiesWarningMode}" << NELINE \
 					<< "" << NELINE
 				}
 			}
 		}	
-
+		
 		if (createBuildGradle) {
 			if (!createFileFromTemplate(buildGradleFile, 'build.gradle.template')) {
 				printInfo("> Create " + colorize(HIGHLITE_LEVEL, buildGradleFile) + " with default values.")
