@@ -17,7 +17,7 @@ if (!project.hasProperty('commonGradleBuildElementPath')) {
 
 def commonGradleBuildCache;
 if (!project.hasProperty('commonGradleBuildCache')) {
-	def commonGradleBuildCache = System.getenv('COMMON_GRADLE_BUILD_CACHE') 
+	commonGradleBuildCache = System.getenv('COMMON_GRADLE_BUILD_CACHE') 
 	if (commonGradleBuildCache == null || commonGradleBuildCache.isEmpty()) {
 		commonGradleBuildCache = System.getProperty('COMMON_GRADLE_BUILD_CACHE') 
 		if (commonGradleBuildCache == null || commonGradleBuildCache.isEmpty()) {
@@ -30,7 +30,7 @@ if (!project.hasProperty('commonGradleBuildCache')) {
 
 def commonGradleBuildHome;
 if (!project.hasProperty('commonGradleBuildHome')) {
-	def commonGradleBuildHome = System.getenv('COMMON_GRADLE_BUILD_HOME') 
+	commonGradleBuildHome = System.getenv('COMMON_GRADLE_BUILD_HOME') 
 	if (commonGradleBuildHome == null || commonGradleBuildHome.isEmpty()) {
 		commonGradleBuildHome = System.getProperty('COMMON_GRADLE_BUILD_HOME') 
 		if (commonGradleBuildHome == null || commonGradleBuildHome.isEmpty()) {
