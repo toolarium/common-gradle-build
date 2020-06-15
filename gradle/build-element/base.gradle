@@ -15,6 +15,7 @@ if (!project.hasProperty('commonGradleBuildElementPath')) {
 	ext.commonGradleBuildElementPath="${commonGradleBuildUrl}/build-element"
 }
 
+def commonGradleBuildCache;
 if (!project.hasProperty('commonGradleBuildCache')) {
 	def commonGradleBuildCache = System.getenv('COMMON_GRADLE_BUILD_CACHE') 
 	if (commonGradleBuildCache == null || commonGradleBuildCache.isEmpty()) {
@@ -23,8 +24,11 @@ if (!project.hasProperty('commonGradleBuildCache')) {
 			commonGradleBuildCache = System.properties['user.home'].replace('\\', '/') + "/.gradle/common-gradle-build"
 		}
 	}
+} else {
+	commonGradleBuildCache = project.getProperty('commonGradleBuildCache')
 }
 
+def commonGradleBuildHome;
 if (!project.hasProperty('commonGradleBuildHome')) {
 	def commonGradleBuildHome = System.getenv('COMMON_GRADLE_BUILD_HOME') 
 	if (commonGradleBuildHome == null || commonGradleBuildHome.isEmpty()) {
@@ -33,6 +37,8 @@ if (!project.hasProperty('commonGradleBuildHome')) {
 			commonGradleBuildHome = commonGradleBuildCache
 		}
 	}
+} else {
+	commonGradleBuildHome = project.getProperty('commonGradleBuildHome')
 }
 
 if (project.hasProperty('commonGradleBuildHome')) {
