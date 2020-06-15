@@ -15,6 +15,16 @@ if (!project.hasProperty('commonGradleBuildElementPath')) {
 	ext.commonGradleBuildElementPath="${commonGradleBuildUrl}/build-element"
 }
 
+if (!project.hasProperty('commonGradleBuildHome')) {
+	def commonGradleBuildHome = System.getenv('COMMON_GRADLE_BUILD_HOME') 
+	if (commonGradleBuildHome == null || commonGradleBuildHome.isEmpty()) {
+		commonGradleBuildHome = System.getProperty('COMMON_GRADLE_BUILD_HOME') 
+		if (commonGradleBuildHome == null || commonGradleBuildHome.isEmpty()) {
+			commonGradleBuildHome = commonGradleBuildCache
+		}
+	}
+}
+
 if (new File(commonGradleBuildHome).exists()) {
 	if (new File(commonGradleBuildHome + "/defaults.gradle").exists()) {
 		logger.info "==>Found defaults in common-gradle-build home path, apply."
