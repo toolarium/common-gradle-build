@@ -74,6 +74,7 @@ ext.createCheckstyleConfiguration = { overwrite = false ->
 	def checkstylePath = "$configDirectory/checkstyle/"
 	def checkstyleFile = "checkstyle.xml"
 	def checkstyleFileHeader = "checkstyle-file-header.txt"
+	def checkstyleFileHeaderTemplate = 'checkstyle-file-header.txt.template'
 	
 	if (overwrite || !new File("${checkstylePath}", "${checkstyleFile}").exists()) {
 		new File(configDirectory).mkdirs()
@@ -115,7 +116,6 @@ ext.createCheckstyleConfiguration = { overwrite = false ->
 				filter { line -> line.replaceAll('@@VERSION@@', "${project.version}".toString()) }
 			}
 
-			def checkstyleFileHeaderTemplate = 'checkstyle-file-header.txt.template'
 			printInfo("> Create " + colorize(HIGHLITE_LEVEL, checkstyleFileHeader) + " from template ${checkstyleFileHeaderTemplate}.")
 			copy {
 				from "${commonGradleTemplateJavaPath}"
@@ -140,13 +140,42 @@ ext.createCheckstyleConfiguration = { overwrite = false ->
 				filter { line -> line.replaceAll('@@VERSION@@', "${project.version}".toString()) }
 			}
 		} else if (HAS_ONLINE_CONNECTION) {
+			def temp = checkstylePath + "/download/"
+			new File(temp).mkdirs()
+			
 			def checkstyleDefaultConfigurationUrl = project.getProperty('checkstyleDefaultConfigurationUrl')
-			if (checkstyleDefaultConfigurationUrl!=null && !checkstyleDefaultConfigurationUrl.isEmpty()) {
+			if (checkstyleDefaultConfigurationUrl!=null && !checkstyleDefaultConfigurationUrl.isEmpty()) {			
 				printInfo("> Get " + colorize(HIGHLITE_LEVEL, checkstyleFile) + " from " + colorize(HIGHLITE_LEVEL, checkstyleDefaultConfigurationUrl) + ".")
 			
 				// download
-				def f = new File(checkstylePath + "/" + checkstyleFile)
+				def f = new File(temp + "/" + checkstyleTemplate)
 				new URL(checkstyleDefaultConfigurationUrl).withInputStream { i -> f.withOutputStream { it << i } }			
+				
+				copy {
+					from "${temp}"
+					include "${checkstyleTemplate}"
+					into "${checkstylePath}"
+					rename { String fileName -> fileName.replace(checkstyleTemplate, checkstyleFile) }
+					filter { line -> line.replaceAll('@@rootProject.name@@', "${rootProject.name }".toString()) }					
+					filter { line -> line.replaceAll('@@PROJECT_NAME@@', "${rootProject.name}".toString()) }
+					filter { line -> line.replaceAll('@@PROJECT_TYPE@@', "${project.ext.projectType}".toString()) }
+					filter { line -> line.replaceAll('@@GROUP_ID@@', "${project.ext.projectGroupId}".toString()) }
+					filter { line -> line.replaceAll('@@COMPONENT_ID@@', "${project.ext.projectComponentId}".toString()) }
+					filter { line -> line.replaceAll('@@PACKAGE@@', "${project.ext.projectRootPackageName}".toString()) }
+					filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.projectDescription}".toString()) }
+					filter { line -> line.replaceAll('@@URL@@', "${project.ext.projectUrl}".toString()) }
+					filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.licenseText}".toString()) }
+					filter { line -> line.replaceAll('@@MAJOR_NUMBER@@', "${project.ext.majorVersionNumber}".toString()) }
+					filter { line -> line.replaceAll('@@MINOR_NUMBER@@', "${project.ext.minorVersionNumber}".toString()) }
+					filter { line -> line.replaceAll('@@MICRO_NUMBER@@', "${project.ext.microVersionNumber}".toString()) }
+					filter { line -> line.replaceAll('@@QUALIFIER@@', "${project.ext.qualifierVersionNumber}".toString()) }
+					filter { line -> line.replaceAll('@@SCM_NUMBER@@', "${project.ext.scmVersionNumber}".toString()) }
+					filter { line -> line.replaceAll('@@BUILD_TIMESTAMP@@', "${project.ext.BUILD_TIMESTAMP}".toString()) }
+					filter { line -> line.replaceAll('@@IS_RELEASE_VERSION@@', "${project.ext.isReleaseVersion}".toString()) }
+					filter { line -> line.replaceAll('@@VERSION@@', "${project.version}".toString()) }
+				}
+				
+				f.delete()
 			}
 			
 			def checkstyleDefaultConfigurationFileHeaderUrl = project.getProperty('checkstyleDefaultConfigurationFileHeaderUrl')
@@ -154,9 +183,37 @@ ext.createCheckstyleConfiguration = { overwrite = false ->
 				printInfo("> Get " + colorize(HIGHLITE_LEVEL, checkstyleFileHeader) + " from " + colorize(HIGHLITE_LEVEL, checkstyleDefaultConfigurationFileHeaderUrl) + ".")
 			
 				// download
-				def f = new File(checkstylePath + "/" + checkstyleFileHeader)
+				def f = new File(temp + "/" + checkstyleFileHeaderTemplate)
 				new URL(checkstyleDefaultConfigurationFileHeaderUrl).withInputStream { i -> f.withOutputStream { it << i } }			
+			
+				printInfo("> Create " + colorize(HIGHLITE_LEVEL, checkstyleFileHeader) + " from template ${checkstyleFileHeaderTemplate}.")
+				copy {
+					from "${commonGradleTemplateJavaPath}"
+					include "${checkstyleFileHeaderTemplate}"
+					into "${checkstylePath}"
+					rename { String fileName -> fileName.replace(checkstyleFileHeaderTemplate, checkstyleFileHeader) }
+					filter { line -> line.replaceAll('@@PROJECT_NAME@@', "${rootProject.name}".toString()) }
+					filter { line -> line.replaceAll('@@PROJECT_TYPE@@', "${project.ext.projectType}".toString()) }
+					filter { line -> line.replaceAll('@@GROUP_ID@@', "${project.ext.projectGroupId}".toString()) }
+					filter { line -> line.replaceAll('@@COMPONENT_ID@@', "${project.ext.projectComponentId}".toString()) }
+					filter { line -> line.replaceAll('@@PACKAGE@@', "${project.ext.projectRootPackageName}".toString()) }
+					filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.projectDescription}".toString()) }
+					filter { line -> line.replaceAll('@@URL@@', "${project.ext.projectUrl}".toString()) }
+					filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.licenseText}".toString()) }
+					filter { line -> line.replaceAll('@@MAJOR_NUMBER@@', "${project.ext.majorVersionNumber}".toString()) }
+					filter { line -> line.replaceAll('@@MINOR_NUMBER@@', "${project.ext.minorVersionNumber}".toString()) }
+					filter { line -> line.replaceAll('@@MICRO_NUMBER@@', "${project.ext.microVersionNumber}".toString()) }
+					filter { line -> line.replaceAll('@@QUALIFIER@@', "${project.ext.qualifierVersionNumber}".toString()) }
+					filter { line -> line.replaceAll('@@SCM_NUMBER@@', "${project.ext.scmVersionNumber}".toString()) }
+					filter { line -> line.replaceAll('@@BUILD_TIMESTAMP@@', "${project.ext.BUILD_TIMESTAMP}".toString()) }
+					filter { line -> line.replaceAll('@@IS_RELEASE_VERSION@@', "${project.ext.isReleaseVersion}".toString()) }
+					filter { line -> line.replaceAll('@@VERSION@@', "${project.version}".toString()) }
+				}
+				
+				f.delete()
 			}
+			
+			new File(temp).delete()
 		} else {
 			def errorMessage = " Could not find checkstyle configuration (no template nor online connection)!"
 			printInfo(colorize(ERROR_LEVEL, 'ERROR') + ":" +errorMessage)
