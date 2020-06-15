@@ -73,6 +73,7 @@ ext.createCheckstyleConfiguration = { overwrite = false ->
 	def configDirectory = project.getProperty('configDirectory')
 	def checkstylePath = "$configDirectory/checkstyle/"
 	def checkstyleFile = "checkstyle.xml"
+	def checkstyleFileHeader = "checkstyle-file-header.txt"
 	
 	if (overwrite || !new File("${checkstylePath}", "${checkstyleFile}").exists()) {
 		new File(configDirectory).mkdirs()
@@ -114,7 +115,6 @@ ext.createCheckstyleConfiguration = { overwrite = false ->
 				filter { line -> line.replaceAll('@@VERSION@@', "${project.version}".toString()) }
 			}
 
-			def checkstyleFileHeader = "checkstyle-file-header.txt"
 			def checkstyleFileHeaderTemplate = 'checkstyle-file-header.txt.template'
 			printInfo("> Create " + colorize(HIGHLITE_LEVEL, checkstyleFileHeader) + " from template ${checkstyleFileHeaderTemplate}.")
 			copy {
@@ -149,14 +149,13 @@ ext.createCheckstyleConfiguration = { overwrite = false ->
 				new URL(checkstyleDefaultConfigurationUrl).withInputStream { i -> f.withOutputStream { it << i } }			
 			}
 			
-			def checkstyleDefaultConfigurationFileHeader = project.getProperty('checkstyleDefaultConfigurationFileHeader')
-			if (checkstyleDefaultConfigurationFileHeader!=null && !checkstyleDefaultConfigurationFileHeader.isEmpty()) {
-				def checkstyleFileHeader = "checkstyle-file-header.txt"
-				printInfo("> Get " + colorize(HIGHLITE_LEVEL, checkstyleFileHeader) + " from " + colorize(HIGHLITE_LEVEL, checkstyleDefaultConfigurationFileHeader) + ".")
+			def checkstyleDefaultConfigurationFileHeaderUrl = project.getProperty('checkstyleDefaultConfigurationFileHeaderUrl')
+			if (checkstyleDefaultConfigurationFileHeaderUrl!=null && !checkstyleDefaultConfigurationFileHeaderUrl.isEmpty()) {
+				printInfo("> Get " + colorize(HIGHLITE_LEVEL, checkstyleFileHeader) + " from " + colorize(HIGHLITE_LEVEL, checkstyleDefaultConfigurationFileHeaderUrl) + ".")
 			
 				// download
 				def f = new File(checkstylePath + "/" + checkstyleFileHeader)
-				new URL(checkstyleDefaultConfigurationFileHeader).withInputStream { i -> f.withOutputStream { it << i } }			
+				new URL(checkstyleDefaultConfigurationFileHeaderUrl).withInputStream { i -> f.withOutputStream { it << i } }			
 			}
 		} else {
 			def errorMessage = " Could not find checkstyle configuration (no template nor online connection)!"
