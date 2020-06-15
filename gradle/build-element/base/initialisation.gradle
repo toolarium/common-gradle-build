@@ -216,6 +216,20 @@ ext.projectInitialisation = { ->
 		}
 		
 		if (createGradleProperties) {
+			def checkstyleToolVersion
+			if (!project.hasProperty('checkstyleToolVersion') {
+				checkstyleToolVersion = "8.27"
+			} else {
+				checkstyleToolVersion = project.getProperty('checkstyleToolVersion')
+			}
+
+			def testDependencyVersion
+			if (!project.hasProperty('testDependencyVersion') {
+				testDependencyVersion = "5.3.1"
+			} else {
+				testDependencyVersion = project.getProperty('testDependencyVersion')
+			}
+
 			if (!createFileFromTemplate(gradlePropertiesFile, 'base/gradle.properties.template')) {
 				printInfo("> Create " + colorize(HIGHLITE_LEVEL, gradlePropertiesFile) + " with default values.")
 				new File('.', gradlePropertiesFile).withWriterAppend { w ->
