@@ -27,7 +27,10 @@ setCommonGradleDefaultPropertyIfNull("srcTestResourcesDirectory", "${srcTestDire
  ***************************************************************************************/
 projectValidation {
 	doFirst {
+		createJavaSourcePath()	
+		
 		if (project.getProperty('IS_NEW')) {
+		
 			logInfo("Create at least one java file...")
 			def javaLibraryTemplate = 'javaLibrary.template'
 			def slashedRootPackageName = projectRootPackageName.replace('.', '/')

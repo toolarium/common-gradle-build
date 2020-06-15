@@ -74,7 +74,6 @@ ext.createCheckstyleConfiguration = { overwrite = false ->
 	def checkstylePath = "$configDirectory/checkstyle/"
 	def checkstyleFile = "checkstyle.xml"
 	def checkstyleFileHeader = "checkstyle-file-header.txt"
-	def checkstyleFileHeaderTemplate = 'checkstyle-file-header.txt.template'
 	
 	if (overwrite || !new File("${checkstylePath}", "${checkstyleFile}").exists()) {
 		new File(configDirectory).mkdirs()
@@ -85,6 +84,7 @@ ext.createCheckstyleConfiguration = { overwrite = false ->
 		def commonGradleTemplateJavaPath= project.getProperty('commonGradleTemplateJavaPath')
 		logInfo("Write file " + colorize(HIGHLITE_LEVEL, checkstylePath + "/" + checkstyleFile) + colorize(INFO_LEVEL, "..."))
 		def checkstyleTemplate = 'checkstyle.xml.template'
+		def checkstyleFileHeaderTemplate = 'checkstyle-file-header.txt.template'
 		def srcMainDirectoryName = project.getProperty('srcMainDirectoryName')
 		def srcTestDirectoryName = project.getProperty('srcTestDirectoryName')
 		def srcMainDirectory = project.getProperty('srcMainDirectory')
@@ -186,7 +186,6 @@ ext.createCheckstyleConfiguration = { overwrite = false ->
 				def f = new File(temp + "/" + checkstyleFileHeaderTemplate)
 				new URL(checkstyleDefaultConfigurationFileHeaderUrl).withInputStream { i -> f.withOutputStream { it << i } }			
 			
-				printInfo("> Create " + colorize(HIGHLITE_LEVEL, checkstyleFileHeader) + " from template ${checkstyleFileHeaderTemplate}.")
 				copy {
 					from "${temp}"
 					include "${checkstyleFileHeaderTemplate}"

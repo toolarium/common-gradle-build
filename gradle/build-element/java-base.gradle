@@ -111,54 +111,62 @@ compileJava {
  * project java validation
  ***************************************************************************************/
 projectValidation {
-	doFirst {
-		logInfo("Check Java source and test folders...")
-		setCommonGradleProperty('createSrcMainJavaDirectory', !new File(srcMainJavaDirectory).exists())	
-		setCommonGradleProperty('createSrcTestJavaDirectory', !new File(srcTestJavaDirectory).exists())
-		setCommonGradleProperty('createSrcMainResourcesDirectory', !new File(srcMainResourcesDirectory).exists())
-		setCommonGradleProperty('createSrcTestResourcesDirectory', !new File(srcTestResourcesDirectory).exists())
-
-		if (project.getProperty('createSrcMainJavaDirectory')) {
-			printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcMainJavaDirectory) + ".")
-			new File(srcMainJavaDirectory ).mkdirs()				
-			new File(srcMainJavaDirectory + '/' + projectRootPackageName.replace('.', '/')).mkdirs()				
-			setCommonGradleProperty('IS_NEW', true)
-		}
-
-		if (project.getProperty('createSrcMainResourcesDirectory')) {
-			printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcMainResourcesDirectory) + ".")
-			new File(srcMainResourcesDirectory).mkdir()				
-		}
-		
-		if (project.getProperty('createSrcTestJavaDirectory')) {
-			printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcTestJavaDirectory) + ".")
-			new File(srcTestJavaDirectory).mkdirs()		
-			new File(srcTestJavaDirectory + '/' + projectRootPackageName.replace('.', '/')).mkdirs()				
-			setCommonGradleProperty('IS_NEW', true)
-		}
-
-		if (project.getProperty('createSrcTestResourcesDirectory')) {
-			printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcTestResourcesDirectory) + ".")
-			new File(srcTestResourcesDirectory).mkdir()
-		}
-		
-		def mainDirectoryName = project.getProperty('srcMainDirectoryName')
-		def generatedCommonGradleBuildJavaSources = project.getProperty('generatedCommonGradleBuildSources');
-		generatedCommonGradleBuildJavaSources += "/java"
-		generatedCommonGradleBuildJavaSources += "/" + mainDirectoryName
-		setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBuildJavaSources", generatedCommonGradleBuildJavaSources)
-		
-		def generatedCommonGradleBuildResourcesSources = project.getProperty('generatedCommonGradleBuildSources');
-		generatedCommonGradleBuildResourcesSources += "/resources"
-		generatedCommonGradleBuildResourcesSources += "/" + mainDirectoryName
-		setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBuildResourcesSources", generatedCommonGradleBuildResourcesSources)
-		
-		def sourceVersion = parseVersion(sourceCompatibility)
-		def targetVersion = parseVersion(targetCompatibility)
-		if (!targetVersion.isCompatibleWith(sourceVersion)) {
-			printInfo("The target (" + colorize(HIGHLITE_LEVEL, targetCompatibility) + ") is not compatible with the source (" + colorize(HIGHLITE_LEVEL, sourceCompatibility) + ") compatibility!")
-		}	
-
-		createEclipseFiles()
+	doFirst {	
+		createJavaSourcePath()	
 	}
+}
+
+
+/**
+ * Create java source path
+ */
+ext.createJavaSourcePath = { ->
+	logInfo("Check Java source and test folders...")
+	setCommonGradleProperty('createSrcMainJavaDirectory', !new File(srcMainJavaDirectory).exists())	
+	setCommonGradleProperty('createSrcTestJavaDirectory', !new File(srcTestJavaDirectory).exists())
+	setCommonGradleProperty('createSrcMainResourcesDirectory', !new File(srcMainResourcesDirectory).exists())
+	setCommonGradleProperty('createSrcTestResourcesDirectory', !new File(srcTestResourcesDirectory).exists())
+
+	if (project.getProperty('createSrcMainJavaDirectory')) {
+		printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcMainJavaDirectory) + ".")
+		new File(srcMainJavaDirectory ).mkdirs()				
+		new File(srcMainJavaDirectory + '/' + projectRootPackageName.replace('.', '/')).mkdirs()				
+		setCommonGradleProperty('IS_NEW', true)
+	}
+
+	if (project.getProperty('createSrcMainResourcesDirectory')) {
+		printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcMainResourcesDirectory) + ".")
+		new File(srcMainResourcesDirectory).mkdir()				
+	}
+	
+	if (project.getProperty('createSrcTestJavaDirectory')) {
+		printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcTestJavaDirectory) + ".")
+		new File(srcTestJavaDirectory).mkdirs()		
+		new File(srcTestJavaDirectory + '/' + projectRootPackageName.replace('.', '/')).mkdirs()				
+		setCommonGradleProperty('IS_NEW', true)
+	}
+
+	if (project.getProperty('createSrcTestResourcesDirectory')) {
+		printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcTestResourcesDirectory) + ".")
+		new File(srcTestResourcesDirectory).mkdir()
+	}
+	
+	def mainDirectoryName = project.getProperty('srcMainDirectoryName')
+	def generatedCommonGradleBuildJavaSources = project.getProperty('generatedCommonGradleBuildSources');
+	generatedCommonGradleBuildJavaSources += "/java"
+	generatedCommonGradleBuildJavaSources += "/" + mainDirectoryName
+	setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBuildJavaSources", generatedCommonGradleBuildJavaSources)
+	
+	def generatedCommonGradleBuildResourcesSources = project.getProperty('generatedCommonGradleBuildSources');
+	generatedCommonGradleBuildResourcesSources += "/resources"
+	generatedCommonGradleBuildResourcesSources += "/" + mainDirectoryName
+	setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBuildResourcesSources", generatedCommonGradleBuildResourcesSources)
+	
+	def sourceVersion = parseVersion(sourceCompatibility)
+	def targetVersion = parseVersion(targetCompatibility)
+	if (!targetVersion.isCompatibleWith(sourceVersion)) {
+		printInfo("The target (" + colorize(HIGHLITE_LEVEL, targetCompatibility) + ") is not compatible with the source (" + colorize(HIGHLITE_LEVEL, sourceCompatibility) + ") compatibility!")
+	}	
+
+	createEclipseFiles()
 }
