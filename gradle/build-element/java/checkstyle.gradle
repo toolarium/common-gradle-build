@@ -188,7 +188,7 @@ ext.createCheckstyleConfiguration = { overwrite = false ->
 			
 				printInfo("> Create " + colorize(HIGHLITE_LEVEL, checkstyleFileHeader) + " from template ${checkstyleFileHeaderTemplate}.")
 				copy {
-					from "${commonGradleTemplateJavaPath}"
+					from "${temp}"
 					include "${checkstyleFileHeaderTemplate}"
 					into "${checkstylePath}"
 					rename { String fileName -> fileName.replace(checkstyleFileHeaderTemplate, checkstyleFileHeader) }
