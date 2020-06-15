@@ -16,12 +16,12 @@ init {
 	projectInitialisation()
 	
 	def hostname = getHostName()	
-	def headerLength = INDENT.length() + 11 + rootProject.name.length() + rootGroupId.length()
+	def headerLength = INDENT.length() + 11 + rootProject.name.length() + projectGroupId.length()
 	def header = "Project " + colorize(TITLE_LEVEL, rootProject.name)
 	def length = MAX_LINELENGTH - headerLength - INDENT.length()
-	if (length > 0 && project.hasProperty('rootDescription')) {
-		header = header + " ($rootGroupId)"
-		def printDescription = rootDescription
+	if (length > 0 && project.hasProperty('projectDescription')) {
+		header = header + " ($projectGroupId)"
+		def printDescription = projectDescription
 		if (printDescription.length() > length) 
 			printDescription = printDescription.substring(0, length - 5) + "..."		
 		
@@ -34,22 +34,22 @@ init {
 	}
 	
 	// TODO: why encoding don't corresponds to 
-	def encoding = ENCODING
+	def encoding = fileEncoding
 	if (encoding==null || encoding.isEmpty()) {
-	    System.properties['file.encoding']
+	    encoding = System.properties['file.encoding']
 	}
 	
 	def pid = getProcessNumber()
 	def processNumber = ""
 	if (pid!=null && !pid.isEmpty()) {
-		processNumber = ", PID: " + pid
+		processNumber = "PID: " + pid
 	} 
 	
 	def vendorName = System.properties['java.vendor'].replace(" Corporation", "")
 
 	def userInfo = ""
 	def javaInfo = ""
-	if (INIT_SHOW_JAVA) {
+	if (initShowJava) {
 		userInfo = "(${System.properties['user.name']}, $encoding, ${System.properties['user.language']}, ${TimeZone.getDefault().getID()})"
 		javaInfo = "Java v" + colorize(HIGHLITE_LEVEL, System.properties['java.version']) + "${isUnlimitedJurisdictionMsg}, target " + colorize(HIGHLITE_LEVEL, targetCompatibility) + " (${vendorName}-${System.properties['java.vm.version']}), "
 	}
@@ -59,35 +59,36 @@ init {
 	// read the version
 	readVersion()
 
-	printLine()
+	printLine(HIGHLITE_LEVEL, true)
 	
 	printInfo("${header}")	
 	printInfo("Version " + colorize(HIGHLITE_LEVEL, project.version) + ", ${BUILD_TIMESTAMP_SHORT} ${userInfo}")
 	printInfo("${javaInfo}${osInfo}")
 	
-	if (INIT_SHOW_JAVA) {
+	if (initShowJava) {
 		printInfo("Java home: ${System.properties['java.home'].replace('\\', '/')}")
 	}
 
-	if (INIT_SHOW_RUNTIME) {
+	if (initShowRuntime) {
 		def runtimeMemory = Runtime.getRuntime().maxMemory()
 		def memory = Math.round(runtimeMemory / 1024 / 1024 / 1024 * 100 ) / 100
-		printInfo("PID: ${processNumber}, Max memory: ${memory}G")
+		printInfo("${processNumber}, Max memory: ${memory}G")
 	}
 	
-	if (INIT_SHOW_PATH) {
+	if (initShowPath) {
 		printInfo("Path: ${System.properties['user.dir'].replace('\\', '/')}, Home: ${userHomeDirectory.replace('\\', '/')}")
 	}
 	
-	if (INIT_SHOW_TEMP) {		
+	if (initShowTempPath) {		
 		printInfo("Temp: ${System.properties['java.io.tmpdir'].replace('\\', '/')}")
 	}
 
-	if (INIT_SHOW_GRADLE) {
+	if (initShowGradle) {
 		printInfo("Gradle: ${gradle.gradleVersion}")
 	}
 
-	printLine()
+	//printLine(HIGHLITE_LEVEL, "[" + projectType + "]")
+	printLine(HIGHLITE_LEVEL, true)
 }
 
 

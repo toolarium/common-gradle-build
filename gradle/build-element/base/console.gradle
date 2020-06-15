@@ -1,0 +1,111 @@
+/*
+ * console.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+import groovy.swing.SwingBuilder
+
+
+/** 
+ * Read input from console, samples:
+ * def m = readConsoleInput()
+ * m = readConsoleInput('My message')
+ * m = readConsoleInput('My message', '123')
+ * m = readConsoleInput('My non empty message', null, false)
+ * m = readConsoleInput('My non empty message with default', '123', false)
+ * m = readConsoleInput('My password', null, false, true)
+ */
+ext.readConsoleInput = { inputMessage = 'Please enter data', defaultValue = null, allowEmptyInput = true, isSecure = false ->
+
+	if (inputMessage == null || inputMessage.isEmpty()) {
+		return defaultValue
+	}
+	
+	def console = System.console()
+	def message = LOGPREFIX + inputMessage	
+	if (defaultValue !=null) {
+		if (console) {	
+			message += " [" + colorize(HIGHLITE_LEVEL, defaultValue) + "]"
+		} else {
+			message += " [" + defaultValue + "]"
+		}
+	}	
+	
+	if (console) {	
+		message += ": "
+	}
+	
+	def readUserInput = true
+	def result;
+	while (readUserInput) {
+		if (console) {
+			def userInput;
+			if (isSecure) {
+				userInput = console.readPassword(message)
+			} else {
+				userInput = console.readLine(message)
+			}
+			
+			if (userInput == null || userInput.isEmpty()) {
+				if (allowEmptyInput || defaultValue!=null) {
+					readUserInput = false
+					result = defaultValue
+				} else {
+					printInfo("Empty input is not allowed!")
+				}
+			} else {
+				readUserInput = false
+				result = userInput
+			}			
+		} else {
+			try {
+				new SwingBuilder().edt {
+					dialog(	modal: true, title: "Common Gradle Build | Input", alwaysOnTop: true, resizable: false, locationRelativeTo: null, pack: true, show: true ) {
+					hbox{
+						vbox {
+							def fillup = LINE.replace('*', ' ').substring(message.length())
+							label(text: message + fillup)
+							//label.setBounds(10,10,80,25);
+							
+							if (isSecure) {
+								input = passwordField()
+							} else {
+								input = textField()
+							}
+							
+							button(defaultButton: true, text: 'OK', actionPerformed: {
+								if (isSecure) {
+									userInput = "" + input.password; 
+								} else {
+									userInput = input.text; 
+								}								
+														
+								if (userInput == null || userInput.isEmpty()) {
+									if (allowEmptyInput || defaultValue!=null) {
+										readUserInput = false
+										result = defaultValue
+										printInfo("Use default value")
+									} else {
+										printInfo("Empty input is not allowed!")
+									}
+								} else {
+									readUserInput = false
+									result = userInput
+								}			
+								
+								dispose();
+							})
+						}
+						}
+					}
+				}
+			} catch (Exception e) {		
+				readUserInput = false
+				result = defaultValue
+			}
+		}
+	}
+	
+	return result
+}

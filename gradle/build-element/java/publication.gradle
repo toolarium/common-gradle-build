@@ -13,8 +13,8 @@ apply plugin: 'maven-publish'
  ***************************************************************************************/
 publishing {
 	def description = ''
-	if (project.hasProperty('rootDescription')) {
-		description = project.getProperty('rootDescription')
+	if (project.hasProperty('projectDescription')) {
+		description = project.getProperty('projectDescription')
 	}
 
 	def mavenUsername = ''
@@ -35,7 +35,7 @@ publishing {
 	publications {
         mavenJava(MavenPublication) {
             artifactId = "${rootProject.name}"
-			groupId= "${rootGroupId}"
+			groupId= "${projectGroupId}"
             from components.java
             artifact sourcesJar
             artifact javadocJar
@@ -52,12 +52,12 @@ publishing {
             pom {
                 name = "${rootProject.name}"
                 description = description
-                url = "${rootUrl}"
+                url = "${projectUrl}"
 				
                 licenses {
                     license {
-                        name = "${LICENSE}"
-                        url = "${LICENSE_URL}"
+                        name = "${licenseText}"
+                        url = "${licenseUrl}"
                     }
                 }
             }

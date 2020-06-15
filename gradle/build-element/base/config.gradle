@@ -34,6 +34,10 @@ task configJar(type: Jar) { jar ->
 		if (project.getProperty('includeVersionFile')) {		
 			from "${versionFile}"
 		}		
+		
+		if (project.getProperty('includeChangelogFile')) {
+			from "${changelogFile}"
+		}
 	}
 
 	// define proper manifest
@@ -50,10 +54,10 @@ task configJar(type: Jar) { jar ->
 	}
 	
 	doLast {
-		if (project.getProperty('showCreatedArtefacts')) {
+		if (project.hasProperty('showCreatedArtefacts') && project.getProperty('showCreatedArtefacts')) {
 			// jar.archiveFileName
-			def filename = preapreFilename(jar.archivePath.getPath())
-			printInfo("Created package " + colorize(HIGHLITE_LEVEL, filename) + ".")
+			def filename = prepareFilename(jar.archivePath.getPath())
+			printInfo("> Created package " + colorize(HIGHLITE_LEVEL, filename) + ".")
 		}
 	}
 }
@@ -82,9 +86,17 @@ configPackages.each { configName ->
 				
 				// include readme, license and version files
 				into 'META-INF', {
-					//from "${readmeFile}"  // 'README.md'
-					from "${licenseFile}" // 'LICENSE'
-					from "${versionFile}" // 'VERSION'
+					if (project.getProperty('includeReadmeFile')) {	
+						from "${readmeFile}"
+					}
+					
+					if (project.getProperty('includeLicenseFile')) {	
+						from "${licenseFile}" 
+					}
+					
+					if (project.getProperty('includeVersionFile')) {		
+						from "${versionFile}"
+					}
 				}
 
 				// define proper manifest
@@ -101,9 +113,9 @@ configPackages.each { configName ->
 				}
 
 				doLast {
-					if (project.getProperty('showCreatedArtefacts')) {
+					if (project.hasProperty('showCreatedArtefacts') && project.getProperty('showCreatedArtefacts')) {
 						// jar.archiveFileName
-						def filename = preapreFilename(jar.archivePath.getPath())
+						def filename = prepareFilename(jar.archivePath.getPath())
 						printInfo("Created package " + colorize(HIGHLITE_LEVEL, filename) + ".")
 					}
 				}

@@ -30,12 +30,22 @@ ext.logInfo = { message ->
 }
 
 
+ext.numberOfMessages = 0
+ext.newLogSection = {
+	numberOfMessages = 0
+}
+
+
 /** 
  * Print warn message
  */
 ext.printWarn = { message ->
 	def msg = "${LOGPREFIX}${message}"
 	println("${INDENT}" + colorize(WARN_LEVEL, msg))
+	
+	if (gradle.startParameter.getLogLevel() == org.gradle.api.logging.LogLevel.QUIET) {
+		numberOfMessages++
+	}
 }
 
 
@@ -44,6 +54,10 @@ ext.printWarn = { message ->
  */
 ext.printInfo = { message ->
 	println("${INDENT}" + message)
+	
+	if (gradle.startParameter.getLogLevel() == org.gradle.api.logging.LogLevel.QUIET) {
+		numberOfMessages++
+	}
 }
 
 
@@ -58,6 +72,21 @@ ext.printNewline = { ->
 /** 
  * Print line
  */
-ext.printLine = { color = HIGHLITE_LEVEL ->
-	println(colorize(color, LINE))	
+ext.printLine = { color = HIGHLITE_LEVEL, force = false, message = null ->
+
+	if (force || numberOfMessages > 0) {
+		def msg = LINE.toString()
+		if (message != null) {
+			if (message.length() < msg.length()) {
+				msg = msg.substring(message.length()) + message
+			} else {
+				msg = message
+			}
+			msg
+		}
+		
+		println(colorize(color, msg))	
+	}
+	
+	newLogSection()
 }

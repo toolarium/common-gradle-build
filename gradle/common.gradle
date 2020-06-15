@@ -7,18 +7,52 @@
 
  
 /***************************************************************************************
- * check local cache
+ * define proper cache and home environment:
+ * - cache path: 	contains the versions cached on local machine
+ * - home path: 	contains an optional template directory and defaults.gradle file to 
+ *					overwrite default values
+ * 
  ***************************************************************************************/
-if (!project.hasProperty('commonGradleUrl')) {
+def commonGradleBuildCache = System.getenv('COMMON_GRADLE_BUILD_CACHE') 
+if (commonGradleBuildCache == null || commonGradleBuildCache.isEmpty()) {
+	commonGradleBuildCache = System.getProperty('COMMON_GRADLE_BUILD_CACHE') 
+	if (commonGradleBuildCache == null || commonGradleBuildCache.isEmpty()) {
+		commonGradleBuildCache = System.properties['user.home'].replace('\\', '/') + "/.gradle/common-gradle-build"
+	}
+}
+project.ext.set('commonGradleBuildCache', commonGradleBuildCache)
+logger.info "Found common-gradle-build cache path: ${commonGradleBuildCache}"
+
+def commonGradleBuildHome = System.getenv('COMMON_GRADLE_BUILD_HOME') 
+if (commonGradleBuildHome == null || commonGradleBuildHome.isEmpty()) {
+	commonGradleBuildHome = System.getProperty('COMMON_GRADLE_BUILD_HOME') 
+	if (commonGradleBuildHome == null || commonGradleBuildHome.isEmpty()) {
+		commonGradleBuildHome = commonGradleBuildCache
+	}
+}
+project.ext.set('commonGradleBuildHome', commonGradleBuildHome)
+logger.info "Found common-gradle-build home path: ${commonGradleBuildHome}"
+
+def localCommonGradleBuildUrl = System.getenv('COMMON_GRADLE_BUILD_URL') 
+if (localCommonGradleBuildUrl != null && !localCommonGradleBuildUrl.isEmpty()) {
+	project.ext.set('commonGradleBuildUrl', localCommonGradleBuildUrl)
+} else {
+	localCommonGradleBuildUrl = System.getProperty('COMMON_GRADLE_BUILD_URL') 
+	if (localCommonGradleBuildUrl != null && !localCommonGradleBuildUrl.isEmpty()) {
+		project.ext.set('commonGradleBuildUrl', localCommonGradleBuildUrl)
+	}
+}
+logger.info "Found common-gradle-build url: ${commonGradleBuildUrl}"
+
+if (!project.hasProperty('commonGradleBuildUrl')) {
 	try {
-		def localCache = System.properties['user.home'].replace('\\', '/') + "/.gradle/common-gradle-build/" 
-		if (new File(localCache).exists()) {
+		if (new File(commonGradleBuildCache).exists()) {
 			def result = null
-			File[] files = new File(localCache).listFiles();
+			File[] files = new File(commonGradleBuildCache).listFiles(); // select newest directory
 			if (files != null && files.length > 0) {
 				for (File file : files) {
 					if (file.isDirectory()) {
-						if (result ==null || (result.lastModified() < file.lastModified())) {
+						if (result == null || (result.lastModified() < file.lastModified())) {
 							result = file
 						}
 					}
@@ -26,7 +60,8 @@ if (!project.hasProperty('commonGradleUrl')) {
 			}
 
 			if (result!=null) {
-				ext.commonGradleUrl=localCache+"/" + result.getName() + "/gradle"
+				// in case we found, use this
+				ext.commonGradleBuildUrl=commonGradleBuildCache + "/" + result.getName() + "/gradle"
 			}
 		}
 	} catch (Exception e) {
@@ -34,50 +69,62 @@ if (!project.hasProperty('commonGradleUrl')) {
 		logger.warn msg
 	}
 
-	if (!project.hasProperty('commonGradleUrl')) {
-		ext.commonGradleUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
+	if (!project.hasProperty('commonGradleBuildUrl')) {
+		ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
 	}
 	
-	def logMsg = "==>Use common-gradle-build from " + ext.commonGradleUrl
+	def logMsg = "Use common-gradle-build from " + ext.commonGradleBuildUrl
 	logger.info logMsg
 }
 
 if (!project.hasProperty('commonGradleBuildElementPath')) {
-	ext.commonGradleBuildElementPath="${commonGradleUrl}/build-element"
+	ext.commonGradleBuildElementPath="${commonGradleBuildUrl}/build-element"
 }
 
 
 /***************************************************************************************
  * choose proper project type include
  ***************************************************************************************/
-def includeFile = "${commonGradleUrl}/"
+def includeFile = "${commonGradleBuildUrl}/"
 
-// check project type
-def hasSrc = new File('src').exists()
-def hasConfig = new File('config').exists()
-def hasFiles = new File('.').listFiles().count { true }
-
-def hasSrcMain = hasSrc && new File('src/main').exists()
-def hasJavaSrc = hasSrcMain && new File('src/main/java').exists()
-def hasJavaSourceFiles = false
-
-if (hasJavaSrc) {
-	List filesPath = new ArrayList()
-	new File("src/main/java/").eachDirRecurse() { dir ->  
-		dir.eachFileMatch(~/.*.java/) { file -> filesPath.add( file.path ) }  
-	}  
+if (project.hasProperty('projectType')) {
+	def t = project.getProperty('projectType')
+	includeFile += t
+	if (!t.endsWith('.gradle')) {
+		includeFile += '.gradle'
+	}
+	logger.info "Use projectType ${t}: ${includeFile}"
 	
-	hasJavaSourceFiles = !filesPath.isEmpty()
-}
-
-//def isWebProject
-
-if (!hasSrc && hasConfig) {
-	includeFile += 'config.gradle'	
-} else if (!hasSrc || hasJavaSourceFiles) {
-	includeFile += 'java-library.gradle'
 } else {
-	includeFile += 'java-library.gradle'
+	// check project type
+	def hasSrc = new File('src').exists()
+	def hasConfig = new File('config').exists()
+	def hasFiles = new File('.').listFiles().count { true }
+
+	def hasSrcMain = hasSrc && new File('src/main').exists()
+	def hasJavaSrc = hasSrcMain && new File('src/main/java').exists()
+	def hasJavaSourceFiles = false
+
+	if (hasJavaSrc) {
+		List filesPath = new ArrayList()
+		new File("src/main/java/").eachDirRecurse() { dir ->  
+			dir.eachFileMatch(~/.*.java/) { file -> filesPath.add( file.path ) }  
+		}  
+		
+		hasJavaSourceFiles = !filesPath.isEmpty()
+	}
+
+	//def isWebProject
+
+	if (!hasSrc && hasConfig) {
+		includeFile += 'config.gradle'	
+	} else if (!hasSrc || hasJavaSourceFiles) {
+		includeFile += 'java-library.gradle'
+	} else {
+		includeFile += 'java-library.gradle'
+	}
+	
+	logger.info "Guessed projectType: ${includeFile}"
 }
 
 

@@ -192,7 +192,9 @@ ext.isUnlimitedJurisdiction = { ->
  */
 ext.isServerAvailable = { serverAddress='www.google.com', timeout=1500 ->
 	try {
-		return java.net.InetAddress.getByName(serverAddress).isReachable(timeout)		
+		if (!gradle.startParameter.isOffline()) {
+			return java.net.InetAddress.getByName(serverAddress).isReachable(timeout)
+		} 
 	} catch( Exception e ) {
 	}
 
@@ -203,7 +205,7 @@ ext.isServerAvailable = { serverAddress='www.google.com', timeout=1500 ->
 /** 
  * Prepare relative path
  */
-ext.preapreFilename = { file ->
+ext.prepareFilename = { file ->
 	def filename = file.trim().replace('\\', '/')
 	def workingDir = System.properties['user.dir'].replace('\\', '/')
 

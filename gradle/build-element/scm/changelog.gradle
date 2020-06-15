@@ -4,60 +4,69 @@
  * Copyright by toolarium, all rights reserved.
  * MIT License: https://mit-license.org
  */
-
- // see https://github.com/tomasbjerre/git-changelog-gradle-plugin
+ 
 buildscript {
 	repositories {
 		jcenter()
 	}
 	dependencies {
-		classpath 'org.ajoberstar.grgit:grgit-core:4.0.2'
+		//classpath "com.diffplug.spotless-changelog:spotless-changelog-plugin-gradle:1.1.0"
+		//classpath 'com.github.marcpoppleton:git-changelog:0.1.3'
 	}
 }
 
-pluginManagement {
-	repositories {
-		gradlePluginPortal()
-	}
+//apply plugin: com.diffplug.spotless.changelog.gradle.ChangelogPlugin
+
+/*
+spotlessChangelog { // only necessary if you need to change the defaults below
+
+println("==>"+org.osgi.framework.Version.parseVersion(project.version))
+println("==>"+org.osgi.framework.Version.parseVersion(project.version).getMajor())
+println("==>"+org.osgi.framework.Version.parseVersion(project.version).getMinor())
+println("==>"+org.osgi.framework.Version.parseVersion(project.version).getMicro())
+
+	//breaking = majorVersionNumber
+	//added = minorVersionNumber
+	//fixed = miVersionNumber
+	
+	//versionBumpFunction = new VersionBumpFunction.Semver()
+
+	changelogFile changelogFile
+	enforceCheck true
+	//ifFoundBumpBreaking ['**BREAKING**']
+	//ifFoundBumpAdded    ['### Added']
+	forceNextVersion null	
 }
+*/
 
-
-plugin {
-	id 'se.bjurr.gitchangelog.git-changelog-gradle-plugin' version 'X'
+/*
+apply plugin: org.gradle.api.plugins.changelog.GitChangelogPlugin
+changelog {
+    //the name of the file where to write the changelog.
+    file "CHANGELOG.md" //Defaults to "CHANGELOG.md"
+    
+    //the name of the app/project for which you are generating a changelog.
+    appName "gradle-changelog-plugin" //Defaults to an empty string.
+    
+    //version number for this changelog
+    versionNum "0.1.3" //Guesses next version using commits content and defaults to an empty string.
+    
+    //version name
+    versionText "Electric Lama" //Defaults to an empty string.
+    
+    //URL of the repository where the commits can be found. Plugin will append /commits at the end.    
+    repoUrl "https://github.com/marcpoppleton/gradle-changelog-plugin" //Defaults to an empty string.
+    
+    //URL of the bug tracker where closed issues can be found. Plugin will append /issues at the end.
+    trackerUrl "https://github.com/marcpoppleton/gradle-changelog-plugin" //Defaults to an empty string.
+    
+    //lower limit to filter the git log command
+    from "0.0.1" //Defaults to previous git tag found or first commit if none found.
+    
+    //upper limito filter the git log command.
+    to "HEAD" //Defaults to HEAD.
+    
+    //regex used to filter the conventional changelog commits for this changelog
+    match "^fix|^feat|^fix|^perf|^refactor|BREAKING" //Defaults to the value in the example.
 }
-
-task gitChangelogTask(type: se.bjurr.gitchangelog.plugin.gradle.GitChangelogTask) {
-	file = new File("CHANGELOG.md");
-	templateContent = """
-	Changelog of ${projectDisplayName}.
-
-{{#tags}}
-## {{name}}
- {{#issues}}
-  {{#hasIssue}}
-   {{#hasLink}}
-### {{name}} [{{issue}}]({{link}}) {{title}} {{#hasIssueType}} *{{issueType}}* {{/hasIssueType}} {{#hasLabels}} {{#labels}} *{{.}}* {{/labels}} {{/hasLabels}}
-   {{/hasLink}}
-   {{^hasLink}}
-### {{name}} {{issue}} {{title}} {{#hasIssueType}} *{{issueType}}* {{/hasIssueType}} {{#hasLabels}} {{#labels}} *{{.}}* {{/labels}} {{/hasLabels}}
-   {{/hasLink}}
-  {{/hasIssue}}
-  {{^hasIssue}}
-### {{name}}
-  {{/hasIssue}}
-
-  {{#commits}}
-**{{{messageTitle}}}**
-
-{{#messageBodyItems}}
- * {{.}}
-{{/messageBodyItems}}
-
-[{{hash}}](https://github.com/{{ownerName}}/{{repoName}}/commit/{{hash}}) {{authorName}} *{{commitTime}}*
-
-  {{/commits}}
-
- {{/issues}}
-{{/tags}}
- """;
-}
+*/

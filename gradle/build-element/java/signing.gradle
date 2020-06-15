@@ -32,10 +32,10 @@ signing {
 		if (!project.hasProperty(signingKeyId) || !project.hasProperty(signingPassword) || !project.hasProperty(signingSecretKeyRingFile)) {
 			def signingFileNames = colorize(HIGHLITE_LEVEL, signingKeyId) + ",  " + colorize(HIGHLITE_LEVEL, signingPassword) + " and " + colorize(HIGHLITE_LEVEL, signingSecretKeyRingFile)
 			
-			printLine(ERROR_LEVEL)
+			printLine(ERROR_LEVEL, true)
 			printInfo(colorize(ERROR_LEVEL, 'ERROR') + ": ${signingFileNames} has to be ")
 			printInfo("       configured, e.g. in " + colorize(HIGHLITE_LEVEL, configFileName) + "!")
-			printLine(ERROR_LEVEL)
+			printLine(ERROR_LEVEL, true)
 		
 			//signingKeyId = console.readLine("PGP Key Id: ")
 			//signingPassword = console.readPassword("PGP Private Key Password: ")		

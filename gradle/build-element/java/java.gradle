@@ -15,7 +15,7 @@ ext.compileTimestamp = null
 tasks.withType(JavaCompile) { compile ->
 
 	compileTimestamp = new Date()
-	options.encoding = "${ENCODING}"
+	options.encoding = "${fileEncoding}"
 	options.compilerArgs << '-Xlint:unchecked'
 	options.deprecation = true
 	sourceCompatibility = project.getProperty('sourceCompatibility')
@@ -62,7 +62,7 @@ tasks.withType(JavaCompile) { compile ->
 jar { jar ->
 	onlyIf { return project.compileTimestamp != null }
 	
-	logInfo("Set root package name to [" + colorize(HIGHLITE_LEVEL, rootPackageName) + colorize(INFO_LEVEL, "]  -> ") + colorize(HIGHLITE_LEVEL, sourceSets.main.allJava.srcDirs))
+	logInfo("Set project root package name to [" + colorize(HIGHLITE_LEVEL, projectRootPackageName) + colorize(INFO_LEVEL, "]  -> ") + colorize(HIGHLITE_LEVEL, sourceSets.main.allJava.srcDirs))
 	
 	// include readme, license and version files
 	into 'META-INF', {
@@ -76,6 +76,10 @@ jar { jar ->
 		
 		if (project.getProperty('includeVersionFile')) {		
 			from "${versionFile}"
+		}
+		
+		if (project.getProperty('includeChangelogFile')) {
+			from "${changelogFile}"
 		}
 	}
 
@@ -97,10 +101,10 @@ jar { jar ->
 	}
 
 	doLast {
-		if (project.getProperty('showCreatedArtefacts')) {
+		if (project.hasProperty('showCreatedArtefacts') && project.getProperty('showCreatedArtefacts')) {
 			// jar.archiveFileName
-			def filename = preapreFilename(jar.archivePath.getPath())
-			printInfo("Created package " + colorize(HIGHLITE_LEVEL, filename) + ".")
+			def filename = prepareFilename(jar.archivePath.getPath())
+			printInfo("> Created package " + colorize(HIGHLITE_LEVEL, filename) + ".")
 		}
 	}
 }
@@ -122,7 +126,7 @@ task sourcesJar(type: Jar, dependsOn: classes) { jar ->
 	if (project.hasProperty('jarSourceIncludePath')) {
 		jarSourceIncludePath = project.getProperty('jarSourceIncludePath')
 	} else {
-		jarSourceIncludePath = rootPackageName.replace('.', '/')
+		jarSourceIncludePath = projectRootPackageName.replace('.', '/')
 	}
 
 	from sourceSets.main.allJava, {
@@ -163,7 +167,11 @@ task sourcesJar(type: Jar, dependsOn: classes) { jar ->
 		from "${versionFile}"
 	}
 	
-	logInfo("Set root package name to [" + colorize(HIGHLITE_LEVEL, rootPackageName) + colorize(INFO_LEVEL, "]  -> ") + colorize(HIGHLITE_LEVEL, sourceSets.main.allJava.srcDirs))
+	if (project.getProperty('includeChangelogFile')) {
+		from "${changelogFile}"
+	}
+	
+	logInfo("Set project root package name to [" + colorize(HIGHLITE_LEVEL, projectRootPackageName) + colorize(INFO_LEVEL, "]  -> ") + colorize(HIGHLITE_LEVEL, sourceSets.main.allJava.srcDirs))
 	
 	// include readme, license and version files
 	into 'META-INF', {
@@ -177,6 +185,10 @@ task sourcesJar(type: Jar, dependsOn: classes) { jar ->
 		
 		if (project.getProperty('includeVersionFile')) {		
 			from "${versionFile}" 
+		}
+		
+		if (project.getProperty('includeChangelogFile')) {
+			from "${changelogFile}"
 		}
 	}
 
@@ -199,10 +211,10 @@ task sourcesJar(type: Jar, dependsOn: classes) { jar ->
 	}
 	
 	doLast {
-		if (project.getProperty('showCreatedArtefacts')) {
+		if (project.hasProperty('showCreatedArtefacts') && project.getProperty('showCreatedArtefacts')) {
 			// jar.archiveFileName
-			def filename = preapreFilename(jar.archivePath.getPath())
-			printInfo("Created package " + colorize(HIGHLITE_LEVEL, filename) + ".")
+			def filename = prepareFilename(jar.archivePath.getPath())
+			printInfo("> Created package " + colorize(HIGHLITE_LEVEL, filename) + ".")
 		}
 	}
 }

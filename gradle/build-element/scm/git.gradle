@@ -5,6 +5,10 @@
  * MIT License: https://mit-license.org
  */
 
+
+addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/.git")
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.gitattributes")
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.gitignore")
 buildscript {
 	repositories {
 		jcenter()
@@ -14,82 +18,127 @@ buildscript {
 	}
 }
 
-ext.gitDirectoryIsAvailable = null
 
 /** 	
- * Get git instance
+ * Check if git is already initialized
  */
-def getGit() { 
-
-	if (ext.gitDirectoryIsAvailable==null) {
-		def gitDir = "$rootDirectory/.git"
-		ext.gitDirectoryIsAvailable = new File(gitDir).exists()
+ext.isGitAvailable = { ->
+	def gitDir = "$rootDirectory/.git"
+	def gitDirectoryIsAvailable = new File(gitDir).exists()
 		
-		if (ext.gitDirectoryIsAvailable)
-			logInfo("GIT directory exist.")
-		else
-			logInfo("GIT directory don't exist.")
-	}
-
-	if (!ext.gitDirectoryIsAvailable) {
-		ext.git = null;
-	}
-
- 	try	
-	{
-		if (ext.gitDirectoryIsAvailable && (!project.hasProperty('git') || project.getProperty('git')==null)) {		
-			logInfo("Init GIT...")
-			ext.git = org.ajoberstar.grgit.Grgit.open(currentDir: projectDir)
-		}		
-	} catch (java.lang.IllegalStateException e) {
-		printLine(ERROR_LEVEL)
-		printInfo(colorize(ERROR_LEVEL, 'ERROR') + ": Can not access to git repository: " + e.getMessage() )
-		printLine(ERROR_LEVEL)
-		throw new GradleException("Can not access to git repository: " + e.getMessage())
-	}
-
-	/*
-    try {
-		GRGIT_USER=somebody
-		GRGIT_PASS=myauthtoken
-
-		def user = System.getProperty("gitUser", "")
-		def pass = System.getProperty("gitPass", "")
-		// TODO:
-		def credentials = new org.ajoberstar.grgit.Credentials(user, pass)
-
-		if (!project.hasProperty('git') || project.getProperty('git')==null) {
-			ext.git = org.ajoberstar.grgit.Grgit.open(currentDir: projectDir, credentials)
-		}		
-	} catch (IOException e) {
-		ext.git = null
+	if (gitDirectoryIsAvailable) {
+		logInfo("GIT directory exist.")
 		
-		def configFileName = "${userHomeDirectory}.gradle/gradle.properties file"
-		def credentialsMessage = colorize(HIGHLITE_LEVEL, 'gitUser') + " and " + colorize(HIGHLITE_LEVEL, 'gitPass')
-		printLine(ERROR_LEVEL)
-		printInfo(colorize(ERROR_LEVEL, 'ERROR') + ": ${credentialsMessage} has to be ")
-		printInfo("       configured, e.g. in " + colorize(HIGHLITE_LEVEL, configFileName) + "!")
-		printLine(ERROR_LEVEL)
-		
-		throw new GradleException("Can not access to git repository: " + e.getMessage())
-	}
-	*/
-}
-
-
-/** 
- * Read the git commit hash 
- */
-ext.getGitIsAvailable = { ->
-    try {
-		getGit()
-		if (ext.gitDirectoryIsAvailable && ext.git!=null && ext.git.head()!=null) {
-			return true;
-		}
-	} catch (IOException e) {
+		def git = openGit()
+		if (git!=null) {
+			try {
+				if (git.head()!=null) {
+					logInfo("GIT is available.")
+				} else {
+					logInfo("GIT is available but has nothing in head.")
+				}
+				
+				return true;
+			} catch (IOException e) {
+				logInfo("Could not read head from git: " + e.getMessage())
+			} finally {
+				closeGit(git)
+			}
+		} 
+	} else{ 
+		logInfo("GIT directory don't exist.")
 	}
 	
 	return false
+}
+
+
+/** 	
+ * Open git 
+ */
+ext.openGit = { directory = projectDir ->
+ 	try	
+	{
+		logInfo("Open git...")
+		def git = org.ajoberstar.grgit.Grgit.open(dir: directory)
+	} catch (java.lang.IllegalStateException e) {
+		printLine(ERROR_LEVEL, true)
+		printInfo(colorize(ERROR_LEVEL, 'ERROR') + ": Can not access to git repository: " + e.getMessage() )
+		printInfo("      In case you have to authenticate, please use system environment " + colorize(HIGHLITE_LEVEL, 'GRGIT_USER') + " and " + colorize(HIGHLITE_LEVEL, 'GRGIT_PASS') + "!")
+		printLine(ERROR_LEVEL, true)
+		throw new GradleException("Can not access to git repository: " + e.getMessage())
+	}
+}
+
+
+/** 	
+ * Close git
+ */
+ext.closeGit = { git -> 
+	logInfo("Close git...")
+	if (git!=null) {
+		try {			
+			git.close()
+		} catch (Exception e) {
+			printInfo("Could not close git: " + e.getMessage())
+		}
+	}
+}
+
+
+/**
+ * Initialize git project
+ */
+ext.initGit = { bare = false ->
+	def git = null
+	
+    try {
+		logInfo("Initialise git...")
+		git = org.ajoberstar.grgit.Grgit.init(dir: projectDir, bare: bare)
+		logInfo("Initialized git.")
+	} catch (Exception e) {
+		printWarn("Could not initialize git: " + e.getMessage())
+	} finally {
+		closeGit(git)
+	}	
+}
+
+
+/**
+ * Add files to git 
+ */
+ext.addGit = { inputPatterns = ['./'] ->
+	def git = null	
+	if (isGitAvailable()) {
+		try {
+			git = openGit()
+			logInfo("Add to git...")
+			git.add(patterns: inputPatterns)
+		} catch (Exception e) {
+			printWarn("Could not add files to git: " + e.getMessage())
+		} finally {
+			closeGit(git)
+		}	
+	}
+}
+
+
+/**
+ * Commit git
+ */
+ext.commitGit = { message = "First commit" ->
+	def git = null	
+	if (isGitAvailable()) {
+		try {
+			git = openGit()
+			logInfo("Commit git...")
+			git.commit(message: message)
+		} catch (Exception e) {
+			printWarn("Could not add files to git: " + e.getMessage())
+		} finally {
+			closeGit(git)
+		}	
+	}
 }
 
 
@@ -97,20 +146,25 @@ ext.getGitIsAvailable = { ->
  * Read the git commit hash 
  */
 ext.getGitCommitHash = { ->
-    try {
-		getGit()
-		def commitHashId = "";
-		if (commitHashId!=null && commitHashId.isEmpty() && getGitIsAvailable()) {
-			commitHashId = ext.git.head().id;
-			if (commitHashId!=null && commitHashId.length() > 9)
-				commitHashId = commitHashId.substring(0, 9)
-		}
-		
-		return commitHashId
-	} catch (IOException e) {
-	}
+	def commitHashId = "";
+	if (isGitAvailable()) {
+		def git = null
+		try {
+			git = openGit()
+			if (git!=null && git.head()!=null) {
+				commitHashId = git.head().id;
+				if (commitHashId!=null && commitHashId.length() > 9) {
+					commitHashId = commitHashId.substring(0, 9)
+				}
+			}
+		} catch (IOException e) {
+			printWarn("Could not read git commit hash: " + e.getMessage())
+		} finally {
+			closeGit(git)
+		}	
+	}	
 	
-	return ""
+	return commitHashId
 }
 
 
@@ -118,23 +172,27 @@ ext.getGitCommitHash = { ->
  * Read the git last tag name
  */
 ext.getGitLastTagName = { ->
-    try {
-		getGit()
-		if (getGitIsAvailable() && ext.git.tag!=null) {
-			def listOfTags = ext.git.tag.list()
-		
-			def lastTag = ""
-			if (listOfTags!=null && !listOfTags.isEmpty()) {		
-				def tagNames = listOfTags.collect { ext.git.describe(commit: it.commit, tags: true) }
-				lastTag = tagNames.last()
+	def lastTag = ""
+	if (isGitAvailable()) {
+		def git = null
+		try {
+			git = openGit()
+			if (git!=null && git.tag!=null) {
+				def listOfTags = git.tag.list()
+			
+				if (listOfTags!=null && !listOfTags.isEmpty()) {		
+					def tagNames = listOfTags.collect { git.describe(commit: it.commit, tags: true) }
+					lastTag = tagNames.last()
+				}
 			}
-		
-			return lastTag
-		}
-	} catch (IOException e) {
-	}
+		} catch (IOException e) {
+			printWarn("Could not read last tag name: " + e.getMessage())
+		} finally {
+			closeGit(git)
+		}	
+	}	
 	
-	return ""
+	return lastTag
 }
 
 
@@ -142,12 +200,18 @@ ext.getGitLastTagName = { ->
  * Read the git branch name
  */
 ext.getGitBranchName = { ->
-    try {
-		getGit()
-		if (getGitIsAvailable() && ext.git.branch!=null && ext.git.branch.current()!=null) {
-			return ext.git.branch.current().name
-		}
-	} catch (IOException e) {
+	def git = null
+	if (isGitAvailable()) {
+		try {
+			git = openGit()
+			if (git!=null && git.branch!=null && git.branch.current()!=null) {
+				return git.branch.current().name
+			}
+		} catch (IOException e) {
+			printWarn("Could not read git branch name: " + e.getMessage())
+		} finally {
+			closeGit(git)
+		}	
 	}
 	
 	return ""
@@ -155,22 +219,28 @@ ext.getGitBranchName = { ->
 
 
 /**
- * Set a tag name
+ * Set a git tag name
  */
-def setGitTagName(String tagName, String message) {
-    try {
-		getGit()
-		if (getGitIsAvailable() && ext.git.tag!=null) {
-			ext.git.tag.add(name: tagName, message: message)
-			ext.git.push(tags: true)            
-		}
-	} catch (IOException e) {
+ext.setGitTagName = { tagName, message ->
+	if (isGitAvailable()) {
+		def git = null
+		try {
+			git = openGit()
+			if (git!=null && git.tag!=null) {
+				git.tag.add(name: tagName, message: message, force: true)
+				git.push(tags: true)            
+			}
+		} catch (IOException e) {
+			printWarn("Could not set git tag name: " + e.getMessage())
+		} finally {
+			closeGit(git)
+		}	
 	}
 }
 
 
 /**
- * Create Set a tag name
+ * Set a git branch name
  */
 def createBranch(String versionNumber, String branchName) {
 /*
@@ -201,11 +271,9 @@ ext.gitClone = { inputCloneDir, inputCloneUrl, overwrite = true ->
 	
 	def cloneDir = inputCloneDir.trim() //.replace('\', '/')
 	def cloneUrl = inputCloneUrl.trim()
-	def grgit = null
+	def git = null
 	
     try {
-		//project.getProperty('rootDirectory')+'/'
-		//def workingDir = System.properties['user.dir'].replace('\\', '/')		
 		if (!HAS_ONLINE_CONNECTION) {
 			printWarn("Could not checkout [" + colorize(HIGHLITE_LEVEL, cloneUrl) + colorize(WARN_LEVEL, "] because no online connection!"))
 			return
@@ -213,13 +281,13 @@ ext.gitClone = { inputCloneDir, inputCloneUrl, overwrite = true ->
 
 		if (new File(cloneDir).exists()) {
 			if (overwrite) {
-				grgit = org.ajoberstar.grgit.Grgit.open(dir: cloneDir)
+				git = openGit(cloneDir)
 				logInfo("GIT reset [" + colorize(HIGHLITE_LEVEL, cloneUrl) + colorize(INFO_LEVEL, "] in [") + colorize(HIGHLITE_LEVEL, cloneDir) + colorize(INFO_LEVEL, "]."))
-				grgit.reset(mode: 'hard', commit: 'origin/master')
+				git.reset(mode: 'hard', commit: 'origin/master')
 				logInfo("GIT clean [" + colorize(HIGHLITE_LEVEL, cloneDir) + colorize(INFO_LEVEL, "]."))
-				grgit.clean(directories: true)
+				git.clean(directories: true)
 				logInfo("GIT pull [" + colorize(HIGHLITE_LEVEL, cloneDir) + colorize(INFO_LEVEL, "]."))
-				grgit.pull()			
+				git.pull()			
 				return
 			} 
 			
@@ -228,16 +296,11 @@ ext.gitClone = { inputCloneDir, inputCloneUrl, overwrite = true ->
 		}
 
 		logInfo("GIT checkout [" + colorize(HIGHLITE_LEVEL, cloneUrl) + colorize(INFO_LEVEL, "] into [") + colorize(HIGHLITE_LEVEL, cloneDir) + colorize(INFO_LEVEL, "]."))
-		grgit = org.ajoberstar.grgit.Grgit.clone(dir: cloneDir, uri: cloneUrl)
+		git = org.ajoberstar.grgit.Grgit.clone(dir: cloneDir, uri: cloneUrl)
 	} catch (Exception e) {
 		printWarn("Could not checkout [" + colorize(HIGHLITE_LEVEL, cloneUrl) + colorize(WARN_LEVEL, "] into [") + colorize(HIGHLITE_LEVEL, cloneDir) + colorize(WARN_LEVEL, "]: " + e.getMessage()))
 	} finally {
-		if (grgit!=null) {
-			try {			
-				grgit.close()
-			} catch (Exception e) {
-			}
-		}
+		closeGit(git)
 	}	
 }
 
@@ -269,7 +332,7 @@ def getGitBranchNameCmdline() {
 
 
 /***************************************************************************************
- * Initialize  eclipse file 
+ * Initialize git files
  ***************************************************************************************/
 ext.createGitFiles = { overwrite = false ->
 	def rootDirectory = project.getProperty('rootDirectory');
@@ -331,3 +394,4 @@ ext.createGitFiles = { overwrite = false ->
 		}
 	}
 }
+

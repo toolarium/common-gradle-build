@@ -22,14 +22,14 @@ ext.readRemoteVersion = { url ->
 
 		def majorNumber = props.getProperty("major.number")
 		def minorNumber = props.getProperty("minor.number")
-		def revisionNumber = props.getProperty("revision.number")
-		def buildNumber = props.getProperty("build.number")
+		def microNumber = props.getProperty("micro.number")
+		def qualifier = props.getProperty("qualifier")
 		
 		remoteVersion = majorNumber + "." + minorNumber;	
-		if (revisionNumber!=null) {
-			remoteVersion += "." + revisionNumber
-		} else if (buildNumber!=null) { 
-			remoteVersion += "." + buildNumber
+		if (microNumber!=null) {
+			remoteVersion += "." + microNumber
+		} else if (qualifier!=null) { 
+			remoteVersion += "." + qualifier
 		}
 	} catch (Exception e) {
 		printWarn("Could not read remote version [" + colorize(HIGHLITE_LEVEL, url) + colorize(WARN_LEVEL, "]: " +e.getMessage())) 
@@ -44,17 +44,17 @@ ext.readRemoteVersion = { url ->
  ***************************************************************************************/
 ext.readLastCheck = { ->
 	def lastCheck = null		
-	if (new File(commonGradleBuildHomeLastCheckFile).exists()) {
+	if (new File(commonGradleBuildCacheLastCheckFile).exists()) {
 		try {
 			Properties prop = new Properties()
-			prop.load(new FileInputStream(new File(commonGradleBuildHomeLastCheckFile)))
+			prop.load(new FileInputStream(new File(commonGradleBuildCacheLastCheckFile)))
 			def value = prop.getProperty("lastCheck")
 
 			if (value!=null && !value.isEmpty()) {
 				lastCheck = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").parse(value)
 			}
 		} catch (Exception ex) {
-			printWarn("Could not read [" + colorize(HIGHLITE_LEVEL, commonGradleBuildHomeLastCheckFile) + colorize(WARN_LEVEL, "]: " + ex.getMessage())) 
+			printWarn("Could not read [" + colorize(HIGHLITE_LEVEL, commonGradleBuildCacheLastCheckFile) + colorize(WARN_LEVEL, "]: " + ex.getMessage())) 
 		}
 	}
 	
@@ -79,11 +79,11 @@ ext.writeLastCheck = { versionNumber = null, lastCheck = BUILD_TIMESTAMP ->
 			prop.setProperty("version", versionNumber)
 		}
 		
-		FileOutputStream stream = new FileOutputStream(commonGradleBuildHomeLastCheckFile)
+		FileOutputStream stream = new FileOutputStream(commonGradleBuildCacheLastCheckFile)
 		prop.store(stream, null)
 		stream.close()
 	} catch (Exception e) {
-		printWarn("Could not write [" + colorize(HIGHLITE_LEVEL, commonGradleBuildHomeLastCheckFile) + colorize(WARN_LEVEL, "]: " +e.getMessage())) 
+		printWarn("Could not write [" + colorize(HIGHLITE_LEVEL,commonGradleBuildCacheLastCheckFile) + colorize(WARN_LEVEL, "]: " +e.getMessage())) 
 	}
 }
 
@@ -104,13 +104,13 @@ ext.downloadCommonGradleBuild = { ->
 		timeout = new Date().getTime() - lastCheck.getTime()
 	}
 
-	if ((lastCheck == null) || (timeout > project.getProperty('commonGradleBuildHomeLastCheckTimeout'))) {
-		def remoteVersion = readRemoteVersion(commonGradleBuildHomeVersionFileUrl)		
+	if ((lastCheck == null) || (timeout > project.getProperty('commonGradleBuildCacheLastCheckTimeout'))) {
+		def remoteVersion = readRemoteVersion(commonGradleBuildCacheVersionFileUrl)		
 
 		if (remoteVersion!=null && !remoteVersion.isEmpty()) {
 			logInfo("Remote version: " + colorize(HIGHLITE_LEVEL, remoteVersion))
 			
-			def commonGradleVersionHome = "${commonGradleBuildHome}/${remoteVersion}"
+			def commonGradleVersionHome = "${commonGradleBuildCache}/${remoteVersion}"
 			if (!new File(commonGradleVersionHome).exists()) {
 				printInfo("Download version " + colorize(HIGHLITE_LEVEL, remoteVersion) + " of the common-gradle-build...")
 				gitClone(commonGradleVersionHome, commonGradleBuildGitUrl)			

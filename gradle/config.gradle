@@ -5,12 +5,12 @@
  * MIT License: https://mit-license.org
  */
 
-if (!project.hasProperty('commonGradleUrl')) {
-    ext.commonGradleUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
+if (!project.hasProperty('commonGradleBuildUrl')) {
+    ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
 }
 
 if (!project.hasProperty('commonGradleBuildElementPath')) {
-	ext.commonGradleBuildElementPath="${commonGradleUrl}/build-element"
+	ext.commonGradleBuildElementPath="${commonGradleBuildUrl}/build-element"
 }
 
 apply from: "${commonGradleBuildElementPath}/base.gradle"

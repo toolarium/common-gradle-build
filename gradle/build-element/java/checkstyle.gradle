@@ -10,8 +10,8 @@
  * Project validation
  ***************************************************************************************/
 projectValidation {
-	doLast {
-		if (project.hasProperty('INIT_CHECKSTYLE') && project.getProperty('INIT_CHECKSTYLE')) {
+	doFirst {
+		if (project.hasProperty('initCheckstyle') && project.getProperty('initCheckstyle')) {
 			createCheckstyleConfiguration()
 		}	
 	}
@@ -21,7 +21,7 @@ projectValidation {
 /***************************************************************************************
  * Checkstyle configuraiton
  ***************************************************************************************/
-if (project.hasProperty('INIT_CHECKSTYLE') && project.getProperty('INIT_CHECKSTYLE')) {
+if (project.hasProperty('initCheckstyle') && project.getProperty('initCheckstyle')) {
 	apply plugin: 'checkstyle'
 	checkstyle {
 		maxWarnings = project.getProperty('checkstyleMaxWarnings')
@@ -97,16 +97,17 @@ ext.createCheckstyleConfiguration = { overwrite = false ->
 				rename { String fileName -> fileName.replace(checkstyleTemplate, checkstyleFile) }
 				filter { line -> line.replaceAll('@@rootProject.name@@', "${rootProject.name }".toString()) }					
 				filter { line -> line.replaceAll('@@PROJECT_NAME@@', "${rootProject.name}".toString()) }
-				filter { line -> line.replaceAll('@@GROUP_ID@@', "${project.ext.rootGroupId}".toString()) }
-				filter { line -> line.replaceAll('@@COMPONENT_ID@@', "${project.ext.rootComponent}".toString()) }
-				filter { line -> line.replaceAll('@@PACKAGE@@', "${project.ext.rootPackageName}".toString()) }
-				filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.rootDescription}".toString()) }
-				filter { line -> line.replaceAll('@@URL@@', "${project.ext.rootUrl}".toString()) }
-				filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.LICENSE}".toString()) }
+				filter { line -> line.replaceAll('@@PROJECT_TYPE@@', "${project.ext.projectType}".toString()) }
+				filter { line -> line.replaceAll('@@GROUP_ID@@', "${project.ext.projectGroupId}".toString()) }
+				filter { line -> line.replaceAll('@@COMPONENT_ID@@', "${project.ext.projectComponentId}".toString()) }
+				filter { line -> line.replaceAll('@@PACKAGE@@', "${project.ext.projectRootPackageName}".toString()) }
+				filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.projectDescription}".toString()) }
+				filter { line -> line.replaceAll('@@URL@@', "${project.ext.projectUrl}".toString()) }
+				filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.licenseText}".toString()) }
 				filter { line -> line.replaceAll('@@MAJOR_NUMBER@@', "${project.ext.majorVersionNumber}".toString()) }
 				filter { line -> line.replaceAll('@@MINOR_NUMBER@@', "${project.ext.minorVersionNumber}".toString()) }
-				filter { line -> line.replaceAll('@@REVISION_NUMBER@@', "${project.ext.revisionVersionNumber}".toString()) }
-				filter { line -> line.replaceAll('@@BUILD_NUMBER@@', "${project.ext.buildVersionNumber}".toString()) }
+				filter { line -> line.replaceAll('@@MICRO_NUMBER@@', "${project.ext.microVersionNumber}".toString()) }
+				filter { line -> line.replaceAll('@@QUALIFIER@@', "${project.ext.qualifierVersionNumber}".toString()) }
 				filter { line -> line.replaceAll('@@SCM_NUMBER@@', "${project.ext.scmVersionNumber}".toString()) }
 				filter { line -> line.replaceAll('@@BUILD_TIMESTAMP@@', "${project.ext.BUILD_TIMESTAMP}".toString()) }
 				filter { line -> line.replaceAll('@@IS_RELEASE_VERSION@@', "${project.ext.isReleaseVersion}".toString()) }
@@ -121,18 +122,18 @@ ext.createCheckstyleConfiguration = { overwrite = false ->
 				include "${checkstyleFileHeaderTemplate}"
 				into "${checkstylePath}"
 				rename { String fileName -> fileName.replace(checkstyleFileHeaderTemplate, checkstyleFileHeader) }
-				filter { line -> line.replaceAll('@@rootProject.name@@', "${rootProject.name }".toString()) }					
 				filter { line -> line.replaceAll('@@PROJECT_NAME@@', "${rootProject.name}".toString()) }
-				filter { line -> line.replaceAll('@@GROUP_ID@@', "${project.ext.rootGroupId}".toString()) }
-				filter { line -> line.replaceAll('@@COMPONENT_ID@@', "${project.ext.rootComponent}".toString()) }
-				filter { line -> line.replaceAll('@@PACKAGE@@', "${project.ext.rootPackageName}".toString()) }
-				filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.rootDescription}".toString()) }
-				filter { line -> line.replaceAll('@@URL@@', "${project.ext.rootUrl}".toString()) }
-				filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.LICENSE}".toString()) }
+				filter { line -> line.replaceAll('@@PROJECT_TYPE@@', "${project.ext.projectType}".toString()) }
+				filter { line -> line.replaceAll('@@GROUP_ID@@', "${project.ext.projectGroupId}".toString()) }
+				filter { line -> line.replaceAll('@@COMPONENT_ID@@', "${project.ext.projectComponentId}".toString()) }
+				filter { line -> line.replaceAll('@@PACKAGE@@', "${project.ext.projectRootPackageName}".toString()) }
+				filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.projectDescription}".toString()) }
+				filter { line -> line.replaceAll('@@URL@@', "${project.ext.projectUrl}".toString()) }
+				filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.licenseText}".toString()) }
 				filter { line -> line.replaceAll('@@MAJOR_NUMBER@@', "${project.ext.majorVersionNumber}".toString()) }
 				filter { line -> line.replaceAll('@@MINOR_NUMBER@@', "${project.ext.minorVersionNumber}".toString()) }
-				filter { line -> line.replaceAll('@@REVISION_NUMBER@@', "${project.ext.revisionVersionNumber}".toString()) }
-				filter { line -> line.replaceAll('@@BUILD_NUMBER@@', "${project.ext.buildVersionNumber}".toString()) }
+				filter { line -> line.replaceAll('@@MICRO_NUMBER@@', "${project.ext.microVersionNumber}".toString()) }
+				filter { line -> line.replaceAll('@@QUALIFIER@@', "${project.ext.qualifierVersionNumber}".toString()) }
 				filter { line -> line.replaceAll('@@SCM_NUMBER@@', "${project.ext.scmVersionNumber}".toString()) }
 				filter { line -> line.replaceAll('@@BUILD_TIMESTAMP@@', "${project.ext.BUILD_TIMESTAMP}".toString()) }
 				filter { line -> line.replaceAll('@@IS_RELEASE_VERSION@@', "${project.ext.isReleaseVersion}".toString()) }
@@ -146,6 +147,15 @@ ext.createCheckstyleConfiguration = { overwrite = false ->
 				// download
 				def f = new File(checkstylePath + "/" + checkstyleFile)
 				new URL(checkstyleDefaultConfigurationUrl).withInputStream { i -> f.withOutputStream { it << i } }			
+			}
+			
+			def checkstyleDefaultConfigurationFileHeader = project.getProperty('checkstyleDefaultConfigurationFileHeader')
+			if (checkstyleDefaultConfigurationFileHeader!=null && !checkstyleDefaultConfigurationFileHeader.isEmpty()) {
+				printInfo("> Get " + colorize(HIGHLITE_LEVEL, checkstyleFileHeader) + " from " + colorize(HIGHLITE_LEVEL, checkstyleDefaultConfigurationFileHeader) + ".")
+			
+				// download
+				def f = new File(checkstylePath + "/" + checkstyleFileHeader)
+				new URL(checkstyleDefaultConfigurationFileHeader).withInputStream { i -> f.withOutputStream { it << i } }			
 			}
 		} else {
 			def errorMessage = " Could not find checkstyle configuration (no template nor online connection)!"

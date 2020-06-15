@@ -6,6 +6,8 @@
  */
  
 apply plugin: 'eclipse'
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.classpath")
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.project")
 
 
 /***************************************************************************************
@@ -56,14 +58,13 @@ ext.createEclipseFiles = { overwrite = false ->
 				include "${eclipseClasspathTemplate}"
 				into "${rootDirectory}"
 				rename { String fileName -> fileName.replace(eclipseClasspathTemplate, classpathFile) }
-				filter { line -> line.replaceAll('@@rootProject.name@@', "${rootProject.name }".toString()) }					
 				filter { line -> line.replaceAll('@@PROJECT_NAME@@', "${rootProject.name}".toString()) }
-				filter { line -> line.replaceAll('@@GROUP_ID@@', "${project.ext.rootGroupId}".toString()) }
-				filter { line -> line.replaceAll('@@COMPONENT_ID@@', "${project.ext.rootComponent}".toString()) }
-				filter { line -> line.replaceAll('@@PACKAGE@@', "${project.ext.rootPackageName}".toString()) }
-				filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.rootDescription}".toString()) }
-				filter { line -> line.replaceAll('@@URL@@', "${project.ext.rootUrl}".toString()) }
-				filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.LICENSE}".toString()) }
+				filter { line -> line.replaceAll('@@GROUP_ID@@', "${project.ext.projectGroupId}".toString()) }
+				filter { line -> line.replaceAll('@@COMPONENT_ID@@', "${project.ext.projectComponentId}".toString()) }
+				filter { line -> line.replaceAll('@@PACKAGE@@', "${project.ext.projectRootPackageName}".toString()) }
+				filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.projectDescription}".toString()) }
+				filter { line -> line.replaceAll('@@URL@@', "${project.ext.projectUrl}".toString()) }
+				filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.licenseText}".toString()) }
 				filter { line -> line.replaceAll('@@SRC_MAIN@@', "${srcMainDirectory}".toString()) }
 				filter { line -> line.replaceAll('@@SRC_TEST@@', "${srcTestDirectory}".toString()) }
 				filter { line -> line.replaceAll('@@MAIN@@', "${srcMainDirectoryName}".toString()) }
@@ -135,14 +136,13 @@ ext.createEclipseFiles = { overwrite = false ->
 				include "${eclipseProjectTemplate}"
 				into "${rootDirectory}"
 				rename { String fileName -> fileName.replace(eclipseProjectTemplate, projectFile) }
-				filter { line -> line.replaceAll('@@rootProject.name@@', "${rootProject.name }".toString()) }					
 				filter { line -> line.replaceAll('@@PROJECT_NAME@@', "${rootProject.name}".toString()) }
-				filter { line -> line.replaceAll('@@GROUP_ID@@', "${project.ext.rootGroupId}".toString()) }
-				filter { line -> line.replaceAll('@@COMPONENT_ID@@', "${project.ext.rootComponent}".toString()) }
-				filter { line -> line.replaceAll('@@PACKAGE@@', "${project.ext.rootPackageName}".toString()) }
-				filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.rootDescription}".toString()) }
-				filter { line -> line.replaceAll('@@URL@@', "${project.ext.rootUrl}".toString()) }
-				filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.LICENSE}".toString()) }
+				filter { line -> line.replaceAll('@@GROUP_ID@@', "${project.ext.projectGroupId}".toString()) }
+				filter { line -> line.replaceAll('@@COMPONENT_ID@@', "${project.ext.projectComponentId}".toString()) }
+				filter { line -> line.replaceAll('@@PACKAGE@@', "${project.ext.projectRootPackageName}".toString()) }
+				filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.projectDescription}".toString()) }
+				filter { line -> line.replaceAll('@@URL@@', "${project.ext.projectUrl}".toString()) }
+				filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.licenseText}".toString()) }
 				filter { line -> line.replaceAll('@@MAIN@@', "${srcMainDirectoryName}".toString()) }
 				filter { line -> line.replaceAll('@@TEST@@', "${srcTestDirectoryName}".toString()) }
 			}
@@ -152,7 +152,7 @@ ext.createEclipseFiles = { overwrite = false ->
 				w << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << NELINE \
 					<< "<projectDescription>" << NELINE \
 					<< "	<name>${rootProject.name}</name>" << NELINE \
-					<< "	<comment>${rootDescription}</comment>" << NELINE \
+					<< "	<comment>${projectDescription}</comment>" << NELINE \
 					<< "	<projects/>" << NELINE \
 					<< "	<buildSpec>" << NELINE \
 					<< "		<buildCommand>" << NELINE \

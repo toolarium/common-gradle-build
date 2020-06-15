@@ -13,18 +13,35 @@ apply from: "${commonGradleBuildElementPath}/base/version.gradle"
 
 logInfo(LINE)
 
+//gradle.startParameter.showStacktrace = org.gradle.api.logging.configuration.ShowStacktrace.ALWAYS
+
+// view init settings
+setCommonGradleDefaultPropertyIfNull("initShowJava", true)
+setCommonGradleDefaultPropertyIfNull("initShowRuntime", false)
+setCommonGradleDefaultPropertyIfNull("initShowPath", true)
+setCommonGradleDefaultPropertyIfNull("initShowTempPath", false)
+setCommonGradleDefaultPropertyIfNull("initShowScm", true)
+setCommonGradleDefaultPropertyIfNull("initScmForNewProjects", true)
+setCommonGradleDefaultPropertyIfNull("initCheckstyle", true)
+setCommonGradleDefaultPropertyIfNull("initShowGradle", false)
+setCommonGradleDefaultPropertyIfNull("installGradleWrapper", true)
+
+// show created artefacts
+setCommonGradleDefaultPropertyIfNull("showCreatedArtefacts", true)
+
 // version default settings
 setCommonGradleDefaultPropertyIfNull("majorVersionNumber", 0)
 setCommonGradleDefaultPropertyIfNull("minorVersionNumber", 0)
-setCommonGradleDefaultPropertyIfNull("revisionVersionNumber", 1)
-setCommonGradleDefaultPropertyIfNull("buildVersionNumber", SNAPSHOT_TAG_NAME)
+setCommonGradleDefaultPropertyIfNull("microVersionNumber", 1)
+setCommonGradleDefaultPropertyIfNull("qualifierVersionNumber", SNAPSHOT_TAG_NAME)
 setCommonGradleDefaultPropertyIfNull("isReleaseVersion", false)
 setCommonGradleDefaultPropertyIfNull("scmVersionNumber", '')
 
 // project basic settings
-setCommonGradleDefaultPropertyIfNull("LICENSE", "MIT License: https://mit-license.org")
-setCommonGradleDefaultPropertyIfNull("LICENSE_URL", "https://mit-license.org")
-setCommonGradleDefaultPropertyIfNull("rootUrl", "")
+setCommonGradleDefaultPropertyIfNull("licenseText", "MIT License: https://mit-license.org")
+setCommonGradleDefaultPropertyIfNull("licenseUrl", "https://mit-license.org")
+setCommonGradleDefaultPropertyIfNull("projectUrl", "")
+setCommonGradleDefaultPropertyIfNull("projectType", "java-library")
 
 // software generation settings
 setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBuildSources", "build/generated/sources/common-gradle-build")
@@ -32,7 +49,7 @@ setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBuildSources", "build
 // compile settings
 setCommonGradleDefaultPropertyIfNull("sourceCompatibility", JavaVersion.VERSION_1_8)
 setCommonGradleDefaultPropertyIfNull("targetCompatibility", JavaVersion.VERSION_1_8)
-setCommonGradleDefaultPropertyIfNull("ENCODING", "UTF-8")
+setCommonGradleDefaultPropertyIfNull("fileEncoding", "UTF-8")
 setCommonGradleDefaultPropertyIfNull("compileJavaFork", false)
 setCommonGradleDefaultPropertyIfNull("compileJavaHome", "")
 
@@ -54,10 +71,14 @@ if (!project.hasProperty('mavenPassword')) {
 }
 
 // gradle jvm arguments
-setCommonGradleDefaultPropertyIfNull("GRADLE_PROPERTIES_JVMARGS", "-Xmx1g -XX:MaxHeapSize=1g -XX:MaxPermSize=256m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=${ENCODING}")
+setCommonGradleDefaultPropertyIfNull("gradlePropertiesJvmArgs", "-Xmx1g -XX:MaxHeapSize=1g -XX:MaxPermSize=256m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=${fileEncoding}")
+//setCommonGradleDefaultPropertyIfNull("gradlePropertiesLogLevel", "lifecycle")
+setCommonGradleDefaultPropertyIfNull("gradlePropertiesLogLevel", "quiet")
+setCommonGradleDefaultPropertyIfNull("gradlePropertiesConsole", "rich")
+setCommonGradleDefaultPropertyIfNull("gradlePropertiesWarningMode", "all")
 
 // base path
-setCommonGradleDefaultPropertyIfNull("commonGradleBuildElementPath", "${commonGradleUrl}/build-element")
+setCommonGradleDefaultPropertyIfNull("commonGradleBuildElementPath", "${commonGradleBuildUrl}/build-element")
 setCommonGradleDefaultPropertyIfNull("rootDirectory", ".")
 
 // common files
@@ -68,13 +89,31 @@ setCommonGradleDefaultPropertyIfNull("versionFile", "$rootDirectory/VERSION")
 setCommonGradleDefaultPropertyIfNull("readmeFile", "$rootDirectory/README.md")
 setCommonGradleDefaultPropertyIfNull("includeReadmeFile", false)
 setCommonGradleDefaultPropertyIfNull("licenseFile", "$rootDirectory/LICENSE")
+setCommonGradleDefaultPropertyIfNull("changelogFile", "$rootDirectory/CHANGELOG.md")
 setCommonGradleDefaultPropertyIfNull("includeLicenseFile", true)
 setCommonGradleDefaultPropertyIfNull("includeVersionFile", true)
+setCommonGradleDefaultPropertyIfNull("createChangelogFile", false)
+setCommonGradleDefaultPropertyIfNull("includeChangelogFile", false)
 
-// config directories
+// config directory
 setCommonGradleDefaultPropertyIfNull("configDirectory", "$rootDirectory/config")
 setCommonGradleDefaultPropertyIfNull("configIgnoreEmptyPackages", true)
 setCommonGradleDefaultPropertyIfNull("configPackages", "")
+
+// build directory
+setCommonGradleDefaultPropertyIfNull("buildDirectory", "$rootDirectory/build")
+
+// .gradle directory
+setCommonGradleDefaultPropertyIfNull("gradleDirectory", "$rootDirectory/.gradle")
+
+// docs directory
+setCommonGradleDefaultPropertyIfNull("docsDirectory", "$rootDirectory/docs")
+
+// logs directory
+setCommonGradleDefaultPropertyIfNull("logsDirectory", "$rootDirectory/logs")
+
+// temp directory
+setCommonGradleDefaultPropertyIfNull("tempDirectory", "$rootDirectory/temp")
 
 // src directories
 setCommonGradleDefaultPropertyIfNull("srcMainDirectoryName", "main")
@@ -84,26 +123,42 @@ setCommonGradleDefaultPropertyIfNull("srcDirectory", "${rootDirectory}/src")
 setCommonGradleDefaultPropertyIfNull("srcMainDirectory", "${srcDirectory}/${srcMainDirectoryName}")
 setCommonGradleDefaultPropertyIfNull("srcTestDirectory", "${srcDirectory}/${srcTestDirectoryName}")
 
+// set project name pattern
+setCommonGradleDefaultPropertyIfNull("projectNameRegularExpressionPattern", '^[a-zA-Z0-9\\-]+$')
+setCommonGradleDefaultPropertyIfNull("projectGroupIdRegularExpressionPattern", '^[a-zA-Z0-9\\.]+$')
+setCommonGradleDefaultPropertyIfNull("projectComponentIdRegularExpressionPattern", '^[a-zA-Z0-9\\-]+$')
+setCommonGradleDefaultPropertyIfNull("projectComponentIdIsPartOfProjectName", true)
+setCommonGradleDefaultPropertyIfNull("projectRootPackageNamePrefix", "")
+
+// allowedMainDirectories & allowedMainFiles
+addCommonGradlePropertyList("allowedMainDirectories", buildDirectory)
+addCommonGradlePropertyList("allowedMainDirectories", gradleDirectory)
+addCommonGradlePropertyList("allowedMainDirectories", configDirectory)
+addCommonGradlePropertyList("allowedMainDirectories", srcDirectory)
+addCommonGradlePropertyList("allowedMainDirectories", docsDirectory)
+addCommonGradlePropertyList("allowedMainDirectories", logsDirectory)
+addCommonGradlePropertyList("allowedMainDirectories", tempDirectory)
+addCommonGradlePropertyList("allowedMainFiles", licenseFile)
+addCommonGradlePropertyList("allowedMainFiles", readmeFile)
+addCommonGradlePropertyList("allowedMainFiles", versionFile)
+addCommonGradlePropertyList("allowedMainFiles", buildGradleFile)
+addCommonGradlePropertyList("allowedMainFiles", gradlePropertiesFile)
+addCommonGradlePropertyList("allowedMainFiles", settingsGradleFile)
+addCommonGradlePropertyList("allowedMainFiles", changelogFile)
+
+if (project.hasProperty('installGradleWrapper') && project.getProperty('installGradleWrapper')) {
+	addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/gradle")
+	addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/gradlew")
+	addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/gradlew.bat")
+}
+
 // template directories
 setCommonGradleDefaultPropertyIfNull("commonGradleTemplatePathName", "template")
-setCommonGradleDefaultPropertyIfNull("commonGradleTemplatePath", "${commonGradleUrl}/${commonGradleTemplatePathName}")
+setCommonGradleDefaultPropertyIfNull("commonGradleTemplatePath", "${commonGradleBuildUrl}/${commonGradleTemplatePathName}")
 setCommonGradleDefaultPropertyIfNull("commonGradleTemplateBasePath", "${commonGradleTemplatePath}/base")
 setCommonGradleDefaultPropertyIfNull("commonGradleTemplateJavaPath", "${commonGradleTemplatePath}/java")
 setCommonGradleDefaultPropertyIfNull("commonGradleTemplateScmPath", "${commonGradleTemplatePath}/scm")
 
-// view init settings
-setCommonGradleDefaultPropertyIfNull("INIT_SHOW_JAVA", true)
-setCommonGradleDefaultPropertyIfNull("INIT_SHOW_RUNTIME", false)
-setCommonGradleDefaultPropertyIfNull("INIT_SHOW_PATH", true)
-setCommonGradleDefaultPropertyIfNull("INIT_SHOW_TEMP", false)
-setCommonGradleDefaultPropertyIfNull("INIT_SHOW_SCM", true)
-setCommonGradleDefaultPropertyIfNull("INIT_SCM", true)
-setCommonGradleDefaultPropertyIfNull("INIT_CHECKSTYLE", false)
-setCommonGradleDefaultPropertyIfNull("INIT_SHOW_GRADLE", false)
-setCommonGradleDefaultPropertyIfNull("INSTALL_GRADLE_WRAPPER", true)
-
-// show created artefacts
-setCommonGradleDefaultPropertyIfNull("showCreatedArtefacts", true)
 
 setCommonGradleDefaultPropertyIfNull("userHomeDirectory", System.properties['user.home'].replace('\\', '/'))
 if ("windows" == getOsName()) {
@@ -112,28 +167,54 @@ if ("windows" == getOsName()) {
 	setCommonGradleDefaultPropertyIfNull("userHomeDirectory", '~/')
 }
 
-
 // gradle home properties file
 setCommonGradleDefaultPropertyIfNull("gradleHome", "$userHomeDirectory/.gradle")
 setCommonGradleDefaultPropertyIfNull("gradleHomePropertiesFile", "$gradleHome/gradle.properties")
-setCommonGradleDefaultPropertyIfNull("commonGradleBuildHome", "$gradleHome/common-gradle-build")
-setCommonGradleDefaultPropertyIfNull("commonGradleBuildHomeLastCheckFile", "$commonGradleBuildHome/lastCheck.properties")
-setCommonGradleDefaultPropertyIfNull("commonGradleBuildHomeLastCheckTimeout", 1000 * 60 * 60 * 24) // one day
-setCommonGradleDefaultPropertyIfNull("commonGradleBuildHomeVersionFileUrl", "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/VERSION")
+setCommonGradleDefaultPropertyIfNull("commonGradleBuildUrl", "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/common.gradle")
 setCommonGradleDefaultPropertyIfNull("commonGradleBuildGitUrl", "https://github.com/toolarium/common-gradle-build.git")
+
+// gradle cache properties file
+setCommonGradleDefaultPropertyIfNull("commonGradleBuildCache", "$gradleHome/common-gradle-build")
+setCommonGradleDefaultPropertyIfNull("commonGradleBuildCacheLastCheckFile", "$commonGradleBuildCache/lastCheck.properties")
+setCommonGradleDefaultPropertyIfNull("commonGradleBuildCacheLastCheckTimeout", 1000 * 60 * 60 * 24) // one day
+setCommonGradleDefaultPropertyIfNull("commonGradleBuildCacheVersionFileUrl", "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/VERSION")
+
+
+// test
+setCommonGradleDefaultPropertyIfNull("initTesting", true)
+if (initTesting) {
+	setCommonGradleDefaultPropertyIfNull("testDependencyVersion", "5.3.1")
+
+	if (testDependencyVersion!=null && !testDependencyVersion.isEmpty()) {
+		if (testDependencyVersion.startsWith("4.")) {
+			setCommonGradleDefaultPropertyIfNull("testImplementationDependency", "junit:junit:${testDependencyVersion}")
+			setCommonGradleDefaultPropertyIfNull("testRuntimeOnlyDependency", "junit:junit:${testDependencyVersion}")
+		} else {
+			setCommonGradleDefaultPropertyIfNull("testImplementationDependency", "org.junit.jupiter:junit-jupiter-api:${testDependencyVersion}")
+			setCommonGradleDefaultPropertyIfNull("testRuntimeOnlyDependency", "org.junit.jupiter:junit-jupiter-engine:${testDependencyVersion}")
+		}
+	}
+}
 
 
 // checkstyle
+setCommonGradleDefaultPropertyIfNull("checkstyleToolDefaultVersion", '8.27')
 //setCommonGradleDefaultPropertyIfNull("checkstyleToolVersion", '8.27')
 setCommonGradleDefaultPropertyIfNull("checkstyleMaxWarnings", 0)
 setCommonGradleDefaultPropertyIfNull("checkstyleXMLReport", false)
 setCommonGradleDefaultPropertyIfNull("checkstyleHTMLReport", true)
 setCommonGradleDefaultPropertyIfNull("checkstyleConfiguration", "${configDirectory}/checkstyle/checkstyle.xml")
-setCommonGradleDefaultPropertyIfNull("checkstyleDefaultConfigurationUrl", 'https://raw.githubusercontent.com/checkstyle/checkstyle/master/src/main/resources/google_checks.xml')
+setCommonGradleDefaultPropertyIfNull("checkstyleDefaultConfigurationFileHeader", "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/template/java/checkstyle-file-header.txt.template")
+setCommonGradleDefaultPropertyIfNull("checkstyleDefaultConfigurationUrl", "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/template/java/checkstyle.xml.template")
+// 'https://raw.githubusercontent.com/checkstyle/checkstyle/master/src/main/resources/google_checks.xml' issues with current
 //setCommonGradleDefaultPropertyIfNull("checkstyleCustomStylesheet", "${configDirectory}/checkstyle/checkstyle.xml")
 
 // online connection url
 setCommonGradleDefaultPropertyIfNull("onlineCheckConnectionUrl", 'www.google.com')
 setCommonGradleDefaultPropertyIfNull("onlineCheckConnectionUrlTimeout", 1500)
+
+// valid build attributes
+setCommonGradleDefaultPropertyIfNull("validBuild", true)
+setCommonGradleDefaultPropertyIfNull("validBuildMessage", "")
 
 logInfo(LINE)

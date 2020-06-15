@@ -13,8 +13,8 @@ apply plugin: 'maven-publish'
  ***************************************************************************************/
 publishing {
 	def description = ''
-	if (project.hasProperty('rootDescription')) {
-		description = project.getProperty('rootDescription')
+	if (project.hasProperty('projectDescription')) {
+		description = project.getProperty('projectDescription')
 	}
 
 	def mavenUsername = ''
@@ -35,19 +35,19 @@ publishing {
 	publications {
         mavenPublication(MavenPublication) {
             artifactId = "${rootProject.name}"
-			groupId= "${rootGroupId}"
+			groupId= "${projectGroupId}"
 			artifact configJar
 					
 			// after staging go to -> https://oss.sonatype.org/#stagingRepositories -> close
             pom {
                 name = "${rootProject.name}"
                 description = description
-                url = "${rootUrl}"
+                url = "${projectUrl}"
 				
                 licenses {
                     license {
-                        name = "${LICENSE}"
-                        url = "${LICENSE_URL}"
+                        name = "${licenseText}"
+                        url = "${licenseUrl}"
                     }
                 }
             }

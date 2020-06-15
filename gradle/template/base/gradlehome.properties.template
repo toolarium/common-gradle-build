@@ -1,13 +1,13 @@
 /***************************************************************************************
  * Maven credentials
  ***************************************************************************************/
-mavenUsername=
-mavenPassword=
+mavenUsername =
+mavenPassword =
 
 
 /***************************************************************************************
  * Signing credentials
  ***************************************************************************************/
-signing.keyId=
-signing.password=
-signing.secretKeyRingFile=
+signing.keyId =
+signing.password =
+signing.secretKeyRingFile =

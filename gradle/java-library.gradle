@@ -5,12 +5,12 @@
  * MIT License: https://mit-license.org
  */
 
-if (!project.hasProperty('commonGradleUrl')) {
-    ext.commonGradleUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
+if (!project.hasProperty('commonGradleBuildUrl')) {
+    ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
 }
 
 if (!project.hasProperty('commonGradleBuildElementPath')) {
-	ext.commonGradleBuildElementPath="${commonGradleUrl}/build-element"
+	ext.commonGradleBuildElementPath="${commonGradleBuildUrl}/build-element"
 }
 
 apply from: "${commonGradleBuildElementPath}/java-base.gradle"
@@ -26,15 +26,15 @@ setCommonGradleDefaultPropertyIfNull("srcTestResourcesDirectory", "${srcTestDire
  * project java validation
  ***************************************************************************************/
 projectValidation {
-	doLast {
+	doFirst {
 		if (project.getProperty('IS_NEW')) {
 			logInfo("Create at least one java file...")
 			def javaLibraryTemplate = 'javaLibrary.template'
-			def slashedRootPackageName = rootPackageName.replace('.', '/')
+			def slashedRootPackageName = projectRootPackageName.replace('.', '/')
 			def className = 'MyLibrary'
 			def commonGradleTemplateJavaPath = project.getProperty('commonGradleTemplateJavaPath')
 			
-			def mainJavaSourcPath = createPackagePath(srcMainJavaDirectory, rootPackageName)			
+			def mainJavaSourcPath = createPackagePath(srcMainJavaDirectory, projectRootPackageName)			
 			if (new File("${commonGradleTemplateJavaPath}", "${javaLibraryTemplate}").exists()) {
 				printInfo("> Create file " + colorize(HIGHLITE_LEVEL, "${mainJavaSourcPath}/${className}.java") + " from template ${javaLibraryTemplate}.")
 				copy {
@@ -42,11 +42,11 @@ projectValidation {
 					include "${javaLibraryTemplate}"
 					into "${mainJavaSourcPath}"
 					rename { String fileName -> fileName.replace("${javaLibraryTemplate}", "${className}.java".toString() ) }
-					filter { line -> line.replaceAll('@@rootProject.name@@', "${rootProject.name}".toString()) }					
+					filter { line -> line.replaceAll('@@PROJECT_NAME@@', "${rootProject.name}".toString()) }
 					filter { line -> line.replaceAll('@@className@@', "${className}".toString()) }
 					filter { line -> line.replaceAll('@@fileName@@', "${className}.java".toString()) }
-					filter { line -> line.replaceAll('@@packageName@@', "${rootPackageName}".toString()) }
-					filter { line -> line.replaceAll('@@LICENSE@@', "${LICENSE}".toString()) }
+					filter { line -> line.replaceAll('@@packageName@@', "${projectRootPackageName}".toString()) }
+					filter { line -> line.replaceAll('@@LICENSE@@', "${licenseText}".toString()) }
 				}
 			} else {
 				printInfo("> Create file " + colorize(HIGHLITE_LEVEL, "${mainJavaSourcPath}/${className}.java") + " with default values.")
@@ -55,9 +55,9 @@ projectValidation {
 						<< " * ${className}.java" << NELINE \
 						<< " *" << NELINE \
 						<< " * Copyright by ${rootProject.name}, all rights reserved." << NELINE \
-						<< " * ${LICENSE}" << NELINE \
+						<< " * ${licenseText}" << NELINE \
 						<< "*/" << NELINE \
-						<< "package ${rootPackageName};" << NELINE \
+						<< "package ${projectRootPackageName};" << NELINE \
 						<< "" << NELINE \
 						<< "" << NELINE \
 						<< "/**" << NELINE \
@@ -76,7 +76,7 @@ projectValidation {
 				}			
 			}
 			
-			def testJavaSourcPath = createPackagePath(srcTestJavaDirectory, rootPackageName)			
+			def testJavaSourcPath = createPackagePath(srcTestJavaDirectory, projectRootPackageName)			
 			def javaLibraryTestTemplate = 'javaLibraryTest.template'
 			def testClassName = "${className}Test"
 			if (new File("${commonGradleTemplateJavaPath}", "${javaLibraryTestTemplate}").exists()) {
@@ -86,12 +86,12 @@ projectValidation {
 					include "${javaLibraryTestTemplate}"
 					into "${testJavaSourcPath}"
 					rename { String fileName -> fileName.replace("${javaLibraryTestTemplate}", "${testClassName}.java".toString() ) }
-					filter { line -> line.replaceAll('@@rootProject.name@@', "${rootProject.name}".toString()) }					
+					filter { line -> line.replaceAll('@@PROJECT_NAME@@', "${rootProject.name}".toString()) }
 					filter { line -> line.replaceAll('@@className@@', "${testClassName}".toString()) }
 					filter { line -> line.replaceAll('@@classNameUnderTest@@', "${className}".toString()) }				
 					filter { line -> line.replaceAll('@@fileName@@', "${testClassName}.java".toString()) }
-					filter { line -> line.replaceAll('@@packageName@@', "${rootPackageName}".toString()) }
-					filter { line -> line.replaceAll('@@LICENSE@@', "${LICENSE}".toString()) }
+					filter { line -> line.replaceAll('@@packageName@@', "${projectRootPackageName}".toString()) }
+					filter { line -> line.replaceAll('@@LICENSE@@', "${licenseText}".toString()) }
 				}
 			} else {
 				printInfo("> Create file " + colorize(HIGHLITE_LEVEL, "${testJavaSourcPath}/${testClassName}.java") + " with default values.")
@@ -100,9 +100,9 @@ projectValidation {
 						<< " * ${testClassName}.java" << NELINE \
 						<< " *" << NELINE \
 						<< " * Copyright by ${rootProject.name}, all rights reserved." << NELINE \
-						<< " * ${LICENSE}" << NELINE \
+						<< " * ${licenseText}" << NELINE \
 						<< "*/" << NELINE \
-						<< "package ${rootPackageName};" << NELINE \
+						<< "package ${projectRootPackageName};" << NELINE \
 						<< "" << NELINE \
 						<< "" << NELINE \
 						<< "import org.junit.jupiter.api.Test;" << NELINE \

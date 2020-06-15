@@ -21,18 +21,18 @@ ext.createJavaVersion = { ->
 			include "${javaVersionTemplate}"
 			into "${generatedCommonGradleBuildJavaSourcPath}"
 			rename { String fileName -> fileName.replace(javaVersionTemplate, javaVersionFile) }
-			filter { line -> line.replaceAll('@@rootProject.name@@', "${rootProject.name }".toString()) }					
 			filter { line -> line.replaceAll('@@PROJECT_NAME@@', "${rootProject.name}".toString()) }
-			filter { line -> line.replaceAll('@@GROUP_ID@@', "${project.ext.rootGroupId}".toString()) }
-			filter { line -> line.replaceAll('@@COMPONENT_ID@@', "${project.ext.rootComponent}".toString()) }
-			filter { line -> line.replaceAll('@@PACKAGE@@', "${project.ext.rootPackageName}".toString()) }
-			filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.rootDescription}".toString()) }
-			filter { line -> line.replaceAll('@@URL@@', "${project.ext.rootUrl}".toString()) }
-			filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.LICENSE}".toString()) }
+			filter { line -> line.replaceAll('@@PROJECT_TYPE@@', "${project.ext.projectType}".toString()) }
+			filter { line -> line.replaceAll('@@GROUP_ID@@', "${project.ext.projectGroupId}".toString()) }
+			filter { line -> line.replaceAll('@@COMPONENT_ID@@', "${project.ext.projectComponent}".toString()) }
+			filter { line -> line.replaceAll('@@PACKAGE@@', "${project.ext.projectRootPackageName}".toString()) }
+			filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.projectDescription}".toString()) }
+			filter { line -> line.replaceAll('@@URL@@', "${project.ext.projectUrl}".toString()) }
+			filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.licenseText}".toString()) }
 			filter { line -> line.replaceAll('@@MAJOR_NUMBER@@', "${project.ext.majorVersionNumber}".toString()) }
 			filter { line -> line.replaceAll('@@MINOR_NUMBER@@', "${project.ext.minorVersionNumber}".toString()) }
-			filter { line -> line.replaceAll('@@REVISION_NUMBER@@', "${project.ext.revisionVersionNumber}".toString()) }
-			filter { line -> line.replaceAll('@@BUILD_NUMBER@@', "${project.ext.buildVersionNumber}".toString()) }
+			filter { line -> line.replaceAll('@@MICRO_NUMBER@@', "${project.ext.microVersionNumber}".toString()) }
+			filter { line -> line.replaceAll('@@QUALIFIER@@', "${project.ext.qualifierVersionNumber}".toString()) }
 			filter { line -> line.replaceAll('@@SCM_NUMBER@@', "${project.ext.scmVersionNumber}".toString()) }
 			filter { line -> line.replaceAll('@@BUILD_TIMESTAMP@@', "${project.ext.BUILD_TIMESTAMP}".toString()) }
 			filter { line -> line.replaceAll('@@IS_RELEASE_VERSION@@', "${project.ext.isReleaseVersion}".toString()) }
@@ -41,20 +41,21 @@ ext.createJavaVersion = { ->
 	} else {
 		logInfo("Create " + colorize(HIGHLITE_LEVEL, javaVersionFile) + colorize(INFO_LEVEL, " with default values."))
 		new File(generatedCommonGradleBuildJavaSourcPath, javaVersionFile).withWriter { w ->
-			w << "package ${rootPackageName};" << NELINE \
+			w << "package ${projectRootPackageName};" << NELINE \
 				<< "" << NELINE \
 				<< "public class Version {" << NELINE \
 				<< "	public static final String PROJECT_NAME        = \"${rootProject.name}\";" << NELINE \
-				<< "	public static final String GROUP_ID            = \"${project.ext.rootGroupId}\";" << NELINE \
-				<< "	public static final String COMPONENT_ID        = \"${project.ext.rootComponent}\";" << NELINE \
-				<< "	public static final String PACKAGE             = \"${project.ext.rootPackageName}\";" << NELINE \
-				<< "	public static final String DESCRIPTION         = \"${project.ext.rootDescription}\";" << NELINE \
-				<< "	public static final String URL                 = \"${project.ext.rootUrl}\";" << NELINE \
-				<< "	public static final String LICENSE             = \"${project.ext.LICENSE}\";" << NELINE \
+				<< "	public static final String GROUP_ID            = \"${project.ext.projectGroupId}\";" << NELINE \
+				<< "	public static final String COMPONENT_ID        = \"${project.ext.projectComponentId}\";" << NELINE \
+				<< "	public static final String PROJECT_TYPE        = \"${project.ext.projectType}\";" << NELINE \
+				<< "	public static final String PACKAGE             = \"${project.ext.projectRootPackageName}\";" << NELINE \
+				<< "	public static final String DESCRIPTION         = \"${project.ext.projectDescription}\";" << NELINE \
+				<< "	public static final String URL                 = \"${project.ext.projectUrl}\";" << NELINE \
+				<< "	public static final String LICENSE             = \"${project.ext.licenseText}\";" << NELINE \
 				<< "	public static final int MAJOR_NUMBER           = ${project.ext.majorVersionNumber};" << NELINE \
 				<< "	public static final int MINOR_NUMBER           = ${project.ext.minorVersionNumber};" << NELINE \
-				<< "	public static final int REVISION_NUMBER        = ${project.ext.revisionVersionNumber};" << NELINE \
-				<< "	public static final String BUILD_NUMBER        = \"${project.ext.buildVersionNumber}\";" << NELINE \
+				<< "	public static final int MICRO_NUMBER           = ${project.ext.microVersionNumber};" << NELINE \
+				<< "	public static final String QUALIFIER           = \"${project.ext.qualifierVersionNumber}\";" << NELINE \
 				<< "	public static final String SCM_NUMBER          = \"${project.ext.scmVersionNumber}\";" << NELINE \
 				<< "	public static final String BUILD_TIMESTAMP     = \"${project.ext.BUILD_TIMESTAMP}\";" << NELINE \
 				<< "	public static final boolean IS_RELEASE_VERSION = ${project.ext.isReleaseVersion};" << NELINE \
@@ -64,6 +65,7 @@ ext.createJavaVersion = { ->
 				<< "		System.out.println(\"project-name       : \" + PROJECT_NAME);" << NELINE \
 				<< "		System.out.println(\"group-id           : \" + GROUP_ID);" << NELINE \
 				<< "		System.out.println(\"component-id       : \" + COMPONENT_ID);" << NELINE \
+				<< "		System.out.println(\"project-type       : \" + PROJECT_TYPE);" << NELINE \
 				<< "		System.out.println(\"package            : \" + PACKAGE);" << NELINE \
 				<< "		System.out.println(\"description        : \" + DESCRIPTION);" << NELINE \
 				<< "		System.out.println(\"url                : \" + URL);" << NELINE \

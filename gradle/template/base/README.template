@@ -1,6 +1,6 @@
-# @@rootProject.name@@
+# @@PROJECT_NAME@@
 
-@@rootDescription@@
+@@DESCRIPTION@@
 
 ## Getting Started
 

@@ -27,32 +27,52 @@ ext.readVersion = { ->
 		setCommonGradleProperty('minorVersionNumber', parseInteger(minorNumber, 0, 'minor.number'))
 	}
 	
-	def revisionNumber = props.getProperty("revision.number")
-	if (revisionNumber!=null) {
-		setCommonGradleProperty('revisionVersionNumber', parseInteger(revisionNumber, 1, 'revision.number'))
+	def doUpdate = false
+	def microNumber = props.getProperty("micro.number")
+	if (microNumber!=null) {
+		setCommonGradleProperty('microVersionNumber', parseInteger(microNumber, 1, 'micro.number'))
+	} else {
+		// keep backwards compatibility
+		def revisionNumber = props.getProperty("revision.number")
+		if (revisionNumber!=null) {
+			setCommonGradleProperty('microVersionNumber', parseInteger(revisionNumber, 1, 'revision.number'))
+			doUpdate = true
+		}
+	}
+	
+	def qualifierNumber = props.getProperty("qualifier")
+	if (qualifierNumber!=null) {
+		setCommonGradleProperty('qualifierVersionNumber', qualifierNumber.trim(), '')
+	} else {
+		// keep backwards compatibility
+		def buildNumber = props.getProperty("build.number")
+		if (buildNumber!=null) {
+			setCommonGradleProperty('qualifierVersionNumber', buildNumber.trim(), '')
+			doUpdate = true
+		}
+	}	
+	
+	project.version = project.getProperty('majorVersionNumber') + "." + project.getProperty('minorVersionNumber') + "." + project.getProperty('microVersionNumber')
+	def qualifierVersionNumber = project.getProperty('qualifierVersionNumber')
+	if (qualifierVersionNumber !=null && !qualifierVersionNumber.isEmpty()) {
+		project.version = project.version + "-" +  qualifierVersionNumber
 	}
 
-	def buildNumber = props.getProperty("build.number")
-	if (buildNumber!=null) {
-		setCommonGradleProperty('buildVersionNumber', buildNumber.trim(), '')
-	}
-
-	project.version = project.getProperty('majorVersionNumber') + "." + project.getProperty('minorVersionNumber') + "." + project.getProperty('revisionVersionNumber')
-	def buildVersionNumber = project.getProperty('buildVersionNumber')
-	if (buildVersionNumber !=null && !buildVersionNumber.isEmpty()) {
-		project.version = project.version + "-" +  buildVersionNumber
-	}
-
-	if (!project.getProperty('buildVersionNumber').endsWith(SNAPSHOT_TAG_NAME)) {
+	if (!project.getProperty('qualifierVersionNumber').endsWith(SNAPSHOT_TAG_NAME)) {
 		setCommonGradleProperty('isReleaseVersion', true, true, false)
 		logInfo("It is a release verison: " + colorize(HIGHLITE_LEVEL, project.version))
 	} else {
 		setCommonGradleProperty('isReleaseVersion', false, false, false)
 		logInfo("It is a snapshot verison: " + colorize(HIGHLITE_LEVEL, project.version))
 	}
-	
+
 	setCommonGradleProperty('isSnapshotVersion', !project.getProperty('isReleaseVersion'))
 	setCommonGradleProperty('scmVersionNumber', '')
+	
+	if (doUpdate) {
+		updateVersion()
+	}
+	
 }
 
 
@@ -60,22 +80,47 @@ ext.readVersion = { ->
  * Update version
  ***************************************************************************************/
 ext.updateVersion = { ->
-	logInfo("Write file " + versionFile + " -> " + project.getProperty('majorVersionNumber') + ", " + project.getProperty('minorVersionNumber') + ", " + project.getProperty('revisionVersionNumber') + ", " + project.getProperty('buildVersionNumber'))
+	logInfo("Write file " + versionFile + " -> " + project.getProperty('majorVersionNumber') + ", " + project.getProperty('minorVersionNumber') + ", " + project.getProperty('microVersionNumber') + ", " + project.getProperty('qualifierVersionNumber'))
 	new File('.', versionFile).withWriter { w ->
 		w << "major.number        = " << project.getProperty('majorVersionNumber') << NELINE \
 		<< "minor.number        = " << project.getProperty('minorVersionNumber') << NELINE \
-		<< "revision.number     = " << project.getProperty('revisionVersionNumber') << NELINE \
-		<< "build.number        = " << project.getProperty('buildVersionNumber') << NELINE 
+		<< "micro.number        = " << project.getProperty('microVersionNumber') << NELINE \
+		<< "qualifier           = " << project.getProperty('qualifierVersionNumber') << NELINE 
 	}
 }
 
 
 /***************************************************************************************
- * Increase build version
+ * Increase major version
  ***************************************************************************************/
-ext.increaseRevisionVersion = { ->
-	setCommonGradleProperty('revisionVersionNumber', 1 + project.getProperty('revisionVersionNumber'), 1)
-	logInfo("Increase revision number " + revisionVersionNumber + ": " + project.version)
+ext.increaseMajorVersion = { ->
+	setCommonGradleProperty('majorVersionNumber', 1 + project.getProperty('majorVersionNumber'), 1)
+	setCommonGradleProperty('minorVersionNumber', 0, 0)
+	setCommonGradleProperty('microVersionNumber', 0, 0)
+	logInfo("Increase major number " + majorVersionNumber + ": " + project.version)
+	updateVersion()
+	readVersion()
+}
+
+
+/***************************************************************************************
+ * Increase minor version
+ ***************************************************************************************/
+ext.increaseMinorVersion = { ->
+	setCommonGradleProperty('minorVersionNumber', 1 + project.getProperty('minorVersionNumber'), 1)
+	setCommonGradleProperty('microVersionNumber', 0, 0)
+	logInfo("Increase minor number " + minorVersionNumber + ": " + project.version)
+	updateVersion()
+	readVersion()
+}
+
+
+/***************************************************************************************
+ * Increase micro version
+ ***************************************************************************************/
+ext.increaseMicroVersion = { ->
+	setCommonGradleProperty('microVersionNumber', 1 + project.getProperty('microVersionNumber'), 1)
+	logInfo("Increase micro number " + microVersionNumber + ": " + project.version)
 	updateVersion()
 	readVersion()
 }
@@ -95,18 +140,15 @@ ext.readRemoteVersion = { url ->
 
 	def majorNumber = props.getProperty("major.number")
 	def minorNumber = props.getProperty("minor.number")
-	def revisionNumber = props.getProperty("revision.number")
-	def buildNumber = props.getProperty("build.number")
+	def microNumber = props.getProperty("micro.number")
+	def qualifier = props.getProperty("qualifier")
 	
 	def remoteVersion = majorNumber + "." + minorNumber;	
-	if (revisionNumber!=null) {
-		remoteVersion += "." + revisionNumber
-	} else if (buildNumber!=null) { 
-		remoteVersion += "." + buildNumber
+	if (microNumber!=null) {
+		remoteVersion += "." + microNumber
+	} else if (qualifier!=null) { 
+		remoteVersion += "-" + qualifier
 	}
 	
 	return remoteVersion
 }
-
-
-

@@ -83,7 +83,7 @@ tasks.withType(JavaCompile) {
 			logInfo("Generate resources source directory is [" + colorize(HIGHLITE_LEVEL, generatedCommonGradleBuildResourcesSources) + colorize(INFO_LEVEL, "]"))
 
 			// create path in generated source
-			def generatedCommonGradleBuildJavaSourcPath = createPackagePath(generatedCommonGradleBuildJavaSources, rootPackageName)			
+			def generatedCommonGradleBuildJavaSourcPath = createPackagePath(generatedCommonGradleBuildJavaSources, projectRootPackageName)			
 			setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBuildJavaSourcPath", generatedCommonGradleBuildJavaSourcPath)
 			
 			// create java version
@@ -111,37 +111,35 @@ compileJava {
  * project java validation
  ***************************************************************************************/
 projectValidation {
-	doLast {
+	doFirst {
 		logInfo("Check Java source and test folders...")
 		setCommonGradleProperty('createSrcMainJavaDirectory', !new File(srcMainJavaDirectory).exists())	
 		setCommonGradleProperty('createSrcTestJavaDirectory', !new File(srcTestJavaDirectory).exists())
 		setCommonGradleProperty('createSrcMainResourcesDirectory', !new File(srcMainResourcesDirectory).exists())
 		setCommonGradleProperty('createSrcTestResourcesDirectory', !new File(srcTestResourcesDirectory).exists())
 
-		if (project.getProperty('IS_NEW')) {
-			if (project.getProperty('createSrcMainJavaDirectory')) {
-				printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcMainJavaDirectory) + ".")
-				new File(srcMainJavaDirectory ).mkdirs()				
-				new File(srcMainJavaDirectory + '/' + rootPackageName.replace('.', '/')).mkdirs()				
-				setCommonGradleProperty('IS_NEW', true)
-			}
+		if (project.getProperty('createSrcMainJavaDirectory')) {
+			printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcMainJavaDirectory) + ".")
+			new File(srcMainJavaDirectory ).mkdirs()				
+			new File(srcMainJavaDirectory + '/' + projectRootPackageName.replace('.', '/')).mkdirs()				
+			setCommonGradleProperty('IS_NEW', true)
+		}
 
-			if (project.getProperty('createSrcMainResourcesDirectory')) {
-				printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcMainResourcesDirectory) + ".")
-				new File(srcMainResourcesDirectory).mkdir()				
-			}
-			
-			if (project.getProperty('createSrcTestJavaDirectory')) {
-				printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcTestJavaDirectory) + ".")
-				new File(srcTestJavaDirectory).mkdirs()		
-				new File(srcTestJavaDirectory + '/' + rootPackageName.replace('.', '/')).mkdirs()				
-				setCommonGradleProperty('IS_NEW', true)
-			}
+		if (project.getProperty('createSrcMainResourcesDirectory')) {
+			printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcMainResourcesDirectory) + ".")
+			new File(srcMainResourcesDirectory).mkdir()				
+		}
+		
+		if (project.getProperty('createSrcTestJavaDirectory')) {
+			printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcTestJavaDirectory) + ".")
+			new File(srcTestJavaDirectory).mkdirs()		
+			new File(srcTestJavaDirectory + '/' + projectRootPackageName.replace('.', '/')).mkdirs()				
+			setCommonGradleProperty('IS_NEW', true)
+		}
 
-			if (project.getProperty('createSrcTestResourcesDirectory')) {
-				printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcTestResourcesDirectory) + ".")
-				new File(srcTestResourcesDirectory).mkdir()
-			}
+		if (project.getProperty('createSrcTestResourcesDirectory')) {
+			printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcTestResourcesDirectory) + ".")
+			new File(srcTestResourcesDirectory).mkdir()
 		}
 		
 		def mainDirectoryName = project.getProperty('srcMainDirectoryName')
@@ -155,8 +153,8 @@ projectValidation {
 		generatedCommonGradleBuildResourcesSources += "/" + mainDirectoryName
 		setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBuildResourcesSources", generatedCommonGradleBuildResourcesSources)
 		
-		def sourceVersion= parseVersion(sourceCompatibility)
-		def targetVersion= parseVersion(targetCompatibility)
+		def sourceVersion = parseVersion(sourceCompatibility)
+		def targetVersion = parseVersion(targetCompatibility)
 		if (!targetVersion.isCompatibleWith(sourceVersion)) {
 			printInfo("The target (" + colorize(HIGHLITE_LEVEL, targetCompatibility) + ") is not compatible with the source (" + colorize(HIGHLITE_LEVEL, sourceCompatibility) + ") compatibility!")
 		}	

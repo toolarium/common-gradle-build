@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--    This configuration file was written by the eclipse-cs plugin configuration editor-->
-<!--    Checkstyle-Configuration: @@rootProject.name@@ checkstyle    Description: none-->
+<!--    Checkstyle-Configuration: @@PROJECT_NAME@@ checkstyle    Description: none-->
 <!DOCTYPE module PUBLIC "-//Puppy Crawl//DTD Check Configuration 1.2//EN" "http://www.puppycrawl.com/dtds/configuration_1_2.dtd">
 <module name="Checker">
 	<!-- property name="localeLanguage" value="en"/> -->
@@ -20,7 +20,7 @@
         <property name="eachLine" value="true"/>
     </module>
 	
-	<!-- @@rootProject.name@@ allows 250 line length -->
+	<!-- @@PROJECT_NAME@@ allows 250 line length -->
 	<module name="LineLength">
         <property name="fileExtensions" value="java"/>
         <property name="max" value="250"/>
@@ -255,18 +255,18 @@
         </module>
         <module name="CommentsIndentation"/>
 
-		<!-- @@rootProject.name@@ add on -->
+		<!-- @@PROJECT_NAME@@ add on -->
 		<module name="RegexpSinglelineJava">
 			<property name="format" value="System\.(out|err)\."/>
-			<property name="message" value="@@rootProject.name@@: Please use the logger instead of writing data to standard out or error."/>
+			<property name="message" value="@@PROJECT_NAME@@: Please use the logger instead of writing data to standard out or error."/>
 		</module>
 		<module name="RegexpSinglelineJava">
 			<property name="format" value="System\.(exit|gc)"/>
-			<property name="message" value="@@rootProject.name@@: This operation is not allowed."/>
+			<property name="message" value="@@PROJECT_NAME@@: This operation is not allowed."/>
 		</module>
 		<module name="RegexpSinglelineJava">
 			<property name="format" value="\.(printStackTrace)"/>
-			<property name="message" value="@@rootProject.name@@: This operation is not allowed."/>
+			<property name="message" value="@@PROJECT_NAME@@: This operation is not allowed."/>
 		</module>
 		<module name="JavadocType">
 			<property name="severity" value="ignore"/>
@@ -343,7 +343,7 @@
 		<module name="ParameterAssignment"/>
 		<module name="StringLiteralEquality"/>
 		<module name="SuperFinalize"/>
-		<!-- @@rootProject.name@@ add on -->
+		<!-- @@PROJECT_NAME@@ add on -->
 	</module>
 	
 	<module name="PackageHtml">

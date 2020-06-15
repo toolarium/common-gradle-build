@@ -5,9 +5,10 @@
  * MIT License: https://mit-license.org
  */
 
-def now = new Date();
+ext.NOW = new Date();
 ext.MAX_LINELENGTH = 88
-ext.LINE = '****************************************************************************************'
+ext.LINE = '----------------------------------------------------------------------------------------'
+//ext.LINE = '****************************************************************************************'
 ext.LOGPREFIX = "> "
 ext.INDENT = "  "
 ext.NELINE = '\n'
@@ -19,11 +20,12 @@ ext.WARN_LEVEL = 'yellow'
 ext.ERROR_LEVEL = 'red'
 ext.TITLE_LEVEL = 'yellow'
 ext.HIGHLITE_LEVEL = 'cyan'
+ext.SUCCESS_LEVEL = 'green'
 
-ext.BUILD_TIMESTAMP = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(now)
-ext.BUILD_TIMESTAMP_SHORT = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").format(now)
-ext.DATE = new java.text.SimpleDateFormat("yyyy-MM-dd").format(now)
-ext.YEAR = new java.text.SimpleDateFormat("yyyy").format(now)
+ext.BUILD_TIMESTAMP = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(NOW)
+ext.BUILD_TIMESTAMP_SHORT = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").format(NOW)
+ext.DATE = new java.text.SimpleDateFormat("yyyy-MM-dd").format(NOW)
+ext.YEAR = new java.text.SimpleDateFormat("yyyy").format(NOW)
 
-ext.commonGradleBuildVersion='0.5.0'
+ext.commonGradleBuildVersion='0.6.0'
 ext.commonGradleHomeName='common-gradle-build'

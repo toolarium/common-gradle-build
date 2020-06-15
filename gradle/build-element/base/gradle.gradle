@@ -44,12 +44,12 @@ ext.readGradleWrapperVersion = { ->
  ***************************************************************************************/
 ext.gradleWrapperinstalled = false
 wrapper {
-	onlyIf { !new File("gradle").exists() \
+	onlyIf { installGradleWrapper && (!new File("gradle").exists() \
 		|| !new File("gradle/wrapper").exists() \
 		|| !new File("gradle/wrapper/gradle-wrapper.jar").exists() \
 		|| !new File("gradle/wrapper/gradle-wrapper.properties").exists() \
 		|| !new File("gradlew.").exists() \
-		|| !new File("gradlew.bat").exists() }
+		|| !new File("gradlew.bat").exists()) }
 		
 	doLast {		
 		if (!gradleWrapperinstalled) {

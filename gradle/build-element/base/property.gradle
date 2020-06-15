@@ -7,6 +7,25 @@
  // see https://docs.gradle.org/current/dsl/org.gradle.api.plugins.ExtraPropertiesExtension.html
  // see https://stackoverflow.com/questions/27777591/how-to-define-and-call-custom-methods-in-build-gradle/38032000
 
+ 
+/** 
+ * Add common gradle build property list
+ */
+ext.addCommonGradlePropertyList = { propertyName, propertyValue, logValue = true ->
+
+	if (!project.hasProperty(propertyName)) {
+		setCommonGradleDefaultPropertyIfNull(propertyName, propertyValue, logValue)
+	} else {
+		def value = project.getProperty(propertyName)
+		if (value!=null && !value.isEmpty()) {
+			value += ", "
+		}
+		
+		value += propertyValue
+		setCommonGradleProperty(propertyName, value, logValue)
+	}
+}
+
 
 /** 
  * Set common gradle property default value if it is null

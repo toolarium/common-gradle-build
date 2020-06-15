@@ -1,0 +1,132 @@
+/*
+ * file.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+
+ 
+/** 
+ * Get filename only
+ */
+ext.getFilename = { inputFilename ->
+	if (inputFilename==null || inputFilename.isEmpty()) {
+		return ""
+	}
+	
+	String name = inputFilename.replace('\\', '/')
+	return name.substring(name.lastIndexOf("/") + 1, name.length());	
+}
+
+
+/** 
+ * Get filepath only
+ */
+ext.getFilePath = { inputFilename ->
+	if (inputFilename==null || inputFilename.isEmpty()) {
+		return ""
+	}
+	
+	String name = inputFilename.replace('\\', '/')
+	return name.substring(0, name.lastIndexOf("/") + 1);	
+}
+
+
+/** 
+ * Create file from template
+ */
+ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite = true ->
+
+	if (inputFilename==null || inputFilename.isEmpty()) {
+		logDebug("Empty input filename.")
+		return false
+	}
+
+	if (inputTemplateFilename==null || inputTemplateFilename.isEmpty() || !new File(commonGradleTemplatePath+"/"+inputTemplateFilename).exists()) {
+		logDebug("Empty template filename.")
+		return false
+	}
+	
+	String filename = getFilename(inputFilename);
+	String filePath = getFilePath(inputFilename);
+	if (filePath!=null && !new File(filePath).exists()) {
+		logDebug("Create " + colorize(HIGHLITE_LEVEL, filePath) + colorize(INFO_LEVEL, "."))
+		filePath.mkdirs()
+	} else {
+		filePath = project.ext.rootDirectory + "/"
+	}
+
+	String templateFilename = getFilename(inputTemplateFilename);
+	String templateSubPath = getFilePath(inputTemplateFilename);
+	if (templateSubPath!=null && !templateSubPath.isEmpty()) {
+		templateSubPath = "/" + templateSubPath
+	} else {
+		templateSubPath = ""
+	}
+	 
+	
+	if (new File("${commonGradleTemplatePath}${templateSubPath}", "${templateFilename}").exists()) {
+		if (new File(inputFilename).exists() && !overwrite) {
+			logDebug("File " + colorize(HIGHLITE_LEVEL, path) + colorize(INFO_LEVEL, " exist, don't overwrite."))
+			return
+		}
+	
+		printInfo("> Create " + colorize(HIGHLITE_LEVEL, "${filePath}${filename}") + " from template ${templateSubPath}${templateFilename}.")
+		copy {
+			from "${commonGradleTemplatePath}${templateSubPath}"
+			include "${templateFilename}"
+			into "${filePath}"
+			rename { String fileName -> fileName.replace(templateFilename, filename) }
+			filter { line -> line.replaceAll('@@PROJECT_NAME@@', "${rootProject.name}".toString()) }
+			filter { line -> line.replaceAll('@@PROJECT_TYPE@@', "${project.ext.projectType}".toString()) }
+			filter { line -> line.replaceAll('@@GROUP_ID@@', "${project.ext.projectGroupId}".toString()) }
+			filter { line -> line.replaceAll('@@COMPONENT_ID@@', "${project.ext.projectComponentId}".toString()) }
+			filter { line -> line.replaceAll('@@PACKAGE@@', "${project.ext.projectRootPackageName}".toString()) }
+			filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.projectDescription}".toString()) }
+			filter { line -> line.replaceAll('@@URL@@', "${project.ext.projectUrl}".toString()) }
+			filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.licenseText}".toString()) }
+			filter { line -> line.replaceAll('@@MAJOR_NUMBER@@', "${project.ext.majorVersionNumber}".toString()) }
+			filter { line -> line.replaceAll('@@MINOR_NUMBER@@', "${project.ext.minorVersionNumber}".toString()) }
+			filter { line -> line.replaceAll('@@MICRO_NUMBER@@', "${project.ext.microVersionNumber}".toString()) }
+			filter { line -> line.replaceAll('@@QUALIFIER@@', "${project.ext.qualifierVersionNumber}".toString()) }
+			filter { line -> line.replaceAll('@@SCM_NUMBER@@', "${project.ext.scmVersionNumber}".toString()) }
+			filter { line -> line.replaceAll('@@BUILD_TIMESTAMP@@', "${project.ext.BUILD_TIMESTAMP}".toString()) }
+			filter { line -> line.replaceAll('@@BUILD_TIMESTAMP_SHORT@@', "${project.ext.BUILD_TIMESTAMP_SHORT}".toString()) }
+			filter { line -> line.replaceAll('@@DATE@@', "${DATE}".toString()) }
+			filter { line -> line.replaceAll('@@YEAR@@', "${YEAR}".toString()) }
+			filter { line -> line.replaceAll('@@IS_RELEASE_VERSION@@', "${project.ext.isReleaseVersion}".toString()) }
+			filter { line -> line.replaceAll('@@VERSION@@', "${project.version}".toString()) }
+			filter { line -> line.replaceAll('@@LINE@@', "${LINE}".toString()) }
+			filter { line -> line.replaceAll('@@COMMON_GRADLE_BUILD_URL@@', "${commonGradleBuildUrl}".toString()) }
+			
+			filter { line -> line.replaceAll('@@sourceCompatibility@@', "${project.ext.sourceCompatibility}".toString()) }
+			filter { line -> line.replaceAll('@@targetCompatibility@@', "${project.ext.targetCompatibility}".toString()) }
+			
+			if (project.hasProperty('checkstyleToolVersion')) {
+				filter { line -> line.replaceAll('@@checkstyleToolVersion@@', "${project.ext.checkstyleToolVersion}".toString()) }
+			} else {
+				filter { line -> line.replaceAll('@@checkstyleToolVersion@@', "${project.ext.checkstyleToolDefaultVersion}".toString()) }
+			}
+			
+			filter { line -> line.replaceAll('@@testDependencyVersion@@', "${project.ext.testDependencyVersion}".toString()) }
+			
+			if (project.hasProperty('gradlePropertiesJvmArgs')) {
+				filter { line -> line.replaceAll('@@GRADLE_JVM_ARG@@', "${project.ext.gradlePropertiesJvmArgs}".toString()) }
+			}
+			if (project.hasProperty('gradlePropertiesLogLevel')) {
+				filter { line -> line.replaceAll('@@GRADLE_LOG_LEVEL@@', "${project.ext.gradlePropertiesLogLevel}".toString()) }
+			}
+			if (project.hasProperty('gradlePropertiesConsole')) {
+				filter { line -> line.replaceAll('@@GRADLE_CONSOLE@@', "${project.ext.gradlePropertiesConsole}".toString()) }
+			}
+			if (project.hasProperty('gradlePropertiesWarningMode')) {
+				filter { line -> line.replaceAll('@@GRADLE_WARNING_MODE@@', "${project.ext.gradlePropertiesWarningMode}".toString()) }
+			}
+		}
+		
+		return true
+	} else {
+		logDebug("Template file ${commonGradleTemplatePath}/${inputTemplateFilename} don't exist.")
+		return false
+	}
+}

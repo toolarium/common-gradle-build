@@ -6,23 +6,61 @@
  */
 
 test.outputs.upToDateWhen {false}
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 
 /***************************************************************************************
  * Test
  ***************************************************************************************/
 test {
-	systemProperty "file.encoding", "${ENCODING}"
-	useJUnitPlatform()	
+	if (initTesting) {
+		systemProperty "file.encoding", "${fileEncoding}"
+		useJUnitPlatform()	
+		
+		testLogging {
+			//events("passed", "skipped", "failed")
+			events("failed")
+			showStackTraces = true
+			minGranularity = 3
+			exceptionFormat = TestExceptionFormat.FULL
+			//stackTraceFilters(org.gradle.api.tasks.testing.logging.TestStackTraceFilter.ENTRY_POINT)
+			
+			// set options for log level DEBUG
+			debug {
+				events "started", "skipped", "failed"
+				exceptionFormat "full"
+			}		
+
+			info.events = ["failed", "skipped"]			
+			
+			quiet {
+				events "failed"
+				exceptionFormat "full"				
+				showStackTraces true
+			}
+		}
+		
+		doFirst {
+			if (initTesting) {
+				printLine()
+			}
+		}
+	}
 }
 
 
 /***************************************************************************************
- * Define tes dependencies
+ * Defines the dependencies
  ***************************************************************************************/
 dependencies {
-	//testImplementation 'junit:junit:4.12'
-	//implementation 'junit:junit:4.12'
-	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
-	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
+	if (initTesting) {
+	
+		if (testImplementationDependency!=null && !testImplementationDependency.isEmpty()) {		
+			testImplementation "${testImplementationDependency}"
+		}
+		
+		if (testRuntimeOnlyDependency!=null && !testRuntimeOnlyDependency.isEmpty()) {		
+			testRuntimeOnly "${testRuntimeOnlyDependency}"
+		}
+	}
 }
