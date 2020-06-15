@@ -151,6 +151,7 @@ ext.createCheckstyleConfiguration = { overwrite = false ->
 			
 			def checkstyleDefaultConfigurationFileHeader = project.getProperty('checkstyleDefaultConfigurationFileHeader')
 			if (checkstyleDefaultConfigurationFileHeader!=null && !checkstyleDefaultConfigurationFileHeader.isEmpty()) {
+				def checkstyleFileHeader = "checkstyle-file-header.txt"
 				printInfo("> Get " + colorize(HIGHLITE_LEVEL, checkstyleFileHeader) + " from " + colorize(HIGHLITE_LEVEL, checkstyleDefaultConfigurationFileHeader) + ".")
 			
 				// download
