@@ -107,9 +107,9 @@ projectValidation {
 						<< "*/" << NELINE \
 						<< "package ${projectRootPackageName};" << NELINE \
 						<< "" << NELINE \
+						<< "import static org.junit.jupiter.api.Assertions.assertTrue;" << NELINE \						
 						<< "" << NELINE \
 						<< "import org.junit.jupiter.api.Test;" << NELINE \
-						<< "import static org.junit.jupiter.api.Assertions.*;" << NELINE \
 						<< "" << NELINE \
 						<< "" << NELINE \
 						<< "/**" << NELINE \
@@ -125,7 +125,7 @@ projectValidation {
 						<< "        assertTrue(classUnderTest.someLibraryMethod(), \"someLibraryMethod should return 'true'\");" << NELINE \
 						<< "    }" << NELINE \
 						<< "}" << NELINE \
-						<< "" << NELINE
+						<< "" << NELINE						
 				}			
 			}
 		} 
