@@ -14,32 +14,38 @@ apply from: "${commonGradleBuildElementPath}/base/gradle.gradle"
  ***************************************************************************************/
 projectValidation { 
 	doFirst {
-		logInfo("Check source and test folders...")
-	
-		setCommonGradleProperty('createSrcDirectory', !new File(srcDirectory).exists())
-		setCommonGradleProperty('createSrcMainDirectory', !new File(srcMainDirectory).exists())
-		setCommonGradleProperty('createSrcTestDirectory', !new File(srcTestDirectory).exists())
-		setCommonGradleProperty('createDirectories', createSrcDirectory || createSrcMainDirectory || createSrcTestDirectory)
-
-		if (project.getProperty('createDirectories')) {
-			if (project.getProperty('createSrcDirectory')) {
-				printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcDirectory) + ".")
-				new File(srcDirectory).mkdirs()
-			}
-
-			if (project.getProperty('createSrcMainDirectory')) {
-				printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcMainDirectory) + ".")
-				new File(srcMainDirectory).mkdirs()
-			}
-
-			if (project.getProperty('createSrcTestDirectory')) {
-				printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcTestDirectory) + ".")
-				new File(srcTestDirectory).mkdirs()
-			}
-
-			setCommonGradleProperty('IS_NEW', true)
-		}
+		createSourcePath()
 	}
 }
 
 
+/**
+ * Create java source path
+ */
+ext.createSourcePath = { ->
+	logInfo("Check source and test folders...")
+
+	setCommonGradleProperty('createSrcDirectory', !new File(srcDirectory).exists())
+	setCommonGradleProperty('createSrcMainDirectory', !new File(srcMainDirectory).exists())
+	setCommonGradleProperty('createSrcTestDirectory', !new File(srcTestDirectory).exists())
+	setCommonGradleProperty('createDirectories', createSrcDirectory || createSrcMainDirectory || createSrcTestDirectory)
+
+	if (project.getProperty('createDirectories')) {
+		if (project.getProperty('createSrcDirectory')) {
+			printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcDirectory) + ".")
+			new File(srcDirectory).mkdirs()
+		}
+
+		if (project.getProperty('createSrcMainDirectory')) {
+			printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcMainDirectory) + ".")
+			new File(srcMainDirectory).mkdirs()
+		}
+
+		if (project.getProperty('createSrcTestDirectory')) {
+			printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcTestDirectory) + ".")
+			new File(srcTestDirectory).mkdirs()
+		}
+
+		setCommonGradleProperty('IS_NEW', true)
+	}
+}

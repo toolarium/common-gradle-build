@@ -121,6 +121,8 @@ projectValidation {
  * Create java source path
  */
 ext.createJavaSourcePath = { ->
+	createSourcePath()
+
 	logInfo("Check Java source and test folders...")
 	setCommonGradleProperty('createSrcMainJavaDirectory', !new File(srcMainJavaDirectory).exists())	
 	setCommonGradleProperty('createSrcTestJavaDirectory', !new File(srcTestJavaDirectory).exists())
