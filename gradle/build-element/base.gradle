@@ -15,6 +15,16 @@ if (!project.hasProperty('commonGradleBuildElementPath')) {
 	ext.commonGradleBuildElementPath="${commonGradleBuildUrl}/build-element"
 }
 
+if (!project.hasProperty('commonGradleBuildCache')) {
+	def commonGradleBuildCache = System.getenv('COMMON_GRADLE_BUILD_CACHE') 
+	if (commonGradleBuildCache == null || commonGradleBuildCache.isEmpty()) {
+		commonGradleBuildCache = System.getProperty('COMMON_GRADLE_BUILD_CACHE') 
+		if (commonGradleBuildCache == null || commonGradleBuildCache.isEmpty()) {
+			commonGradleBuildCache = System.properties['user.home'].replace('\\', '/') + "/.gradle/common-gradle-build"
+		}
+	}
+}
+
 if (!project.hasProperty('commonGradleBuildHome')) {
 	def commonGradleBuildHome = System.getenv('COMMON_GRADLE_BUILD_HOME') 
 	if (commonGradleBuildHome == null || commonGradleBuildHome.isEmpty()) {
@@ -25,20 +35,21 @@ if (!project.hasProperty('commonGradleBuildHome')) {
 	}
 }
 
-if (new File(commonGradleBuildHome).exists()) {
-	if (new File(commonGradleBuildHome + "/defaults.gradle").exists()) {
-		logger.info "==>Found defaults in common-gradle-build home path, apply."
-		apply from: "${commonGradleBuildHome}/defaults.gradle"
-	}
+if (project.hasProperty('commonGradleBuildHome')) {
+	if (new File(commonGradleBuildHome).exists()) {
+		if (new File(commonGradleBuildHome + "/defaults.gradle").exists()) {
+			logger.info "==>Found defaults in common-gradle-build home path, apply."
+			apply from: "${commonGradleBuildHome}/defaults.gradle"
+		}
 
-	if (!project.hasProperty('commonGradleTemplatePath') && new File(commonGradleBuildHome + "/template").exists()) {
-		project.ext.set('commonGradleTemplatePath', "${commonGradleBuildHome}/template".toString())
-		logger.info "==>Found common-gradle-build home template path: ${commonGradleTemplatePath}"
+		if (!project.hasProperty('commonGradleTemplatePath') && new File(commonGradleBuildHome + "/template").exists()) {
+			project.ext.set('commonGradleTemplatePath', "${commonGradleBuildHome}/template".toString())
+			logger.info "==>Found common-gradle-build home template path: ${commonGradleTemplatePath}"
+		}
+		
+		//setCommonGradleDefaultPropertyIfNull("commonGradleBuildGitUrl", "https://github.com/toolarium/common-gradle-build.git")
 	}
-	
-	//setCommonGradleDefaultPropertyIfNull("commonGradleBuildGitUrl", "https://github.com/toolarium/common-gradle-build.git")
 }
-
 
 // base imports
 apply from: "${commonGradleBuildElementPath}/base/defaults.gradle"
