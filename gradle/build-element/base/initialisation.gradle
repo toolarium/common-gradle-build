@@ -302,13 +302,6 @@ ext.projectInitialisation = { ->
 		printLine(ERROR_LEVEL, true)
 	}
 
-	/*
-	if (rootProject.name != projectName) {
-		printInfo("Current folder do not match with the project name:")
-		printInfo("[" + colorize(HIGHLITE_LEVEL, rootProject.name) + "] " + colorize(TITLE_LEVEL, '!=') + " [" + colorize(HIGHLITE_LEVEL, projectName) + "]")
-		printLine(HIGHLITE_LEVEL, true)
-	}
-	*/	
 	setCommonGradleProperty('IS_VALID_PROJECT', true)
 }
 

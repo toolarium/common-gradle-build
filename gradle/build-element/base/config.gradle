@@ -5,6 +5,7 @@
  * MIT License: https://mit-license.org
  */
 
+ 
 def configPackages = project.getProperty("configPackages").split(",")
 def configDirectory = project.getProperty("configDirectory")				
 

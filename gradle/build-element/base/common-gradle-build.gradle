@@ -10,8 +10,8 @@
  * Read the remote version
  ***************************************************************************************/
 ext.readRemoteVersion = { inputUrl ->
-
-	if (!HAS_ONLINE_CONNECTION) {
+	def hasOnlineConnection = project.hasProperty('HAS_ONLINE_CONNECTION') && project.getProperty('HAS_ONLINE_CONNECTION')
+	if (!hasOnlineConnection) {
 		return ""
 	}
 	

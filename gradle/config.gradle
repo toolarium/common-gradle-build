@@ -5,6 +5,7 @@
  * MIT License: https://mit-license.org
  */
 
+ 
 if (!project.hasProperty('commonGradleBuildUrl')) {
     ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
 }

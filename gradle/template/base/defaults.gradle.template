@@ -1,0 +1,132 @@
+/*
+ * defaults.gradle
+ * 
+ * In the defaults you can cpnfigure your default values. All entries below has 
+ * been marked as comment and the value contains the default value. To overwrite
+ * simple comment out and set your preferred value.
+ * 
+ * The method setCommonGradleProperty simplifies the setting. Addtitional it logs 
+ * also the change.
+ */
+
+ 
+/***************************************************************************************
+ * gradle cache and home properties file
+ ***************************************************************************************/
+//setCommonGradleProperty("commonGradleBuildHomeGitUrl", "your-git-project-where-you-have-defined-your-defaults")
+/*
+   structure of the repository:
+	 gradle
+	 gradle/defaults.gradle
+	 (gradle/template/) <- optional
+ */
+
+ 
+/***************************************************************************************
+ * common project files
+ ***************************************************************************************/
+//setCommonGradleProperty("includeReadmeFile", false)
+//setCommonGradleProperty("includeLicenseFile", true)
+//setCommonGradleProperty("createChangelogFile", false)
+//setCommonGradleProperty("includeChangelogFile", false)
+
+
+/***************************************************************************************
+ * view init settings 
+ ***************************************************************************************/
+//setCommonGradleProperty("initShowJava", true)
+//setCommonGradleProperty("initShowRuntime", false)
+//setCommonGradleProperty("initShowPath", true)
+//setCommonGradleProperty("initShowTempPath", false)
+//setCommonGradleProperty("initShowScm", true)
+//setCommonGradleProperty("initScmForNewProjects", true)
+//setCommonGradleProperty("initScmWithNewFiles", true)
+//setCommonGradleProperty("initCheckstyle", true)
+//setCommonGradleProperty("initShowGradle", true)
+//setCommonGradleProperty("installGradleWrapper", true)
+
+
+/***************************************************************************************
+ * show created artefacts
+ ***************************************************************************************/
+//setCommonGradleProperty("showCreatedArtefacts", true)
+
+
+/***************************************************************************************
+ * project basic settings
+ ***************************************************************************************/
+//setCommonGradleProperty("licenseText", "MIT License: https://mit-license.org")
+//setCommonGradleProperty("licenseUrl", "https://mit-license.org")
+
+
+/***************************************************************************************
+ * compile settings
+ ***************************************************************************************/
+//setCommonGradleProperty("sourceCompatibility", JavaVersion.VERSION_1_8)
+//setCommonGradleProperty("targetCompatibility", JavaVersion.VERSION_1_8)
+//setCommonGradleProperty("fileEncoding", "UTF-8")
+//setCommonGradleProperty("compileJavaHome", "")
+
+
+/***************************************************************************************
+ * repository settings
+ ***************************************************************************************/
+//setCommonGradleProperty("allowMavenCentralRepository", true)
+//setCommonGradleProperty("allowGoogleRepository", true)
+//setCommonGradleProperty("allowJCenterRepository", true)
+//setCommonGradleProperty("mavenUrl", "https://oss.sonatype.org/content/repositories/public")
+//setCommonGradleProperty("allowMavenStagingAsRepository", true)
+//setCommonGradleProperty("mavenStagingUrl", "https://oss.sonatype.org/content/repositories/staging")
+//setCommonGradleProperty("allowMavenSnapshotUrlAsRepository", true)
+//setCommonGradleProperty("mavenSnapshotUrl", "https://oss.sonatype.org/content/repositories/snapshots/")
+
+
+/***************************************************************************************
+ * testing
+ ***************************************************************************************/
+//setCommonGradleProperty("initTesting", true)
+//setCommonGradleProperty("testDependencyVersion", "5.3.1")
+//setCommonGradleProperty("testImplementationDependency", "junit:junit:${testDependencyVersion}")
+//setCommonGradleProperty("testRuntimeOnlyDependency", "junit:junit:${testDependencyVersion}")
+
+
+/***************************************************************************************
+ * code quality: checkstyle
+ ***************************************************************************************/
+//setCommonGradleProperty("checkstyleToolVersion", '8.27')
+//setCommonGradleProperty("checkstyleMaxWarnings", 0)
+//setCommonGradleProperty("checkstyleXMLReport", false)
+//setCommonGradleProperty("checkstyleHTMLReport", true)
+//setCommonGradleProperty("checkstyleConfiguration", "${configDirectory}/checkstyle/checkstyle.xml")
+//setCommonGradleProperty("checkstyleCustomStylesheet", "${configDirectory}/checkstyle/checkstyle.xml")
+//setCommonGradleProperty("checkstyleDefaultConfigurationFileHeaderUrl", "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/template/java/checkstyle-file-header.txt.template")
+//setCommonGradleProperty("checkstyleDefaultConfigurationUrl", "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/template/java/checkstyle.xml.template")
+
+
+/***************************************************************************************
+ * gradle jvm arguments
+ ***************************************************************************************/
+//setCommonGradleProperty("gradlePropertiesJvmArgs", "-Xmx1g -XX:MaxHeapSize=1g -XX:MaxPermSize=256m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=${fileEncoding}")
+//setCommonGradleProperty("gradlePropertiesLogLevel", "lifecycle")
+//setCommonGradleProperty("gradlePropertiesLogLevel", "quiet")
+
+
+/***************************************************************************************
+ * set project validation patterns
+ ***************************************************************************************/
+//setCommonGradleProperty("projectNameRegularExpressionPattern", '^[a-zA-Z0-9\\-]+$')
+//setCommonGradleProperty("projectGroupIdRegularExpressionPattern", '^[a-zA-Z0-9\\.]+$')
+//setCommonGradleProperty("projectComponentIdRegularExpressionPattern", '^[a-zA-Z0-9\\-]+$')
+//setCommonGradleProperty("projectComponentIdIsPartOfProjectName", true)
+//setCommonGradleProperty("projectComponentIdSeparator", "-")
+//setCommonGradleProperty("projectRootPackageNamePrefix", "my.packageroot")
+//setCommonGradleProperty("validateRootFiles", true)
+//setCommonGradleProperty("validateRootDirectories", true)
+
+
+/***************************************************************************************
+ * allowedMainDirectories & allowedMainFiles: the function addCommonGradlePropertyList
+ * can be used for extending the list. Below there are some samples.
+ ***************************************************************************************/
+//addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/my-folder")
+//addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/my-text-file.txt")

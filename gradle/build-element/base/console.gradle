@@ -17,7 +17,6 @@ import groovy.swing.SwingBuilder
  * m = readConsoleInput('My password', null, false, true)
  */
 ext.readConsoleInput = { inputMessage = 'Please enter data', defaultValue = null, allowEmptyInput = true, isSecure = false ->
-
 	if (inputMessage == null || inputMessage.isEmpty()) {
 		return defaultValue
 	}

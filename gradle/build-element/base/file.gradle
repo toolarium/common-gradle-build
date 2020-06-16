@@ -35,8 +35,7 @@ ext.getFilePath = { inputFilename ->
 /** 
  * Create file from template
  */
-ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite = true ->
-
+ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite = true, print = true ->
 	if (inputFilename==null || inputFilename.isEmpty()) {
 		logDebug("Empty input filename.")
 		return false
@@ -49,7 +48,8 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 	
 	String filename = getFilename(inputFilename);
 	String filePath = getFilePath(inputFilename);
-	if (filePath!=null && !new File(filePath).exists()) {
+	if (filePath!=null && new File(filePath).exists()) {
+	} else if (filePath!=null && !new File(filePath).exists()) {
 		logDebug("Create " + colorize(HIGHLITE_LEVEL, filePath) + colorize(INFO_LEVEL, "."))
 		filePath.mkdirs()
 	} else {
@@ -63,7 +63,6 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 	} else {
 		templateSubPath = ""
 	}
-	 
 	
 	if (new File("${commonGradleTemplatePath}${templateSubPath}", "${templateFilename}").exists()) {
 		if (new File(inputFilename).exists() && !overwrite) {
@@ -71,7 +70,12 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 			return
 		}
 	
-		printInfo("> Create " + colorize(HIGHLITE_LEVEL, "${filePath}${filename}") + " from template ${templateSubPath}${templateFilename}.")
+		if (print) {		
+			printInfo("> Create " + colorize(HIGHLITE_LEVEL, "${filePath}${filename}") + " from template ${templateSubPath}${templateFilename}.")
+		} else {
+			logInfo("> Create " + colorize(HIGHLITE_LEVEL, "${filePath}${filename}") + " from template ${templateSubPath}${templateFilename}.")
+		}
+		
 		copy {
 			from "${commonGradleTemplatePath}${templateSubPath}"
 			include "${templateFilename}"

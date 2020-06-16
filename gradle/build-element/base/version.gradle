@@ -10,7 +10,6 @@
  * Read version: see https://semver.org/ 
  ***************************************************************************************/
 ext.readVersion = { ->
-
 	// read version number
 	logInfo("Read version file " + colorize(HIGHLITE_LEVEL, versionFile))
 

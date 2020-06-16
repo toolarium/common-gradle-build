@@ -394,4 +394,3 @@ ext.createGitFiles = { overwrite = false ->
 		}
 	}
 }
-

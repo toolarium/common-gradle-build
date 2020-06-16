@@ -5,6 +5,7 @@
  * MIT License: https://mit-license.org
  */
  
+ 
 apply plugin: 'maven-publish'
 
 
@@ -30,6 +31,10 @@ publishing {
 	def deployUrl = mavenUrl
 	if (project.ext.isSnapshotVersion) {
 		deployUrl = mavenSnapshotUrl
+	}
+	
+	if (deployUrl.endsWith('/') {
+		deployUrl += '/'
 	}
 	
 	publications {

@@ -5,6 +5,7 @@
  * MIT License: https://mit-license.org
  */
 
+ 
 if (!project.hasProperty('commonGradleBuildUrl')) {
     ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
 }
@@ -12,10 +13,12 @@ if (!project.hasProperty('commonGradleBuildUrl')) {
 if (!project.hasProperty('commonGradleBuildElementPath')) {
 	ext.commonGradleBuildElementPath="${commonGradleBuildUrl}/build-element"
 }
-
 apply from: "${commonGradleBuildElementPath}/java-base.gradle"
 
-// define default java directories
+
+/***************************************************************************************
+ * define default java directories
+ ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("srcMainJavaDirectory", "${srcMainDirectory}/java")
 setCommonGradleDefaultPropertyIfNull("srcMainResourcesDirectory", "${srcMainDirectory}/resources")
 setCommonGradleDefaultPropertyIfNull("srcTestJavaDirectory", "${srcTestDirectory}/java")

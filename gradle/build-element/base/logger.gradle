@@ -73,7 +73,6 @@ ext.printNewline = { ->
  * Print line
  */
 ext.printLine = { color = HIGHLITE_LEVEL, force = false, message = null ->
-
 	if (force || numberOfMessages > 0) {
 		def msg = LINE.toString()
 		if (message != null) {

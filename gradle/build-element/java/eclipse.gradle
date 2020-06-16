@@ -5,6 +5,7 @@
  * MIT License: https://mit-license.org
  */
  
+
 apply plugin: 'eclipse'
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.classpath")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.project")

@@ -34,7 +34,7 @@ def commonGradleBuildHome = System.getenv('COMMON_GRADLE_BUILD_HOME')
 if (commonGradleBuildHome == null || commonGradleBuildHome.isEmpty()) {
 	commonGradleBuildHome = System.getProperty('COMMON_GRADLE_BUILD_HOME') 
 	if (commonGradleBuildHome == null || commonGradleBuildHome.isEmpty()) {
-		commonGradleBuildHome = commonGradleBuildCache
+		commonGradleBuildHome = commonGradleBuildCache + "/home"
 	}
 }
 project.ext.set('commonGradleBuildHome', commonGradleBuildHome)
@@ -99,7 +99,7 @@ if (project.hasProperty('projectType')) {
 	if (!t.endsWith('.gradle')) {
 		includeFile += '.gradle'
 	}
-	bootStraplogLifecycle("> Use projectType ${t}: ${includeFile}")
+	bootStraplogInfo("> Use projectType ${t}: ${includeFile}")
 	
 } else {
 	// check project type
@@ -121,7 +121,6 @@ if (project.hasProperty('projectType')) {
 	}
 
 	//def isWebProject
-
 	if (!hasSrc && hasConfig) {
 		includeFile += 'config.gradle'	
 	} else if (!hasSrc || hasJavaSourceFiles) {
