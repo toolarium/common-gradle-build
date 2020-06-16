@@ -38,7 +38,7 @@ ext.projectInitialisation = { ->
 
 	// read and set common gradle build version
 	def usedVersion = readRemoteVersion(commonGradleBuildUrl.substring(0, commonGradleBuildUrl.length() - 'gradle'.length()) + "VERSION")
-	if (usedVersion !=null || !usedVersion.isEmpty()) {
+	if (usedVersion !=null && !usedVersion.isEmpty()) {
 		project.ext.set('commonGradleBuildVersion', usedVersion)
 	}
 	
