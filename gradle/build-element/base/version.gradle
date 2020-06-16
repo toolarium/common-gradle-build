@@ -71,8 +71,7 @@ ext.readVersion = { ->
 	
 	if (doUpdate) {
 		updateVersion()
-	}
-	
+	}	
 }
 
 
@@ -123,32 +122,4 @@ ext.increaseMicroVersion = { ->
 	logInfo("Increase micro number " + microVersionNumber + ": " + project.version)
 	updateVersion()
 	readVersion()
-}
-
-
-/***************************************************************************************
- * Read the remote version
- ***************************************************************************************/
-ext.readRemoteVersion = { url ->
-
-	if (!HAS_ONLINE_CONNECTION) {
-		return ""
-	}
-	
-	Properties props = new Properties();
-	props.load(new URL(url).openStream())
-
-	def majorNumber = props.getProperty("major.number")
-	def minorNumber = props.getProperty("minor.number")
-	def microNumber = props.getProperty("micro.number")
-	def qualifier = props.getProperty("qualifier")
-	
-	def remoteVersion = majorNumber + "." + minorNumber;	
-	if (microNumber!=null) {
-		remoteVersion += "." + microNumber
-	} else if (qualifier!=null) { 
-		remoteVersion += "-" + qualifier
-	}
-	
-	return remoteVersion
 }

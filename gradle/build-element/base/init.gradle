@@ -69,6 +69,10 @@ init {
 		printInfo("Java home: ${System.properties['java.home'].replace('\\', '/')}")
 	}
 
+	if (initShowGradle) {
+		printInfo("Common Gradle Build ${commonGradleBuildVersion}, Gradle ${gradle.gradleVersion}")
+	}
+	
 	if (initShowRuntime) {
 		def runtimeMemory = Runtime.getRuntime().maxMemory()
 		def memory = Math.round(runtimeMemory / 1024 / 1024 / 1024 * 100 ) / 100
@@ -83,10 +87,6 @@ init {
 		printInfo("Temp: ${System.properties['java.io.tmpdir'].replace('\\', '/')}")
 	}
 
-	if (initShowGradle) {
-		printInfo("Gradle: ${gradle.gradleVersion}")
-	}
-
 	//printLine(HIGHLITE_LEVEL, "[" + projectType + "]")
 	printLine(HIGHLITE_LEVEL, true)
 }
@@ -98,9 +98,4 @@ init {
 task projectValidation { 
 	group = 'Verification'
 	description = 'Project validation'
-
-	doFirst {
-		logInfo("Project validation....")
-		downloadCommonGradleBuild()
-	}
 }

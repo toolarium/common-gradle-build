@@ -113,6 +113,12 @@ gradle.taskGraph.afterTask { Task task, TaskState state ->
  * Build finish
  ***************************************************************************************/
 gradle.buildFinished { buildResult ->
+	//println("=>"+gradle.startParameter.getConsoleOutput())
+	//println("=>"+gradle.startParameter.getWarningMode())				
+	//println("=>"+gradle.startParameter.getShowStacktrace())	
+	//println("=>"+gradle.startParameter.getTaskNames())
+	//println "BUILD FINISHED" + buildResult
+
 	//def startupTime = java.lang.management.ManagementFactory.getRuntimeMXBean().getStartTime()
 	def duration = ((((long)(new Date().getTime()/ 1000.0))*1000) - NOW.getTime()) / 1000.0
 	if (duration < 0) {
@@ -130,8 +136,7 @@ gradle.buildFinished { buildResult ->
 			printInfo(colorize(ERROR_LEVEL, "ERROR: " + errorMessage))
 			printLine(ERROR_LEVEL, true)
 			throw new GradleException("ERROR: " + errorMessage)
-		} else {
-			
+		} else {			
 			printLine(ERROR_LEVEL)
 			throw new GradleException("ERROR")
 		}
@@ -154,11 +159,6 @@ gradle.buildFinished { buildResult ->
 		}
 	}
 
-	//println("=>"+gradle.startParameter.getConsoleOutput())
-	//println("=>"+gradle.startParameter.getWarningMode())				
-	//println("=>"+gradle.startParameter.getShowStacktrace())	
-	//println("=>"+gradle.startParameter.getTaskNames())
-	//println "BUILD FINISHED" + buildResult
 	printLine()
 }
 
@@ -167,17 +167,6 @@ gradle.buildFinished { buildResult ->
  * When project ready
  ***************************************************************************************/
 gradle.taskGraph.whenReady { taskGraph ->
-
-	if (project.hasProperty('initShowScm') && project.getProperty('initShowScm')) {
-		if (isGitAvailable()) {
-			def branchName = getGitBranchName()
-			def commitHash = getGitCommitHash()
-			if (branchName!=null && !branchName.trim().isEmpty() && commitHash!=null && !commitHash.trim().isEmpty()) {
-				printInfo("> Git branch: " + colorize(HIGHLITE_LEVEL, branchName) + ", commit: " + colorize(HIGHLITE_LEVEL, commitHash))
-				project.ext.set(scmVersionNumber, commitHash)
-			}
-		}
-	}
 
 	// in case we deploy check credentials
     if (taskGraph.hasTask(":release") || taskGraph.hasTask(":publish")) {
@@ -236,7 +225,12 @@ gradle.taskGraph.whenReady { taskGraph ->
  * project validation
  ***************************************************************************************/
 projectValidation {
-	doLast {
+	doFirst {
+		logInfo("Project validation....")
+		// check common gradle build version
+		downloadCommonGradleBuild()
+		
+		// validate project name
 		def projectNameRegularExpressionPattern = ~"${projectNameRegularExpressionPattern}"
 		if (rootProject.name ==~ projectNameRegularExpressionPattern) {
 			logDebug("Valid project name.")
@@ -246,6 +240,7 @@ projectValidation {
 			setCommonGradleProperty("validBuildMessage", "Invalid project name!")
 		}
 		
+		// validate group id
 		def projectGroupIdRegularExpressionPattern = ~"${projectGroupIdRegularExpressionPattern}"
 		if (projectGroupId ==~ projectGroupIdRegularExpressionPattern) {
 			logDebug("Valid project group id.")
@@ -255,6 +250,7 @@ projectValidation {
 			setCommonGradleProperty("validBuildMessage", "Invalid project group id!")
 		}
 
+		// validate component id
 		def projectComponentIdRegularExpressionPattern = ~"${projectComponentIdRegularExpressionPattern}"
 		if (projectComponentId!=null && !projectComponentId.isEmpty()) {
 			if (projectComponentId ==~ projectComponentIdRegularExpressionPattern) {
@@ -265,7 +261,12 @@ projectValidation {
 				setCommonGradleProperty("validBuildMessage", "Invalid project component id!")
 			}
 			
-			def startOrEnd = ("${rootProject.name}".startsWith(projectComponentId+"-") || "${rootProject.name}".endsWith("-"+projectComponentId))
+			def projectComponentIdSeparator = "-"
+			if (project.hasProperty('projectComponentIdSeparator')) {
+				projectComponentIdSeparator = project.getProperty('projectComponentIdSeparator')
+			}
+			
+			def startOrEnd = ("${rootProject.name}".startsWith(projectComponentId+projectComponentIdSeparator) || "${rootProject.name}".endsWith(projectComponentIdSeparator+projectComponentId))
 			if (projectComponentIdIsPartOfProjectName && !startOrEnd) {
 				printWarn("Component id [$projectComponentId] should be part of the project name [$rootProject.name] (see projectComponentIdIsPartOfProjectName seetings)!")
 				setCommonGradleProperty("validBuild", false)
@@ -273,19 +274,23 @@ projectValidation {
 			}
 		}
 		
+		// validate root package name
 		if (projectRootPackageNamePrefix!=null && !projectRootPackageNamePrefix.isEmpty() && !projectRootPackageName.startsWith(projectRootPackageNamePrefix)) {
 			printWarn("Root package name [$projectRootPackageName] has to start with prefix [$projectRootPackageNamePrefix] (see projectRootPackageNamePrefix seetings)!")
 			setCommonGradleProperty("validBuild", false)
 			setCommonGradleProperty("validBuildMessage", "Invalid root package name!")
 		}
 
+		// generate git files if necessary
 		if (project.hasProperty('initScmForNewProjects') && project.getProperty('initScmForNewProjects')) {
 			createGitFiles()
 		}		
 		
+		// validate root directories and files
+		def validateRootFiles = project.hasProperty('validateRootFiles') && project.getProperty('validateRootFiles')
+		def validateRootDirectories = project.hasProperty('validateRootDirectories') && project.getProperty('validateRootDirectories')
 		def allowedMainDirectoryList = new ArrayList(Arrays.asList(allowedMainDirectories.split(", ")))
 		def allowedMainFileList = new ArrayList(Arrays.asList(allowedMainFiles.split(", ")))
-
 		Set result = new TreeSet()
 		File[] files = new File(rootDirectory).listFiles(); 
 		if (files != null && files.length > 0) {
@@ -294,7 +299,7 @@ projectValidation {
 				def nameToCheck = ("$rootDirectory/" + file.getName()).toString()
 				
 				if (file.isDirectory()) {
-					valid = allowedMainDirectoryList.contains(nameToCheck)
+					valid = validateRootDirectories && allowedMainDirectoryList.contains(nameToCheck)
 					if (!valid) {				
 						printWarn("Invalid directory " + colorize(HIGHLITE_LEVEL, nameToCheck) + colorize(WARN_LEVEL, ", it's not supported!"))
 						setCommonGradleProperty("validBuild", valid)
@@ -304,7 +309,7 @@ projectValidation {
 						}
 					}
 				} else {
-					valid = allowedMainFileList.contains(nameToCheck)
+					valid = validateRootFiles && allowedMainFileList.contains(nameToCheck)
 					if (!valid) {									
 						printWarn("Invalid file " + colorize(HIGHLITE_LEVEL, nameToCheck) + colorize(WARN_LEVEL, ", it's not supported!"))
 						setCommonGradleProperty("validBuild", valid)
@@ -321,13 +326,23 @@ projectValidation {
 			}
 		}
 	
+		// init scm
 		if (project.hasProperty('initScmForNewProjects') && project.getProperty('initScmForNewProjects')) {
 			if (!isGitAvailable()) {
 				printInfo("> Initiallize git repository and add first files...")
 				initGit()
-				addGit(result)
-				commitGit("Added project files.")
 				
+				if (project.hasProperty('initScmWithNewFiles') && project.getProperty('initScmWithNewFiles')) {
+					if (result!=null && result.size()>0) {
+						addGit(result)
+						commitGit("Added project files.")
+					}
+				}
+			}
+		}	
+		
+		if (project.hasProperty('initShowScm') && project.getProperty('initShowScm')) {
+			if (isGitAvailable()) {
 				def branchName = getGitBranchName()
 				def commitHash = getGitCommitHash()
 				if (branchName!=null && !branchName.trim().isEmpty() && commitHash!=null && !commitHash.trim().isEmpty()) {
@@ -335,6 +350,6 @@ projectValidation {
 					project.ext.set(scmVersionNumber, commitHash)
 				}
 			}
-		}	
+		}
 	}
 }

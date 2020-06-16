@@ -22,8 +22,9 @@ setCommonGradleDefaultPropertyIfNull("initShowPath", true)
 setCommonGradleDefaultPropertyIfNull("initShowTempPath", false)
 setCommonGradleDefaultPropertyIfNull("initShowScm", true)
 setCommonGradleDefaultPropertyIfNull("initScmForNewProjects", true)
+setCommonGradleDefaultPropertyIfNull("initScmWithNewFiles", true)
 setCommonGradleDefaultPropertyIfNull("initCheckstyle", true)
-setCommonGradleDefaultPropertyIfNull("initShowGradle", false)
+setCommonGradleDefaultPropertyIfNull("initShowGradle", true)
 setCommonGradleDefaultPropertyIfNull("installGradleWrapper", true)
 
 // show created artefacts
@@ -123,12 +124,15 @@ setCommonGradleDefaultPropertyIfNull("srcDirectory", "${rootDirectory}/src")
 setCommonGradleDefaultPropertyIfNull("srcMainDirectory", "${srcDirectory}/${srcMainDirectoryName}")
 setCommonGradleDefaultPropertyIfNull("srcTestDirectory", "${srcDirectory}/${srcTestDirectoryName}")
 
-// set project name pattern
+// set project validation patterns
 setCommonGradleDefaultPropertyIfNull("projectNameRegularExpressionPattern", '^[a-zA-Z0-9\\-]+$')
 setCommonGradleDefaultPropertyIfNull("projectGroupIdRegularExpressionPattern", '^[a-zA-Z0-9\\.]+$')
 setCommonGradleDefaultPropertyIfNull("projectComponentIdRegularExpressionPattern", '^[a-zA-Z0-9\\-]+$')
 setCommonGradleDefaultPropertyIfNull("projectComponentIdIsPartOfProjectName", true)
+setCommonGradleDefaultPropertyIfNull("projectComponentIdSeparator", "-")
 setCommonGradleDefaultPropertyIfNull("projectRootPackageNamePrefix", "")
+setCommonGradleDefaultPropertyIfNull("validateRootFiles", true)
+setCommonGradleDefaultPropertyIfNull("validateRootDirectories", true)
 
 // allowedMainDirectories & allowedMainFiles
 addCommonGradlePropertyList("allowedMainDirectories", buildDirectory)

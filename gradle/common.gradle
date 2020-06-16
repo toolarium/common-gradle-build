@@ -6,6 +6,13 @@
  */
 
  
+// bootsrap logger
+ext.BOOTSTRAPSTYLER = 'black red green yellow blue magenta cyan white' .split().toList().withIndex(30).collectEntries { key, val -> [(key) : { "\033[${val}m${it}\033[0m" }] }
+ext.bootStraplogLifecycle = { message -> logger.lifecycle "${BOOTSTRAPSTYLER['cyan'](message)}" }
+ext.bootStraplogInfo = { message -> logger.info "${BOOTSTRAPSTYLER['cyan'](message)}" }
+ext.bootStraplogWarn = { message -> logger.warn "${BOOTSTRAPSTYLER['yellow'](message)}" }
+
+
 /***************************************************************************************
  * define proper cache and home environment:
  * - cache path: 	contains the versions cached on local machine
@@ -21,7 +28,7 @@ if (commonGradleBuildCache == null || commonGradleBuildCache.isEmpty()) {
 	}
 }
 project.ext.set('commonGradleBuildCache', commonGradleBuildCache)
-logger.info "Found common-gradle-build cache path: ${commonGradleBuildCache}"
+bootStraplogInfo("> Found common-gradle-build cache path: ${commonGradleBuildCache}")
 
 def commonGradleBuildHome = System.getenv('COMMON_GRADLE_BUILD_HOME') 
 if (commonGradleBuildHome == null || commonGradleBuildHome.isEmpty()) {
@@ -31,7 +38,7 @@ if (commonGradleBuildHome == null || commonGradleBuildHome.isEmpty()) {
 	}
 }
 project.ext.set('commonGradleBuildHome', commonGradleBuildHome)
-logger.info "Found common-gradle-build home path: ${commonGradleBuildHome}"
+bootStraplogInfo("> Found common-gradle-build home path: ${commonGradleBuildHome}")
 
 def localCommonGradleBuildUrl = System.getenv('COMMON_GRADLE_BUILD_URL') 
 if (localCommonGradleBuildUrl != null && !localCommonGradleBuildUrl.isEmpty()) {
@@ -42,7 +49,7 @@ if (localCommonGradleBuildUrl != null && !localCommonGradleBuildUrl.isEmpty()) {
 		project.ext.set('commonGradleBuildUrl', localCommonGradleBuildUrl)
 	}
 }
-logger.info "Found common-gradle-build url: ${commonGradleBuildUrl}"
+bootStraplogInfo("> Found common-gradle-build url: ${commonGradleBuildUrl}")
 
 if (!project.hasProperty('commonGradleBuildUrl')) {
 	try {
@@ -65,16 +72,14 @@ if (!project.hasProperty('commonGradleBuildUrl')) {
 			}
 		}
 	} catch (Exception e) {
-		def msg = "Could not select cached version of the common-gradle-build: " + e.getMessage()
-		logger.warn msg
+		bootStraplogWarn("Could not select cached version of the common-gradle-build: " + e.getMessage())
 	}
 
 	if (!project.hasProperty('commonGradleBuildUrl')) {
 		ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
 	}
 	
-	def logMsg = "Use common-gradle-build from " + ext.commonGradleBuildUrl
-	logger.info logMsg
+	bootStraplogLifecycle("> Use common-gradle-build from " + ext.commonGradleBuildUrl)
 }
 
 if (!project.hasProperty('commonGradleBuildElementPath')) {
@@ -93,7 +98,7 @@ if (project.hasProperty('projectType')) {
 	if (!t.endsWith('.gradle')) {
 		includeFile += '.gradle'
 	}
-	logger.info "Use projectType ${t}: ${includeFile}"
+	bootStraplogLifecycle("> Use projectType ${t}: ${includeFile}")
 	
 } else {
 	// check project type
@@ -124,7 +129,7 @@ if (project.hasProperty('projectType')) {
 		includeFile += 'java-library.gradle'
 	}
 	
-	logger.info "Guessed projectType: ${includeFile}"
+	bootStraplogLifecycle("> Guessed projectType: ${includeFile}")
 }
 
 

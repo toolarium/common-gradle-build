@@ -9,16 +9,25 @@
 /***************************************************************************************
  * Read the remote version
  ***************************************************************************************/
-ext.readRemoteVersion = { url ->
+ext.readRemoteVersion = { inputUrl ->
 
 	if (!HAS_ONLINE_CONNECTION) {
 		return ""
 	}
 	
+	def url = inputUrl
+	if (url.startsWith('file/')) {
+		url = 'file:/' + url.substring(4)
+	}
+	
 	def remoteVersion = null
 	try {
 		Properties props = new Properties();
-		props.load(new URL(url).openStream())
+		//if (url.startsWith('file:')) {
+			props.load(new FileInputStream(new File(url)))
+		//} else {
+			props.load(new URL(url).openStream())
+		//}
 
 		def majorNumber = props.getProperty("major.number")
 		def minorNumber = props.getProperty("minor.number")
@@ -110,10 +119,10 @@ ext.downloadCommonGradleBuild = { ->
 		if (remoteVersion!=null && !remoteVersion.isEmpty()) {
 			logInfo("Remote version: " + colorize(HIGHLITE_LEVEL, remoteVersion))
 			
-			def commonGradleVersionHome = "${commonGradleBuildCache}/${remoteVersion}"
-			if (!new File(commonGradleVersionHome).exists()) {
-				printInfo("Download version " + colorize(HIGHLITE_LEVEL, remoteVersion) + " of the common-gradle-build...")
-				gitClone(commonGradleVersionHome, commonGradleBuildGitUrl)			
+			def commonGradleVersionCache = "${commonGradleBuildCache}/${remoteVersion}"
+			if (!new File(commonGradleVersionCache).exists()) {
+				printInfo("> Download version " + colorize(HIGHLITE_LEVEL, remoteVersion) + " of the common-gradle-build (will be used in next build)!")
+				gitClone(commonGradleVersionCache, commonGradleBuildGitUrl)			
 			}
 		}
 			

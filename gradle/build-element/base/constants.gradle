@@ -28,4 +28,3 @@ ext.DATE = new java.text.SimpleDateFormat("yyyy-MM-dd").format(NOW)
 ext.YEAR = new java.text.SimpleDateFormat("yyyy").format(NOW)
 
 ext.commonGradleBuildVersion='0.6.0'
-ext.commonGradleHomeName='common-gradle-build'

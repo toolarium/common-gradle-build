@@ -36,6 +36,12 @@ ext.projectInitialisation = { ->
 	def onlineCheckConnectionUrlTimeout = project.getProperty('onlineCheckConnectionUrlTimeout')
 	setCommonGradleProperty('HAS_ONLINE_CONNECTION', isServerAvailable(onlineCheckConnectionUrl, onlineCheckConnectionUrlTimeout))
 
+	// read and set common gradle build version
+	def usedVersion = readRemoteVersion(commonGradleBuildUrl.substring(0, commonGradleBuildUrl.length() - 'gradle'.length()) + "VERSION")
+	if (usedVersion !=null || !usedVersion.isEmpty()) {
+		project.ext.set('commonGradleBuildVersion', usedVersion)
+	}
+	
 	isReady = isReady \
 					&& !createGraldeHomeProperties
 
@@ -93,9 +99,22 @@ ext.projectInitialisation = { ->
 		}
 
 		if (!project.hasProperty('projectComponentId')) {
-			setCommonGradleProperty('projectComponentId', '')
+			def projectComponentIdDefault = ''
+			if (project.hasProperty('projectComponentIdIsPartOfProjectName') && project.getProperty('projectComponentIdIsPartOfProjectName')) {
+				def projectComponentIdSeparator = "-"
+				if (project.hasProperty('projectComponentIdSeparator')) {
+					projectComponentIdSeparator = project.getProperty('projectComponentIdSeparator')
+				}
+			
+				def nameSplit = "${rootProject.name}".split(projectComponentIdSeparator)				
+				if (nameSplit.length > 1) {
+					projectComponentIdDefault = nameSplit[0]
+				}
+			}
+			
+			setCommonGradleProperty('projectComponentId', projectComponentIdDefault)
 			printInfo("> Set projectComponentId to " + colorize(HIGHLITE_LEVEL, rootProject.name) + ", please define it in the gradle.properties:")
-			printInfo("  e.g. " + colorize(TITLE_LEVEL, 'projectComponentId') + " = '...'")
+			printInfo("  e.g. " + colorize(TITLE_LEVEL, 'projectComponentId') + " = $projectComponentIdDefault")
 			
 			if (!project.hasProperty('projectDescription') || createVersionFile || createReadmeFile || createLicenseFile || createChangelogFile || createGraldeHomeProperties) 
 				printNewline()
