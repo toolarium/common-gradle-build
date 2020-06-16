@@ -5,8 +5,6 @@
  * MIT License: https://mit-license.org
  */
 
-apply from: "${commonGradleBuildElementPath}/base/initialisation.gradle"
-
 
 /***************************************************************************************
  * Init
