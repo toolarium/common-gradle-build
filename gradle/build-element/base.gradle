@@ -7,6 +7,9 @@
 // doc: https://www.oreilly.com/library/view/gradle-beyond-the/9781449373801/ch01.html
 // see http://sorcersoft.org/project/site/gradle/userguide/userguide.html
 
+/***************************************************************************************
+ * backward compatibility
+ ***************************************************************************************/
 if (!project.hasProperty('commonGradleBuildUrl')) {
     ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
 }
@@ -40,28 +43,79 @@ if (!project.hasProperty('commonGradleBuildHome')) {
 } else {
 	commonGradleBuildHome = project.getProperty('commonGradleBuildHome')
 }
+/***************************************************************************************/
 
+
+/***************************************************************************************
+ * basic groovy imports
+ ***************************************************************************************/
+apply from: "${commonGradleBuildElementPath}/base/constants.gradle"
+apply from: "${commonGradleBuildElementPath}/base/logger.gradle"
+apply from: "${commonGradleBuildElementPath}/base/property.gradle"
+apply from: "${commonGradleBuildElementPath}/base/util.gradle"
+apply from: "${commonGradleBuildElementPath}/base/file.gradle"
+apply from: "${commonGradleBuildElementPath}/base/console.gradle"
+
+logInfo(LINE)
+apply from: "${commonGradleBuildElementPath}/base/common-gradle-build.gradle"
+apply from: "${commonGradleBuildElementPath}/base/initialisation.gradle"
+apply from: "${commonGradleBuildElementPath}/base/defaults.gradle"
+
+
+/***************************************************************************************
+ * Common gradle build home handling (is different than common gradle build cache!)
+ ***************************************************************************************/
 if (project.hasProperty('commonGradleBuildHome')) {
-	if (new File(commonGradleBuildHome).exists()) {
-		if (new File(commonGradleBuildHome + "/defaults.gradle").exists()) {
-			logger.info "==>Found defaults in common-gradle-build home path, apply."
-			apply from: "${commonGradleBuildHome}/defaults.gradle"
+	commonGradleBuildHome = project.getProperty('commonGradleBuildHome')
+	if (commonGradleBuildHome!=null && !commonGradleBuildHome.isEmpty()) {
+		def commonGradleBuildHomeDefaultsFile = "${commonGradleBuildHome}/gradle/defaults.gradle"
+		def commonGradleBuildHomeFile = new File(commonGradleBuildHome)
+		if (!commonGradleBuildHomeFile.exists()) { // we don't have a home
+			def commonGradleBuildHomeGitUrl = project.getProperty('commonGradleBuildHomeGitUrl')
+			if (commonGradleBuildHomeGitUrl!=null && !commonGradleBuildHomeGitUrl.isEmpty()) {
+				bootStraplogLifecycle("> Create common-gradle-build home, download of the ${commonGradleBuildHomeGitUrl}.")
+				gitClone(commonGradleBuildHomeFile, commonGradleBuildHomeGitUrl)			
+			} else { 
+				bootStraplogLifecycle("> Create common-gradle-build home " + commonGradleBuildHome)
+				commonGradleBuildHomeFile.mkdirs()				
+				if (commonGradleBuildHomeFile.exists()) {
+					if (!new File(commonGradleBuildHomeDefaultsFile).exists()) {
+						if (!createFileFromTemplate(commonGradleBuildHomeDefaultsFile, "base/defaults.gradle.template")) {
+							logInfo("Could not clone common-gradle-build-home!")
+						}
+					}
+				} 
+			}
+		}
+		
+		// apply from home
+		if (new File(commonGradleBuildHomeDefaultsFile).exists()) {
+			bootStraplogLifecycle("> Found defaults in common-gradle-build home path, apply.")
+			def userDefined = "[${commonGradleBuildHomeDefaultsFile}]"
+			userDefined += LINE.substring(userDefined.length())
+			logInfo(userDefined)
+			apply from: "${commonGradleBuildHomeDefaultsFile}"
+			logInfo(userDefined)
 		}
 
-		if (!project.hasProperty('commonGradleTemplatePath') && new File(commonGradleBuildHome + "/template").exists()) {
-			project.ext.set('commonGradleTemplatePath', "${commonGradleBuildHome}/template".toString())
-			logger.info "==>Found common-gradle-build home template path: ${commonGradleTemplatePath}"
-		}
+		// TODO: apply template in case home exists
+		def homeTemplatePath = commonGradleBuildHome + "/" + project.getProperty('commonGradleTemplatePathName')
+		//if (!project.hasProperty('commonGradleTemplatePath') && new File(homeTemplatePath).exists()) {
+			//project.ext.set('commonGradleTemplatePath', "${commonGradleBuildHome}/template".toString())
+		//	logger.info "==>Found common-gradle-build home template path: ${commonGradleTemplatePath}"
+		//}
 		
 		//setCommonGradleDefaultPropertyIfNull("commonGradleBuildGitUrl", "https://github.com/toolarium/common-gradle-build.git")
 	}
 }
 
-// base imports
-apply from: "${commonGradleBuildElementPath}/base/defaults.gradle"
-apply from: "${commonGradleBuildElementPath}/base/common-gradle-build.gradle"
-apply from: "${commonGradleBuildElementPath}/base/file.gradle"
-apply from: "${commonGradleBuildElementPath}/base/console.gradle"
+logInfo(LINE)
+
+
+/***************************************************************************************
+ * base imports
+ ***************************************************************************************/
+apply from: "${commonGradleBuildElementPath}/base/version.gradle"
 apply from: "${commonGradleBuildElementPath}/base/init.gradle"
 apply from: "${commonGradleBuildElementPath}/base/gradle.gradle"
 apply from: "${commonGradleBuildElementPath}/base/config.gradle"
@@ -80,15 +134,6 @@ tasks.matching { it != projectValidation }.all {
 	}
 }
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-/*
-// Hooking the end of the initialization phase in the settings.gradle file
-gradle.projectsLoaded {
-}
-gradle.afterProject {
-	}
-}
-*/
 
 
 /***************************************************************************************
@@ -164,10 +209,9 @@ gradle.buildFinished { buildResult ->
 
 
 /***************************************************************************************
- * When project ready
+ * when project ready
  ***************************************************************************************/
 gradle.taskGraph.whenReady { taskGraph ->
-
 	// in case we deploy check credentials
     if (taskGraph.hasTask(":release") || taskGraph.hasTask(":publish")) {
 		if (project.ext.isSnapshotVersion) {
@@ -351,5 +395,13 @@ projectValidation {
 				}
 			}
 		}
+		
+		/*
+		if (rootProject.name != projectName) {
+			printInfo("Current folder do not match with the project name:")
+			printInfo("[" + colorize(HIGHLITE_LEVEL, rootProject.name) + "] " + colorize(TITLE_LEVEL, '!=') + " [" + colorize(HIGHLITE_LEVEL, projectName) + "]")
+			printLine(HIGHLITE_LEVEL, true)
+		}
+		*/	
 	}
 }

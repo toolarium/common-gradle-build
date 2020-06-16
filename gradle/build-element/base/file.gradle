@@ -51,7 +51,7 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 	if (filePath!=null && new File(filePath).exists()) {
 	} else if (filePath!=null && !new File(filePath).exists()) {
 		logDebug("Create " + colorize(HIGHLITE_LEVEL, filePath) + colorize(INFO_LEVEL, "."))
-		filePath.mkdirs()
+		new File(filePath).mkdirs()
 	} else {
 		filePath = project.ext.rootDirectory + "/"
 	}
@@ -73,7 +73,7 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 		if (print) {		
 			printInfo("> Create " + colorize(HIGHLITE_LEVEL, "${filePath}${filename}") + " from template ${templateSubPath}${templateFilename}.")
 		} else {
-			logInfo("> Create " + colorize(HIGHLITE_LEVEL, "${filePath}${filename}") + " from template ${templateSubPath}${templateFilename}.")
+			logInfo("Create " + colorize(HIGHLITE_LEVEL, "${filePath}${filename}") + colorize(INFO_LEVEL, " from template ${templateSubPath}${templateFilename}."))
 		}
 		
 		copy {
