@@ -23,11 +23,14 @@ ext.readRemoteVersion = { inputUrl ->
 	def remoteVersion = null
 	try {
 		Properties props = new Properties();
-		//if (url.startsWith('file:')) {
+		props.load(new URL(url).openStream())
+		/*
+		if (url.startsWith('file:')) {
 			props.load(new FileInputStream(new File(url)))
-		//} else {
+		} else {
 			props.load(new URL(url).openStream())
-		//}
+		}
+		*/
 
 		def majorNumber = props.getProperty("major.number")
 		def minorNumber = props.getProperty("minor.number")
