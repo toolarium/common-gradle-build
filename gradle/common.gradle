@@ -35,6 +35,9 @@ if (commonGradleBuildHome == null || commonGradleBuildHome.isEmpty()) {
 	commonGradleBuildHome = System.getProperty('COMMON_GRADLE_BUILD_HOME') 
 	if (commonGradleBuildHome == null || commonGradleBuildHome.isEmpty()) {
 		commonGradleBuildHome = commonGradleBuildCache.toString() + "/home"
+bootStraplogInfo("> Current common-gradle-build home path: ${commonGradleBuildHome}")
+bootStraplogInfo("> Current common-gradle-build cache path: ${commonGradleBuildCache}")
+		
 	}
 }
 project.ext.set('commonGradleBuildHome', commonGradleBuildHome)
