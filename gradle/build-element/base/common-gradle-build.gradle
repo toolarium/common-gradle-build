@@ -23,7 +23,6 @@ ext.readRemoteVersion = { inputUrl ->
 	def remoteVersion = null
 	try {
 		Properties props = new Properties();
-		props.load(new URL(url).openStream())
 		
 		if (!url.startsWith('file') && !url.startsWith('http')) {
 			props.load(new FileInputStream(new File(url)))
