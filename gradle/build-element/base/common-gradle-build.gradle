@@ -18,7 +18,7 @@ ext.readRemoteVersion = { inputUrl ->
 	def url = inputUrl
 	if (url.startsWith('file/')) {
 		url = 'file:/' + url.substring(4)
-	} else if (!url.startsWith('file') && !url.startsWith('http'))
+	} else if (!url.startsWith('file') && !url.startsWith('http')) {
 		url = 'file://' + url
 	}
 	
