@@ -34,7 +34,7 @@ def commonGradleBuildHome = System.getenv('COMMON_GRADLE_BUILD_HOME')
 if (commonGradleBuildHome == null || commonGradleBuildHome.isEmpty()) {
 	commonGradleBuildHome = System.getProperty('COMMON_GRADLE_BUILD_HOME') 
 	if (commonGradleBuildHome == null || commonGradleBuildHome.isEmpty()) {
-		commonGradleBuildHome = commonGradleBuildCache + "/home"
+		commonGradleBuildHome = commonGradleBuildCache.toString() + "/home"
 	}
 }
 project.ext.set('commonGradleBuildHome', commonGradleBuildHome)
