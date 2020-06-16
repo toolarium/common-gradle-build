@@ -13,32 +13,10 @@ ext.createJavaVersion = { ->
 	def generatedCommonGradleBuildJavaSourcPath = project.getProperty('generatedCommonGradleBuildJavaSourcPath');
 	def javaVersionFile = "Version.java"
 	logInfo("Write file " + colorize(HIGHLITE_LEVEL, generatedCommonGradleBuildJavaSourcPath + "/" + javaVersionFile) + colorize(INFO_LEVEL, "..."))
-	def javaVersionTemplate = 'JavaVersion.template'
-	if (new File("${commonGradleTemplatePath}", "${javaVersionTemplate}").exists()) {
-		logInfo("Create " + colorize(HIGHLITE_LEVEL, javaVersionFile) + colorize(INFO_LEVEL, " from template ${javaVersionTemplate}."))
-		copy {
-			from "${commonGradleTemplatePath}"
-			include "${javaVersionTemplate}"
-			into "${generatedCommonGradleBuildJavaSourcPath}"
-			rename { String fileName -> fileName.replace(javaVersionTemplate, javaVersionFile) }
-			filter { line -> line.replaceAll('@@PROJECT_NAME@@', "${rootProject.name}".toString()) }
-			filter { line -> line.replaceAll('@@PROJECT_TYPE@@', "${project.ext.projectType}".toString()) }
-			filter { line -> line.replaceAll('@@GROUP_ID@@', "${project.ext.projectGroupId}".toString()) }
-			filter { line -> line.replaceAll('@@COMPONENT_ID@@', "${project.ext.projectComponent}".toString()) }
-			filter { line -> line.replaceAll('@@PACKAGE@@', "${project.ext.projectRootPackageName}".toString()) }
-			filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.projectDescription}".toString()) }
-			filter { line -> line.replaceAll('@@URL@@', "${project.ext.projectUrl}".toString()) }
-			filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.licenseText}".toString()) }
-			filter { line -> line.replaceAll('@@MAJOR_NUMBER@@', "${project.ext.majorVersionNumber}".toString()) }
-			filter { line -> line.replaceAll('@@MINOR_NUMBER@@', "${project.ext.minorVersionNumber}".toString()) }
-			filter { line -> line.replaceAll('@@MICRO_NUMBER@@', "${project.ext.microVersionNumber}".toString()) }
-			filter { line -> line.replaceAll('@@QUALIFIER@@', "${project.ext.qualifierVersionNumber}".toString()) }
-			filter { line -> line.replaceAll('@@SCM_NUMBER@@', "${project.ext.scmVersionNumber}".toString()) }
-			filter { line -> line.replaceAll('@@BUILD_TIMESTAMP@@', "${project.ext.BUILD_TIMESTAMP}".toString()) }
-			filter { line -> line.replaceAll('@@IS_RELEASE_VERSION@@', "${project.ext.isReleaseVersion}".toString()) }
-			filter { line -> line.replaceAll('@@VERSION@@', "${project.version}".toString()) }
-		}
-	} else {
+	def javaVersionTemplate = 'java/JavaVersion.template'
+	
+	logInfo("Write file " + colorize(HIGHLITE_LEVEL, javaVersionTemplate) + colorize(INFO_LEVEL ,"..."))
+	if (!createFileFromTemplate("${generatedCommonGradleBuildJavaSourcPath}/${javaVersionFile}", "${javaVersionTemplate}", true, false)) {
 		logInfo("Create " + colorize(HIGHLITE_LEVEL, javaVersionFile) + colorize(INFO_LEVEL, " with default values."))
 		new File(generatedCommonGradleBuildJavaSourcPath, javaVersionFile).withWriter { w ->
 			w << "package ${projectRootPackageName};" << NELINE \
