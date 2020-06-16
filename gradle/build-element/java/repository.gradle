@@ -4,6 +4,7 @@
  * Copyright by toolarium, all rights reserved.
  * MIT License: https://mit-license.org
  */
+
  
 apply plugin: 'maven-publish'
 
@@ -12,10 +13,42 @@ apply plugin: 'maven-publish'
  * Defines supported repositories
  ***************************************************************************************/
 repositories {
-	mavenCentral()
-	google()
-	jcenter()
-	maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
-	maven { url "https://oss.sonatype.org/content/repositories/staging" }
-	//maven { url "https://oss.sonatype.org/content/repositories/public" }
+	if (project.hasProperty('allowMavenCentralRepository') && project.getProperty('allowMavenCentralRepository')) {
+		logInfo("Allow maven central repository")
+		mavenCentral()
+	}
+	
+	if (project.hasProperty('allowGoogleRepository') && project.getProperty('allowGoogleRepository')) {
+		logInfo("Allow google repository")
+		google()
+	}
+
+	if (project.hasProperty('allowJCenterRepository') && project.getProperty('allowJCenterRepository')) {
+		logInfo("Allow jcenter repository")
+		jcenter()
+	}
+
+	if (project.hasProperty('allowMavenSnapshotUrlAsRepository') && project.getProperty('allowMavenSnapshotUrlAsRepository') && project.hasProperty('mavenSnapshotUrl')) {
+		def mavenSnapshotUrl = project.getProperty('mavenSnapshotUrl')
+		if (mavenSnapshotUrl!=null && !mavenSnapshotUrl.isEmpty()) {	
+			logInfo("Allow maven snapshot repository " + colorize(HIGHLITE_LEVEL, mavenSnapshotUrl))
+			maven { url mavenSnapshotUrl }
+		}
+	}
+
+	if (project.hasProperty('allowMavenStagingAsRepository') && project.getProperty('allowMavenStagingAsRepository') && project.hasProperty('mavenStagingUrl')) {
+		def mavenStagingUrl = project.getProperty('mavenStagingUrl')
+		if (mavenStagingUrl!=null && !mavenStagingUrl.isEmpty()) {	
+			logInfo("Allow maven staging repository " + colorize(HIGHLITE_LEVEL, mavenStagingUrl))
+			maven { url mavenStagingUrl }
+		}
+	}
+
+	if (project.hasProperty('mavenUrl')) {
+		def mavenUrl = project.getProperty('mavenSnapshotUrl')
+		if (mavenUrl!=null && !mavenUrl.isEmpty()) {	
+			logInfo("Allow maven repository " + colorize(HIGHLITE_LEVEL, mavenUrl))
+			maven { url mavenUrl }
+		}
+	}
 }
