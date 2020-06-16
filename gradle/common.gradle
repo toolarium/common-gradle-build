@@ -30,12 +30,11 @@ if (commonGradleBuildCache == null || commonGradleBuildCache.isEmpty()) {
 project.ext.set('commonGradleBuildCache', commonGradleBuildCache)
 bootStraplogInfo("> Found common-gradle-build cache path: ${commonGradleBuildCache}")
 
-def commonGradleBuildHomeName = "home"
 def commonGradleBuildHome = System.getenv('COMMON_GRADLE_BUILD_HOME') 
 if (commonGradleBuildHome == null || commonGradleBuildHome.isEmpty()) {
 	commonGradleBuildHome = System.getProperty('COMMON_GRADLE_BUILD_HOME') 
 	if (commonGradleBuildHome == null || commonGradleBuildHome.isEmpty()) {
-		commonGradleBuildHome = commonGradleBuildCache.toString() + "/${commonGradleBuildHomeName}"
+		commonGradleBuildHome = System.properties['user.home'].replace('\\', '/') + "/.gradle/common-gradle-build-home"
 	}
 }
 project.ext.set('commonGradleBuildHome', commonGradleBuildHome)
@@ -60,7 +59,7 @@ if (!project.hasProperty('commonGradleBuildUrl')) {
 			File[] files = new File(commonGradleBuildCache).listFiles(); // select newest directory
 			if (files != null && files.length > 0) {
 				for (File file : files) {
-					if (!"${commonGradleBuildHomeName}".equals(file.getName()) && file.isDirectory()) {
+					if (file.isDirectory()) {
 						if (result == null || (result.lastModified() < file.lastModified())) {
 							result = file
 						}
