@@ -43,13 +43,14 @@ bootStraplogInfo("> Found common-gradle-build home path: ${commonGradleBuildHome
 def localCommonGradleBuildUrl = System.getenv('COMMON_GRADLE_BUILD_URL') 
 if (localCommonGradleBuildUrl != null && !localCommonGradleBuildUrl.isEmpty()) {
 	project.ext.set('commonGradleBuildUrl', localCommonGradleBuildUrl)
+	bootStraplogInfo("> Found common-gradle-build url: ${commonGradleBuildUrl}")
 } else {
 	localCommonGradleBuildUrl = System.getProperty('COMMON_GRADLE_BUILD_URL') 
 	if (localCommonGradleBuildUrl != null && !localCommonGradleBuildUrl.isEmpty()) {
 		project.ext.set('commonGradleBuildUrl', localCommonGradleBuildUrl)
+		bootStraplogInfo("> Found common-gradle-build url: ${commonGradleBuildUrl}")
 	}
 }
-bootStraplogInfo("> Found common-gradle-build url: ${commonGradleBuildUrl}")
 
 if (!project.hasProperty('commonGradleBuildUrl')) {
 	try {
