@@ -52,19 +52,19 @@ ext.readRemoteVersion = { inputUrl ->
 /***************************************************************************************
  * Read last check
  ***************************************************************************************/
-ext.readLastCheck = { ->
+ext.readLastCheck = { filename ->
 	def lastCheck = null		
-	if (new File(commonGradleBuildCacheLastCheckFile).exists()) {
+	if (new File(filename).exists()) {
 		try {
 			Properties prop = new Properties()
-			prop.load(new FileInputStream(new File(commonGradleBuildCacheLastCheckFile)))
+			prop.load(new FileInputStream(new File(filename)))
 			def value = prop.getProperty("lastCheck")
 
 			if (value!=null && !value.isEmpty()) {
 				lastCheck = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").parse(value)
 			}
 		} catch (Exception ex) {
-			printWarn("Could not read [" + colorize(HIGHLITE_LEVEL, commonGradleBuildCacheLastCheckFile) + colorize(WARN_LEVEL, "]: " + ex.getMessage())) 
+			printWarn("Could not read [" + colorize(HIGHLITE_LEVEL, filename) + colorize(WARN_LEVEL, "]: " + ex.getMessage())) 
 		}
 	}
 	
@@ -75,7 +75,7 @@ ext.readLastCheck = { ->
 /***************************************************************************************
  * Write last check
  ***************************************************************************************/
-ext.writeLastCheck = { versionNumber = null, lastCheck = BUILD_TIMESTAMP ->
+ext.writeLastCheck = { versionNumber, filename, lastCheck = BUILD_TIMESTAMP ->
 
 	if (lastCheck==null) {
 		return 
@@ -89,45 +89,123 @@ ext.writeLastCheck = { versionNumber = null, lastCheck = BUILD_TIMESTAMP ->
 			prop.setProperty("version", versionNumber)
 		}
 		
-		FileOutputStream stream = new FileOutputStream(commonGradleBuildCacheLastCheckFile)
+		FileOutputStream stream = new FileOutputStream(filename)
 		prop.store(stream, null)
 		stream.close()
 	} catch (Exception e) {
-		printWarn("Could not write [" + colorize(HIGHLITE_LEVEL,commonGradleBuildCacheLastCheckFile) + colorize(WARN_LEVEL, "]: " +e.getMessage())) 
+		printWarn("Could not write [" + colorize(HIGHLITE_LEVEL,filename) + colorize(WARN_LEVEL, "]: " +e.getMessage())) 
 	}
 }
 
 
 /***************************************************************************************
- * Download common gradle build
+ * Download common gradle build cache
  ***************************************************************************************/
-ext.downloadCommonGradleBuild = { ->
+ext.downloadCommonGradleBuildCache = { ->
+	if (!project.hasProperty('commonGradleBuildCache') || !project.hasProperty('commonGradleBuildGitUrl') || !project.hasProperty('commonGradleBuildCacheVersionFileUrl') || !project.hasProperty('commonGradleBuildCacheLastCheckTimeout')) {
+		return
+	}
+
+	def commonGradleBuildCache = project.getProperty('commonGradleBuildCache')
+	if (commonGradleBuildCache==null || "${commonGradleBuildCache}".isEmpty()) {
+		return
+	}
+
+	def commonGradleBuildGitUrl = project.getProperty('commonGradleBuildGitUrl')
+	if (commonGradleBuildGitUrl==null || "${commonGradleBuildGitUrl}".isEmpty()) {
+		return
+	}
+
+	def commonGradleBuildCacheVersionFileUrl = project.getProperty('commonGradleBuildCacheVersionFileUrl')
+	if (commonGradleBuildCacheVersionFileUrl==null || "${commonGradleBuildCacheVersionFileUrl}".isEmpty()) {
+		return
+	}
+
 	if (!new File(gradleHome).exists()) {
 		logWarn("Could not access gradle home: " + colorize(HIGHLITE_LEVEL, gradleHome))
 		new File(gradleHome).mkdirs()			
 	} 
 
+	downloadGitProject(commonGradleBuildCache, commonGradleBuildGitUrl, commonGradleBuildCacheVersionFileUrl, project.getProperty('commonGradleBuildCacheLastCheckTimeout'))
+}
+
+
+/***************************************************************************************
+ * Download common gradle build home
+ ***************************************************************************************/
+ext.downloadCommonGradleBuildHome = { ->
+	if (!project.hasProperty('commonGradleBuildHome') || !project.hasProperty('commonGradleBuildHomeGitUrl') || !project.hasProperty('commonGradleBuildHomeVersionFileUrl') || !project.hasProperty('commonGradleBuildCacheLastCheckTimeout')) {
+		return
+	}
+
+	def commonGradleBuildHome = project.getProperty('commonGradleBuildHome')
+	if (commonGradleBuildHome==null || "${commonGradleBuildHome}".isEmpty()) {
+		return
+	}
+
+	def commonGradleBuildHomeGitUrl = project.getProperty('commonGradleBuildHomeGitUrl')
+	if (commonGradleBuildHomeGitUrl==null || "${commonGradleBuildHomeGitUrl}".isEmpty()) {
+		return
+	}
+
+	def commonGradleBuildHomeVersionFileUrl = project.getProperty('commonGradleBuildHomeVersionFileUrl')
+	if (commonGradleBuildHomeVersionFileUrl==null || "${commonGradleBuildHomeVersionFileUrl}".isEmpty()) {
+		return
+	}
+
+	def commonGradleBuildHomeFile = new File(commonGradleBuildHome)
+	if (!commonGradleBuildHomeFile.exists()) {
+		bootStraplogLifecycle("> Create path: ${commonGradleBuildHome}.")
+		commonGradleBuildHomeFile.mkdirs()			
+	} 
+
+	bootStraplogLifecycle("> Create common-gradle-build home, download of the ${commonGradleBuildHomeGitUrl}.")
+	downloadGitProject(commonGradleBuildHome, commonGradleBuildHomeGitUrl, commonGradleBuildHomeVersionFileUrl, project.getProperty('commonGradleBuildCacheLastCheckTimeout'))
+}
+
+
+/***************************************************************************************
+ * Clone git project
+ ***************************************************************************************/
+ext.downloadGitProject = {localDirectory, gitUrl, remoteVersionFileUrl, lastCheckTimeout ->
+
+	if (gitUrl==null || "${gitUrl}".isEmpty() || remoteVersionFileUrl==null || "${remoteVersionFileUrl}".isEmpty()) {
+		logDebug("Invalid git url or remote version file url.")
+		return
+	}
+
+	if (localDirectory==null || "${localDirectory}".isEmpty()) {
+		logDebug("Invalid local directory.")
+		return
+	}
+	
+	if (!new File(localDirectory).exists()) {
+		logInfo("Create directory $localDirectory")
+		new File(localDirectory).mkdirs()
+	}
+	
+    def lastCheckFile = "${localDirectory}/lastCheck.properties"
 	def timeout = 0
-	def lastCheck = readLastCheck()
+	def lastCheck = readLastCheck(lastCheckFile)
 
 	if (lastCheck != null) {
 		timeout = new Date().getTime() - lastCheck.getTime()
 	}
 
-	if ((lastCheck == null) || (timeout > project.getProperty('commonGradleBuildCacheLastCheckTimeout'))) {
-		def remoteVersion = readRemoteVersion(commonGradleBuildCacheVersionFileUrl)		
+	if ((lastCheck == null) || (timeout > lastCheckTimeout)) {
+		def remoteVersion = readRemoteVersion(remoteVersionFileUrl)		
 
 		if (remoteVersion!=null && !remoteVersion.isEmpty()) {
-			logInfo("Remote version: " + colorize(HIGHLITE_LEVEL, remoteVersion))
+			def localDirectoryRemoteVersion = "${localDirectory}/${remoteVersion}"
 			
-			def commonGradleVersionCache = "${commonGradleBuildCache}/${remoteVersion}"
-			if (!new File(commonGradleVersionCache).exists()) {
-				printInfo("> Download version " + colorize(HIGHLITE_LEVEL, remoteVersion) + " of the common-gradle-build (will be used in next build)!")
-				gitClone(commonGradleVersionCache, commonGradleBuildGitUrl)			
+			logInfo("Remote version: " + colorize(HIGHLITE_LEVEL, remoteVersion) + colorize(HIGHLITE_LEVEL, " of  $gitUrl into $localDirectoryRemoteVersion"))			
+			if (!new File(localDirectoryRemoteVersion).exists()) {
+				printInfo("> Download version " + colorize(HIGHLITE_LEVEL, remoteVersion) + " of " + colorize(HIGHLITE_LEVEL, gitUrl) + " into " + colorize(HIGHLITE_LEVEL, localDirectoryRemoteVersion) + ".")
+				gitClone(localDirectoryRemoteVersion, gitUrl)			
 			}
 		}
 			
-		writeLastCheck(remoteVersion)
+		writeLastCheck(remoteVersion, lastCheckFile)
 	} else {
 		logInfo("Don't check it's inside time range: " + colorize(HIGHLITE_LEVEL, timeout))
 	}	

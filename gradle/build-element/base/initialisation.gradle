@@ -19,6 +19,12 @@ ext.projectInitialisation = { ->
 	def createLicenseFile = !new File(licenseFile).exists()
 	def createChangelogFile = createChangelogFile && !new File(changelogFile).exists()
 	def createGraldeHomeProperties = !new File(gradleHomePropertiesFile).exists()
+
+	// detect a minimal build gradle file -> replace it
+	if (project.hasProperty('detectMinimalBuildGradleFile') && (project.getProperty('detectMinimalBuildGradleFile') > 0)) {
+		def numberOfLines = countLines(buildGradleFile)
+		createBuildGradle = createBuildGradle || (numberOfLines > 0 && numberOfLines <= project.getProperty('detectMinimalBuildGradleFile'))
+	}
 	
 	// validate properties
 	def isReady = !createSettingsGralde \
@@ -228,7 +234,7 @@ ext.projectInitialisation = { ->
 		if (createSettingsGralde) {
 			if (!createFileFromTemplate(settingsGradleFile, 'base/settings.gradle.template')) {
 				printInfo("> Create " + colorize(HIGHLITE_LEVEL, settingsGradleFile) + " with default values.")
-				new File('.', settingsGradleFile).withWriterAppend { w ->
+				new File('.', settingsGradleFile).withWriter { w ->
 					w << "rootProject.name    = \'${rootProject.name}\'" << NELINE
 				}
 			}
@@ -277,23 +283,24 @@ ext.projectInitialisation = { ->
 		}	
 		
 		if (createBuildGradle) {
-			if (!createFileFromTemplate(buildGradleFile, 'build.gradle.template')) {
+			if (!createFileFromTemplate(buildGradleFile, 'base/build.gradle.template')) {
 				printInfo("> Create " + colorize(HIGHLITE_LEVEL, buildGradleFile) + " with default values.")
-				new File('.', buildGradleFile).withWriterAppend { w ->
-					w << "/*\n" \
+				new File('.', buildGradleFile).withWriter { w ->
+					w << "/*" << NELINE \
 					<< " * build.gradle" << NELINE \
 					<< " * " << NELINE \
 					<< " * Copyright by ${rootProject.name}, all rights reserved." << NELINE \
 					<< " * ${licenseText}" << NELINE \
 					<< " */" << NELINE \
-					<< "apply from: 'gradle/jptools.gradle'" << NELINE \
+					<< "apply from: \"${defaultCommonGradleBuildUrl}\"" << NELINE \
 					<< NELINE \
 					<< NELINE \
-					<< "/${LINE}" << NELINE \
+					<< "/${STAR_LINE}" << NELINE \
 					<< " * Define project dependencies" << NELINE \
-					<< " ${LINE}/" << NELINE \
+					<< " ${STAR_LINE}/" << NELINE \
 					<< "dependencies {" << NELINE \
-					<< "\t//implementation 'net.sf.jptools:jptools:1.7.0'" << NELINE \
+					<< "\t// see https://docs.gradle.org/current/userguide/java_library_plugin.html" << NELINE \
+					<< "\t// e.g.: implementation 'net.sf.jptools:jptools:1.7.0'" << NELINE \
 					<< "}" << NELINE
 				}
 			}

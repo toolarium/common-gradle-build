@@ -14,6 +14,7 @@
  * gradle cache and home properties file
  ***************************************************************************************/
 //setCommonGradleProperty("commonGradleBuildHomeGitUrl", "your-git-project-where-you-have-defined-your-defaults")
+//setCommonGradleProperty("commonGradleBuildHomeVersionFileUrl", "version-file-of-the-git-project-where-you-have-defined-your-defaults")
 /*
    structure of the repository:
 	 gradle
@@ -122,6 +123,7 @@
 //setCommonGradleProperty("projectRootPackageNamePrefix", "my.packageroot")
 //setCommonGradleProperty("validateRootFiles", true)
 //setCommonGradleProperty("validateRootDirectories", true)
+//setCommonGradleProperty("validateProjectNameAndFolder", false)
 
 
 /***************************************************************************************

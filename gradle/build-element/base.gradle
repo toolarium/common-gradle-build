@@ -7,9 +7,7 @@
 // doc: https://www.oreilly.com/library/view/gradle-beyond-the/9781449373801/ch01.html
 // see http://sorcersoft.org/project/site/gradle/userguide/userguide.html
 
-/***************************************************************************************
- * backward compatibility
- ***************************************************************************************/
+
 if (!project.hasProperty('commonGradleBuildUrl')) {
     ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
 }
@@ -17,33 +15,6 @@ if (!project.hasProperty('commonGradleBuildUrl')) {
 if (!project.hasProperty('commonGradleBuildElementPath')) {
 	ext.commonGradleBuildElementPath="${commonGradleBuildUrl}/build-element"
 }
-
-def commonGradleBuildCache;
-if (!project.hasProperty('commonGradleBuildCache')) {
-	commonGradleBuildCache = System.getenv('COMMON_GRADLE_BUILD_CACHE') 
-	if (commonGradleBuildCache == null || commonGradleBuildCache.isEmpty()) {
-		commonGradleBuildCache = System.getProperty('COMMON_GRADLE_BUILD_CACHE') 
-		if (commonGradleBuildCache == null || commonGradleBuildCache.isEmpty()) {
-			commonGradleBuildCache = System.properties['user.home'].replace('\\', '/') + "/.gradle/common-gradle-build"
-		}
-	}
-} else {
-	commonGradleBuildCache = project.getProperty('commonGradleBuildCache')
-}
-
-def commonGradleBuildHome;
-if (!project.hasProperty('commonGradleBuildHome')) {
-	commonGradleBuildHome = System.getenv('COMMON_GRADLE_BUILD_HOME') 
-	if (commonGradleBuildHome == null || commonGradleBuildHome.isEmpty()) {
-		commonGradleBuildHome = System.getProperty('COMMON_GRADLE_BUILD_HOME') 
-		if (commonGradleBuildHome == null || commonGradleBuildHome.isEmpty()) {
-			commonGradleBuildHome = commonGradleBuildCache
-		}
-	}
-} else {
-	commonGradleBuildHome = project.getProperty('commonGradleBuildHome')
-}
-/***************************************************************************************/
 
 
 /***************************************************************************************
@@ -66,27 +37,9 @@ apply from: "${commonGradleBuildElementPath}/base/defaults.gradle"
  * Common gradle build home handling (is different than common gradle build cache!)
  ***************************************************************************************/
 if (project.hasProperty('commonGradleBuildHome')) {
-	commonGradleBuildHome = project.getProperty('commonGradleBuildHome')
-	if (commonGradleBuildHome!=null && !commonGradleBuildHome.isEmpty()) {
+	def commonGradleBuildHome = project.getProperty('commonGradleBuildHome')
+	if (commonGradleBuildHome!=null && !"${commonGradleBuildHome}".isEmpty()) {
 		def commonGradleBuildHomeDefaultsFile = "${commonGradleBuildHome}/gradle/defaults.gradle"
-		def commonGradleBuildHomeFile = new File(commonGradleBuildHome)
-		if (!commonGradleBuildHomeFile.exists()) { // we don't have a home
-			def commonGradleBuildHomeGitUrl = project.getProperty('commonGradleBuildHomeGitUrl')
-			if (commonGradleBuildHomeGitUrl!=null && !commonGradleBuildHomeGitUrl.isEmpty()) {
-				bootStraplogLifecycle("> Create common-gradle-build home, download of the ${commonGradleBuildHomeGitUrl}.")
-				gitClone(commonGradleBuildHomeFile, commonGradleBuildHomeGitUrl)			
-			} else { 
-				bootStraplogLifecycle("> Create common-gradle-build home " + commonGradleBuildHome)
-				commonGradleBuildHomeFile.mkdirs()				
-				if (commonGradleBuildHomeFile.exists()) {
-					if (!new File(commonGradleBuildHomeDefaultsFile).exists()) {
-						if (!createFileFromTemplate(commonGradleBuildHomeDefaultsFile, "base/defaults.gradle.template")) {
-							logInfo("Could not clone common-gradle-build-home!")
-						}
-					}
-				} 
-			}
-		}
 		
 		// apply from home
 		if (new File(commonGradleBuildHomeDefaultsFile).exists()) {
@@ -97,15 +50,6 @@ if (project.hasProperty('commonGradleBuildHome')) {
 			apply from: "${commonGradleBuildHomeDefaultsFile}"
 			logInfo(userDefined)
 		}
-
-		// TODO: apply template in case home exists
-		def homeTemplatePath = commonGradleBuildHome + "/" + project.getProperty('commonGradleTemplatePathName')
-		//if (!project.hasProperty('commonGradleTemplatePath') && new File(homeTemplatePath).exists()) {
-			//project.ext.set('commonGradleTemplatePath', "${commonGradleBuildHome}/template".toString())
-		//	logger.info "==>Found common-gradle-build home template path: ${commonGradleTemplatePath}"
-		//}
-		
-		//setCommonGradleDefaultPropertyIfNull("commonGradleBuildGitUrl", "https://github.com/toolarium/common-gradle-build.git")
 	}
 }
 
@@ -166,7 +110,7 @@ gradle.buildFinished { buildResult ->
 
 	//def startupTime = java.lang.management.ManagementFactory.getRuntimeMXBean().getStartTime()
 	def duration = ((((long)(new Date().getTime()/ 1000.0))*1000) - NOW.getTime()) / 1000.0
-	if (duration < 0) {
+	if (duration == null || duration < 0) {
 		duration = 1
 	}
 	
@@ -187,7 +131,7 @@ gradle.buildFinished { buildResult ->
 		}
 	}
 	
-	if (buildResult.getFailure()!=null) {
+	if (buildResult.getFailure()!=null  && failedTask!=null && failedTask.name!=null) {
 		if (gradle.startParameter.getLogLevel() == org.gradle.api.logging.LogLevel.QUIET) {
 			println(colorize(ERROR_LEVEL, 'FAILURE:') + " In task " + colorize(HIGHLITE_LEVEL, failedTask.name) + ", task execution used ~" + duration + "s") 
 			printNewline()
@@ -271,9 +215,13 @@ gradle.taskGraph.whenReady { taskGraph ->
 projectValidation {
 	doFirst {
 		logInfo("Project validation....")
-		// check common gradle build version
-		downloadCommonGradleBuild()
 		
+		// check common gradle build cache
+		downloadCommonGradleBuildCache()
+		
+		// check common gradle build home
+		downloadCommonGradleBuildHome()
+				
 		// validate project name
 		def projectNameRegularExpressionPattern = ~"${projectNameRegularExpressionPattern}"
 		if (rootProject.name ==~ projectNameRegularExpressionPattern) {
@@ -395,13 +343,24 @@ projectValidation {
 				}
 			}
 		}
-		
-		/*
-		if (rootProject.name != projectName) {
-			printInfo("Current folder do not match with the project name:")
-			printInfo("[" + colorize(HIGHLITE_LEVEL, rootProject.name) + "] " + colorize(TITLE_LEVEL, '!=') + " [" + colorize(HIGHLITE_LEVEL, projectName) + "]")
-			printLine(HIGHLITE_LEVEL, true)
+
+		def validateProjectNameAndFolder = project.hasProperty('validateProjectNameAndFolder') && project.getProperty('validateProjectNameAndFolder')
+		if (validateProjectNameAndFolder) {
+			def userDir = "${System.properties['user.dir'].replace('\\', '/')}"
+			if (userDir.endsWith('/')) {
+				userDir = userDir.substring(0, userDir.length() -1)
+			}
+			
+			def idx = userDir.lastIndexOf('/')
+			if (idx>0) {
+				userDir = userDir.substring(idx+1)
+			}
+
+			if (!"${rootProject.name}".equals("${userDir}")) {
+				printWarn("Project folder [$userDir] do not match with the project name [${rootProject.name}] (see validateProjectNameAndFolder seetings)!")
+				setCommonGradleProperty("validBuild", false)
+				setCommonGradleProperty("validBuildMessage", "Invalid path: project name and folder don't match!")
+			}
 		}
-		*/	
 	}
 }

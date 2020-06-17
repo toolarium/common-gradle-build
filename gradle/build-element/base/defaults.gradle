@@ -18,9 +18,10 @@ if ("windows" == getOsName()) {
 
 setCommonGradleDefaultPropertyIfNull("gradleHome", "$userHomeDirectory/.gradle")
 setCommonGradleDefaultPropertyIfNull("gradleHomePropertiesFile", "$gradleHome/gradle.properties")
-setCommonGradleDefaultPropertyIfNull("commonGradleBuildUrl", "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/common.gradle")
+setCommonGradleDefaultPropertyIfNull("defaultCommonGradleBuildUrl", "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/common.gradle")
 setCommonGradleDefaultPropertyIfNull("commonGradleBuildGitUrl", "https://github.com/toolarium/common-gradle-build.git")
 setCommonGradleDefaultPropertyIfNull("commonGradleBuildHomeGitUrl", "")
+setCommonGradleDefaultPropertyIfNull("commonGradleBuildHomeVersionFileUrl", "")
 
 
 /***************************************************************************************
@@ -28,7 +29,7 @@ setCommonGradleDefaultPropertyIfNull("commonGradleBuildHomeGitUrl", "")
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("commonGradleBuildCache", "$gradleHome/common-gradle-build")
 setCommonGradleDefaultPropertyIfNull("commonGradleBuildCacheLastCheckFile", "$commonGradleBuildCache/lastCheck.properties")
-setCommonGradleDefaultPropertyIfNull("commonGradleBuildCacheLastCheckTimeout", 1000 * 60 * 60 * 24) // one day
+setCommonGradleDefaultPropertyIfNull("commonGradleBuildCacheLastCheckTimeout", 1000 * 60 * 60 * 12) // one day
 setCommonGradleDefaultPropertyIfNull("commonGradleBuildCacheVersionFileUrl", "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/VERSION")
 
 
@@ -52,6 +53,7 @@ setCommonGradleDefaultPropertyIfNull("commonGradleTemplateScmPath", "${commonGra
 setCommonGradleDefaultPropertyIfNull("settingsGradleFile", "$rootDirectory/settings.gradle")
 setCommonGradleDefaultPropertyIfNull("gradlePropertiesFile", "$rootDirectory/gradle.properties")
 setCommonGradleDefaultPropertyIfNull("buildGradleFile", "$rootDirectory/build.gradle")
+setCommonGradleDefaultPropertyIfNull("detectMinimalBuildGradleFile", 2)
 setCommonGradleDefaultPropertyIfNull("versionFile", "$rootDirectory/VERSION")
 setCommonGradleDefaultPropertyIfNull("readmeFile", "$rootDirectory/README.md")
 setCommonGradleDefaultPropertyIfNull("includeReadmeFile", false)
@@ -215,6 +217,7 @@ setCommonGradleDefaultPropertyIfNull("projectComponentIdSeparator", "-")
 setCommonGradleDefaultPropertyIfNull("projectRootPackageNamePrefix", "")
 setCommonGradleDefaultPropertyIfNull("validateRootFiles", true)
 setCommonGradleDefaultPropertyIfNull("validateRootDirectories", true)
+setCommonGradleDefaultPropertyIfNull("validateProjectNameAndFolder", false)
 
 
 /***************************************************************************************

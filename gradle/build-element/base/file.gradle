@@ -33,6 +33,43 @@ ext.getFilePath = { inputFilename ->
 
 
 /** 
+ * Count lines in a file
+ */
+ext.countLines = { inputFilename ->
+    def lines = 0;
+	if (inputFilename==null || "${inputFilename}".isEmpty()) {
+		return lines;
+	}
+	
+    File file = new File(inputFilename);
+	if (!file.exists()) {
+		return lines;
+	}
+
+	if (!file.canRead()) {
+		return -1;
+	}
+
+	double fileSize = file.length();
+	def totalRead = 0
+	java.io.BufferedReader bufferedReader = new java.io.BufferedReader(new java.io.InputStreamReader(new java.io.FileInputStream(file), "iso-8859-1"));
+
+    try {
+        while (bufferedReader.ready()) {
+            String line = bufferedReader.readLine();
+			lines++
+            totalRead += line.length() + 1; // we add +1 byte for the newline char.
+            // println("Progress ===> " + ((totalRead / fileSize) * 100) + " %");
+        }
+    } finally {
+        bufferedReader.close();
+    }
+	
+	return lines
+}
+
+
+/** 
  * Create file from template
  */
 ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite = true, print = true ->
@@ -41,8 +78,32 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 		return false
 	}
 
-	if (inputTemplateFilename==null || inputTemplateFilename.isEmpty() || !new File(commonGradleTemplatePath+"/"+inputTemplateFilename).exists()) {
+	if (inputTemplateFilename==null || inputTemplateFilename.isEmpty() || !project.hasProperty('commonGradleTemplatePath') || !project.hasProperty('commonGradleTemplatePathName')) {
 		logDebug("Empty template filename.")
+		return false
+	}
+
+	String templateFilename = getFilename(inputTemplateFilename);
+	String templateSubPath = getFilePath(inputTemplateFilename);
+	if (templateSubPath!=null && !templateSubPath.isEmpty()) {
+		templateSubPath = "/" + templateSubPath
+	} else {
+		templateSubPath = ""
+	}
+
+	def theTemplatePath = project.getProperty('commonGradleTemplatePath')
+	if (project.hasProperty('commonGradleBuildHome') ) {
+		def commonGradleBuildHome = project.getProperty('commonGradleBuildHome')
+		if (commonGradleBuildHome!=null && !"${commonGradleBuildHome}".isEmpty() && new File(commonGradleBuildHome).exists()) {
+			def homeTemplatePath = commonGradleBuildHome + "/gradle/" + project.getProperty('commonGradleTemplatePathName')
+			if (new File(homeTemplatePath+"/"+inputTemplateFilename).exists()) {
+				theTemplatePath = homeTemplatePath
+			}
+		}
+	}
+	
+	if (!new File(theTemplatePath+"/"+inputTemplateFilename).exists()) {
+		logDebug("Could not found template file.")
 		return false
 	}
 	
@@ -56,15 +117,7 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 		filePath = project.ext.rootDirectory + "/"
 	}
 
-	String templateFilename = getFilename(inputTemplateFilename);
-	String templateSubPath = getFilePath(inputTemplateFilename);
-	if (templateSubPath!=null && !templateSubPath.isEmpty()) {
-		templateSubPath = "/" + templateSubPath
-	} else {
-		templateSubPath = ""
-	}
-	
-	if (new File("${commonGradleTemplatePath}${templateSubPath}", "${templateFilename}").exists()) {
+	if (new File("${theTemplatePath}${templateSubPath}", "${templateFilename}").exists()) {
 		if (new File(inputFilename).exists() && !overwrite) {
 			logDebug("File " + colorize(HIGHLITE_LEVEL, path) + colorize(INFO_LEVEL, " exist, don't overwrite."))
 			return
@@ -73,11 +126,11 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 		if (print) {		
 			printInfo("> Create " + colorize(HIGHLITE_LEVEL, "${filePath}${filename}") + " from template ${templateSubPath}${templateFilename}.")
 		} else {
-			logInfo("Create " + colorize(HIGHLITE_LEVEL, "${filePath}${filename}") + colorize(INFO_LEVEL, " from template ${templateSubPath}${templateFilename}."))
+			logInfo("Create " + colorize(HIGHLITE_LEVEL, "${filePath}${filename}") + colorize(INFO_LEVEL, " from template ${templateSubPath}${templateFilename} (${theTemplatePath})."))
 		}
 		
 		copy {
-			from "${commonGradleTemplatePath}${templateSubPath}"
+			from "${theTemplatePath}${templateSubPath}"
 			include "${templateFilename}"
 			into "${filePath}"
 			rename { String fileName -> fileName.replace(templateFilename, filename) }
@@ -101,7 +154,8 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 			filter { line -> line.replaceAll('@@IS_RELEASE_VERSION@@', "${project.ext.isReleaseVersion}".toString()) }
 			filter { line -> line.replaceAll('@@VERSION@@', "${project.version}".toString()) }
 			filter { line -> line.replaceAll('@@LINE@@', "${LINE}".toString()) }
-			filter { line -> line.replaceAll('@@COMMON_GRADLE_BUILD_URL@@', "${commonGradleBuildUrl}".toString()) }
+			filter { line -> line.replaceAll('@@STAR_LINE@@', "${STAR_LINE}".toString()) }			
+			filter { line -> line.replaceAll('@@COMMON_GRADLE_BUILD_URL@@', "${defaultCommonGradleBuildUrl}".toString()) }
 			
 			filter { line -> line.replaceAll('@@sourceCompatibility@@', "${project.ext.sourceCompatibility}".toString()) }
 			filter { line -> line.replaceAll('@@targetCompatibility@@', "${project.ext.targetCompatibility}".toString()) }
@@ -130,7 +184,7 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 		
 		return true
 	} else {
-		logDebug("Template file ${commonGradleTemplatePath}/${inputTemplateFilename} don't exist.")
+		logDebug("Template file ${theTemplatePath}/${inputTemplateFilename} don't exist.")
 		return false
 	}
 }
