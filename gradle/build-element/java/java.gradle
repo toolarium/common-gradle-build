@@ -119,8 +119,10 @@ task sourcesJar(type: Jar, dependsOn: classes) { jar ->
 	description = 'Assembles the sources into a jar file'
 	onlyIf { return project.compileTimestamp != null }
 
+	def configDirectoryName = project.getProperty("configDirectoryName")				
 	def configDirectory = project.getProperty("configDirectory")				
-	def srcDirectory = project.getProperty("srcDirectory")				
+	def srcDirectory = project.getProperty("srcDirectory")
+	def srcDirectoryName = project.getProperty("srcDirectoryName")				
 
 	/*
 	def jarSourceIncludePath;
@@ -135,7 +137,7 @@ task sourcesJar(type: Jar, dependsOn: classes) { jar ->
 	}
 	*/
 
-	into "${configDirectory}", {
+	into "${configDirectoryName}", {
 		from "${configDirectory}"
 	}
 
@@ -143,7 +145,7 @@ task sourcesJar(type: Jar, dependsOn: classes) { jar ->
 		from 'gradle'
 	}
 
-	into "${srcDirectory}", {
+	into "${srcDirectoryName}", {
 		from "${srcDirectory}"
 	}
 

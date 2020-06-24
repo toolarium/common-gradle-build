@@ -65,7 +65,8 @@ setCommonGradleDefaultPropertyIfNull("createChangelogFile", false)
 setCommonGradleDefaultPropertyIfNull("includeChangelogFile", false)
 
 // config directory
-setCommonGradleDefaultPropertyIfNull("configDirectory", "$rootDirectory/config")
+setCommonGradleDefaultPropertyIfNull("configDirectoryName", "config")
+setCommonGradleDefaultPropertyIfNull("configDirectory", "$rootDirectory/$configDirectoryName")
 setCommonGradleDefaultPropertyIfNull("configIgnoreEmptyPackages", true)
 setCommonGradleDefaultPropertyIfNull("configPackages", "")
 
@@ -87,7 +88,8 @@ setCommonGradleDefaultPropertyIfNull("tempDirectory", "$rootDirectory/temp")
 // src directories
 setCommonGradleDefaultPropertyIfNull("srcMainDirectoryName", "main")
 setCommonGradleDefaultPropertyIfNull("srcTestDirectoryName", "test")
-setCommonGradleDefaultPropertyIfNull("srcDirectory", "${rootDirectory}/src")
+setCommonGradleDefaultPropertyIfNull("srcDirectoryName", "src")
+setCommonGradleDefaultPropertyIfNull("srcDirectory", "$rootDirectory/$srcDirectoryName")
 setCommonGradleDefaultPropertyIfNull("srcMainDirectory", "${srcDirectory}/${srcMainDirectoryName}")
 setCommonGradleDefaultPropertyIfNull("srcTestDirectory", "${srcDirectory}/${srcTestDirectoryName}")
 
