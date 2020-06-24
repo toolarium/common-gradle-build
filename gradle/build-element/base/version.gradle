@@ -27,14 +27,14 @@ ext.readVersion = { ->
 	}
 	
 	def doUpdate = false
-	def microNumber = props.getProperty("micro.number")
-	if (microNumber!=null) {
-		setCommonGradleProperty('microVersionNumber', parseInteger(microNumber, 1, 'micro.number'))
+	def revisionNumber = props.getProperty("revision.number")
+	if (revisionNumber!=null) {
+		setCommonGradleProperty('revisionVersionNumber', parseInteger(revisionNumber, 1, 'revision.number'))
 	} else {
 		// keep backwards compatibility
-		def revisionNumber = props.getProperty("revision.number")
+		revisionNumber = props.getProperty("micro.number")
 		if (revisionNumber!=null) {
-			setCommonGradleProperty('microVersionNumber', parseInteger(revisionNumber, 1, 'revision.number'))
+			setCommonGradleProperty('revisionVersionNumber', parseInteger(revisionNumber, 1, 'revision.number'))
 			doUpdate = true
 		}
 	}
@@ -51,7 +51,7 @@ ext.readVersion = { ->
 		}
 	}	
 	
-	project.version = project.getProperty('majorVersionNumber') + "." + project.getProperty('minorVersionNumber') + "." + project.getProperty('microVersionNumber')
+	project.version = project.getProperty('majorVersionNumber') + "." + project.getProperty('minorVersionNumber') + "." + project.getProperty('revisionVersionNumber')
 	def qualifierVersionNumber = project.getProperty('qualifierVersionNumber')
 	if (qualifierVersionNumber !=null && !qualifierVersionNumber.isEmpty()) {
 		project.version = project.version + "-" +  qualifierVersionNumber
@@ -78,11 +78,11 @@ ext.readVersion = { ->
  * Update version
  ***************************************************************************************/
 ext.updateVersion = { ->
-	logInfo("Write file " + versionFile + " -> " + project.getProperty('majorVersionNumber') + ", " + project.getProperty('minorVersionNumber') + ", " + project.getProperty('microVersionNumber') + ", " + project.getProperty('qualifierVersionNumber'))
+	logInfo("Write file " + versionFile + " -> " + project.getProperty('majorVersionNumber') + ", " + project.getProperty('minorVersionNumber') + ", " + project.getProperty('revisionVersionNumber') + ", " + project.getProperty('qualifierVersionNumber'))
 	new File('.', versionFile).withWriter { w ->
 		w << "major.number        = " << project.getProperty('majorVersionNumber') << NELINE \
 		<< "minor.number        = " << project.getProperty('minorVersionNumber') << NELINE \
-		<< "micro.number        = " << project.getProperty('microVersionNumber') << NELINE \
+		<< "revision.number     = " << project.getProperty('revisionVersionNumber') << NELINE \
 		<< "qualifier           = " << project.getProperty('qualifierVersionNumber') << NELINE 
 	}
 }
@@ -94,7 +94,7 @@ ext.updateVersion = { ->
 ext.increaseMajorVersion = { ->
 	setCommonGradleProperty('majorVersionNumber', 1 + project.getProperty('majorVersionNumber'), 1)
 	setCommonGradleProperty('minorVersionNumber', 0, 0)
-	setCommonGradleProperty('microVersionNumber', 0, 0)
+	setCommonGradleProperty('revisionVersionNumber', 0, 0)
 	logInfo("Increase major number " + majorVersionNumber + ": " + project.version)
 	updateVersion()
 	readVersion()
@@ -106,7 +106,7 @@ ext.increaseMajorVersion = { ->
  ***************************************************************************************/
 ext.increaseMinorVersion = { ->
 	setCommonGradleProperty('minorVersionNumber', 1 + project.getProperty('minorVersionNumber'), 1)
-	setCommonGradleProperty('microVersionNumber', 0, 0)
+	setCommonGradleProperty('revisionVersionNumber', 0, 0)
 	logInfo("Increase minor number " + minorVersionNumber + ": " + project.version)
 	updateVersion()
 	readVersion()
@@ -114,11 +114,11 @@ ext.increaseMinorVersion = { ->
 
 
 /***************************************************************************************
- * Increase micro version
+ * Increase revision version
  ***************************************************************************************/
-ext.increaseMicroVersion = { ->
-	setCommonGradleProperty('microVersionNumber', 1 + project.getProperty('microVersionNumber'), 1)
-	logInfo("Increase micro number " + microVersionNumber + ": " + project.version)
+ext.increaseRevisionVersion = { ->
+	setCommonGradleProperty('revisionVersionNumber', 1 + project.getProperty('revisionVersionNumber'), 1)
+	logInfo("Increase revision number " + revisionVersionNumber + ": " + project.version)
 	updateVersion()
 	readVersion()
 }

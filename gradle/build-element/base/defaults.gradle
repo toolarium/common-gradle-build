@@ -250,7 +250,7 @@ if (project.hasProperty('installGradleWrapper') && project.getProperty('installG
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("majorVersionNumber", 0)
 setCommonGradleDefaultPropertyIfNull("minorVersionNumber", 0)
-setCommonGradleDefaultPropertyIfNull("microVersionNumber", 1)
+setCommonGradleDefaultPropertyIfNull("revisionVersionNumber", 1)
 setCommonGradleDefaultPropertyIfNull("qualifierVersionNumber", SNAPSHOT_TAG_NAME)
 setCommonGradleDefaultPropertyIfNull("isReleaseVersion", false)
 setCommonGradleDefaultPropertyIfNull("scmVersionNumber", '')

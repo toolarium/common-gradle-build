@@ -32,12 +32,12 @@ ext.readRemoteVersion = { inputUrl ->
 
 		def majorNumber = props.getProperty("major.number")
 		def minorNumber = props.getProperty("minor.number")
-		def microNumber = props.getProperty("micro.number")
+		def revisionNumber = props.getProperty("revision.number")
 		def qualifier = props.getProperty("qualifier")
 		
 		remoteVersion = majorNumber + "." + minorNumber;	
-		if (microNumber!=null) {
-			remoteVersion += "." + microNumber
+		if (revisionNumber!=null) {
+			remoteVersion += "." + revisionNumber
 		} else if (qualifier!=null) { 
 			remoteVersion += "." + qualifier
 		}

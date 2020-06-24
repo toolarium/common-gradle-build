@@ -144,7 +144,8 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 			filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.licenseText}".toString()) }
 			filter { line -> line.replaceAll('@@MAJOR_NUMBER@@', "${project.ext.majorVersionNumber}".toString()) }
 			filter { line -> line.replaceAll('@@MINOR_NUMBER@@', "${project.ext.minorVersionNumber}".toString()) }
-			filter { line -> line.replaceAll('@@MICRO_NUMBER@@', "${project.ext.microVersionNumber}".toString()) }
+			filter { line -> line.replaceAll('@@REVISION_NUMBER@@', "${project.ext.revisionVersionNumber}".toString()) }
+			filter { line -> line.replaceAll('@@MICRO_NUMBER@@', "${project.ext.revisionVersionNumber}".toString()) }
 			filter { line -> line.replaceAll('@@QUALIFIER@@', "${project.ext.qualifierVersionNumber}".toString()) }
 			filter { line -> line.replaceAll('@@SCM_NUMBER@@', "${project.ext.scmVersionNumber}".toString()) }
 			filter { line -> line.replaceAll('@@BUILD_TIMESTAMP@@', "${project.ext.BUILD_TIMESTAMP}".toString()) }

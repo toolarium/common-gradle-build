@@ -12,7 +12,7 @@ public class Version {
 	public static final String LICENSE             = "@@LICENSE@@";
 	public static final int MAJOR_NUMBER           = @@MAJOR_NUMBER@@;
 	public static final int MINOR_NUMBER           = @@MINOR_NUMBER@@;
-	public static final int MICRO_NUMBER           = @@MICRO_NUMBER@@;
+	public static final int REVISION_NUMBER        = @@REVISION_NUMBER@@;
 	public static final String QUALIFIER           = "@@QUALIFIER@@";
 	public static final String SCM_NUMBER          = "@@SCM_NUMBER@@";
 	public static final String BUILD_TIMESTAMP     = "@@BUILD_TIMESTAMP@@";
