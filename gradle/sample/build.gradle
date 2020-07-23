@@ -36,3 +36,11 @@ task sampleTask {
 		printInfo "doLast -> end: " + myVar 
     }
 }
+
+
+/***************************************************************************************
+ * sample task dependency
+ ***************************************************************************************/
+task taskA { doLast { println("A") } }
+task taskB { doLast { println("B") } }
+taskA.dependsOn taskB

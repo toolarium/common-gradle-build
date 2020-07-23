@@ -19,14 +19,13 @@ task release (type: GradleBuild) {
 	
 gradle build test
 	
-sed -i 's/1.0.0-SNAPSHOT/1.0.0/g' build.gradle
 git add VERSION
-git commit -m "Gradle Release v1.0.0"
+git commit -m "Release v" + project.version
 git push
-git tag -a v1.0.0 -m "Gradle Release Build v1.0.0"
+git tag -a v1.0.0 -m "Release Build v" + project.version
 gradle build publish
 git push --tags
-sed -i 's/1.0.0/1.1.0-SNAPSHOT/g' build.gradle
+increaseRevisionVersion()
 git add VERSION
 git commit -m "Gradle Release next development"
 git push	
