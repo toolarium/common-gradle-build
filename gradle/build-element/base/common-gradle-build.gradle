@@ -247,7 +247,7 @@ ext.getNewestGithubRelease = {localDirectory, commonGradleBuildReleasesUrl, preR
 			
 			logInfo("Remote version: " + colorize(HIGHLITE_LEVEL, remoteVersion) + colorize(HIGHLITE_LEVEL, " of $commonGradleBuildReleasesUrl in $localDirectoryRemoteVersion"))			
 			if (!new File(localDirectoryRemoteVersion).exists()) {
-				printInfo("> Download version " + colorize(HIGHLITE_LEVEL, remoteVersion) + " of " + colorize(HIGHLITE_LEVEL, gitUrl) + " into " + colorize(HIGHLITE_LEVEL, localDirectoryRemoteVersion) + ".")				
+				printInfo("> Download version " + colorize(HIGHLITE_LEVEL, remoteVersion) + " of " + colorize(HIGHLITE_LEVEL, commonGradleBuildReleasesUrl) + " into " + colorize(HIGHLITE_LEVEL, localDirectoryRemoteVersion) + ".")				
 				downloadAndUnzipNewestGithubRelease(commonGradleBuildReleasesUrl, preRelease, localDirectory)
 			}
 		}

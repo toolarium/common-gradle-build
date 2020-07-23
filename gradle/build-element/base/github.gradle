@@ -97,7 +97,7 @@ ext.downloadAndUnzipNewestGithubRelease = {url, preRelease = false, destDir ->
 		}
 		
 		mkdir "$destDir"
-		printInfo("> Download version " + colorize(HIGHLITE_LEVEL, releaseVersion) + " of " + colorize(HIGHLITE_LEVEL, gitUrl) + " into " + colorize(HIGHLITE_LEVEL, "${destDir}/${releaseVersion}") + ".")
+		printInfo("> Download version " + colorize(HIGHLITE_LEVEL, releaseVersion) + " of " + colorize(HIGHLITE_LEVEL, url) + " into " + colorize(HIGHLITE_LEVEL, "${destDir}/${releaseVersion}") + ".")
 		new URL(release.zipball_url).withInputStream { i -> fileZip.withOutputStream { it << i } }
 		unzip(fileZip, destDir, releaseVersion)
 		fileZip.delete();
