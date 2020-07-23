@@ -17,9 +17,9 @@
 //setCommonGradleProperty("commonGradleBuildHomeVersionFileUrl", "version-file-of-the-git-project-where-you-have-defined-your-defaults")
 /*
    structure of the repository:
-	 gradle
-	 gradle/defaults.gradle
-	 (gradle/template/) <- optional
+      gradle
+      gradle/defaults.gradle
+      (gradle/template/) <- optional
  */
 
  

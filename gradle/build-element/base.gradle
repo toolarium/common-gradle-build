@@ -26,6 +26,7 @@ apply from: "${commonGradleBuildElementPath}/base/property.gradle"
 apply from: "${commonGradleBuildElementPath}/base/util.gradle"
 apply from: "${commonGradleBuildElementPath}/base/file.gradle"
 apply from: "${commonGradleBuildElementPath}/base/console.gradle"
+apply from: "${commonGradleBuildElementPath}/base/github.gradle"
 
 logInfo(LINE)
 apply from: "${commonGradleBuildElementPath}/base/common-gradle-build.gradle"

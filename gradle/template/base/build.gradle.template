@@ -11,6 +11,6 @@ apply from: "@@COMMON_GRADLE_BUILD_URL@@"
  * Define project dependencies
  @@STAR_LINE@@/
 dependencies {
-	// see https://docs.gradle.org/current/userguide/java_library_plugin.html
-	// e.g.: implementation 'net.sf.jptools:jptools:1.7.0'
+    // see https://docs.gradle.org/current/userguide/java_library_plugin.html
+    // e.g.: implementation 'net.sf.jptools:jptools:1.7.0'
 }
