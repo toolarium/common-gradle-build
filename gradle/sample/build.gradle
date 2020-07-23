@@ -1,0 +1,38 @@
+apply from: "https://git.io/JfDQT"
+
+
+/***************************************************************************************
+ * local variable
+ ***************************************************************************************/
+ext.myVar = "simple text"
+printInfo "[1] My message: " + myVar 
+ext.myVar = myVar + ", extended"
+printInfo "[2] My message: " + myVar 
+
+
+/***************************************************************************************
+ * sample function
+ ***************************************************************************************/
+ext.myFunction = { 
+	printInfo "myFunction -> start"
+	ext.set(myVar, "other text")
+	printInfo "[4] My message: " + myVar 
+	printInfo "myFunction -> end"
+}
+
+
+/***************************************************************************************
+ * sample task --> see >cb tasks
+ ***************************************************************************************/
+task sampleTask { 
+	group = 'Verification'
+	description = 'My sample task'
+
+	printInfo "Sample Task: " + myVar 
+
+    doLast { 
+		printInfo "doLast -> start: " + myVar 
+		myFunction()
+		printInfo "doLast -> end: " + myVar 
+    }
+}

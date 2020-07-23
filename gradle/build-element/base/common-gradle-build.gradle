@@ -5,7 +5,7 @@
  * MIT License: https://mit-license.org
  */
 
-
+ 
 /***************************************************************************************
  * Read the remote version
  ***************************************************************************************/
@@ -102,8 +102,13 @@ ext.writeLastCheck = { versionNumber, filename, lastCheck = BUILD_TIMESTAMP ->
  * Download common gradle build cache
  ***************************************************************************************/
 ext.downloadCommonGradleBuildCache = { ->
-	if (!project.hasProperty('commonGradleBuildCache') || !project.hasProperty('commonGradleBuildGitUrl') || !project.hasProperty('commonGradleBuildCacheVersionFileUrl') || !project.hasProperty('commonGradleBuildCacheLastCheckTimeout')) {
+	if (!project.hasProperty('commonGradleBuildCache') || !project.hasProperty('commonGradleBuildReleasesUrl') || !project.hasProperty('commonGradleBuildCacheLastCheckTimeout')) {
 		return
+	}
+	
+	def preRelease = false
+	if (project.hasProperty('commonGradleBuildReleasesPreRelease')) {
+		preRelease = project.getProperty('commonGradleBuildReleasesPreRelease')
 	}
 
 	def commonGradleBuildCache = project.getProperty('commonGradleBuildCache')
@@ -111,13 +116,8 @@ ext.downloadCommonGradleBuildCache = { ->
 		return
 	}
 
-	def commonGradleBuildGitUrl = project.getProperty('commonGradleBuildGitUrl')
-	if (commonGradleBuildGitUrl==null || "${commonGradleBuildGitUrl}".isEmpty()) {
-		return
-	}
-
-	def commonGradleBuildCacheVersionFileUrl = project.getProperty('commonGradleBuildCacheVersionFileUrl')
-	if (commonGradleBuildCacheVersionFileUrl==null || "${commonGradleBuildCacheVersionFileUrl}".isEmpty()) {
+	def commonGradleBuildReleasesUrl = project.getProperty('commonGradleBuildReleasesUrl')
+	if (commonGradleBuildReleasesUrl==null || "${commonGradleBuildReleasesUrl}".isEmpty()) {
 		return
 	}
 
@@ -126,7 +126,7 @@ ext.downloadCommonGradleBuildCache = { ->
 		new File(gradleHome).mkdirs()			
 	} 
 
-	downloadGitProject(commonGradleBuildCache, commonGradleBuildGitUrl, commonGradleBuildCacheVersionFileUrl, project.getProperty('commonGradleBuildCacheLastCheckTimeout'))
+	getNewestGithubRelease(commonGradleBuildCache, commonGradleBuildReleasesUrl, preRelease, project.getProperty('commonGradleBuildCacheLastCheckTimeout'))
 }
 
 
@@ -160,14 +160,14 @@ ext.downloadCommonGradleBuildHome = { ->
 	} 
 
 	bootStraplogLifecycle("> Create common-gradle-build home, download of the ${commonGradleBuildHomeGitUrl}.")
-	downloadGitProject(commonGradleBuildHome, commonGradleBuildHomeGitUrl, commonGradleBuildHomeVersionFileUrl, project.getProperty('commonGradleBuildCacheLastCheckTimeout'))
+	cloneGitProject(commonGradleBuildHome, commonGradleBuildHomeGitUrl, commonGradleBuildHomeVersionFileUrl, project.getProperty('commonGradleBuildCacheLastCheckTimeout'))
 }
 
 
 /***************************************************************************************
  * Clone git project
  ***************************************************************************************/
-ext.downloadGitProject = {localDirectory, gitUrl, remoteVersionFileUrl, lastCheckTimeout ->
+ext.cloneGitProject = {localDirectory, gitUrl, remoteVersionFileUrl, lastCheckTimeout ->
 
 	if (gitUrl==null || "${gitUrl}".isEmpty() || remoteVersionFileUrl==null || "${remoteVersionFileUrl}".isEmpty()) {
 		logDebug("Invalid git url or remote version file url.")
@@ -198,10 +198,57 @@ ext.downloadGitProject = {localDirectory, gitUrl, remoteVersionFileUrl, lastChec
 		if (remoteVersion!=null && !remoteVersion.isEmpty()) {
 			def localDirectoryRemoteVersion = "${localDirectory}/${remoteVersion}"
 			
-			logInfo("Remote version: " + colorize(HIGHLITE_LEVEL, remoteVersion) + colorize(HIGHLITE_LEVEL, " of  $gitUrl into $localDirectoryRemoteVersion"))			
+			logInfo("Remote version: " + colorize(HIGHLITE_LEVEL, remoteVersion) + colorize(HIGHLITE_LEVEL, " of $gitUrl in $localDirectoryRemoteVersion"))			
 			if (!new File(localDirectoryRemoteVersion).exists()) {
 				printInfo("> Download version " + colorize(HIGHLITE_LEVEL, remoteVersion) + " of " + colorize(HIGHLITE_LEVEL, gitUrl) + " into " + colorize(HIGHLITE_LEVEL, localDirectoryRemoteVersion) + ".")
 				gitClone(localDirectoryRemoteVersion, gitUrl)			
+			}
+		}
+			
+		writeLastCheck(remoteVersion, lastCheckFile)
+	} else {
+		logInfo("Don't check it's inside time range: " + colorize(HIGHLITE_LEVEL, timeout))
+	}	
+}
+
+
+/***************************************************************************************
+ * Get newest github release
+ ***************************************************************************************/
+ext.getNewestGithubRelease = {localDirectory, commonGradleBuildReleasesUrl, preRelease, lastCheckTimeout ->
+	if (commonGradleBuildReleasesUrl==null || "${commonGradleBuildReleasesUrl}".isEmpty()) {
+		logDebug("Invalid git url or remote version file url.")
+		return
+	}
+
+	if (localDirectory==null || "${localDirectory}".isEmpty()) {
+		logDebug("Invalid local directory.")
+		return
+	}
+	
+	if (!new File(localDirectory).exists()) {
+		logInfo("Create directory $localDirectory")
+		new File(localDirectory).mkdirs()
+	}
+	
+    def lastCheckFile = "${localDirectory}/lastCheck.properties"
+	def timeout = 0
+	def lastCheck = readLastCheck(lastCheckFile)
+
+	if (lastCheck != null) {
+		timeout = new Date().getTime() - lastCheck.getTime()
+	}
+
+	if ((lastCheck == null) || (timeout > lastCheckTimeout)) {
+		def remoteVersion = readLatestGithubReleaseVersion(commonGradleBuildReleasesUrl, preRelease)		
+
+		if (remoteVersion!=null && !remoteVersion.isEmpty()) {
+			def localDirectoryRemoteVersion = "${localDirectory}/${remoteVersion}"
+			
+			logInfo("Remote version: " + colorize(HIGHLITE_LEVEL, remoteVersion) + colorize(HIGHLITE_LEVEL, " of $commonGradleBuildReleasesUrl in $localDirectoryRemoteVersion"))			
+			if (!new File(localDirectoryRemoteVersion).exists()) {
+				printInfo("> Download version " + colorize(HIGHLITE_LEVEL, remoteVersion) + " of " + colorize(HIGHLITE_LEVEL, gitUrl) + " into " + colorize(HIGHLITE_LEVEL, localDirectoryRemoteVersion) + ".")				
+				downloadAndUnzipNewestGithubRelease(commonGradleBuildReleasesUrl, preRelease, localDirectory)
 			}
 		}
 			

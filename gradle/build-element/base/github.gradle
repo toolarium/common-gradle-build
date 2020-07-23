@@ -1,0 +1,107 @@
+/*
+ * github.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+
+
+/** 
+ * Read github releases of a project
+ */
+ext.readGithubReleases = { url ->
+	def hasOnlineConnection = project.hasProperty('HAS_ONLINE_CONNECTION') && project.getProperty('HAS_ONLINE_CONNECTION')
+	if (!hasOnlineConnection) {
+		return
+	}
+	
+	try {
+		def releases = new groovy.json.JsonSlurper().parse(url.toURL())
+		releases.each { logDebug "Release: " + it.name + ", prerelease: " + it.prerelease }
+		return releases
+	} catch (Exception e) {
+		printWarn("Could not read github release for [" + colorize(HIGHLITE_LEVEL, url) + colorize(WARN_LEVEL, "]: " +e.getMessage())) 
+	}
+}
+
+
+/** 
+ * Select github release
+ */
+ext.selectGithubNewestRelease = { url, preRelease = false ->
+	def releases = readGithubReleases(url)
+	
+	def newestRelease
+	if (releases !=null) {
+		try {
+			def filteredReleases = releases
+			if (!preRelease) {
+				filteredReleases = releases.findAll{ "false".equalsIgnoreCase(it.prerelease.toString()) }	
+			}
+			
+			newestRelease = filteredReleases[0]
+		} catch (Exception e) {
+			printWarn("Could not read github release for [" + colorize(HIGHLITE_LEVEL, url) + colorize(WARN_LEVEL, "]: " +e.getMessage())) 
+		}
+	}
+	
+	return newestRelease
+}
+
+
+/** 
+ * Read latets release version
+ */
+ext.readLatestGithubReleaseVersion = {url, preRelease = false ->
+	def remoteVersion
+	def release = selectGithubNewestRelease(url, preRelease)	
+	if (release!=null && release.zipball_url!=null) {
+		def releaseVersion = release.name
+		
+		if (releaseVersion==null || releaseVersion.isEmpty()) {
+			releaseVersion = release.tag_name
+		}
+		
+		if (releaseVersion.startsWith("v") ) {
+			releaseVersion = releaseVersion.substring(1)
+		}
+		
+		remoteVersion = releaseVersion
+	}
+	
+	return remoteVersion
+}
+
+
+/** 
+ * Download and unzip newest github release
+ */
+ext.downloadAndUnzipNewestGithubRelease = {url, preRelease = false, destDir ->
+	def release = selectGithubNewestRelease(url, preRelease)	
+	if (release!=null && release.zipball_url!=null) {
+		def releaseVersion = release.name
+		
+		if (releaseVersion==null || releaseVersion.isEmpty()) {
+			releaseVersion = release.tag_name
+		}
+		
+		if (releaseVersion.startsWith("v") ) {
+			releaseVersion = releaseVersion.substring(1)
+		}
+		
+		logInfo("Remote version: " + colorize(HIGHLITE_LEVEL, releaseVersion) + colorize(HIGHLITE_LEVEL, " of  $url into $destDir"))			
+		printInfo "Found new release version " + releaseVersion
+		def fileZip = new File("${destDir}/${releaseVersion}.zip")
+		if (fileZip.exists()) {
+			printWarn("Could not download release $releaseVersion from github, file already exist [" + colorize(HIGHLITE_LEVEL, fileZip) + colorize(WARN_LEVEL, "].")) 
+		}
+		
+		mkdir "$destDir"
+		printInfo("> Download version " + colorize(HIGHLITE_LEVEL, releaseVersion) + " of " + colorize(HIGHLITE_LEVEL, gitUrl) + " into " + colorize(HIGHLITE_LEVEL, "${destDir}/${releaseVersion}") + ".")
+		new URL(release.zipball_url).withInputStream { i -> fileZip.withOutputStream { it << i } }
+		unzip(fileZip, destDir, releaseVersion)
+		fileZip.delete();
+	}
+	
+	return release
+}

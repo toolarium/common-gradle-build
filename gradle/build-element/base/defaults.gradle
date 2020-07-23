@@ -19,6 +19,8 @@ if ("windows" == getOsName()) {
 setCommonGradleDefaultPropertyIfNull("gradleHome", "$userHomeDirectory/.gradle")
 setCommonGradleDefaultPropertyIfNull("gradleHomePropertiesFile", "$gradleHome/gradle.properties")
 setCommonGradleDefaultPropertyIfNull("defaultCommonGradleBuildUrl", "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/common.gradle")
+setCommonGradleDefaultPropertyIfNull("commonGradleBuildReleasesUrl", "https://api.github.com/repos/toolarium/common-build/releases")
+setCommonGradleDefaultPropertyIfNull("commonGradleBuildReleasesPreRelease", false)
 setCommonGradleDefaultPropertyIfNull("commonGradleBuildGitUrl", "https://github.com/toolarium/common-gradle-build.git")
 setCommonGradleDefaultPropertyIfNull("commonGradleBuildHomeGitUrl", "")
 setCommonGradleDefaultPropertyIfNull("commonGradleBuildHomeVersionFileUrl", "")
@@ -30,7 +32,6 @@ setCommonGradleDefaultPropertyIfNull("commonGradleBuildHomeVersionFileUrl", "")
 setCommonGradleDefaultPropertyIfNull("commonGradleBuildCache", "$gradleHome/common-gradle-build")
 setCommonGradleDefaultPropertyIfNull("commonGradleBuildCacheLastCheckFile", "$commonGradleBuildCache/lastCheck.properties")
 setCommonGradleDefaultPropertyIfNull("commonGradleBuildCacheLastCheckTimeout", 1000 * 60 * 60 * 12) // one day
-setCommonGradleDefaultPropertyIfNull("commonGradleBuildCacheVersionFileUrl", "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/VERSION")
 
 
 /***************************************************************************************

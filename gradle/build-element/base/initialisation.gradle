@@ -18,6 +18,7 @@ ext.projectInitialisation = { ->
 	def createReadmeFile = !new File(readmeFile).exists()
 	def createLicenseFile = !new File(licenseFile).exists()
 	def createChangelogFile = createChangelogFile && !new File(changelogFile).exists()
+	def createEditorConfigFile = !new File(editorConfigFile).exists()		
 	def createGraldeHomeProperties = !new File(gradleHomePropertiesFile).exists()
 
 	// detect a minimal build gradle file -> replace it
@@ -34,6 +35,7 @@ ext.projectInitialisation = { ->
 					&& !createVersionFile \
 					&& !createReadmeFile \
 					&& !createLicenseFile \
+					&& !createEditorConfigFile \
 					&& !createChangelogFile
 					
 	setCommonGradleProperty('IS_NEW', !isReady)
@@ -56,19 +58,19 @@ ext.projectInitialisation = { ->
 
 		if (createSettingsGralde) {
 			printInfo("Set root project name to " + colorize(HIGHLITE_LEVEL, rootProject.name) + ", created file " + colorize(HIGHLITE_LEVEL, settingsGradleFile) + "...")
-			if (createGradleProperties || createBuildGradle || !project.hasProperty('projectRootPackageName') || !project.hasProperty('projectGroupId') || !project.hasProperty('projectComponentId') || !project.hasProperty('projectDescription') || createVersionFile || createReadmeFile || createLicenseFile || createChangelogFile || createGraldeHomeProperties) 
+			if (createGradleProperties || createBuildGradle || !project.hasProperty('projectRootPackageName') || !project.hasProperty('projectGroupId') || !project.hasProperty('projectComponentId') || !project.hasProperty('projectDescription') || createVersionFile || createReadmeFile || createLicenseFile || createEditorConfigFile || createChangelogFile || createGraldeHomeProperties) 
 				printNewline()
 		}
 
 		if (createGradleProperties) {
 			printInfo("> Created file " + colorize(HIGHLITE_LEVEL, gradlePropertiesFile) + "...")
-			if (createBuildGradle || !project.hasProperty('projectRootPackageName') || !project.hasProperty('projectGroupId') || !project.hasProperty('projectComponentId') || !project.hasProperty('projectDescription')  || createVersionFile || createReadmeFile || createLicenseFile || createChangelogFile || createGraldeHomeProperties) 
+			if (createBuildGradle || !project.hasProperty('projectRootPackageName') || !project.hasProperty('projectGroupId') || !project.hasProperty('projectComponentId') || !project.hasProperty('projectDescription')  || createVersionFile || createReadmeFile || createLicenseFile || createChangelogFile || createEditorConfigFile || createGraldeHomeProperties) 
 				printNewline()
 		}
 
 		if (createBuildGradle) {
 			printInfo("> Created file " + colorize(HIGHLITE_LEVEL, buildGradleFile) + "...")
-			if (!project.hasProperty('projectRootPackageName') || !project.hasProperty('projectGroupId') || !project.hasProperty('projectComponentId') || !project.hasProperty('projectDescription') || createVersionFile || createReadmeFile || createLicenseFile || createChangelogFile || createGraldeHomeProperties) 
+			if (!project.hasProperty('projectRootPackageName') || !project.hasProperty('projectGroupId') || !project.hasProperty('projectComponentId') || !project.hasProperty('projectDescription') || createVersionFile || createReadmeFile || createLicenseFile || createChangelogFile || createEditorConfigFile || createGraldeHomeProperties) 
 				printNewline()
 		}
 		
@@ -91,7 +93,7 @@ ext.projectInitialisation = { ->
 			printInfo("> Set project root package name to " + colorize(HIGHLITE_LEVEL, projectRootPackageName) + ", please define it in the gradle.properties:")
 			printInfo("  e.g. " + colorize(TITLE_LEVEL, 'projectRootPackageName') + " = $projectRootPackageName")
 			
-			if (!project.hasProperty('projectGroupId') || !project.hasProperty('projectComponentId') || !project.hasProperty('projectDescription') || createVersionFile || createReadmeFile || createLicenseFile || createChangelogFile || createGraldeHomeProperties) 
+			if (!project.hasProperty('projectGroupId') || !project.hasProperty('projectComponentId') || !project.hasProperty('projectDescription') || createVersionFile || createReadmeFile || createLicenseFile || createChangelogFile || createEditorConfigFile || createGraldeHomeProperties) 
 				printNewline()
 		}
 
@@ -100,7 +102,7 @@ ext.projectInitialisation = { ->
 			printInfo("> Set projectGroupId to " + colorize(HIGHLITE_LEVEL, projectRootPackageName) + ", please define it in the gradle.properties:")
 			printInfo("  e.g. " + colorize(TITLE_LEVEL, 'projectGroupId') + " = $projectGroupId")
 			
-			if (!project.hasProperty('projectComponentId') || !project.hasProperty('projectDescription') || createVersionFile || createReadmeFile || createLicenseFile || createChangelogFile || createGraldeHomeProperties) 
+			if (!project.hasProperty('projectComponentId') || !project.hasProperty('projectDescription') || createVersionFile || createReadmeFile || createLicenseFile || createChangelogFile || createEditorConfigFile || createGraldeHomeProperties) 
 				printNewline()
 		}
 
@@ -122,7 +124,7 @@ ext.projectInitialisation = { ->
 			printInfo("> Set projectComponentId to " + colorize(HIGHLITE_LEVEL, rootProject.name) + ", please define it in the gradle.properties:")
 			printInfo("  e.g. " + colorize(TITLE_LEVEL, 'projectComponentId') + " = $projectComponentIdDefault")
 			
-			if (!project.hasProperty('projectDescription') || createVersionFile || createReadmeFile || createLicenseFile || createChangelogFile || createGraldeHomeProperties) 
+			if (!project.hasProperty('projectDescription') || createVersionFile || createReadmeFile || createLicenseFile || createChangelogFile || createEditorConfigFile || createGraldeHomeProperties) 
 				printNewline()
 		}
 		
@@ -132,7 +134,7 @@ ext.projectInitialisation = { ->
 			printInfo("> Set the description to " + colorize(HIGHLITE_LEVEL, projectRootPackageName) + ", please define it in the gradle.properties:")
 			printInfo("  e.g. " + colorize(TITLE_LEVEL, 'projectDescription') + " = '...'")
 
-			if (createVersionFile || createReadmeFile || createLicenseFile || createChangelogFile || createGraldeHomeProperties) 
+			if (createVersionFile || createReadmeFile || createLicenseFile || createChangelogFile || createEditorConfigFile || createGraldeHomeProperties) 
 				printNewline()
 		}
 		
@@ -140,7 +142,7 @@ ext.projectInitialisation = { ->
 			printInfo("> Created file " + colorize(HIGHLITE_LEVEL, versionFile) + "...")
 			updateVersion()
 			
-			//if (createReadmeFile || createLicenseFile || createChangelogFile || createGraldeHomeProperties) 
+			//if (createReadmeFile || createLicenseFile || createChangelogFile || createEditorConfigFile || createGraldeHomeProperties) 
 			//	printNewline()
 		}
 
@@ -156,7 +158,7 @@ ext.projectInitialisation = { ->
 				}	
 			}
 			
-			//if (createLicenseFile || createChangelogFile || createGraldeHomeProperties) 
+			//if (createLicenseFile || createChangelogFile || createEditorConfigFile || createGraldeHomeProperties) 
 			//	printNewline()
 		}
 		
@@ -207,7 +209,40 @@ ext.projectInitialisation = { ->
 				}				
 			}
 		}
-		
+
+		if (createEditorConfigFile) {
+			logInfo("Write file " + colorize(HIGHLITE_LEVEL, editorConfigFile) + colorize(INFO_LEVEL ,"..."))
+			if (!createFileFromTemplate(editorConfigFile, 'base/editorconfig.template')) {
+				printInfo("> Create " + colorize(HIGHLITE_LEVEL, editorConfigFile) + " with default values.")
+				new File('.', editorConfigFile).withWriter { w ->
+					w << "# editor config: https://editorconfig.org" << NELINE \
+					<< "root = true" << NELINE \
+					<< "" << NELINE \
+					<< "[*]" << NELINE \
+					<< "charset = utf-8" << NELINE \
+					<< "indent_style = space" << NELINE \
+					<< "indent_size = 4" << NELINE \
+					<< "end_of_line = lf" << NELINE \
+					<< "insert_final_newline = true" << NELINE \
+					<< "trim_trailing_whitespace = true" << NELINE \
+					<< "" << NELINE \
+					<< "[*.{js, json}]" << NELINE \
+					<< "indent_size = 2" << NELINE \
+					<< "" << NELINE \
+					<< "[*.sh, Makefile]" << NELINE \
+					<< "indent_style = tab" << NELINE \
+					<< "" << NELINE \
+					<< "[*.{bat, cmd, ps1}]" << NELINE \
+					<< "end_of_line = crlf" << NELINE \
+					<< "" << NELINE \
+					<< "[*.md]" << NELINE \
+					<< "insert_final_newline = false" << NELINE \
+					<< "trim_trailing_whitespace = false" << NELINE \
+					<< "" << NELINE
+				}				
+			}
+		}
+
 		if (createGraldeHomeProperties) {
 			logInfo("Write file " + colorize(HIGHLITE_LEVEL, gradleHomePropertiesFile) + colorize(INFO_LEVEL ,"..."))
 			if (!createFileFromTemplate(gradleHomePropertiesFile, 'base/gradlehome.properties.template')) {
