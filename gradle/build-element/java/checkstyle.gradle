@@ -23,6 +23,18 @@ projectValidation {
  ***************************************************************************************/
 if (project.hasProperty('initCheckstyle') && project.getProperty('initCheckstyle')) {
 	apply plugin: 'checkstyle'
+
+	// work around: set the checkstyle as absolute path
+	def userDir = "${System.properties['user.dir'].replace('\\', '/')}"
+	if (userDir.endsWith('/')) {
+		userDir = userDir.substring(0, userDir.length() -1)
+	}
+		
+	def checkstylePath = project.getProperty('checkstyleConfigurationPath')
+	if (checkstylePath.startsWith("./")) {
+		checkstylePath = userDir + "/" + checkstyleConfigurationPath.substring(2)
+	}
+	
 	checkstyle {
 		maxWarnings = project.getProperty('checkstyleMaxWarnings')
 		
@@ -30,6 +42,11 @@ if (project.hasProperty('initCheckstyle') && project.getProperty('initCheckstyle
 			toolVersion = project.getProperty('checkstyleToolVersion')
 		}
 		
+		configProperties = [
+				'configDir': checkstylePath,
+				'config_loc': checkstylePath
+			]
+			
 		configFile file(project.getProperty('checkstyleConfiguration'))
 	}
 
@@ -74,7 +91,7 @@ ext.createCheckstyleConfiguration = { overwrite = false ->
 	def checkstylePath = "$configDirectory/checkstyle/"
 	def checkstyleFile = "checkstyle.xml"
 	def checkstyleFileHeader = "checkstyle-file-header.txt"
-	
+		
 	if (overwrite || !new File("${checkstylePath}", "${checkstyleFile}").exists()) {
 		new File(configDirectory).mkdirs()
 		if (new File(checkstylePath).mkdirs()) {

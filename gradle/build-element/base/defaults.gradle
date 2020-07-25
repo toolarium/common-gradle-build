@@ -68,7 +68,7 @@ setCommonGradleDefaultPropertyIfNull("createChangelogFile", false)
 setCommonGradleDefaultPropertyIfNull("includeChangelogFile", false)
 
 // config directory
-setCommonGradleDefaultPropertyIfNull("configDirectoryName", "config")
+setCommonGradleDefaultPropertyIfNull("configDirectoryName", "conf")
 setCommonGradleDefaultPropertyIfNull("configDirectory", "$rootDirectory/$configDirectoryName")
 setCommonGradleDefaultPropertyIfNull("configIgnoreEmptyPackages", true)
 setCommonGradleDefaultPropertyIfNull("configPackages", "")
@@ -193,11 +193,12 @@ setCommonGradleDefaultPropertyIfNull("checkstyleToolDefaultVersion", '8.27')
 setCommonGradleDefaultPropertyIfNull("checkstyleMaxWarnings", 0)
 setCommonGradleDefaultPropertyIfNull("checkstyleXMLReport", false)
 setCommonGradleDefaultPropertyIfNull("checkstyleHTMLReport", true)
-setCommonGradleDefaultPropertyIfNull("checkstyleConfiguration", "${configDirectory}/checkstyle/checkstyle.xml")
+setCommonGradleDefaultPropertyIfNull("checkstyleConfigurationPath", "${configDirectory}/checkstyle")
+setCommonGradleDefaultPropertyIfNull("checkstyleConfiguration", "${checkstyleConfigurationPath}/checkstyle.xml")
 setCommonGradleDefaultPropertyIfNull("checkstyleDefaultConfigurationFileHeaderUrl", "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/template/java/checkstyle-file-header.txt.template")
 setCommonGradleDefaultPropertyIfNull("checkstyleDefaultConfigurationUrl", "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/template/java/checkstyle.xml.template")
 // 'https://raw.githubusercontent.com/checkstyle/checkstyle/master/src/main/resources/google_checks.xml' issues with current
-//setCommonGradleDefaultPropertyIfNull("checkstyleCustomStylesheet", "${configDirectory}/checkstyle/checkstyle.xml")
+//setCommonGradleDefaultPropertyIfNull("checkstyleCustomStylesheet", "${checkstyleConfigurationPath}/checkstyle.xml")
 
 
 /***************************************************************************************

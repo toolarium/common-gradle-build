@@ -9,6 +9,8 @@
 apply plugin: 'eclipse'
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.classpath")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.project")
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.checkstyle")
+addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/.settings")
 
 
 /***************************************************************************************

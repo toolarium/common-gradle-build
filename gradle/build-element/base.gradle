@@ -259,7 +259,7 @@ projectValidation {
 				projectComponentIdSeparator = project.getProperty('projectComponentIdSeparator')
 			}
 			
-			def startOrEnd = ("${rootProject.name}".startsWith(projectComponentId+projectComponentIdSeparator) || "${rootProject.name}".endsWith(projectComponentIdSeparator+projectComponentId))
+			def startOrEnd = ("${rootProject.name}".toString().equals(projectComponentId.toString()) || "${rootProject.name}".startsWith(projectComponentId+projectComponentIdSeparator) || "${rootProject.name}".endsWith(projectComponentIdSeparator+projectComponentId))
 			if (projectComponentIdIsPartOfProjectName && !startOrEnd) {
 				printWarn("Component id [$projectComponentId] should be part of the project name [$rootProject.name] (see projectComponentIdIsPartOfProjectName seetings)!")
 				setCommonGradleProperty("validBuild", false)

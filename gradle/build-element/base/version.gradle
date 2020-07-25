@@ -14,7 +14,6 @@ ext.readVersion = { ->
 	logInfo("Read version file " + colorize(HIGHLITE_LEVEL, versionFile))
 
 	def props = new Properties()	
-	
 	if (new File(versionFile).canRead()) {
 		file(versionFile).withInputStream { props.load(it) }	
 	} else {
