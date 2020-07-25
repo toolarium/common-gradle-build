@@ -14,7 +14,12 @@ ext.readVersion = { ->
 	logInfo("Read version file " + colorize(HIGHLITE_LEVEL, versionFile))
 
 	def props = new Properties()	
-	file(versionFile).withInputStream { props.load(it) }	
+	
+	if (new File(versionFile).canRead()) {
+		file(versionFile).withInputStream { props.load(it) }	
+	} else {
+		printWarn("Could not read version file " + colorize(HIGHLITE_LEVEL, versionFile))
+	}
 	
 	def majorNumber = props.getProperty("major.number")
 	if (majorNumber!=null) {
