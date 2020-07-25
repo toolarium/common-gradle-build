@@ -68,14 +68,7 @@ init {
 	}
 
 	if (initShowGradle) {
-        def message="Gradle ${gradle.gradleVersion}, Common Gradle Build ${commonGradleBuildVersion}"
-
-        def cbVersion = System.env['CB_VERSION']
-        if (cbVersion!=null && !cbVersion.isEmpty()) {
-            message += ", Common Build ${cbVersion}"
-        }
-
-		printInfo(message)
+		printInfo(buildToolVersionStackMessage)
 	}
 
 	if (initShowRuntime) {

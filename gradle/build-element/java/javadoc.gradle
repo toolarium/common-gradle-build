@@ -5,7 +5,7 @@
  * MIT License: https://mit-license.org
  */
 
- 
+
  apply plugin: 'java'
 
 
@@ -18,7 +18,7 @@ task javadocJar(type: Jar) { jar ->
 	onlyIf { return project.compileTimestamp != null }
 	from javadoc
 	archiveClassifier = 'javadoc'
-	
+
 	if (JavaVersion.current().isJava8Compatible()) {
 		allprojects {
 			tasks.withType(Javadoc) {
@@ -33,22 +33,22 @@ task javadocJar(type: Jar) { jar ->
 				options.addBooleanOption('html5', true)
 			}
 		}
-	}	
-	
+	}
+
 	// include readme, license and version files
 	into 'META-INF', {
-		if (project.getProperty('includeReadmeFile')) {	
+		if (project.getProperty('includeReadmeFile')) {
 			from "${readmeFile}"
 		}
-		
-		if (project.getProperty('includeLicenseFile')) {	
-			from "${licenseFile}" 
+
+		if (project.getProperty('includeLicenseFile')) {
+			from "${licenseFile}"
 		}
-		
-		if (project.getProperty('includeVersionFile')) {		
+
+		if (project.getProperty('includeVersionFile')) {
 			from "${versionFile}"
 		}
-		
+
 		if (project.getProperty('includeChangelogFile')) {
 			from "${changelogFile}"
 		}
@@ -60,15 +60,15 @@ task javadocJar(type: Jar) { jar ->
 					'Specification-Version' : project.version,
 					'Implementation-Title'  : rootProject.name,
 					'Implementation-Version': project.version + project.ext.scmVersionNumber,
-					'Created-By'		   	: "Common Gradle Build ${commonGradleBuildVersion}, Gradle ${gradle.gradleVersion}",
+					'Created-By'		   	: project.ext.buildToolVersionStackMessage,
 					'Built-By'			   	: System.properties['user.name'],
 					'Build-Timestamp'	   	: BUILD_TIMESTAMP,
 					'Build-JDK'			   	: "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
 					'Build-OS'			   	: "${System.properties['os.name']} (${System.properties['os.version']}), ${System.properties['os.arch']}",
 					'Source-Compatibility'  : project.sourceCompatibility,
 					'Target-Compatibility'  : project.targetCompatibility
-	}	
-	
+	}
+
 	doLast {
 		if (project.hasProperty('showCreatedArtefacts') && project.getProperty('showCreatedArtefacts')) {
 			// jar.archiveFileName

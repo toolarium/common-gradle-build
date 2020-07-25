@@ -5,7 +5,7 @@
  * MIT License: https://mit-license.org
  */
 
- 
+
 if (!project.hasProperty('commonGradleBuildUrl')) {
     ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
 }
@@ -14,17 +14,35 @@ if (!project.hasProperty('commonGradleBuildElementPath')) {
 	ext.commonGradleBuildElementPath="${commonGradleBuildUrl}/build-element"
 }
 
+
+/***************************************************************************************
+ * Set additional template path
+ ***************************************************************************************/
+ext.projectTypeTemplatePath='config'
+
+
+/***************************************************************************************
+ * Dependencies
+ ***************************************************************************************/
 apply from: "${commonGradleBuildElementPath}/base.gradle"
 apply from: "${commonGradleBuildElementPath}/base/gradle.gradle"
 apply from: "${commonGradleBuildElementPath}/config/publication.gradle"
 apply from: "${commonGradleBuildElementPath}/java/signing.gradle"
-
 apply plugin: 'distribution'
 
-defaultTasks 'clean', 'build'
+
+/***************************************************************************************
+ * default tasks
+ ***************************************************************************************/
+defaultTasks 'clean', 'configJar'
 
 
+/***************************************************************************************
+ * Avoid code compile and generation
+ ***************************************************************************************/
 ext.compileTimestamp = BUILD_TIMESTAMP
+
+
 /***************************************************************************************
  * project config validation
  ***************************************************************************************/
@@ -36,13 +54,14 @@ projectValidation {
 				new File(configDirectory).mkdirs()
 				printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, configDirectory) + ".")
 			}
-		} 
+		}
 	}
 }
 
 
-
-
+/***************************************************************************************
+ * configuration distribution
+ ***************************************************************************************/
 distributions {
     configJar {
         distributionBaseName = 'someName'
@@ -51,3 +70,4 @@ distributions {
         }
     }
 }
+

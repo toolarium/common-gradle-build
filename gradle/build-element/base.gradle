@@ -41,7 +41,7 @@ if (project.hasProperty('commonGradleBuildHome')) {
 	def commonGradleBuildHome = project.getProperty('commonGradleBuildHome')
 	if (commonGradleBuildHome!=null && !"${commonGradleBuildHome}".isEmpty()) {
 		def commonGradleBuildHomeDefaultsFile = "${commonGradleBuildHome}/gradle/defaults.gradle"
-		
+
 		// apply from home
 		if (new File(commonGradleBuildHomeDefaultsFile).exists()) {
 			bootStraplogLifecycle("> Found defaults in common-gradle-build home path, apply.")
@@ -72,10 +72,10 @@ apply from: "${commonGradleBuildElementPath}/scm/changelog.gradle"
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // add dependencies to all tasks except some special ones
-tasks.matching { it != projectValidation }.all { 
+tasks.matching { it != projectValidation }.all {
 	if (it != help && it != tasks && it != configJar && it != wrapper && it !=projectValidation ) {
 		logDebug("Add dependency to " + it)
-		it.dependsOn projectValidation 
+		it.dependsOn projectValidation
 	}
 }
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -104,8 +104,8 @@ gradle.taskGraph.afterTask { Task task, TaskState state ->
  ***************************************************************************************/
 gradle.buildFinished { buildResult ->
 	//println("=>"+gradle.startParameter.getConsoleOutput())
-	//println("=>"+gradle.startParameter.getWarningMode())				
-	//println("=>"+gradle.startParameter.getShowStacktrace())	
+	//println("=>"+gradle.startParameter.getWarningMode())
+	//println("=>"+gradle.startParameter.getShowStacktrace())
 	//println("=>"+gradle.startParameter.getTaskNames())
 	//println "BUILD FINISHED" + buildResult
 
@@ -114,27 +114,27 @@ gradle.buildFinished { buildResult ->
 	if (duration == null || duration < 0) {
 		duration = 1
 	}
-	
+
 	if (project.hasProperty('validBuild') && !project.getProperty('validBuild')) {
 		def errorMessage = project.getProperty('validBuildMessage')
 		if (gradle.startParameter.getLogLevel() != org.gradle.api.logging.LogLevel.QUIET) {
 			printNewline()
 		}
-		
-		if (errorMessage!=null && !errorMessage.isEmpty()) {		
+
+		if (errorMessage!=null && !errorMessage.isEmpty()) {
 			printLine(ERROR_LEVEL, true)
 			printInfo(colorize(ERROR_LEVEL, "ERROR: " + errorMessage))
 			printLine(ERROR_LEVEL, true)
 			throw new GradleException("ERROR: " + errorMessage)
-		} else {			
+		} else {
 			printLine(ERROR_LEVEL)
 			throw new GradleException("ERROR")
 		}
 	}
-	
+
 	if (buildResult.getFailure()!=null  && failedTask!=null && failedTask.name!=null) {
 		if (gradle.startParameter.getLogLevel() == org.gradle.api.logging.LogLevel.QUIET) {
-			println(colorize(ERROR_LEVEL, 'FAILURE:') + " In task " + colorize(HIGHLITE_LEVEL, failedTask.name) + ", task execution used ~" + duration + "s") 
+			println(colorize(ERROR_LEVEL, 'FAILURE:') + " In task " + colorize(HIGHLITE_LEVEL, failedTask.name) + ", task execution used ~" + duration + "s")
 			printNewline()
 		}
 	} else {
@@ -145,7 +145,7 @@ gradle.buildFinished { buildResult ->
 		}
 
 		if (gradle.startParameter.getLogLevel() == org.gradle.api.logging.LogLevel.QUIET) {
-			printInfo(colorize(SUCCESS_LEVEL, "BUILD SUCCESSFUL") + ", task execution used ~" + duration + "s") 
+			printInfo(colorize(SUCCESS_LEVEL, "BUILD SUCCESSFUL") + ", task execution used ~" + duration + "s")
 		}
 	}
 
@@ -160,29 +160,29 @@ gradle.taskGraph.whenReady { taskGraph ->
 	// in case we deploy check credentials
     if (taskGraph.hasTask(":release") || taskGraph.hasTask(":publish")) {
 		if (project.ext.isSnapshotVersion) {
-			if (!project.ext.buildVersionNumber.endsWith(SNAPSHOT_TAG_NAME) || project.ext.isReleaseVersion) {
+			if (!project.ext.qualifierVersionNumber.endsWith(SNAPSHOT_TAG_NAME) || project.ext.isReleaseVersion) {
 				printLine(ERROR_LEVEL, true)
 				def errorMessage = ""
 				if (project.ext.isReleaseVersion) {
 					errorMessage += " Inconsistent status (either we build a snapshot version or a release version)!"
 				}
-				if (!project.ext.buildVersionNumber.endsWith(SNAPSHOT_TAG_NAME)) {
+				if (!project.ext.qualifierVersionNumber.endsWith(SNAPSHOT_TAG_NAME)) {
 					errorMessage += " Snapshot version has to end with " + SNAPSHOT_TAG_NAME + "!"
 				}
 				printInfo(colorize(ERROR_LEVEL, "ERROR:" + message))
 				printLine(ERROR_LEVEL, true)
 				throw new GradleException("ERROR:" + errorMessage)
 			}
-		}	
-		
+		}
+
 		if (project.ext.isReleaseVersion) {
-			if (!project.ext.buildVersionNumber.endsWith(SNAPSHOT_TAG_NAME) || project.ext.isSnapshotVersion) {
+			if (!project.ext.qualifierVersionNumber.endsWith(SNAPSHOT_TAG_NAME) || project.ext.isSnapshotVersion) {
 				printLine(ERROR_LEVEL, true)
 				def errorMessage = ""
 				if (project.ext.isSnapshotVersion) {
 					errorMessage += " Inconsistent status (either we build a snapshot version or a release version)!"
 				}
-				if (project.ext.buildVersionNumber.endsWith(SNAPSHOT_TAG_NAME)) {
+				if (project.ext.qualifierVersionNumber.endsWith(SNAPSHOT_TAG_NAME)) {
 					errorMessage += " Release version don't end with " + SNAPSHOT_TAG_NAME + "!"
 				}
 				printInfo(colorize(ERROR_LEVEL, "ERROR:" + message))
@@ -190,23 +190,23 @@ gradle.taskGraph.whenReady { taskGraph ->
 				throw new GradleException("ERROR:" + errorMessage)
 			}
 		}
-		
+
 		if (!project.hasProperty('mavenUsername') || !project.hasProperty('mavenPassword')) {
 			def userHomeDirectory = ''
 			if (project.hasProperty('userHomeDirectory')) {
 				userHomeDirectory = project.getProperty('userHomeDirectory')
 			}
-			
+
 			def configFileName = "${userHomeDirectory}.gradle/gradle.properties file"
 			def credentialsMessage = colorize(HIGHLITE_LEVEL, 'mavenUsername') + " and " + colorize(HIGHLITE_LEVEL, 'mavenPassword')
 			printLine(ERROR_LEVEL, true)
 			printInfo(colorize(ERROR_LEVEL, 'ERROR:') + " ${credentialsMessage} has to be ")
 			printInfo("       configured, e.g. in " + colorize(HIGHLITE_LEVEL, configFileName) + "!")
 			printLine(ERROR_LEVEL, true)
-			
+
 			throw new GradleException("ERROR: ${mavenUsername} and ${mavenPassword} has to be configured, e.g. in ${configFileName}!")
 		}
-    } 
+    }
 }
 
 
@@ -216,13 +216,13 @@ gradle.taskGraph.whenReady { taskGraph ->
 projectValidation {
 	doFirst {
 		logInfo("Project validation....")
-		
+
 		// check common gradle build cache
 		downloadCommonGradleBuildCache()
-		
+
 		// check common gradle build home
 		downloadCommonGradleBuildHome()
-				
+
 		// validate project name
 		def projectNameRegularExpressionPattern = ~"${projectNameRegularExpressionPattern}"
 		if (rootProject.name ==~ projectNameRegularExpressionPattern) {
@@ -232,7 +232,7 @@ projectValidation {
 			setCommonGradleProperty("validBuild", false)
 			setCommonGradleProperty("validBuildMessage", "Invalid project name!")
 		}
-		
+
 		// validate group id
 		def projectGroupIdRegularExpressionPattern = ~"${projectGroupIdRegularExpressionPattern}"
 		if (projectGroupId ==~ projectGroupIdRegularExpressionPattern) {
@@ -253,12 +253,12 @@ projectValidation {
 				setCommonGradleProperty("validBuild", false)
 				setCommonGradleProperty("validBuildMessage", "Invalid project component id!")
 			}
-			
+
 			def projectComponentIdSeparator = "-"
 			if (project.hasProperty('projectComponentIdSeparator')) {
 				projectComponentIdSeparator = project.getProperty('projectComponentIdSeparator')
 			}
-			
+
 			def startOrEnd = ("${rootProject.name}".toString().equals(projectComponentId.toString()) || "${rootProject.name}".startsWith(projectComponentId+projectComponentIdSeparator) || "${rootProject.name}".endsWith(projectComponentIdSeparator+projectComponentId))
 			if (projectComponentIdIsPartOfProjectName && !startOrEnd) {
 				printWarn("Component id [$projectComponentId] should be part of the project name [$rootProject.name] (see projectComponentIdIsPartOfProjectName seetings)!")
@@ -266,7 +266,7 @@ projectValidation {
 				setCommonGradleProperty("validBuildMessage", "Invalid project component id!")
 			}
 		}
-		
+
 		// validate root package name
 		if (projectRootPackageNamePrefix!=null && !projectRootPackageNamePrefix.isEmpty() && !projectRootPackageName.startsWith(projectRootPackageNamePrefix)) {
 			printWarn("Root package name [$projectRootPackageName] has to start with prefix [$projectRootPackageNamePrefix] (see projectRootPackageNamePrefix seetings)!")
@@ -277,54 +277,54 @@ projectValidation {
 		// generate git files if necessary
 		if (project.hasProperty('initScmForNewProjects') && project.getProperty('initScmForNewProjects')) {
 			createGitFiles()
-		}		
-		
+		}
+
 		// validate root directories and files
 		def validateRootFiles = project.hasProperty('validateRootFiles') && project.getProperty('validateRootFiles')
 		def validateRootDirectories = project.hasProperty('validateRootDirectories') && project.getProperty('validateRootDirectories')
 		def allowedMainDirectoryList = new ArrayList(Arrays.asList(allowedMainDirectories.split(", ")))
 		def allowedMainFileList = new ArrayList(Arrays.asList(allowedMainFiles.split(", ")))
 		Set result = new TreeSet()
-		File[] files = new File(rootDirectory).listFiles(); 
+		File[] files = new File(rootDirectory).listFiles();
 		if (files != null && files.length > 0) {
 			for (File file : files) {
 				boolean valid = false;
 				def nameToCheck = ("$rootDirectory/" + file.getName()).toString()
-				
+
 				if (file.isDirectory()) {
 					valid = validateRootDirectories && allowedMainDirectoryList.contains(nameToCheck)
-					if (!valid) {				
+					if (!valid) {
 						printWarn("Invalid directory " + colorize(HIGHLITE_LEVEL, nameToCheck) + colorize(WARN_LEVEL, ", it's not supported!"))
 						setCommonGradleProperty("validBuild", valid)
-						
+
 						if (validBuildMessage==null || validBuildMessage.isEmpty()) {
 							setCommonGradleProperty("validBuildMessage", "Invalid directory!")
 						}
 					}
 				} else {
 					valid = validateRootFiles && allowedMainFileList.contains(nameToCheck)
-					if (!valid) {									
+					if (!valid) {
 						printWarn("Invalid file " + colorize(HIGHLITE_LEVEL, nameToCheck) + colorize(WARN_LEVEL, ", it's not supported!"))
 						setCommonGradleProperty("validBuild", valid)
-						
+
 						if (validBuildMessage==null || validBuildMessage.isEmpty()) {
 							setCommonGradleProperty("validBuildMessage", "Invalid file!")
 						}
 					}
 				}
 
-				if (valid) {				
+				if (valid) {
 					result.add(file.getName())
 				}
 			}
 		}
-	
+
 		// init scm
 		if (project.hasProperty('initScmForNewProjects') && project.getProperty('initScmForNewProjects')) {
 			if (!isGitAvailable()) {
 				printInfo("> Initiallize git repository and add first files...")
 				initGit()
-				
+
 				if (project.hasProperty('initScmWithNewFiles') && project.getProperty('initScmWithNewFiles')) {
 					if (result!=null && result.size()>0) {
 						addGit(result)
@@ -332,8 +332,8 @@ projectValidation {
 					}
 				}
 			}
-		}	
-		
+		}
+
 		if (project.hasProperty('initShowScm') && project.getProperty('initShowScm')) {
 			if (isGitAvailable()) {
 				def branchName = getGitBranchName()
@@ -351,7 +351,7 @@ projectValidation {
 			if (userDir.endsWith('/')) {
 				userDir = userDir.substring(0, userDir.length() -1)
 			}
-			
+
 			def idx = userDir.lastIndexOf('/')
 			if (idx>0) {
 				userDir = userDir.substring(idx+1)

@@ -10,7 +10,7 @@
  * Project initialisation
  ***************************************************************************************/
 ext.projectInitialisation = { ->
-	// check mandatory files	
+	// check mandatory files
 	def createSettingsGralde = !new File(settingsGradleFile).exists()
 	def createGradleProperties = !new File(gradlePropertiesFile).exists()
 	def createBuildGradle = !new File(buildGradleFile).exists()
@@ -18,7 +18,7 @@ ext.projectInitialisation = { ->
 	def createReadmeFile = !new File(readmeFile).exists()
 	def createLicenseFile = !new File(licenseFile).exists()
 	def createChangelogFile = createChangelogFile && !new File(changelogFile).exists()
-	def createEditorConfigFile = !new File(editorConfigFile).exists()		
+	def createEditorConfigFile = !new File(editorConfigFile).exists()
 	def createGraldeHomeProperties = !new File(gradleHomePropertiesFile).exists()
 
 	// detect a minimal build gradle file -> replace it
@@ -26,7 +26,7 @@ ext.projectInitialisation = { ->
 		def numberOfLines = countLines(buildGradleFile)
 		createBuildGradle = createBuildGradle || (numberOfLines > 0 && numberOfLines <= project.getProperty('detectMinimalBuildGradleFile'))
 	}
-	
+
 	// validate properties
 	def isReady = !createSettingsGralde \
 					&& !createGradleProperties \
@@ -37,9 +37,9 @@ ext.projectInitialisation = { ->
 					&& !createLicenseFile \
 					&& !createEditorConfigFile \
 					&& !createChangelogFile
-					
+
 	setCommonGradleProperty('IS_NEW', !isReady)
-	
+
 	def onlineCheckConnectionUrl = project.getProperty('onlineCheckConnectionUrl')
 	def onlineCheckConnectionUrlTimeout = project.getProperty('onlineCheckConnectionUrlTimeout')
 	setCommonGradleProperty('HAS_ONLINE_CONNECTION', isServerAvailable(onlineCheckConnectionUrl, onlineCheckConnectionUrlTimeout))
@@ -49,7 +49,14 @@ ext.projectInitialisation = { ->
 	if (usedVersion !=null && !usedVersion.isEmpty()) {
 		project.ext.set('commonGradleBuildVersion', usedVersion)
 	}
-	
+
+    def buildToolVersionStackMessage = "Gradle ${gradle.gradleVersion}, Common Gradle Build ${commonGradleBuildVersion}"
+    def cbVersion = System.env['CB_VERSION']
+    if (cbVersion!=null && !cbVersion.isEmpty()) {
+        buildToolVersionStackMessage += ", Common Build ${cbVersion}"
+    }
+    project.ext.set('buildToolVersionStackMessage', buildToolVersionStackMessage)
+
 	isReady = isReady \
 					&& !createGraldeHomeProperties
 
@@ -58,22 +65,22 @@ ext.projectInitialisation = { ->
 
 		if (createSettingsGralde) {
 			printInfo("Set root project name to " + colorize(HIGHLITE_LEVEL, rootProject.name) + ", created file " + colorize(HIGHLITE_LEVEL, settingsGradleFile) + "...")
-			if (createGradleProperties || createBuildGradle || !project.hasProperty('projectRootPackageName') || !project.hasProperty('projectGroupId') || !project.hasProperty('projectComponentId') || !project.hasProperty('projectDescription') || createVersionFile || createReadmeFile || createLicenseFile || createEditorConfigFile || createChangelogFile || createGraldeHomeProperties) 
+			if (createGradleProperties || createBuildGradle || !project.hasProperty('projectRootPackageName') || !project.hasProperty('projectGroupId') || !project.hasProperty('projectComponentId') || !project.hasProperty('projectDescription') || createVersionFile || createReadmeFile || createLicenseFile || createEditorConfigFile || createChangelogFile || createGraldeHomeProperties)
 				printNewline()
 		}
 
 		if (createGradleProperties) {
 			printInfo("> Created file " + colorize(HIGHLITE_LEVEL, gradlePropertiesFile) + "...")
-			if (createBuildGradle || !project.hasProperty('projectRootPackageName') || !project.hasProperty('projectGroupId') || !project.hasProperty('projectComponentId') || !project.hasProperty('projectDescription')  || createVersionFile || createReadmeFile || createLicenseFile || createChangelogFile || createEditorConfigFile || createGraldeHomeProperties) 
+			if (createBuildGradle || !project.hasProperty('projectRootPackageName') || !project.hasProperty('projectGroupId') || !project.hasProperty('projectComponentId') || !project.hasProperty('projectDescription')  || createVersionFile || createReadmeFile || createLicenseFile || createChangelogFile || createEditorConfigFile || createGraldeHomeProperties)
 				printNewline()
 		}
 
 		if (createBuildGradle) {
 			printInfo("> Created file " + colorize(HIGHLITE_LEVEL, buildGradleFile) + "...")
-			if (!project.hasProperty('projectRootPackageName') || !project.hasProperty('projectGroupId') || !project.hasProperty('projectComponentId') || !project.hasProperty('projectDescription') || createVersionFile || createReadmeFile || createLicenseFile || createChangelogFile || createEditorConfigFile || createGraldeHomeProperties) 
+			if (!project.hasProperty('projectRootPackageName') || !project.hasProperty('projectGroupId') || !project.hasProperty('projectComponentId') || !project.hasProperty('projectDescription') || createVersionFile || createReadmeFile || createLicenseFile || createChangelogFile || createEditorConfigFile || createGraldeHomeProperties)
 				printNewline()
 		}
-		
+
 		if (!project.hasProperty('projectRootPackageName')) {
 			def numberPattern = ~"\\d+"
 			def packageNameSplit = "${rootProject.name}".replace('-', '.').replace('_', '.').split('\\.')
@@ -82,27 +89,27 @@ ext.projectInitialisation = { ->
 				if (rootPackageName!=null && !rootPackageName.isEmpty()) {
 					rootPackageName += "."
 				}
-				
+
 				if (name ==~ numberPattern) {
 					rootPackageName += "_"
 				}
 				rootPackageName += name
 			}
-			
+
 			setCommonGradleProperty('projectRootPackageName', rootPackageName)
 			printInfo("> Set project root package name to " + colorize(HIGHLITE_LEVEL, projectRootPackageName) + ", please define it in the gradle.properties:")
 			printInfo("  e.g. " + colorize(TITLE_LEVEL, 'projectRootPackageName') + " = $projectRootPackageName")
-			
-			if (!project.hasProperty('projectGroupId') || !project.hasProperty('projectComponentId') || !project.hasProperty('projectDescription') || createVersionFile || createReadmeFile || createLicenseFile || createChangelogFile || createEditorConfigFile || createGraldeHomeProperties) 
+
+			if (!project.hasProperty('projectGroupId') || !project.hasProperty('projectComponentId') || !project.hasProperty('projectDescription') || createVersionFile || createReadmeFile || createLicenseFile || createChangelogFile || createEditorConfigFile || createGraldeHomeProperties)
 				printNewline()
 		}
 
-		if (!project.hasProperty('projectGroupId')) {			
+		if (!project.hasProperty('projectGroupId')) {
 			setCommonGradleProperty('projectGroupId', "${rootProject.name}".replace("-", ".").split("\\.")[0])
 			printInfo("> Set projectGroupId to " + colorize(HIGHLITE_LEVEL, projectRootPackageName) + ", please define it in the gradle.properties:")
 			printInfo("  e.g. " + colorize(TITLE_LEVEL, 'projectGroupId') + " = $projectGroupId")
-			
-			if (!project.hasProperty('projectComponentId') || !project.hasProperty('projectDescription') || createVersionFile || createReadmeFile || createLicenseFile || createChangelogFile || createEditorConfigFile || createGraldeHomeProperties) 
+
+			if (!project.hasProperty('projectComponentId') || !project.hasProperty('projectDescription') || createVersionFile || createReadmeFile || createLicenseFile || createChangelogFile || createEditorConfigFile || createGraldeHomeProperties)
 				printNewline()
 		}
 
@@ -113,58 +120,58 @@ ext.projectInitialisation = { ->
 				if (project.hasProperty('projectComponentIdSeparator')) {
 					projectComponentIdSeparator = project.getProperty('projectComponentIdSeparator')
 				}
-			
-				def nameSplit = "${rootProject.name}".split(projectComponentIdSeparator)				
+
+				def nameSplit = "${rootProject.name}".split(projectComponentIdSeparator)
 				if (nameSplit.length > 1) {
 					projectComponentIdDefault = nameSplit[0]
 				}
 			}
-			
+
 			setCommonGradleProperty('projectComponentId', projectComponentIdDefault)
 			printInfo("> Set projectComponentId to " + colorize(HIGHLITE_LEVEL, rootProject.name) + ", please define it in the gradle.properties:")
 			printInfo("  e.g. " + colorize(TITLE_LEVEL, 'projectComponentId') + " = $projectComponentIdDefault")
-			
-			if (!project.hasProperty('projectDescription') || createVersionFile || createReadmeFile || createLicenseFile || createChangelogFile || createEditorConfigFile || createGraldeHomeProperties) 
+
+			if (!project.hasProperty('projectDescription') || createVersionFile || createReadmeFile || createLicenseFile || createChangelogFile || createEditorConfigFile || createGraldeHomeProperties)
 				printNewline()
 		}
-		
+
 		if (!project.hasProperty('projectDescription')) {
 			setCommonGradleProperty('description', rootProject.name)
 			setCommonGradleProperty('projectDescription', rootProject.name)
 			printInfo("> Set the description to " + colorize(HIGHLITE_LEVEL, projectRootPackageName) + ", please define it in the gradle.properties:")
 			printInfo("  e.g. " + colorize(TITLE_LEVEL, 'projectDescription') + " = '...'")
 
-			if (createVersionFile || createReadmeFile || createLicenseFile || createChangelogFile || createEditorConfigFile || createGraldeHomeProperties) 
+			if (createVersionFile || createReadmeFile || createLicenseFile || createChangelogFile || createEditorConfigFile || createGraldeHomeProperties)
 				printNewline()
 		}
-		
+
 		if (createVersionFile) {
 			printInfo("> Created file " + colorize(HIGHLITE_LEVEL, versionFile) + "...")
 			updateVersion()
-			
-			//if (createReadmeFile || createLicenseFile || createChangelogFile || createEditorConfigFile || createGraldeHomeProperties) 
+
+			//if (createReadmeFile || createLicenseFile || createChangelogFile || createEditorConfigFile || createGraldeHomeProperties)
 			//	printNewline()
 		}
 
 		if (createReadmeFile) {
 			logInfo("Write file " + colorize(HIGHLITE_LEVEL, readmeFile) + colorize(INFO_LEVEL, "..."))
-			// https://gist.github.com/PurpleBooth/109311bb0361f32d87a2		
-			if (!createFileFromTemplate(readmeFile, 'base/README.template')) {
+			// https://gist.github.com/PurpleBooth/109311bb0361f32d87a2
+			if (!createFileFromTemplate(readmeFile, getTemplateFile('README.template'))) {
 				printInfo("> Create " + colorize(HIGHLITE_LEVEL, readmeFile) + " with default values.")
-				
+
 				new File('.', readmeFile).withWriter { w ->
 					w << "# Welcome to ${rootProject.name}" << NELINE \
-					<< "${projectDescription}" << NELINE 
-				}	
+					<< "${projectDescription}" << NELINE
+				}
 			}
-			
-			//if (createLicenseFile || createChangelogFile || createEditorConfigFile || createGraldeHomeProperties) 
+
+			//if (createLicenseFile || createChangelogFile || createEditorConfigFile || createGraldeHomeProperties)
 			//	printNewline()
 		}
-		
+
 		if (createLicenseFile) {
 			logInfo("Write file " + colorize(HIGHLITE_LEVEL, licenseFile) + colorize(INFO_LEVEL ,"..."))
-			if (!createFileFromTemplate(licenseFile, 'base/LICENSE.template')) {
+			if (!createFileFromTemplate(licenseFile, getTemplateFile('LICENSE.template'))) {
 				printInfo("> Create " + colorize(HIGHLITE_LEVEL, licenseFile) + " with default values.")
 				new File('.', licenseFile).withWriter { w ->
 					w << "MIT License" << NELINE \
@@ -188,13 +195,13 @@ ext.projectInitialisation = { ->
 					<< "LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM," << NELINE \
 					<< "OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE" << NELINE \
 					<< "SOFTWARE." << NELINE
-				}				
+				}
 			}
 		}
 
 		if (createChangelogFile) {
 			logInfo("Write file " + colorize(HIGHLITE_LEVEL, changelogFile) + colorize(INFO_LEVEL ,"..."))
-			if (!createFileFromTemplate(changelogFile, 'base/changelog.template')) {
+			if (!createFileFromTemplate(changelogFile, getTemplateFile('changelog.template'))) {
 				printInfo("> Create " + colorize(HIGHLITE_LEVEL, changelogFile) + " with default values.")
 				new File('.', changelogFile).withWriter { w ->
 					w << "# Changelog" << NELINE \
@@ -206,13 +213,13 @@ ext.projectInitialisation = { ->
 					<< "" << NELINE \
 					<< "## [Unreleased]" << NELINE \
 					<< "" << NELINE
-				}				
+				}
 			}
 		}
 
 		if (createEditorConfigFile) {
 			logInfo("Write file " + colorize(HIGHLITE_LEVEL, editorConfigFile) + colorize(INFO_LEVEL ,"..."))
-			if (!createFileFromTemplate(editorConfigFile, 'base/editorconfig.template')) {
+			if (!createFileFromTemplate(editorConfigFile, getTemplateFile('editorconfig.template'))) {
 				printInfo("> Create " + colorize(HIGHLITE_LEVEL, editorConfigFile) + " with default values.")
 				new File('.', editorConfigFile).withWriter { w ->
 					w << "# editor config: https://editorconfig.org" << NELINE \
@@ -239,13 +246,13 @@ ext.projectInitialisation = { ->
 					<< "insert_final_newline = false" << NELINE \
 					<< "trim_trailing_whitespace = false" << NELINE \
 					<< "" << NELINE
-				}				
+				}
 			}
 		}
 
 		if (createGraldeHomeProperties) {
 			logInfo("Write file " + colorize(HIGHLITE_LEVEL, gradleHomePropertiesFile) + colorize(INFO_LEVEL ,"..."))
-			if (!createFileFromTemplate(gradleHomePropertiesFile, 'base/gradlehome.properties.template')) {
+			if (!createFileFromTemplate(gradleHomePropertiesFile, getTemplateFile('gradlehome.properties.template'))) {
 				printInfo("> Create " + colorize(HIGHLITE_LEVEL, gradleHomePropertiesFile) + " with default values.")
 				new File(gradleHomePropertiesFile).withWriterAppend { w ->
 					w << "/***************************************************************************************" << NELINE \
@@ -261,20 +268,20 @@ ext.projectInitialisation = { ->
 					<< "signing.keyId =" << NELINE \
 					<< "signing.password =" << NELINE \
 					<< "signing.secretKeyRingFile =" << NELINE
-				}				
+				}
 			}
 		}
 
 		// if it doesn't exist
 		if (createSettingsGralde) {
-			if (!createFileFromTemplate(settingsGradleFile, 'base/settings.gradle.template')) {
+			if (!createFileFromTemplate(settingsGradleFile, getTemplateFile('settings.gradle.template'))) {
 				printInfo("> Create " + colorize(HIGHLITE_LEVEL, settingsGradleFile) + " with default values.")
 				new File('.', settingsGradleFile).withWriter { w ->
 					w << "rootProject.name    = \'${rootProject.name}\'" << NELINE
 				}
 			}
 		}
-		
+
 		if (createGradleProperties) {
 			def checkstyleToolVersion
 			if (!project.hasProperty('checkstyleToolVersion')) {
@@ -290,7 +297,7 @@ ext.projectInitialisation = { ->
 				testDependencyVersion = project.getProperty('testDependencyVersion')
 			}
 
-			if (!createFileFromTemplate(gradlePropertiesFile, 'base/gradle.properties.template')) {
+			if (!createFileFromTemplate(gradlePropertiesFile, getTemplateFile('gradle.properties.template'))) {
 				printInfo("> Create " + colorize(HIGHLITE_LEVEL, gradlePropertiesFile) + " with default values.")
 				new File('.', gradlePropertiesFile).withWriterAppend { w ->
 					w << "# base information" << NELINE \
@@ -315,10 +322,10 @@ ext.projectInitialisation = { ->
 					<< "" << NELINE
 				}
 			}
-		}	
-		
+		}
+
 		if (createBuildGradle) {
-			if (!createFileFromTemplate(buildGradleFile, 'base/build.gradle.template')) {
+			if (!createFileFromTemplate(buildGradleFile, getTemplateFile('build.gradle.template'))) {
 				printInfo("> Create " + colorize(HIGHLITE_LEVEL, buildGradleFile) + " with default values.")
 				new File('.', buildGradleFile).withWriter { w ->
 					w << "/*" << NELINE \
@@ -339,8 +346,8 @@ ext.projectInitialisation = { ->
 					<< "}" << NELINE
 				}
 			}
-		}	
-		
+		}
+
 		printLine(ERROR_LEVEL, true)
 	}
 
@@ -358,3 +365,38 @@ ext.createCommonGradleBuildSourcesPath = { ->
 		logInfo("Generate source directory is " + colorize(INFO_LEVEL, generatedCommonGradleBuildSources))
 	}
 }
+
+
+/***************************************************************************************
+ * Check if the project type has a different template
+ ***************************************************************************************/
+ext.getTemplateFile = { templateFilename ->
+    try {
+		def projectTypeTemplatePath = 'base'
+        if (project.hasProperty('projectTypeTemplatePath')) {
+            projectTypeTemplatePath = project.getProperty('projectTypeTemplatePath')
+		}
+
+		def theTemplatePath = project.getProperty('commonGradleTemplatePath')
+		if (project.hasProperty('commonGradleBuildHome') ) {
+			def commonGradleBuildHome = project.getProperty('commonGradleBuildHome')
+			if (commonGradleBuildHome!=null && !"${commonGradleBuildHome}".isEmpty() && new File(commonGradleBuildHome).exists()) {
+				def homeTemplatePath = commonGradleBuildHome + "/gradle/" + project.getProperty('commonGradleTemplatePathName')
+				if (new File(homeTemplatePath+"/"+projectTypeTemplatePath+"/"+templateFilename).exists()) {
+					logDebug("Take from home project-type template path: " + projectTypeTemplatePath+"/"+templateFilename + "!")
+					return projectTypeTemplatePath+"/"+templateFilename; // no home directory to return; will be handled in file.gradle
+				}
+			}
+		}
+
+        if (new File(theTemplatePath+"/"+projectTypeTemplatePath+"/"+templateFilename).exists()) {
+			logDebug("Take from project-type template path: " + projectTypeTemplatePath+"/"+templateFilename + "!")
+			return projectTypeTemplatePath+"/"+templateFilename;
+        }
+    } catch (Exception e) {
+        printWarn("Could not read proper template: " + e.getMessage())
+    }
+
+    return projectTypeTemplatePath+"/"+templateFilename
+}
+

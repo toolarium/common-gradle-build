@@ -5,7 +5,7 @@
  * MIT License: https://mit-license.org
  */
 
- 
+
 /***************************************************************************************
  * gradle cache and home properties file
  ***************************************************************************************/
@@ -46,6 +46,7 @@ setCommonGradleDefaultPropertyIfNull("commonGradleTemplatePath", "${commonGradle
 setCommonGradleDefaultPropertyIfNull("commonGradleTemplateBasePath", "${commonGradleTemplatePath}/base")
 setCommonGradleDefaultPropertyIfNull("commonGradleTemplateJavaPath", "${commonGradleTemplatePath}/java")
 setCommonGradleDefaultPropertyIfNull("commonGradleTemplateScmPath", "${commonGradleTemplatePath}/scm")
+setCommonGradleDefaultPropertyIfNull("commonGradleTemplateConfigPath", "${commonGradleTemplatePath}/config")
 
 
 /***************************************************************************************
@@ -55,13 +56,19 @@ setCommonGradleDefaultPropertyIfNull("settingsGradleFile", "$rootDirectory/setti
 setCommonGradleDefaultPropertyIfNull("gradlePropertiesFile", "$rootDirectory/gradle.properties")
 setCommonGradleDefaultPropertyIfNull("buildGradleFile", "$rootDirectory/build.gradle")
 setCommonGradleDefaultPropertyIfNull("detectMinimalBuildGradleFile", 2)
-setCommonGradleDefaultPropertyIfNull("versionFile", "$rootDirectory/VERSION")
-setCommonGradleDefaultPropertyIfNull("readmeFile", "$rootDirectory/README.md")
+setCommonGradleDefaultPropertyIfNull("versionFilename", "VERSION")
+setCommonGradleDefaultPropertyIfNull("versionFile", "$rootDirectory/$versionFilename")
+setCommonGradleDefaultPropertyIfNull("readmeFilename", "README.md")
+setCommonGradleDefaultPropertyIfNull("readmeFile", "$rootDirectory/$readmeFilename")
 setCommonGradleDefaultPropertyIfNull("includeReadmeFile", false)
-setCommonGradleDefaultPropertyIfNull("licenseFile", "$rootDirectory/LICENSE")
-setCommonGradleDefaultPropertyIfNull("changelogFile", "$rootDirectory/CHANGELOG.md")
-setCommonGradleDefaultPropertyIfNull("editorConfigFile", "$rootDirectory/.editorconfig")
-setCommonGradleDefaultPropertyIfNull("javaVersionConfigFile", "$rootDirectory/.java-version")
+setCommonGradleDefaultPropertyIfNull("licenseFilename", "LICENSE")
+setCommonGradleDefaultPropertyIfNull("licenseFile", "$rootDirectory/$licenseFilename")
+setCommonGradleDefaultPropertyIfNull("changelogFilename", "CHANGELOG.md")
+setCommonGradleDefaultPropertyIfNull("changelogFile", "$rootDirectory/$changelogFilename")
+setCommonGradleDefaultPropertyIfNull("editorConfigFilename", ".editorconfig")
+setCommonGradleDefaultPropertyIfNull("editorConfigFile", "$rootDirectory/$editorConfigFilename")
+setCommonGradleDefaultPropertyIfNull("javaVersionConfigFilename", ".java-version")
+setCommonGradleDefaultPropertyIfNull("javaVersionConfigFile", "$rootDirectory/$javaVersionConfigFilename")
 setCommonGradleDefaultPropertyIfNull("includeLicenseFile", true)
 setCommonGradleDefaultPropertyIfNull("includeVersionFile", true)
 setCommonGradleDefaultPropertyIfNull("createChangelogFile", false)
@@ -80,13 +87,17 @@ setCommonGradleDefaultPropertyIfNull("buildDirectory", "$rootDirectory/build")
 setCommonGradleDefaultPropertyIfNull("gradleDirectory", "$rootDirectory/.gradle")
 
 // docs directory
-setCommonGradleDefaultPropertyIfNull("docsDirectory", "$rootDirectory/docs")
+setCommonGradleDefaultPropertyIfNull("includeDocsDirectoryInSource", false)
+setCommonGradleDefaultPropertyIfNull("docsDirectoryName", "docs")
+setCommonGradleDefaultPropertyIfNull("docsDirectory", "$rootDirectory/$docsDirectoryName")
 
 // logs directory
-setCommonGradleDefaultPropertyIfNull("logsDirectory", "$rootDirectory/logs")
+setCommonGradleDefaultPropertyIfNull("logsDirectoryName", "logs")
+setCommonGradleDefaultPropertyIfNull("logsDirectory", "$rootDirectory/$logsDirectoryName")
 
 // temp directory
-setCommonGradleDefaultPropertyIfNull("tempDirectory", "$rootDirectory/temp")
+setCommonGradleDefaultPropertyIfNull("tempDirectoryName", "temp")
+setCommonGradleDefaultPropertyIfNull("tempDirectory", "$rootDirectory/$tempDirectoryName")
 
 // src directories
 setCommonGradleDefaultPropertyIfNull("srcMainDirectoryName", "main")
@@ -101,7 +112,7 @@ setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBuildSources", "build
 
 
 /***************************************************************************************
- * view init settings 
+ * view init settings
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("initShowJava", true)
 setCommonGradleDefaultPropertyIfNull("initShowRuntime", false)

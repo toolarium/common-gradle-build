@@ -5,7 +5,7 @@
  * MIT License: https://mit-license.org
  */
 
- 
+
 apply plugin: 'java'
 
 
@@ -21,7 +21,7 @@ tasks.withType(JavaCompile) { compile ->
 	options.deprecation = true
 	sourceCompatibility = project.getProperty('sourceCompatibility')
     targetCompatibility = project.getProperty('targetCompatibility')
-	
+
 	// set fork process
 	if (project.hasProperty('compileJavaFork')) {
 		compile.options.fork = project.getProperty('compileJavaFork')
@@ -34,19 +34,19 @@ tasks.withType(JavaCompile) { compile ->
 			compile.options.forkOptions.javaHome = new File(compileJavaHome)
 		}
 	}
-	
+
 	// print source and target compatibility
 	def sourceVersion = parseVersion(sourceCompatibility)
 	def targetVersion = parseVersion(targetCompatibility)
 	if (!targetVersion.isCompatibleWith(sourceVersion)) {
 		logInfo("The target (" + colorize(HIGHLITE_LEVEL, targetCompatibility) + colorize(INFO_LEVEL, ") is not compatible with the source (" ) + colorize(HIGHLITE_LEVEL, sourceCompatibility) + colorize(INFO_LEVEL, ") compatibility!"))
 	}
-	
+
 	def compileType = 'main'
 	if (compile.name.contains('Test')) {
 		compileType = 'test'
 	}
-	
+
 	logInfo("Java compiler (${compileType}): sourceCompatibility: " + colorize(HIGHLITE_LEVEL, sourceCompatibility) \
 			+ colorize(INFO_LEVEL, ", targetCompatibility: ") + colorize(HIGHLITE_LEVEL, targetCompatibility) \
 			+ colorize(INFO_LEVEL, ", encoding: ") + colorize(HIGHLITE_LEVEL, options.encoding) \
@@ -62,23 +62,23 @@ tasks.withType(JavaCompile) { compile ->
  ***************************************************************************************/
 jar { jar ->
 	onlyIf { return project.compileTimestamp != null }
-	
+
 	logInfo("Set project root package name to [" + colorize(HIGHLITE_LEVEL, projectRootPackageName) + colorize(INFO_LEVEL, "]  -> ") + colorize(HIGHLITE_LEVEL, sourceSets.main.allJava.srcDirs))
-	
+
 	// include readme, license and version files
 	into 'META-INF', {
-		if (project.getProperty('includeReadmeFile')) {	
+		if (project.getProperty('includeReadmeFile')) {
 			from "${readmeFile}"
 		}
-		
-		if (project.getProperty('includeLicenseFile')) {	
-			from "${licenseFile}" 
+
+		if (project.getProperty('includeLicenseFile')) {
+			from "${licenseFile}"
 		}
-		
-		if (project.getProperty('includeVersionFile')) {		
+
+		if (project.getProperty('includeVersionFile')) {
 			from "${versionFile}"
 		}
-		
+
 		if (project.getProperty('includeChangelogFile')) {
 			from "${changelogFile}"
 		}
@@ -90,7 +90,7 @@ jar { jar ->
 					'Specification-Version' : project.version,
 					'Implementation-Title'  : rootProject.name,
 					'Implementation-Version': project.version + project.ext.scmVersionNumber,
-					'Created-By'		   	: "Common Gradle Build ${commonGradleBuildVersion}, Gradle ${gradle.gradleVersion}",
+					'Created-By'		   	: project.ext.buildToolVersionStackMessage,
 					'Built-By'			   	: System.properties['user.name'],
 					'Build-Timestamp'	   	: BUILD_TIMESTAMP,
 					'Build-JDK'			   	: "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
@@ -98,7 +98,7 @@ jar { jar ->
 					'Source-Compatibility'  : project.sourceCompatibility,
 					'Target-Compatibility'  : project.targetCompatibility
 					//'Main-Class'			: rootMainClass
-					//'Class-Path'			: configurations.runtimeClasspath.files.collect { it.getName() }.join(' ')					
+					//'Class-Path'			: configurations.runtimeClasspath.files.collect { it.getName() }.join(' ')
 	}
 
 	doLast {
@@ -119,10 +119,12 @@ task sourcesJar(type: Jar, dependsOn: classes) { jar ->
 	description = 'Assembles the sources into a jar file'
 	onlyIf { return project.compileTimestamp != null }
 
-	def configDirectoryName = project.getProperty("configDirectoryName")				
-	def configDirectory = project.getProperty("configDirectory")				
+	def configDirectoryName = project.getProperty("configDirectoryName")
+	def configDirectory = project.getProperty("configDirectory")
+	def docsDirectoryName = project.getProperty("docsDirectoryName")
+	def docsDirectory = project.getProperty("docsDirectory")
 	def srcDirectory = project.getProperty("srcDirectory")
-	def srcDirectoryName = project.getProperty("srcDirectoryName")				
+	def srcDirectoryName = project.getProperty("srcDirectoryName")
 
 	/*
 	def jarSourceIncludePath;
@@ -141,6 +143,12 @@ task sourcesJar(type: Jar, dependsOn: classes) { jar ->
 		from "${configDirectory}"
 	}
 
+	if (project.getProperty('includeDocsDirectoryInSource')) {
+        into "${docsDirectoryName}", {
+            from "${docsDirectory}"
+        }
+	}
+
 	into 'gradle', {
 		from 'gradle'
 	}
@@ -149,7 +157,10 @@ task sourcesJar(type: Jar, dependsOn: classes) { jar ->
 		from "${srcDirectory}"
 	}
 
+	from '.checkstyle'
 	from '.classpath'
+	from '.editorconfig'
+	from '.java-version'
 	from '.project'
 	from '.settings'
 	from 'build.gradle'
@@ -158,38 +169,38 @@ task sourcesJar(type: Jar, dependsOn: classes) { jar ->
 	from 'gradlew.bat'
 	from 'settings.gradle'
 
-	if (project.getProperty('includeLicenseFile')) {	
+	if (project.getProperty('includeLicenseFile')) {
 		from "${licenseFile}"
 	}
-	
-	if (project.getProperty('includeReadmeFile')) {	
-		from "${readmeFile}" 
+
+	if (project.getProperty('includeReadmeFile')) {
+		from "${readmeFile}"
 	}
-	
-	if (project.getProperty('includeVersionFile')) {		
+
+	if (project.getProperty('includeVersionFile')) {
 		from "${versionFile}"
 	}
-	
+
 	if (project.getProperty('includeChangelogFile')) {
 		from "${changelogFile}"
 	}
-	
+
 	logInfo("Set project root package name to [" + colorize(HIGHLITE_LEVEL, projectRootPackageName) + colorize(INFO_LEVEL, "]  -> ") + colorize(HIGHLITE_LEVEL, sourceSets.main.allJava.srcDirs))
-	
+
 	// include readme, license and version files
 	into 'META-INF', {
-		if (project.getProperty('includeReadmeFile')) {	
-			from "${readmeFile}"  
+		if (project.getProperty('includeReadmeFile')) {
+			from "${readmeFile}"
 		}
-		
+
 		if (project.getProperty('includeLicenseFile')) {
 			from "${licenseFile}"
 		}
-		
-		if (project.getProperty('includeVersionFile')) {		
-			from "${versionFile}" 
+
+		if (project.getProperty('includeVersionFile')) {
+			from "${versionFile}"
 		}
-		
+
 		if (project.getProperty('includeChangelogFile')) {
 			from "${changelogFile}"
 		}
@@ -204,7 +215,7 @@ task sourcesJar(type: Jar, dependsOn: classes) { jar ->
 					'Specification-Version' : project.version,
 					'Implementation-Title'  : rootProject.name,
 					'Implementation-Version': project.version + project.ext.scmVersionNumber,
-					'Created-By'		   	: "Common Gradle Build ${commonGradleBuildVersion}, Gradle ${gradle.gradleVersion}",
+					'Created-By'		   	: project.ext.buildToolVersionStackMessage,
 					'Built-By'			   	: System.properties['user.name'],
 					'Build-Timestamp'	   	: BUILD_TIMESTAMP,
 					'Build-JDK'			   	: "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
@@ -212,7 +223,7 @@ task sourcesJar(type: Jar, dependsOn: classes) { jar ->
 					'Source-Compatibility'  : project.sourceCompatibility,
 					'Target-Compatibility'  : project.targetCompatibility
 	}
-	
+
 	doLast {
 		if (project.hasProperty('showCreatedArtefacts') && project.getProperty('showCreatedArtefacts')) {
 			// jar.archiveFileName

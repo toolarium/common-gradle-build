@@ -32,7 +32,7 @@ projectValidation {
 	doFirst {
 		createJavaSourcePath()
 
-		if (project.getProperty('IS_NEW_SRC_FOLDER')) {
+		if (project.hasProperty('IS_NEW_SRC_FOLDER') && project.getProperty('IS_NEW_SRC_FOLDER')) {
             logInfo("Create at least one java file...")
 			def javaLibraryTemplate = 'javaLibrary.template'
 			def slashedRootPackageName = projectRootPackageName.replace('.', '/')

@@ -1,0 +1,22 @@
+# base information
+projectType              = @@PROJECT_TYPE@@
+projectRootPackageName   = @@PACKAGE@@
+projectGroupId           = @@GROUP_ID@@
+projectComponentId       = @@COMPONENT_ID@@
+projectDescription       = @@DESCRIPTION@@
+projectUrl               = @@URL@@
+
+# configuration package definition (must be a subfolder in conf - comma-separated ","), e.g. "customer1, customer2"
+configPackages           = ""
+
+# tool information
+# checkstyleToolVersion    = @@checkstyleToolVersion@@
+# testDependencyVersion    = @@testDependencyVersion@@
+# sourceCompatibility      = @@sourceCompatibility@@
+# targetCompatibility      = @@targetCompatibility@@
+
+# jvm information
+org.gradle.jvmargs       = @@GRADLE_JVM_ARG@@
+org.gradle.logging.level = @@GRADLE_LOG_LEVEL@@
+org.gradle.console       = @@GRADLE_CONSOLE@@
+org.gradle.warning.mode  = @@GRADLE_WARNING_MODE@@

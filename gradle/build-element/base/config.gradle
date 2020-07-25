@@ -5,11 +5,16 @@
  * MIT License: https://mit-license.org
  */
 
- 
-def configPackages = project.getProperty("configPackages").split(",")
-def configDirectory = project.getProperty("configDirectory")				
 
- 
+def configPackages = project.getProperty("configPackages").split(",")
+def configDirectory = project.getProperty("configDirectory")
+if (configDirectory!=null && !configDirectory.isEmpty()) {
+    if (configDirectory.startsWith("./")) {
+        configDirectory = configDirectory.substring(2)
+    }
+}
+
+
 /***************************************************************************************
  * config jar task
  ***************************************************************************************/
@@ -21,21 +26,21 @@ task configJar(type: Jar) { jar ->
 	into "${configDirectory}", {
 		from "${configDirectory}"
 	}
-	
+
 	// include readme, license and version files
 	into 'META-INF', {
-		if (project.getProperty('includeReadmeFile')) {	
+		if (project.getProperty('includeReadmeFile')) {
 			from "${readmeFile}"
 		}
-		
-		if (project.getProperty('includeLicenseFile')) {	
-			from "${licenseFile}" 
+
+		if (project.getProperty('includeLicenseFile')) {
+			from "${licenseFile}"
 		}
-		
-		if (project.getProperty('includeVersionFile')) {		
+
+		if (project.getProperty('includeVersionFile')) {
 			from "${versionFile}"
-		}		
-		
+		}
+
 		if (project.getProperty('includeChangelogFile')) {
 			from "${changelogFile}"
 		}
@@ -47,13 +52,13 @@ task configJar(type: Jar) { jar ->
 					'Specification-Version' : project.version,
 					'Implementation-Title'  : rootProject.name,
 					'Implementation-Version': project.version + project.ext.scmVersionNumber,
-					'Created-By'		   	: "Common Gradle Build ${commonGradleBuildVersion}, Gradle ${gradle.gradleVersion}",
+					'Created-By'		   	: project.ext.buildToolVersionStackMessage,
 					'Built-By'			   	: System.properties['user.name'],
 					'Build-Timestamp'	   	: BUILD_TIMESTAMP,
 					'Build-JDK'			   	: "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
 					'Build-OS'			   	: "${System.properties['os.name']} (${System.properties['os.version']}), ${System.properties['os.arch']}"
 	}
-	
+
 	doLast {
 		if (project.hasProperty('showCreatedArtefacts') && project.getProperty('showCreatedArtefacts')) {
 			// jar.archiveFileName
@@ -62,7 +67,7 @@ task configJar(type: Jar) { jar ->
 		}
 	}
 }
- 
+
 configPackages.each { configName ->
 	def configTypeProperty = configName.trim()
 
@@ -70,32 +75,32 @@ configPackages.each { configName ->
 
 		def configDirectoryPath = "${configDirectory}/${configTypeProperty}"
 		def configFileExist = new File(configDirectoryPath).exists()
-		if (!project.getProperty("configIgnoreEmptyPackages") || configFileExist) {			
-			
+		if (!project.getProperty("configIgnoreEmptyPackages") || configFileExist) {
+
 			def taskName = "configJar${configTypeProperty}"
 			tasks.create(name: taskName, type: Jar) { jar ->
-							
-				archiveClassifier = 'config-' + configTypeProperty	
+
+				archiveClassifier = 'config-' + configTypeProperty
 				def configIncludeFilter = '**'
 				logInfo("Add task $name: [" + colorize(HIGHLITE_LEVEL, configDirectoryPath) + colorize(INFO_LEVEL, "], filter: [") + colorize(HIGHLITE_LEVEL, configIncludeFilter) + colorize(INFO_LEVEL, "]"))
-				
+
 				into "${configDirectory}", {
 					from "${configDirectoryPath}", {
-						include "${configIncludeFilter}"		
+						include "${configIncludeFilter}"
 					}
 				}
-				
+
 				// include readme, license and version files
 				into 'META-INF', {
-					if (project.getProperty('includeReadmeFile')) {	
+					if (project.getProperty('includeReadmeFile')) {
 						from "${readmeFile}"
 					}
-					
-					if (project.getProperty('includeLicenseFile')) {	
-						from "${licenseFile}" 
+
+					if (project.getProperty('includeLicenseFile')) {
+						from "${licenseFile}"
 					}
-					
-					if (project.getProperty('includeVersionFile')) {		
+
+					if (project.getProperty('includeVersionFile')) {
 						from "${versionFile}"
 					}
 				}
@@ -104,9 +109,9 @@ configPackages.each { configName ->
 				manifest {
 					attributes 	'Specification-Title'   : rootProject.name,
 								'Specification-Version' : project.version,
-								'Implementation-Title'  : rootProject.name,
+								'Implementation-Title'  : rootProject.name + "#" + configTypeProperty,
 								'Implementation-Version': project.version + project.ext.scmVersionNumber,
-								'Created-By'		   	: "Common Gradle Build ${commonGradleBuildVersion}, Gradle ${gradle.gradleVersion}",
+								'Created-By'		   	: project.ext.buildToolVersionStackMessage,
 								'Built-By'			   	: System.properties['user.name'],
 								'Build-Timestamp'	   	: BUILD_TIMESTAMP,
 								'Build-JDK'			   	: "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
@@ -121,10 +126,10 @@ configPackages.each { configName ->
 					}
 				}
 			}
-			
+
 			configJar.dependsOn taskName
 		} else if (!configFileExist) {
 			printWarn("Directory " + colorize(HIGHLITE_LEVEL, configDirectoryPath) + colorize(WARN_LEVEL, " is not available!"))
-		}		
+		}
 	}
 }

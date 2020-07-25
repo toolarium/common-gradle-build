@@ -4,8 +4,8 @@
  * Copyright by toolarium, all rights reserved.
  * MIT License: https://mit-license.org
  */
- 
- 
+
+
 apply plugin: 'maven-publish'
 
 
@@ -32,23 +32,23 @@ publishing {
 	if (project.ext.isSnapshotVersion) {
 		deployUrl = mavenSnapshotUrl
 	}
-	
-	if (deployUrl.endsWith('/') {
+
+	if (deployUrl.endsWith('/')) {
 		deployUrl += '/'
 	}
-	
+
 	publications {
         mavenPublication(MavenPublication) {
             artifactId = "${rootProject.name}"
 			groupId= "${projectGroupId}"
 			artifact configJar
-					
+
 			// after staging go to -> https://oss.sonatype.org/#stagingRepositories -> close
             pom {
                 name = "${rootProject.name}"
                 description = description
                 url = "${projectUrl}"
-				
+
                 licenses {
                     license {
                         name = "${licenseText}"
@@ -58,7 +58,7 @@ publishing {
             }
         }
 	}
-	
+
 	repositories {
         maven {
             url deployUrl
