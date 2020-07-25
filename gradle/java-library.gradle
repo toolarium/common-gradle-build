@@ -5,7 +5,7 @@
  * MIT License: https://mit-license.org
  */
 
- 
+
 if (!project.hasProperty('commonGradleBuildUrl')) {
     ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
 }
@@ -30,17 +30,16 @@ setCommonGradleDefaultPropertyIfNull("srcTestResourcesDirectory", "${srcTestDire
  ***************************************************************************************/
 projectValidation {
 	doFirst {
-		createJavaSourcePath()	
-		
-		if (project.getProperty('IS_NEW')) {
-		
-			logInfo("Create at least one java file...")
+		createJavaSourcePath()
+
+		if (project.getProperty('IS_NEW_SRC_FOLDER')) {
+            logInfo("Create at least one java file...")
 			def javaLibraryTemplate = 'javaLibrary.template'
 			def slashedRootPackageName = projectRootPackageName.replace('.', '/')
 			def className = 'MyLibrary'
 			def commonGradleTemplateJavaPath = project.getProperty('commonGradleTemplateJavaPath')
-			
-			def mainJavaSourcPath = createPackagePath(srcMainJavaDirectory, projectRootPackageName)			
+
+			def mainJavaSourcPath = createPackagePath(srcMainJavaDirectory, projectRootPackageName)
 			if (new File("${commonGradleTemplateJavaPath}", "${javaLibraryTemplate}").exists()) {
 				printInfo("> Create file " + colorize(HIGHLITE_LEVEL, "${mainJavaSourcPath}/${className}.java") + " from template ${javaLibraryTemplate}.")
 				copy {
@@ -79,10 +78,10 @@ projectValidation {
 						<< "    }" << NELINE \
 						<< "}" << NELINE \
 						<< "" << NELINE
-				}			
+				}
 			}
-			
-			def testJavaSourcPath = createPackagePath(srcTestJavaDirectory, projectRootPackageName)			
+
+			def testJavaSourcPath = createPackagePath(srcTestJavaDirectory, projectRootPackageName)
 			def javaLibraryTestTemplate = 'javaLibraryTest.template'
 			def testClassName = "${className}Test"
 			if (new File("${commonGradleTemplateJavaPath}", "${javaLibraryTestTemplate}").exists()) {
@@ -94,7 +93,7 @@ projectValidation {
 					rename { String fileName -> fileName.replace("${javaLibraryTestTemplate}", "${testClassName}.java".toString() ) }
 					filter { line -> line.replaceAll('@@PROJECT_NAME@@', "${rootProject.name}".toString()) }
 					filter { line -> line.replaceAll('@@className@@', "${testClassName}".toString()) }
-					filter { line -> line.replaceAll('@@classNameUnderTest@@', "${className}".toString()) }				
+					filter { line -> line.replaceAll('@@classNameUnderTest@@', "${className}".toString()) }
 					filter { line -> line.replaceAll('@@fileName@@', "${testClassName}.java".toString()) }
 					filter { line -> line.replaceAll('@@packageName@@', "${projectRootPackageName}".toString()) }
 					filter { line -> line.replaceAll('@@LICENSE@@', "${licenseText}".toString()) }
@@ -128,9 +127,9 @@ projectValidation {
 						<< "        assertTrue(classUnderTest.someLibraryMethod(), \"someLibraryMethod should return 'true'\");" << NELINE \
 						<< "    }" << NELINE \
 						<< "}" << NELINE \
-						<< "" << NELINE						
-				}			
+						<< "" << NELINE
+				}
 			}
-		} 
+		}
 	}
 }

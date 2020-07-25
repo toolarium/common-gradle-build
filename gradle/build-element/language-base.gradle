@@ -5,7 +5,7 @@
  * MIT License: https://mit-license.org
  */
 
- 
+
 apply from: "${commonGradleBuildElementPath}/base.gradle"
 apply from: "${commonGradleBuildElementPath}/base/gradle.gradle"
 
@@ -13,7 +13,7 @@ apply from: "${commonGradleBuildElementPath}/base/gradle.gradle"
 /***************************************************************************************
  * Project validation
  ***************************************************************************************/
-projectValidation { 
+projectValidation {
 	doFirst {
 		createSourcePath()
 	}
@@ -39,14 +39,16 @@ ext.createSourcePath = { ->
 
 		if (project.getProperty('createSrcMainDirectory')) {
 			printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcMainDirectory) + ".")
-			new File(srcMainDirectory).mkdirs()
+			if (new File(srcMainDirectory).mkdirs()) {
+                setCommonGradleProperty('IS_NEW_SRC_FOLDER', true)
+            }
 		}
 
 		if (project.getProperty('createSrcTestDirectory')) {
 			printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcTestDirectory) + ".")
-			new File(srcTestDirectory).mkdirs()
+			if (new File(srcTestDirectory).mkdirs()) {
+                setCommonGradleProperty('IS_NEW_SRC_FOLDER', true)
+            }
 		}
-
-		setCommonGradleProperty('IS_NEW', true)
 	}
 }

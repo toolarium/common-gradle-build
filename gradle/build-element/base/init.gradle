@@ -12,17 +12,17 @@
 init {
 	// initialize the project mandatory settings and environment
 	projectInitialisation()
-	
-	def hostname = getHostName()	
+
+	def hostname = getHostName()
 	def headerLength = INDENT.length() + 11 + rootProject.name.length() + projectGroupId.length()
 	def header = "Project " + colorize(TITLE_LEVEL, rootProject.name)
 	def length = MAX_LINELENGTH - headerLength - INDENT.length()
 	if (length > 0 && project.hasProperty('projectDescription')) {
 		header = header + " ($projectGroupId)"
 		def printDescription = projectDescription
-		if (printDescription.length() > length) 
-			printDescription = printDescription.substring(0, length - 5) + "..."		
-		
+		if (printDescription.length() > length)
+			printDescription = printDescription.substring(0, length - 5) + "..."
+
 		header += ": " + printDescription
 	}
 
@@ -30,19 +30,19 @@ init {
 	if (!isUnlimitedJurisdiction()) {
 	    isUnlimitedJurisdictionMsg = colorize(ERROR_LEVEL, '*')
 	}
-	
-	// TODO: why encoding don't corresponds to 
+
+	// TODO: why encoding don't corresponds to
 	def encoding = fileEncoding
 	if (encoding==null || encoding.isEmpty()) {
 	    encoding = System.properties['file.encoding']
 	}
-	
+
 	def pid = getProcessNumber()
 	def processNumber = ""
 	if (pid!=null && !pid.isEmpty()) {
 		processNumber = "PID: " + pid
-	} 
-	
+	}
+
 	def vendorName = System.properties['java.vendor'].replace(" Corporation", "")
 
 	def userInfo = ""
@@ -51,37 +51,44 @@ init {
 		userInfo = "(${System.properties['user.name']}, $encoding, ${System.properties['user.language']}, ${TimeZone.getDefault().getID()})"
 		javaInfo = "Java v" + colorize(HIGHLITE_LEVEL, System.properties['java.version']) + "${isUnlimitedJurisdictionMsg}, target " + colorize(HIGHLITE_LEVEL, targetCompatibility) + " (${vendorName}-${System.properties['java.vm.version']}), "
 	}
-	
+
 		def osInfo = "${System.properties['os.name']} (${System.properties['os.arch']}) on ${hostname}"
 
 	// read the version
 	readVersion()
 
 	printLine(HIGHLITE_LEVEL, true)
-	
-	printInfo("${header}")	
+
+	printInfo("${header}")
 	printInfo("Version " + colorize(HIGHLITE_LEVEL, project.version) + ", ${BUILD_TIMESTAMP_SHORT} ${userInfo}")
 	printInfo("${javaInfo}${osInfo}")
-	
+
 	if (initShowJava) {
 		printInfo("Java home: ${System.properties['java.home'].replace('\\', '/')}")
 	}
 
 	if (initShowGradle) {
-		printInfo("Common Gradle Build ${commonGradleBuildVersion}, Gradle ${gradle.gradleVersion}")
+        def message="Gradle ${gradle.gradleVersion}, Common Gradle Build ${commonGradleBuildVersion}"
+
+        def cbVersion = System.env['CB_VERSION']
+        if (cbVersion!=null && !cbVersion.isEmpty()) {
+            message += ", Common Build ${cbVersion}"
+        }
+
+		printInfo(message)
 	}
-	
+
 	if (initShowRuntime) {
 		def runtimeMemory = Runtime.getRuntime().maxMemory()
 		def memory = Math.round(runtimeMemory / 1024 / 1024 / 1024 * 100 ) / 100
 		printInfo("${processNumber}, Max memory: ${memory}G")
 	}
-	
+
 	if (initShowPath) {
 		printInfo("Path: ${System.properties['user.dir'].replace('\\', '/')}, Home: ${userHomeDirectory.replace('\\', '/')}")
 	}
-	
-	if (initShowTempPath) {		
+
+	if (initShowTempPath) {
 		printInfo("Temp: ${System.properties['java.io.tmpdir'].replace('\\', '/')}")
 	}
 
@@ -93,7 +100,7 @@ init {
 /***************************************************************************************
  * Project validation
  ***************************************************************************************/
-task projectValidation { 
+task projectValidation {
 	group = 'Verification'
 	description = 'Project validation'
 }
