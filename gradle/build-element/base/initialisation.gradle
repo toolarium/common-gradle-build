@@ -394,8 +394,9 @@ ext.createCommonGradleBuildSourcesPath = { ->
  * Check if the project type has a different template
  ***************************************************************************************/
 ext.getTemplateFile = { templateFilename ->
+	def projectTypeTemplatePath = 'base'
+	
     try {
-		def projectTypeTemplatePath = 'base'
         if (project.hasProperty('projectTypeTemplatePath')) {
             projectTypeTemplatePath = project.getProperty('projectTypeTemplatePath')
 		}
