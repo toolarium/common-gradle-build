@@ -284,12 +284,18 @@ projectValidation {
 		def validateRootDirectories = project.hasProperty('validateRootDirectories') && project.getProperty('validateRootDirectories')
 		def allowedMainDirectoryList = new ArrayList(Arrays.asList(allowedMainDirectories.split(", ")))
 		def allowedMainFileList = new ArrayList(Arrays.asList(allowedMainFiles.split(", ")))
+		
+		def checkRootDirectory = defaultRootDirectory
+		if (!defaultRootDirectory.toString().equals(rootDirectory.toString())) {
+			checkRootDirectory = rootDirectory
+		}
+		
 		Set result = new TreeSet()
 		File[] files = new File(rootDirectory).listFiles();
 		if (files != null && files.length > 0) {
 			for (File file : files) {
 				boolean valid = false;
-				def nameToCheck = ("$rootDirectory/" + file.getName()).toString()
+				def nameToCheck = ("$checkRootDirectory/" + file.getName()).toString()
 
 				if (file.isDirectory()) {
 					valid = validateRootDirectories && allowedMainDirectoryList.contains(nameToCheck)
@@ -308,7 +314,7 @@ projectValidation {
 						setCommonGradleProperty("validBuild", valid)
 
 						if (validBuildMessage==null || validBuildMessage.isEmpty()) {
-							setCommonGradleProperty("validBuildMessage", "Invalid file!")
+							setCommonGradleProperty("validBuildMessage", "Invalid file " + nameToCheck + "!")
 						}
 					}
 				}
@@ -347,11 +353,7 @@ projectValidation {
 
 		def validateProjectNameAndFolder = project.hasProperty('validateProjectNameAndFolder') && project.getProperty('validateProjectNameAndFolder')
 		if (validateProjectNameAndFolder) {
-			def userDir = "${System.properties['user.dir'].replace('\\', '/')}"
-			if (userDir.endsWith('/')) {
-				userDir = userDir.substring(0, userDir.length() -1)
-			}
-
+			def userDir = cbProjectRootDir
 			def idx = userDir.lastIndexOf('/')
 			if (idx>0) {
 				userDir = userDir.substring(idx+1)

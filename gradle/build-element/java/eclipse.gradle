@@ -10,6 +10,7 @@ apply plugin: 'eclipse'
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.classpath")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.project")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.checkstyle")
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.eclipseproduct")
 addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/.settings")
 
 
@@ -162,6 +163,11 @@ ext.createEclipseFiles = { overwrite = false ->
 					<< "			<name>org.eclipse.jdt.core.javabuilder</name>" << NELINE \
 					<< "			<arguments/>" << NELINE \
 					<< "		</buildCommand>" << NELINE \
+					<< "		<buildCommand>" << NELINE \
+					<< "			<name>org.eclipse.buildship.core.gradleprojectbuilder</name>" << NELINE \
+					<< "			<arguments>" << NELINE \
+					<< "			</arguments>" << NELINE \
+					<< "		</buildCommand>" << NELINE \
 					<< "	</buildSpec>" << NELINE \
 					<< "	<natures>" << NELINE \
 					<< "		<nature>org.eclipse.jdt.core.javanature</nature>" << NELINE \
@@ -170,6 +176,52 @@ ext.createEclipseFiles = { overwrite = false ->
 					<< " 	<linkedResources/>" << NELINE \
 					<< " 	<filteredResources/>" << NELINE \
 					<< "</projectDescription>" << NELINE
+			}			
+		}
+	}
+	
+	def eclipseBuildSettingsPath = "${rootDirectory}/.settings"
+	def eclipseBuildSettingsFile = "org.eclipse.buildship.core.prefs"
+	if (overwrite || !new File("${eclipseBuildSettingsPath}", "${eclipseBuildSettingsFile}").exists()) {
+		if (new File(eclipseBuildSettingsPath).mkdirs()) {
+			printInfo("> Created path " + colorize(HIGHLITE_LEVEL, eclipseBuildSettingsPath) + ".")
+		}
+	
+		logInfo("Write file " + colorize(HIGHLITE_LEVEL, eclipseBuildSettingsPath + "/" + eclipseBuildSettingsFile) + colorize(INFO_LEVEL, "..."))
+		def eclipseBuildSettingTemplate = 'eclipse-build-settings.template'	
+		if (new File("${commonGradleTemplateJavaPath}", "${eclipseBuildSettingTemplate}").exists()) {
+			printInfo("> Create " + colorize(HIGHLITE_LEVEL, eclipseBuildSettingsFile) + " from template ${eclipseBuildSettingTemplate}.")
+			copy {
+				from "${commonGradleTemplateJavaPath}"
+				include "${eclipseBuildSettingTemplate}"
+				into "${eclipseBuildSettingsPath}"
+				rename { String fileName -> fileName.replace(eclipseBuildSettingTemplate, eclipseBuildSettingsFile) }
+				filter { line -> line.replaceAll('@@PROJECT_NAME@@', "${rootProject.name}".toString()) }
+				filter { line -> line.replaceAll('@@GROUP_ID@@', "${project.ext.projectGroupId}".toString()) }
+				filter { line -> line.replaceAll('@@COMPONENT_ID@@', "${project.ext.projectComponentId}".toString()) }
+				filter { line -> line.replaceAll('@@PACKAGE@@', "${project.ext.projectRootPackageName}".toString()) }
+				filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.projectDescription}".toString()) }
+				filter { line -> line.replaceAll('@@URL@@', "${project.ext.projectUrl}".toString()) }
+				filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.licenseText}".toString()) }
+				filter { line -> line.replaceAll('@@MAIN@@', "${srcMainDirectoryName}".toString()) }
+				filter { line -> line.replaceAll('@@TEST@@', "${srcTestDirectoryName}".toString()) }
+			}
+		} else {
+			printInfo("> Create " + colorize(HIGHLITE_LEVEL, eclipseBuildSettingsFile) + " with default values.")
+			new File(eclipseBuildSettingsPath, eclipseBuildSettingsFile).withWriter { w ->
+				w << "arguments=" << NELINE \
+					<< "auto.sync=false" << NELINE \
+					<< "build.scans.enabled=false" << NELINE \
+					<< "connection.gradle.distribution=GRADLE_DISTRIBUTION(WRAPPER)" << NELINE \
+					<< "connection.project.dir=" << NELINE \
+					<< "eclipse.preferences.version=1" << NELINE \
+					<< "gradle.user.home=" << NELINE \
+					<< "java.home=" << NELINE \
+					<< "jvm.arguments=" << NELINE \
+					<< "offline.mode=false" << NELINE \
+					<< "override.workspace.settings=true" << NELINE \
+					<< "show.console.view=true" << NELINE \
+					<< "show.executions.view=false" << NELINE
 			}			
 		}
 	}

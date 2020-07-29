@@ -25,14 +25,9 @@ if (project.hasProperty('initCheckstyle') && project.getProperty('initCheckstyle
 	apply plugin: 'checkstyle'
 
 	// work around: set the checkstyle as absolute path
-	def userDir = "${System.properties['user.dir'].replace('\\', '/')}"
-	if (userDir.endsWith('/')) {
-		userDir = userDir.substring(0, userDir.length() -1)
-	}
-		
 	def checkstylePath = project.getProperty('checkstyleConfigurationPath')
 	if (checkstylePath.startsWith("./")) {
-		checkstylePath = userDir + "/" + checkstyleConfigurationPath.substring(2)
+		checkstylePath = cbProjectRootDir + "/" + checkstyleConfigurationPath.substring(2)
 	}
 	
 	checkstyle {
@@ -43,8 +38,7 @@ if (project.hasProperty('initCheckstyle') && project.getProperty('initCheckstyle
 		}
 		
 		configProperties = [
-				'configDir': checkstylePath,
-				'config_loc': checkstylePath
+				'configDir': checkstylePath
 			]
 			
 		configFile file(project.getProperty('checkstyleConfiguration'))

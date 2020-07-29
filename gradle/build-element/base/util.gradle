@@ -207,10 +207,8 @@ ext.isServerAvailable = { serverAddress='www.google.com', timeout=1500 ->
  */
 ext.prepareFilename = { file ->
 	def filename = file.trim().replace('\\', '/')
-	def workingDir = System.properties['user.dir'].replace('\\', '/')
-
-	if (filename.startsWith(workingDir)) {
-		filename = filename.substring(workingDir.length() + 1)
+	if (filename.startsWith(cbProjectRootDir)) {
+		filename = filename.substring(cbProjectRootDir.length() + 1)
 	}
 	
 	return filename

@@ -7,6 +7,29 @@
 
 
 /***************************************************************************************
+ * Root directory handling
+ ***************************************************************************************/ 
+setCommonGradleProperty("defaultRootDirectory", ".")
+ 
+// root: ${project.rootDir} project: ${project.projectDir} ${System.properties['user.dir'].replace('\\', '/')}
+def userDir = "${System.properties['user.dir'].replace('\\', '/')}"
+if (userDir.endsWith('/')) {
+	userDir = userDir.substring(0, userDir.length() -1)
+}
+
+ext.cbProjectRootDir = "${project.rootDir}".replace('\\', '/')
+if (cbProjectRootDir.endsWith('/')) {
+	cbProjectRootDir = cbProjectRootDir.substring(0, cbProjectRootDir.length() -1)
+}
+
+if (!userDir.toString().equals(cbProjectRootDir.toString())) {
+	setCommonGradleProperty("rootDirectory", "$cbProjectRootDir")
+} else {
+	setCommonGradleProperty("rootDirectory", "$defaultRootDirectory")
+}
+
+
+/***************************************************************************************
  * Project initialisation
  ***************************************************************************************/
 ext.projectInitialisation = { ->

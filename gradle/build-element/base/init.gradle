@@ -78,7 +78,7 @@ init {
 	}
 
 	if (initShowPath) {
-		printInfo("Path: ${System.properties['user.dir'].replace('\\', '/')}, Home: ${userHomeDirectory.replace('\\', '/')}")
+		printInfo("Project: ${cbProjectRootDir}, Home: ${userHomeDirectory.replace('\\', '/')}")
 	}
 
 	if (initShowTempPath) {
