@@ -169,7 +169,7 @@ gradle.taskGraph.whenReady { taskGraph ->
 				if (!project.ext.qualifierVersionNumber.endsWith(SNAPSHOT_TAG_NAME)) {
 					errorMessage += " Snapshot version has to end with " + SNAPSHOT_TAG_NAME + "!"
 				}
-				printInfo(colorize(ERROR_LEVEL, "ERROR:" + message))
+				printInfo(colorize(ERROR_LEVEL, "ERROR:" + errorMessage))
 				printLine(ERROR_LEVEL, true)
 				throw new GradleException("ERROR:" + errorMessage)
 			}
@@ -185,7 +185,7 @@ gradle.taskGraph.whenReady { taskGraph ->
 				if (project.ext.qualifierVersionNumber.endsWith(SNAPSHOT_TAG_NAME)) {
 					errorMessage += " Release version don't end with " + SNAPSHOT_TAG_NAME + "!"
 				}
-				printInfo(colorize(ERROR_LEVEL, "ERROR:" + message))
+				printInfo(colorize(ERROR_LEVEL, "ERROR:" + errorMessage))
 				printLine(ERROR_LEVEL, true)
 				throw new GradleException("ERROR:" + errorMessage)
 			}
