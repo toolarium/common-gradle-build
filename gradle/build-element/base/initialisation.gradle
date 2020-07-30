@@ -88,20 +88,14 @@ ext.projectInitialisation = { ->
 
 		if (createSettingsGralde) {
 			printInfo("Set root project name to " + colorize(HIGHLITE_LEVEL, rootProject.name) + ", created file " + colorize(HIGHLITE_LEVEL, settingsGradleFile) + "...")
-			if (createGradleProperties || createBuildGradle || !project.hasProperty('projectRootPackageName') || !project.hasProperty('projectGroupId') || !project.hasProperty('projectComponentId') || !project.hasProperty('projectDescription') || createVersionFile || createReadmeFile || createLicenseFile || createEditorConfigFile || createChangelogFile || createGraldeHomeProperties)
-				printNewline()
 		}
 
 		if (createGradleProperties) {
 			printInfo("> Created file " + colorize(HIGHLITE_LEVEL, gradlePropertiesFile) + "...")
-			if (createBuildGradle || !project.hasProperty('projectRootPackageName') || !project.hasProperty('projectGroupId') || !project.hasProperty('projectComponentId') || !project.hasProperty('projectDescription')  || createVersionFile || createReadmeFile || createLicenseFile || createChangelogFile || createEditorConfigFile || createGraldeHomeProperties)
-				printNewline()
 		}
 
 		if (createBuildGradle) {
 			printInfo("> Created file " + colorize(HIGHLITE_LEVEL, buildGradleFile) + "...")
-			if (!project.hasProperty('projectRootPackageName') || !project.hasProperty('projectGroupId') || !project.hasProperty('projectComponentId') || !project.hasProperty('projectDescription') || createVersionFile || createReadmeFile || createLicenseFile || createChangelogFile || createEditorConfigFile || createGraldeHomeProperties)
-				printNewline()
 		}
 
 		if (!project.hasProperty('projectRootPackageName')) {
@@ -171,9 +165,6 @@ ext.projectInitialisation = { ->
 		if (createVersionFile) {
 			printInfo("> Created file " + colorize(HIGHLITE_LEVEL, versionFile) + "...")
 			updateVersion()
-
-			//if (createReadmeFile || createLicenseFile || createChangelogFile || createEditorConfigFile || createGraldeHomeProperties)
-			//	printNewline()
 		}
 
 		if (createReadmeFile) {
@@ -187,9 +178,6 @@ ext.projectInitialisation = { ->
 					<< "${projectDescription}" << NELINE
 				}
 			}
-
-			//if (createLicenseFile || createChangelogFile || createEditorConfigFile || createGraldeHomeProperties)
-			//	printNewline()
 		}
 
 		if (createLicenseFile) {
@@ -372,6 +360,7 @@ ext.projectInitialisation = { ->
 		}
 
 		printLine(ERROR_LEVEL, true)
+		printNewline()
 	}
 
 	setCommonGradleProperty('IS_VALID_PROJECT', true)

@@ -28,7 +28,7 @@ publishing {
 		mavenPassword = project.getProperty('mavenPassword')
 	}
 
-	def deployUrl = mavenUrl
+	def deployUrl = mavenStagingUrl
 	if (project.ext.isSnapshotVersion) {
 		deployUrl = mavenSnapshotUrl
 	}

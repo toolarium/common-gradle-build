@@ -83,7 +83,7 @@ ext.readVersion = { ->
  ***************************************************************************************/
 ext.updateVersion = { ->
 	logInfo("Write file " + versionFile + " -> " + project.getProperty('majorVersionNumber') + ", " + project.getProperty('minorVersionNumber') + ", " + project.getProperty('revisionVersionNumber') + ", " + project.getProperty('qualifierVersionNumber'))
-	new File('.', versionFile).withWriter { w ->
+	new File(versionFile).withWriter { w ->
 		w << "major.number        = " << project.getProperty('majorVersionNumber') << NELINE \
 		<< "minor.number        = " << project.getProperty('minorVersionNumber') << NELINE \
 		<< "revision.number     = " << project.getProperty('revisionVersionNumber') << NELINE \

@@ -284,5 +284,5 @@ setCommonGradleDefaultPropertyIfNull("onlineCheckConnectionUrlTimeout", 1500)
 /***************************************************************************************
  * valid build attributes
  ***************************************************************************************/
-setCommonGradleDefaultPropertyIfNull("validBuild", true)
+setCommonGradleProperty("validBuild", true)
 setCommonGradleDefaultPropertyIfNull("validBuildMessage", "")

@@ -176,7 +176,7 @@ gradle.taskGraph.whenReady { taskGraph ->
 		}
 
 		if (project.ext.isReleaseVersion) {
-			if (!project.ext.qualifierVersionNumber.endsWith(SNAPSHOT_TAG_NAME) || project.ext.isSnapshotVersion) {
+			if (project.ext.qualifierVersionNumber.endsWith(SNAPSHOT_TAG_NAME) || project.ext.isSnapshotVersion) {
 				printLine(ERROR_LEVEL, true)
 				def errorMessage = ""
 				if (project.ext.isSnapshotVersion) {
