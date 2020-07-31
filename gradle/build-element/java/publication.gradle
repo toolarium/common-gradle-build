@@ -7,32 +7,13 @@
  
  
 apply plugin: 'maven-publish'
+apply from: "${commonGradleBuildElementPath}/scm/git.gradle"
 
 
 /***************************************************************************************
  * Repository publishing
  ***************************************************************************************/
 publishing {
-	def description = ''
-	if (project.hasProperty('projectDescription')) {
-		description = project.getProperty('projectDescription')
-	}
-
-	def mavenUsername = ''
-	if (project.hasProperty('mavenUsername')) {
-		mavenUsername = project.getProperty('mavenUsername')
-	}
-
-	def mavenPassword = ''
-	if (project.hasProperty('mavenPassword')) {
-		mavenPassword = project.getProperty('mavenPassword')
-	}
-
-	def deployUrl = mavenStagingUrl
-	if (project.ext.isSnapshotVersion) {
-		deployUrl = mavenSnapshotUrl
-	}
-	
 	publications {
         mavenJava(MavenPublication) {
             artifactId = "${rootProject.name}"
@@ -52,7 +33,7 @@ publishing {
 			// after staging go to -> https://oss.sonatype.org/#stagingRepositories -> close
             pom {
                 name = "${rootProject.name}"
-                description = description
+                description = "${projectDescription}"
                 url = "${projectUrl}"
 				
                 licenses {
@@ -61,16 +42,68 @@ publishing {
                         url = "${licenseUrl}"
                     }
                 }
+		
+				def publishingUsername = project.getProperty('publishingUsername')
+				def publishingMail = publishingUsername
+				if (project.hasProperty('publishingMail')) {
+					publishingMail = project.getProperty('publishingMail')
+				}
+			
+				developers {
+					developer {
+						id = "${mavenUsername}"
+						
+						if (publishingUsername!=null && !publishingUsername.isEmpty()) {
+							name = "${publishingUsername}"
+						}
+						
+						if (publishingMail!=null && !publishingMail.isEmpty()) {
+							email = "${publishingMail}"
+						}
+					}
+				}
+				
+				def scmConnection
+				if (project.hasProperty('scmConnection')) {
+					scmConnection = project.getProperty('scmConnection')
+				} else {
+					def urlList = getRemoteGit()
+					if (urlList!=null && !urlList.isEmpty() && urlList[0]!=null && urlList[0].url!=null) {
+						scmConnection = 'scm:git:' + urlList[0].url
+					}
+				}
+				
+				def scmDeveloperConnection = scmConnection
+				if (project.hasProperty('scmDeveloperConnection')) {
+					scmDeveloperConnection = project.getProperty('scmDeveloperConnection')
+				}
+
+				if (scmConnection!=null || developerConnection!=null) {
+					scm {
+						connection = "${scmConnection}"
+						developerConnection = "${scmDeveloperConnection}"
+						url = "${projectUrl}"
+					}
+				}
             }
         }
 	}
 	
 	repositories {
+		def deployUrl = project.getProperty('mavenPublishUrl')
+		if (project.ext.isSnapshotVersion) {
+			deployUrl = project.getProperty('mavenSnapshotPublishUrl')
+		}
+		
+		if (deployUrl.endsWith('/')) {
+			deployUrl += '/'
+		}		
+		
         maven {
             url deployUrl
             credentials {
-                    username mavenUsername
-                    password mavenPassword
+                    username "${mavenUsername}"
+                    password "${mavenPassword}"
             }
         }
     }

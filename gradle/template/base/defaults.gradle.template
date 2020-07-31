@@ -75,11 +75,12 @@
 //setCommonGradleProperty("allowMavenCentralRepository", true)
 //setCommonGradleProperty("allowGoogleRepository", true)
 //setCommonGradleProperty("allowJCenterRepository", true)
-//setCommonGradleProperty("mavenUrl", "https://oss.sonatype.org/content/repositories/public")
-//setCommonGradleProperty("allowMavenStagingAsRepository", true)
-//setCommonGradleProperty("mavenStagingUrl", "https://oss.sonatype.org/content/repositories/staging")
-//setCommonGradleProperty("allowMavenSnapshotUrlAsRepository", true)
-//setCommonGradleProperty("mavenSnapshotUrl", "https://oss.sonatype.org/content/repositories/snapshots/")
+//setCommonGradleProperty("mavenPublishUrl", "https://your-publish-repository-url") 
+//setCommonGradleProperty("mavenRepositoryUrl", "https://your-repository-url")
+//setCommonGradleProperty("allowMavenRepository", true)
+//setCommonGradleProperty("mavenSnapshotPublishUrl", "https://your-snapshot-publish-repository-url")
+//setCommonGradleProperty("mavenSnapshotRepositoryUrl", "https://your-snapshot-repository-url")
+//setCommonGradleProperty("allowMavenSnapshotRepository", true)
 
 
 /***************************************************************************************

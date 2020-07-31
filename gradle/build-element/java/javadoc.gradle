@@ -61,7 +61,7 @@ task javadocJar(type: Jar) { jar ->
 					'Implementation-Title'  : rootProject.name,
 					'Implementation-Version': project.version + project.ext.scmVersionNumber,
 					'Created-By'		   	: project.ext.buildToolVersionStackMessage,
-					'Built-By'			   	: System.properties['user.name'],
+					'Built-By'			   	: publishingUsername,
 					'Build-Timestamp'	   	: BUILD_TIMESTAMP,
 					'Build-JDK'			   	: "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
 					'Build-OS'			   	: "${System.properties['os.name']} (${System.properties['os.version']}), ${System.properties['os.arch']}",

@@ -173,7 +173,7 @@ ext.projectInitialisation = { ->
 			if (!createFileFromTemplate(readmeFile, getTemplateFile('README.template'))) {
 				printInfo("> Create " + colorize(HIGHLITE_LEVEL, readmeFile) + " with default values.")
 
-				new File('.', readmeFile).withWriter { w ->
+				new File(readmeFile).withWriter { w ->
 					w << "# Welcome to ${rootProject.name}" << NELINE \
 					<< "${projectDescription}" << NELINE
 				}
@@ -184,7 +184,7 @@ ext.projectInitialisation = { ->
 			logInfo("Write file " + colorize(HIGHLITE_LEVEL, licenseFile) + colorize(INFO_LEVEL ,"..."))
 			if (!createFileFromTemplate(licenseFile, getTemplateFile('LICENSE.template'))) {
 				printInfo("> Create " + colorize(HIGHLITE_LEVEL, licenseFile) + " with default values.")
-				new File('.', licenseFile).withWriter { w ->
+				new File(licenseFile).withWriter { w ->
 					w << "MIT License" << NELINE \
 					<< "" << NELINE \
 					<< "Copyright (c) ${YEAR} ${rootProject.name}" << NELINE \
@@ -214,7 +214,7 @@ ext.projectInitialisation = { ->
 			logInfo("Write file " + colorize(HIGHLITE_LEVEL, changelogFile) + colorize(INFO_LEVEL ,"..."))
 			if (!createFileFromTemplate(changelogFile, getTemplateFile('changelog.template'))) {
 				printInfo("> Create " + colorize(HIGHLITE_LEVEL, changelogFile) + " with default values.")
-				new File('.', changelogFile).withWriter { w ->
+				new File(changelogFile).withWriter { w ->
 					w << "# Changelog" << NELINE \
 					<< "" << NELINE \
 					<< "All notable changes to this project will be documented in this file." << NELINE \
@@ -232,7 +232,7 @@ ext.projectInitialisation = { ->
 			logInfo("Write file " + colorize(HIGHLITE_LEVEL, editorConfigFile) + colorize(INFO_LEVEL ,"..."))
 			if (!createFileFromTemplate(editorConfigFile, getTemplateFile('editorconfig.template'))) {
 				printInfo("> Create " + colorize(HIGHLITE_LEVEL, editorConfigFile) + " with default values.")
-				new File('.', editorConfigFile).withWriter { w ->
+				new File(editorConfigFile).withWriter { w ->
 					w << "# editor config: https://editorconfig.org" << NELINE \
 					<< "root = true" << NELINE \
 					<< "" << NELINE \
@@ -287,7 +287,7 @@ ext.projectInitialisation = { ->
 		if (createSettingsGralde) {
 			if (!createFileFromTemplate(settingsGradleFile, getTemplateFile('settings.gradle.template'))) {
 				printInfo("> Create " + colorize(HIGHLITE_LEVEL, settingsGradleFile) + " with default values.")
-				new File('.', settingsGradleFile).withWriter { w ->
+				new File(settingsGradleFile).withWriter { w ->
 					w << "rootProject.name    = \'${rootProject.name}\'" << NELINE
 				}
 			}
@@ -310,7 +310,7 @@ ext.projectInitialisation = { ->
 
 			if (!createFileFromTemplate(gradlePropertiesFile, getTemplateFile('gradle.properties.template'))) {
 				printInfo("> Create " + colorize(HIGHLITE_LEVEL, gradlePropertiesFile) + " with default values.")
-				new File('.', gradlePropertiesFile).withWriterAppend { w ->
+				new File(gradlePropertiesFile).withWriterAppend { w ->
 					w << "# base information" << NELINE \
 					<< "projectType              = ${projectType}" << NELINE \
 					<< "projectRootPackageName   = ${projectRootPackageName}" << NELINE \
@@ -338,7 +338,7 @@ ext.projectInitialisation = { ->
 		if (createBuildGradle) {
 			if (!createFileFromTemplate(buildGradleFile, getTemplateFile('build.gradle.template'))) {
 				printInfo("> Create " + colorize(HIGHLITE_LEVEL, buildGradleFile) + " with default values.")
-				new File('.', buildGradleFile).withWriter { w ->
+				new File(buildGradleFile).withWriter { w ->
 					w << "/*" << NELINE \
 					<< " * build.gradle" << NELINE \
 					<< " * " << NELINE \

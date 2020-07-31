@@ -28,27 +28,27 @@ repositories {
 		jcenter()
 	}
 
-	if (project.hasProperty('allowMavenSnapshotUrlAsRepository') && project.getProperty('allowMavenSnapshotUrlAsRepository') && project.hasProperty('mavenSnapshotUrl')) {
-		def mavenSnapshotUrl = project.getProperty('mavenSnapshotUrl')
-		if (mavenSnapshotUrl!=null && !mavenSnapshotUrl.isEmpty()) {	
-			logInfo("Allow maven snapshot repository " + colorize(HIGHLITE_LEVEL, mavenSnapshotUrl))
-			maven { url mavenSnapshotUrl }
+	if (project.hasProperty('allowMavenSnapshotRepository') && project.getProperty('allowMavenSnapshotRepository') && project.hasProperty('mavenSnapshotRepositoryUrl')) {
+		def mavenSnapshotRepositoryUrl = project.getProperty('mavenSnapshotRepositoryUrl')
+		if (mavenSnapshotRepositoryUrl!=null && !mavenSnapshotRepositoryUrl.isEmpty()) {	
+			logInfo("Allow maven snapshot repository " + colorize(HIGHLITE_LEVEL, mavenSnapshotRepositoryUrl))
+			maven { url mavenSnapshotRepositoryUrl }
 		}
 	}
 
-	if (project.hasProperty('allowMavenStagingAsRepository') && project.getProperty('allowMavenStagingAsRepository') && project.hasProperty('mavenStagingUrl')) {
-		def mavenStagingUrl = project.getProperty('mavenStagingUrl')
-		if (mavenStagingUrl!=null && !mavenStagingUrl.isEmpty()) {	
-			logInfo("Allow maven staging repository " + colorize(HIGHLITE_LEVEL, mavenStagingUrl))
-			maven { url mavenStagingUrl }
+	if (project.hasProperty('allowMavenStagingRepository') && project.getProperty('allowMavenStagingRepository') && project.hasProperty('mavenStagingRepositoryUrl')) {
+		def mavenStagingRepositoryUrl = project.getProperty('mavenStagingRepositoryUrl')
+		if (mavenStagingRepositoryUrl!=null && !mavenStagingRepositoryUrl.isEmpty()) {	
+			logInfo("Allow maven staging repository " + colorize(HIGHLITE_LEVEL, mavenStagingRepositoryUrl))
+			maven { url mavenStagingRepositoryUrl }
 		}
 	}
 
-	if (project.hasProperty('mavenUrl')) {
-		def mavenUrl = project.getProperty('mavenSnapshotUrl')
-		if (mavenUrl!=null && !mavenUrl.isEmpty()) {	
-			logInfo("Allow maven repository " + colorize(HIGHLITE_LEVEL, mavenUrl))
-			maven { url mavenUrl }
+	if (project.hasProperty('allowMavenRepository') && project.getProperty('allowMavenRepository') && project.hasProperty('mavenRepositoryUrl')) {
+		def mavenRepositoryUrl = project.getProperty('mavenRepositoryUrl')
+		if (mavenRepositoryUrl!=null && !mavenRepositoryUrl.isEmpty()) {	
+			logInfo("Allow maven repository " + colorize(HIGHLITE_LEVEL, mavenRepositoryUrl))
+			maven { url mavenRepositoryUrl }
 		}
 	}
 }

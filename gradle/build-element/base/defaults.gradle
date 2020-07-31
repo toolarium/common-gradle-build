@@ -156,16 +156,29 @@ setCommonGradleDefaultPropertyIfNull("compileJavaHome", "")
 setCommonGradleDefaultPropertyIfNull("allowMavenCentralRepository", true)
 setCommonGradleDefaultPropertyIfNull("allowGoogleRepository", true)
 setCommonGradleDefaultPropertyIfNull("allowJCenterRepository", true)
-setCommonGradleDefaultPropertyIfNull("mavenUrl", "https://oss.sonatype.org/content/repositories/public")
-setCommonGradleDefaultPropertyIfNull("allowMavenStagingAsRepository", true)
-setCommonGradleDefaultPropertyIfNull("mavenStagingUrl", "https://oss.sonatype.org/content/repositories/staging") // "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-setCommonGradleDefaultPropertyIfNull("allowMavenSnapshotUrlAsRepository", true)
-setCommonGradleDefaultPropertyIfNull("mavenSnapshotUrl", "https://oss.sonatype.org/content/repositories/snapshots/")
+setCommonGradleDefaultPropertyIfNull("mavenPublishUrl", "https://oss.sonatype.org/service/local/staging/deploy/maven2") // by sonatype you deploy to staging, after go to -> https://oss.sonatype.org/#stagingRepositories -> close
+setCommonGradleDefaultPropertyIfNull("mavenRepositoryUrl", "https://oss.sonatype.org/content/repositories/public")
+setCommonGradleDefaultPropertyIfNull("allowMavenRepository", false)
+setCommonGradleDefaultPropertyIfNull("mavenStagingPublishUrl", "https://oss.sonatype.org/service/local/staging/deploy/maven2")
+setCommonGradleDefaultPropertyIfNull("mavenStagingRepositoryUrl", "https://oss.sonatype.org/content/repositories/staging")
+setCommonGradleDefaultPropertyIfNull("allowMavenStagingRepository", false)
+setCommonGradleDefaultPropertyIfNull("mavenSnapshotPublishUrl", "https://oss.sonatype.org/content/repositories/snapshots")
+setCommonGradleDefaultPropertyIfNull("mavenSnapshotRepositoryUrl", "https://oss.sonatype.org/content/repositories/snapshots")
+setCommonGradleDefaultPropertyIfNull("allowMavenSnapshotRepository", true)
+
 
 // use as default the sonatype repository -> url, username and password
 if (!project.hasProperty('mavenUsername')) {
 	if (project.hasProperty('sonatypeUsername')){
 		setCommonGradleDefaultPropertyIfNull("mavenUsername", sonatypeUsername)
+	} else {
+		setCommonGradleDefaultPropertyIfNull("mavenUsername", System.properties['user.name'])
+	}
+}
+
+if (!project.hasProperty('publishingUsername')) {
+	if (project.hasProperty('mavenUsername')){
+		setCommonGradleDefaultPropertyIfNull("publishingUsername", mavenUsername)
 	}
 }
 

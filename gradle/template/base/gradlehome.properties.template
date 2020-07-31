@@ -11,3 +11,10 @@ mavenPassword =
 signing.keyId =
 signing.password =
 signing.secretKeyRingFile =
+
+
+/***************************************************************************************
+ * Publishing information, by default the mavenUser or os user will be used
+ ***************************************************************************************/
+publishingUsername =
+publishingMail =

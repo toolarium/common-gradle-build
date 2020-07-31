@@ -104,6 +104,24 @@ ext.initGit = { bare = false ->
 }
 
 
+/** 	
+ * Get remote url
+ */
+ext.getRemoteGit = { directory = projectDir ->
+	def git = null	
+	if (isGitAvailable()) {
+		try {
+			git = openGit()
+			return git.remote.list();
+		} catch (Exception e) {
+			printWarn("Could not get git remote url: " + e.getMessage())
+		} finally {
+			closeGit(git)
+		}	
+	}
+}
+
+
 /**
  * Add files to git 
  */
