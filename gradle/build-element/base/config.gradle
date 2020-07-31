@@ -122,7 +122,7 @@ configPackages.each { configName ->
 					if (project.hasProperty('showCreatedArtefacts') && project.getProperty('showCreatedArtefacts')) {
 						// jar.archiveFileName
 						def filename = prepareFilename(jar.archivePath.getPath())
-						printInfo("Created package " + colorize(HIGHLITE_LEVEL, filename) + ".")
+						printInfo("> Created package " + colorize(HIGHLITE_LEVEL, filename) + ".")
 					}
 				}
 			}

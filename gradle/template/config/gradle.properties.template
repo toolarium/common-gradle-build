@@ -6,8 +6,8 @@ projectComponentId       = @@COMPONENT_ID@@
 projectDescription       = @@DESCRIPTION@@
 projectUrl               = @@URL@@
 
-# configuration package definition (must be a subfolder in conf - comma-separated ","), e.g. "customer1, customer2"
-configPackages           = ""
+# configuration package definition (must be a subfolder in conf - comma-separated ","), e.g. customer1, customer2
+configPackages           = 
 
 # tool information
 # checkstyleToolVersion    = @@checkstyleToolVersion@@
