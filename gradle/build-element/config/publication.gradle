@@ -67,7 +67,7 @@ publishing {
 					scmDeveloperConnection = project.getProperty('scmDeveloperConnection')
 				}
 
-				if (scmConnection!=null || developerConnection!=null) {
+				if (scmConnection!=null || scmDeveloperConnection!=null) {
 					scm {
 						connection = "${scmConnection}"
 						developerConnection = "${scmDeveloperConnection}"

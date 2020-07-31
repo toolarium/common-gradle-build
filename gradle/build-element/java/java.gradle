@@ -36,10 +36,12 @@ tasks.withType(JavaCompile) { compile ->
 	}
 
 	// print source and target compatibility
-	def sourceVersion = parseVersion(sourceCompatibility)
-	def targetVersion = parseVersion(targetCompatibility)
-	if (!targetVersion.isCompatibleWith(sourceVersion)) {
-		logInfo("The target (" + colorize(HIGHLITE_LEVEL, targetCompatibility) + colorize(INFO_LEVEL, ") is not compatible with the source (" ) + colorize(HIGHLITE_LEVEL, sourceCompatibility) + colorize(INFO_LEVEL, ") compatibility!"))
+	if (sourceCompatibility!=null && !sourceCompatibility.toString().isEmpty() && targetCompatibility!=null && !targetCompatibility.toString().isEmpty()) {
+		def sourceVersion = parseVersion(sourceCompatibility)
+		def targetVersion = parseVersion(targetCompatibility)
+		if (sourceVersion!=null && targetVersion!=null && !targetVersion.isCompatibleWith(sourceVersion)) {
+			logInfo("The target (" + colorize(HIGHLITE_LEVEL, targetCompatibility) + colorize(INFO_LEVEL, ") is not compatible with the source (" ) + colorize(HIGHLITE_LEVEL, sourceCompatibility) + colorize(INFO_LEVEL, ") compatibility!"))
+		}
 	}
 
 	def compileType = 'main'

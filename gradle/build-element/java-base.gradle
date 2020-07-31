@@ -167,10 +167,13 @@ ext.createJavaSourcePath = { ->
 	generatedCommonGradleBuildResourcesSources += "/" + mainDirectoryName
 	setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBuildResourcesSources", generatedCommonGradleBuildResourcesSources)
 
-	def sourceVersion = parseVersion(sourceCompatibility)
-	def targetVersion = parseVersion(targetCompatibility)
-	if (!targetVersion.isCompatibleWith(sourceVersion)) {
-		printInfo("The target (" + colorize(HIGHLITE_LEVEL, targetCompatibility) + ") is not compatible with the source (" + colorize(HIGHLITE_LEVEL, sourceCompatibility) + ") compatibility!")
+	
+	if (sourceCompatibility!=null && !sourceCompatibility.toString().isEmpty() && targetCompatibility!=null && !targetCompatibility.toString().isEmpty()) {
+		def sourceVersion = parseVersion(sourceCompatibility)
+		def targetVersion = parseVersion(targetCompatibility)
+		if (sourceVersion!=null && targetVersion!=null && !targetVersion.isCompatibleWith(sourceVersion)) {
+			printInfo("The target (" + colorize(HIGHLITE_LEVEL, targetCompatibility) + ") is not compatible with the source (" + colorize(HIGHLITE_LEVEL, sourceCompatibility) + ") compatibility!")
+		}
 	}
 
 	createEclipseFiles()

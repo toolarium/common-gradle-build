@@ -144,7 +144,7 @@ setCommonGradleDefaultPropertyIfNull("projectType", "java-library")
  * compile settings
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("sourceCompatibility", JavaVersion.VERSION_1_8)
-setCommonGradleDefaultPropertyIfNull("targetCompatibility", JavaVersion.VERSION_1_8)
+setCommonGradleDefaultPropertyIfNull("targetCompatibility", JavaVersion.VERSION_1_8 /*parseVersion("${System.properties['java.version']}")*/)
 setCommonGradleDefaultPropertyIfNull("fileEncoding", "UTF-8")
 setCommonGradleDefaultPropertyIfNull("compileJavaFork", false)
 setCommonGradleDefaultPropertyIfNull("compileJavaHome", "")
