@@ -90,9 +90,20 @@ publishing {
 		
         maven {
             url deployUrl
+			
+			def mvnUsername = ''
+			if (project.hasProperty('mavenUsername')) {
+				mvnUsername = project.getProperty('mavenUsername')
+			}
+
+			def mvnPassword = ''
+			if (project.hasProperty('mavenPassword')) {
+				mvnPassword = project.getProperty('mavenPassword')
+			}
+			
             credentials {
-                    username "${mavenUsername}"
-                    password "${mavenPassword}"
+                    username "${mvnUsername}"
+                    password "${mvnPassword}"
             }
         }
     }
