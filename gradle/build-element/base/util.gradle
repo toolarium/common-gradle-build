@@ -48,7 +48,7 @@ ext.parseVersion = { version ->
 		
 		//return JavaVersion.toVersion(input)
 	} catch (IllegalArgumentException e) {
-		printInfo("Error in parseVersion: " + e.getMessage())
+		printInfo("> Error in parseVersion: " + e.getMessage())
 	}
 }
 
@@ -257,7 +257,7 @@ ext.unzip = { fileZip, inputDestDir, rootZipFolderName = null ->
 			if (rootFolder!=null) {
 				rootFolder.renameTo(new java.io.File(inputDestDir, rootZipFolderName))
 			} else {
-				printInfo("Could not rename root folder to [" + colorize(HIGHLITE_LEVEL, rootZipFolderName) + colorize(WARN_LEVEL, "] because there is no root folder in zip file.")) 
+				printInfo("> Could not rename root folder to [" + colorize(HIGHLITE_LEVEL, rootZipFolderName) + colorize(WARN_LEVEL, "] because there is no root folder in zip file.")) 
 			}
 		}
 	} finally {

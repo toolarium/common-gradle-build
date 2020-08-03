@@ -90,7 +90,7 @@ ext.downloadAndUnzipNewestGithubRelease = {url, preRelease = false, destDir ->
 		}
 		
 		logInfo("Remote version: " + colorize(HIGHLITE_LEVEL, releaseVersion) + colorize(HIGHLITE_LEVEL, " of  $url into $destDir"))			
-		printInfo "Found new release version " + releaseVersion
+		printInfo "> Found new release version " + releaseVersion
 		def fileZip = new File("${destDir}/${releaseVersion}.zip")
 		if (fileZip.exists()) {
 			printWarn("Could not download release $releaseVersion from github, file already exist [" + colorize(HIGHLITE_LEVEL, fileZip) + colorize(WARN_LEVEL, "].")) 
