@@ -1,4 +1,6 @@
 # common-gradle-build
+![Screenshot](docs/logo/common-gradle-build-small.png)
+
 Defines common gradle build scripts.
 
 This project helps you to have a fast and stable gradle build.
