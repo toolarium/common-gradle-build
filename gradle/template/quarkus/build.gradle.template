@@ -4,6 +4,10 @@
  * Copyright by @@PROJECT_NAME@@, all rights reserved.
  * @@LICENSE@@
  */
+plugins {
+    id 'io.quarkus'
+}
+
 apply from: "@@COMMON_GRADLE_BUILD_URL@@"
 
 
@@ -12,5 +16,12 @@ apply from: "@@COMMON_GRADLE_BUILD_URL@@"
  @@STAR_LINE@@/
 dependencies {
     // see https://docs.gradle.org/current/userguide/java_library_plugin.html
+
+    testImplementation 'io.quarkus:quarkus-junit5'
+    testImplementation 'io.rest-assured:rest-assured'
+
+    implementation 'io.quarkus:quarkus-hibernate-orm'
+    implementation 'io.quarkus:quarkus-resteasy'
+	
     // e.g.: implementation 'net.sf.jptools:jptools:1.7.1'
 }

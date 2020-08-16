@@ -1,0 +1,31 @@
+/*
+ * @@fileName@@
+ *
+ * Copyright by @@PROJECT_NAME@@, all rights reserved.
+ * @@LICENSE@@
+ */
+package @@packageName@@;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+
+ 
+/**
+ * @@className@@
+ */
+@Path("/hello")
+public class @@className@@ {
+
+    /**
+     * Hello method
+     *
+     * @return the message
+     */
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public String hello() {
+        return "hello";
+    }
+}

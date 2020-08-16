@@ -19,7 +19,10 @@ ext.readRemoteVersion = { inputUrl ->
 	if (url.startsWith('file/')) {
 		url = 'file:/' + url.substring(4)
 	} 
-	
+	if (url.startsWith('file://')) {
+		url = 'file:/' + url.substring(7)
+	} 
+
 	def remoteVersion = null
 	try {
 		Properties props = new Properties();

@@ -87,7 +87,8 @@
  * testing
  ***************************************************************************************/
 //setCommonGradleProperty("initTesting", true)
-//setCommonGradleProperty("testDependencyVersion", "5.3.1")
+//setCommonGradleProperty("useJUnit", true)
+//setCommonGradleProperty("testDependencyVersion", "5.6.2")
 //setCommonGradleProperty("testImplementationDependency", "junit:junit:${testDependencyVersion}")
 //setCommonGradleProperty("testRuntimeOnlyDependency", "junit:junit:${testDependencyVersion}")
 
@@ -100,9 +101,30 @@
 //setCommonGradleProperty("checkstyleXMLReport", false)
 //setCommonGradleProperty("checkstyleHTMLReport", true)
 //setCommonGradleProperty("checkstyleConfiguration", "${configDirectory}/checkstyle/checkstyle.xml")
-//setCommonGradleProperty("checkstyleCustomStylesheet", "${configDirectory}/checkstyle/checkstyle.xml")
 //setCommonGradleProperty("checkstyleDefaultConfigurationFileHeaderUrl", "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/template/java/checkstyle-file-header.txt.template")
+//setCommonGradleDefaultPropertyIfNull("checkstyleDefaultConfigurationFileSupressionUrl", "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/template/java/checkstyle-suppressions.xml.template")
 //setCommonGradleProperty("checkstyleDefaultConfigurationUrl", "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/template/java/checkstyle.xml.template")
+
+
+/***************************************************************************************
+ * test coverage: jacoco
+ ***************************************************************************************/
+//setCommonGradleDefaultPropertyIfNull("jacocoToolDefaultVersion", '0.8.5')
+//setCommonGradleDefaultPropertyIfNull("jacocoXMLReport", false)
+//setCommonGradleDefaultPropertyIfNull("jacocoCSVReport", false)
+//setCommonGradleDefaultPropertyIfNull("jacocoHTMLReport", true)
+
+
+/***************************************************************************************
+ * quarkus plugin version
+ ***************************************************************************************/
+//setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", '1.7.0.Final')
+
+
+/***************************************************************************************
+ * node plugin version
+ ***************************************************************************************/
+//setCommonGradleDefaultPropertyIfNull("nodePluginVersion", '2.2.4')
 
 
 /***************************************************************************************

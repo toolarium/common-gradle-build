@@ -381,6 +381,12 @@ ext.createGitFiles = { overwrite = false ->
 				<< NELINE \
 				<< "# Ignore temp output directory" << NELINE \
 				<< "temp" << NELINE \
+				<< NELINE \
+				<< "# Java build artifacts class files" << NELINE \
+				<< "*.class" << NELINE \
+				<< NELINE \
+				<< "# OSX files" << NELINE \
+				<< ".DS_Store" << NELINE \
 				<< NELINE
 			}
 		}
@@ -407,6 +413,16 @@ ext.createGitFiles = { overwrite = false ->
 				<< "# These are explicitly windows files and should use crlf" << NELINE \
 				<< NELINE \
 				<< "*.bat           text eol=crlf" << NELINE \
+				<< NELINE \
+				<< "# Denote all files that are truly binary and should not be modified." << NELINE \
+				<< "*.ico binary" << NELINE \
+				<< "*.png binary" << NELINE \
+				<< "*.jpg binary" << NELINE \
+				<< "*.jpeg binary" << NELINE \
+				<< "*.xls binary" << NELINE \
+				<< "*.xlsx binary" << NELINE \
+				<< "*.doc binary" << NELINE \
+				<< "*.docx binary" << NELINE \
 				<< NELINE
 			}
 		}

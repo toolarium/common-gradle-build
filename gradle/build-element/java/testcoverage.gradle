@@ -1,0 +1,40 @@
+/*
+ * testcoverage.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+
+
+apply plugin: 'jacoco'
+
+ 
+/***************************************************************************************
+ * Build javadoc jar file
+ ***************************************************************************************/
+jacoco {
+	toolVersion = "${jacocoToolDefaultVersion}"
+}
+
+
+/***************************************************************************************
+ * Test dependency
+ ***************************************************************************************/
+test {
+	finalizedBy jacocoTestReport // report is always generated after tests run
+}
+
+
+/***************************************************************************************
+ * Jacoco test report
+ ***************************************************************************************/
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the report
+	
+	reports {
+		xml.enabled jacocoXMLReport
+		csv.enabled jacocoCSVReport
+		html.enabled jacocoHTMLReport
+		html.destination file("${jacocoReportPath}")
+    }
+}

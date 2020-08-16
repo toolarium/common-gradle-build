@@ -67,15 +67,22 @@ apply from: "${commonGradleBuildElementPath}/base/config.gradle"
 apply from: "${commonGradleBuildElementPath}/base/project-report.gradle"
 apply from: "${commonGradleBuildElementPath}/release.gradle"
 apply from: "${commonGradleBuildElementPath}/scm/git.gradle"
-apply from: "${commonGradleBuildElementPath}/scm/changelog.gradle"
+//apply from: "${commonGradleBuildElementPath}/scm/changelog.gradle"
 
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // add dependencies to all tasks except some special ones
+if (!project.hasProperty('hasProjectValidationExecuted')) {
+	setCommonGradleProperty('hasProjectValidationExecuted', false)
+}
+
 tasks.matching { it != projectValidation }.all {
-	if (it != help && it != tasks && it != configJar && it != wrapper && it !=projectValidation ) {
+	def hasAlreadyExecuted = project.hasProperty('hasProjectValidationExecuted') && project.getProperty('hasProjectValidationExecuted')
+	if (!hasAlreadyExecuted && it != help && it != tasks && it != configJar && it != wrapper && it !=projectValidation) {
 		logDebug("Add dependency to " + it)
 		it.dependsOn projectValidation
+	} else {
+		logDebug("Ignore dependency " + it)
 	}
 }
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -132,7 +139,8 @@ gradle.buildFinished { buildResult ->
 		}
 	}
 
-	if (buildResult.getFailure()!=null  && failedTask!=null && failedTask.name!=null) {
+	def isFailed = (buildResult.getFailure()!=null  && failedTask!=null && failedTask.name!=null)
+	if (isFailed) {
 		if (gradle.startParameter.getLogLevel() == org.gradle.api.logging.LogLevel.QUIET) {
 			println(colorize(ERROR_LEVEL, 'FAILURE:') + " In task " + colorize(HIGHLITE_LEVEL, failedTask.name) + ", task execution used ~" + duration + "s")
 			printNewline()
@@ -149,7 +157,15 @@ gradle.buildFinished { buildResult ->
 		}
 	}
 
-	printLine()
+	printLine()	
+	
+	// support end message
+	if (!isFailed && project.hasProperty('endMessage')) {
+		printInfo ("")
+		printLine(HIGHLITE_LEVEL, true)
+        printInfo ("" + project.getProperty('endMessage'))
+		printLine(HIGHLITE_LEVEL, true)
+	}
 }
 
 
@@ -215,6 +231,7 @@ gradle.taskGraph.whenReady { taskGraph ->
  ***************************************************************************************/
 projectValidation {
 	doFirst {
+		hasProjectValidationExecuted=true
 		logInfo("Project validation....")
 
 		// check common gradle build cache
@@ -266,19 +283,35 @@ projectValidation {
 				setCommonGradleProperty("validBuildMessage", "Invalid project component id!")
 			}
 		}
-
+		
 		// validate root package name
 		if (projectRootPackageNamePrefix!=null && !projectRootPackageNamePrefix.isEmpty() && !projectRootPackageName.startsWith(projectRootPackageNamePrefix)) {
 			printWarn("Root package name [$projectRootPackageName] has to start with prefix [$projectRootPackageNamePrefix] (see projectRootPackageNamePrefix seetings)!")
 			setCommonGradleProperty("validBuild", false)
 			setCommonGradleProperty("validBuildMessage", "Invalid root package name!")
 		}
-
+		
 		// generate git files if necessary
 		if (project.hasProperty('initScmForNewProjects') && project.getProperty('initScmForNewProjects')) {
 			createGitFiles()
 		}
-
+		
+		def validateProjectNameAndFolder = project.hasProperty('validateProjectNameAndFolder') && project.getProperty('validateProjectNameAndFolder')
+		if (validateProjectNameAndFolder) {
+			def userDir = cbProjectRootDir
+			def idx = userDir.lastIndexOf('/')
+			if (idx>0) {
+				userDir = userDir.substring(idx+1)
+			}
+			if (!"${rootProject.name}".equals("${userDir}")) {
+				printWarn("Project folder [$userDir] do not match with the project name [${rootProject.name}] (see validateProjectNameAndFolder seetings)!")
+				setCommonGradleProperty("validBuild", false)
+				setCommonGradleProperty("validBuildMessage", "Invalid path: project name and folder don't match!")
+			}
+		}
+	}
+	
+	doLast {
 		// validate root directories and files
 		def validateRootFiles = project.hasProperty('validateRootFiles') && project.getProperty('validateRootFiles')
 		def validateRootDirectories = project.hasProperty('validateRootDirectories') && project.getProperty('validateRootDirectories')
@@ -298,23 +331,27 @@ projectValidation {
 				def nameToCheck = ("$checkRootDirectory/" + file.getName()).toString()
 
 				if (file.isDirectory()) {
-					valid = validateRootDirectories && allowedMainDirectoryList.contains(nameToCheck)
-					if (!valid) {
-						printWarn("Invalid directory " + colorize(HIGHLITE_LEVEL, nameToCheck) + colorize(WARN_LEVEL, ", it's not supported!"))
-						setCommonGradleProperty("validBuild", valid)
+					if (validateRootDirectories) {
+						valid = allowedMainDirectoryList.contains(nameToCheck)
+						if (!valid) {
+							printWarn("Invalid directory " + colorize(HIGHLITE_LEVEL, nameToCheck) + colorize(WARN_LEVEL, ", it's not supported!"))
+							setCommonGradleProperty("validBuild", valid)
 
-						if (validBuildMessage==null || validBuildMessage.isEmpty()) {
-							setCommonGradleProperty("validBuildMessage", "Invalid directory!")
+							if (validBuildMessage==null || validBuildMessage.isEmpty()) {
+								setCommonGradleProperty("validBuildMessage", "Invalid directory!")
+							}
 						}
 					}
 				} else {
-					valid = validateRootFiles && allowedMainFileList.contains(nameToCheck)
-					if (!valid) {
-						printWarn("Invalid file " + colorize(HIGHLITE_LEVEL, nameToCheck) + colorize(WARN_LEVEL, ", it's not supported!"))
-						setCommonGradleProperty("validBuild", valid)
+					if (validateRootFiles) {
+						valid = allowedMainFileList.contains(nameToCheck)
+						if (!valid) {
+							printWarn("Invalid file " + colorize(HIGHLITE_LEVEL, nameToCheck) + colorize(WARN_LEVEL, ", it's not supported!"))
+							setCommonGradleProperty("validBuild", valid)
 
-						if (validBuildMessage==null || validBuildMessage.isEmpty()) {
-							setCommonGradleProperty("validBuildMessage", "Invalid file " + nameToCheck + "!")
+							if (validBuildMessage==null || validBuildMessage.isEmpty()) {
+								setCommonGradleProperty("validBuildMessage", "Invalid file " + nameToCheck + "!")
+							}
 						}
 					}
 				}
@@ -350,20 +387,14 @@ projectValidation {
 				}
 			}
 		}
-
-		def validateProjectNameAndFolder = project.hasProperty('validateProjectNameAndFolder') && project.getProperty('validateProjectNameAndFolder')
-		if (validateProjectNameAndFolder) {
-			def userDir = cbProjectRootDir
-			def idx = userDir.lastIndexOf('/')
-			if (idx>0) {
-				userDir = userDir.substring(idx+1)
-			}
-
-			if (!"${rootProject.name}".equals("${userDir}")) {
-				printWarn("Project folder [$userDir] do not match with the project name [${rootProject.name}] (see validateProjectNameAndFolder seetings)!")
-				setCommonGradleProperty("validBuild", false)
-				setCommonGradleProperty("validBuildMessage", "Invalid path: project name and folder don't match!")
-			}
-		}
 	}
+}
+
+
+/***************************************************************************************
+ * Register end message (e.g. get started)
+ ***************************************************************************************/
+ext.registerEndMessage = { message ->
+	def msg = message.toString()
+	setCommonGradleProperty("endMessage", msg)
 }

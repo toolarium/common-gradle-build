@@ -1,0 +1,18 @@
+/*
+ * Native@@fileName@@
+ *
+ * Copyright by @@PROJECT_NAME@@, all rights reserved.
+ * @@LICENSE@@
+ */
+package @@packageName@@;
+
+import io.quarkus.test.junit.NativeImageTest;
+
+
+/**
+ * Native@@className@@
+ */
+@NativeImageTest
+public class Native@@className@@ extends @@className@@ {
+    // Execute the same tests but in native mode.
+}

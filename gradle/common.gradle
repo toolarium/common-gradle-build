@@ -18,13 +18,14 @@ ext.bootStraplogWarn = { message -> logger.warn "${BOOTSTRAPSTYLER['yellow'](mes
  * - cache path: 	contains the versions cached on local machine
  * - home path: 	contains an optional template directory and defaults.gradle file to 
  *					overwrite default values
- * 
  ***************************************************************************************/
+def userHomeDirectory = System.properties['user.home'].replace('\\', '/')
+def commonGradleHomeDirectory = userHomeDirectory + "/.gradle"
 def commonGradleBuildCache = System.getenv('COMMON_GRADLE_BUILD_CACHE') 
 if (commonGradleBuildCache == null || commonGradleBuildCache.isEmpty()) {
 	commonGradleBuildCache = System.getProperty('COMMON_GRADLE_BUILD_CACHE') 
 	if (commonGradleBuildCache == null || commonGradleBuildCache.isEmpty()) {
-		commonGradleBuildCache = System.properties['user.home'].replace('\\', '/') + "/.gradle/common-gradle-build"
+		commonGradleBuildCache = commonGradleHomeDirectory + "/common-gradle-build"
 	}
 }
 project.ext.set('commonGradleBuildCache', commonGradleBuildCache)
@@ -34,9 +35,20 @@ def commonGradleBuildHome = System.getenv('COMMON_GRADLE_BUILD_HOME')
 if (commonGradleBuildHome == null || commonGradleBuildHome.isEmpty()) {
 	commonGradleBuildHome = System.getProperty('COMMON_GRADLE_BUILD_HOME') 
 	if (commonGradleBuildHome == null || commonGradleBuildHome.isEmpty()) {
-		commonGradleBuildHome = System.properties['user.home'].replace('\\', '/') + "/.gradle/common-gradle-build-home"
+		commonGradleBuildHome = commonGradleHomeDirectory + "/common-gradle-build-home"
 	}
 }
+
+
+/***************************************************************************************
+ * development testing: local testing can be done by defining the commonGradleBuildUrl.
+ *   e.g., cache path: 
+ *     ext.commonGradleBuildUrl='file://' + System.properties['user.home'].replace('\\', '/') + "/.gradle/common-gradle-build/0.7.7/gradle"
+ *     apply from: "${commonGradleBuildUrl}/common.gradle"
+ *   e.g., project path: 
+ *     ext.commonGradleBuildUrl='file:/C:/projects/toolarium/common-gradle-build/gradle' 
+ *     apply from: "${commonGradleBuildUrl}/common.gradle"
+ ***************************************************************************************/
 project.ext.set('commonGradleBuildHome', commonGradleBuildHome)
 bootStraplogInfo("> Found common-gradle-build home path: ${commonGradleBuildHome}")
 

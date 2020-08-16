@@ -167,7 +167,9 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 				filter { line -> line.replaceAll('@@checkstyleToolVersion@@', "${project.ext.checkstyleToolDefaultVersion}".toString()) }
 			}
 			
-			filter { line -> line.replaceAll('@@testDependencyVersion@@', "${project.ext.testDependencyVersion}".toString()) }
+			if (project.hasProperty('testDependencyVersion')) {
+				filter { line -> line.replaceAll('@@testDependencyVersion@@', "${project.ext.testDependencyVersion}".toString()) }
+			}
 			
 			if (project.hasProperty('gradlePropertiesJvmArgs')) {
 				filter { line -> line.replaceAll('@@GRADLE_JVM_ARG@@', "${project.ext.gradlePropertiesJvmArgs}".toString()) }
@@ -180,6 +182,12 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 			}
 			if (project.hasProperty('gradlePropertiesWarningMode')) {
 				filter { line -> line.replaceAll('@@GRADLE_WARNING_MODE@@', "${project.ext.gradlePropertiesWarningMode}".toString()) }
+			}
+			if (project.hasProperty('quarkusPluginVersion')) {
+				filter { line -> line.replaceAll('@@QUARKUS_PLUGIN_VERSION@@', "${project.ext.quarkusPluginVersion}".toString()) }
+			}
+			if (project.hasProperty('nodePluginVersion')) {
+				filter { line -> line.replaceAll('@@NODE_PLUGIN_VERSION@@', "${project.ext.nodePluginVersion}".toString()) }
 			}
 		}
 		

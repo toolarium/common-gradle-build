@@ -9,13 +9,14 @@
 apply from: "${commonGradleBuildElementPath}/language-base.gradle"
 apply from: "${commonGradleBuildElementPath}/java/javadoc.gradle"
 apply from: "${commonGradleBuildElementPath}/java/java.gradle"
-apply from: "${commonGradleBuildElementPath}/java/eclipse.gradle"
 apply from: "${commonGradleBuildElementPath}/java/test.gradle"
 apply from: "${commonGradleBuildElementPath}/java/repository.gradle"
 apply from: "${commonGradleBuildElementPath}/java/signing.gradle"
 apply from: "${commonGradleBuildElementPath}/java/publication.gradle"
 apply from: "${commonGradleBuildElementPath}/java/javaversion.gradle"
 apply from: "${commonGradleBuildElementPath}/java/checkstyle.gradle"
+apply from: "${commonGradleBuildElementPath}/java/testcoverage.gradle"
+apply from: "${commonGradleBuildElementPath}/java/eclipse.gradle"
 
 defaultTasks 'clean', 'build'
 
@@ -175,6 +176,4 @@ ext.createJavaSourcePath = { ->
 			printInfo("The target (" + colorize(HIGHLITE_LEVEL, targetCompatibility) + ") is not compatible with the source (" + colorize(HIGHLITE_LEVEL, sourceCompatibility) + ") compatibility!")
 		}
 	}
-
-	createEclipseFiles()
 }

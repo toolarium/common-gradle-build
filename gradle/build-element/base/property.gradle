@@ -17,11 +17,16 @@ ext.addCommonGradlePropertyList = { propertyName, propertyValue, logValue = true
 		setCommonGradleDefaultPropertyIfNull(propertyName, propertyValue, logValue)
 	} else {
 		def value = project.getProperty(propertyName)
+		
+		if (!(value instanceof String)) {
+			value = value.toString()
+		}
+		
 		if (value!=null && !value.isEmpty()) {
 			value += ", "
 		}
 		
-		value += propertyValue
+		value += propertyValue.toString()
 		setCommonGradleProperty(propertyName, value, logValue)
 	}
 }

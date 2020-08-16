@@ -1,39 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" output="build/eclipse/@@MAIN@@" path="@@SRC_MAIN@@/java">
+	<classpathentry kind="src" output="build-eclipse/@@MAIN@@" path="@@SRC_MAIN@@/java">
 		<attributes>
 			<attribute name="gradle_scope" value="@@MAIN@@"/>
 			<attribute name="gradle_used_by_scope" value="@@MAIN@@,@@TEST@@"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="src" output="build/eclipse/@@MAIN@@" path="@@SRC_MAIN@@/resources">
-		<attributes>
-			<attribute name="gradle_scope" value="@@MAIN@@"/>
-			<attribute name="gradle_used_by_scope" value="@@MAIN@@,@@TEST@@"/>
-		</attributes>
-	</classpathentry>
-
-	<classpathentry kind="src" output="build/eclipse/@@MAIN@@" path="@@SRC_GEN_MAIN@@">
-		<attributes>
-			<attribute name="gradle_scope" value="@@MAIN@@"/>
-			<attribute name="gradle_used_by_scope" value="@@MAIN@@,@@TEST@@"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="src" output="build/eclipse/@@MAIN@@" path="@@SRC_GEN_RESOURCES@@">
+	<classpathentry kind="src" output="build-eclipse/@@MAIN@@" path="@@SRC_MAIN@@/resources">
 		<attributes>
 			<attribute name="gradle_scope" value="@@MAIN@@"/>
 			<attribute name="gradle_used_by_scope" value="@@MAIN@@,@@TEST@@"/>
 		</attributes>
 	</classpathentry>
 
-	<classpathentry kind="src" output="build/eclipse/@@TEST@@" path="@@SRC_TEST@@/java">
+	<classpathentry kind="src" output="build-eclipse/@@MAIN@@" path="@@SRC_GEN_MAIN@@">
+		<attributes>
+			<attribute name="gradle_scope" value="@@MAIN@@"/>
+			<attribute name="gradle_used_by_scope" value="@@MAIN@@,@@TEST@@"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" output="build-eclipse/@@MAIN@@" path="@@SRC_GEN_RESOURCES@@">
+		<attributes>
+			<attribute name="gradle_scope" value="@@MAIN@@"/>
+			<attribute name="gradle_used_by_scope" value="@@MAIN@@,@@TEST@@"/>
+		</attributes>
+	</classpathentry>
+
+	<classpathentry kind="src" output="build-eclipse/@@TEST@@" path="@@SRC_TEST@@/java">
 		<attributes>
 			<attribute name="gradle_scope" value="@@TEST@@"/>
 			<attribute name="gradle_used_by_scope" value="@@TEST@@"/>
 			<attribute name="test" value="true"/>		
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="src" output="build/eclipse/@@TEST@@" path="@@SRC_TEST@@/resources">
+	<classpathentry kind="src" output="build-eclipse/@@TEST@@" path="@@SRC_TEST@@/resources">
 		<attributes>
 			<attribute name="gradle_scope" value="@@TEST@@"/>
 			<attribute name="gradle_used_by_scope" value="@@TEST@@"/>
@@ -41,8 +41,13 @@
 		</attributes>
 	</classpathentry>
 	
-	<classpathentry kind="con" path="org.eclipse.buildship.core.gradleclasspathcontainer"/>
-	<classpathentry kind="output" path="build/eclipse/classes"/>	
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11/"/>
 	<!-- <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8/"/>-->
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11/">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.buildship.core.gradleclasspathcontainer"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/5"/>
+	<classpathentry kind="output" path="build-eclipse/classes"/>
 </classpath>

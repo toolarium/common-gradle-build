@@ -1,30 +1,68 @@
-# Ignore Gradle project-specific cache directory
+# Ignore cache and depdendency directories
 .gradle
+.cache
+.npm
+.node_repl_history
+.yarn-integrity
+.eslintcache
+.grunt
+.lock-wscript
+.vuepress/dist
+.serverless
+.nyc_output
+.env
+node_modules/
+jspm_packages/
+coverage/
 
-# Ignore Gradle build output directory
+# Ignore build output directory
 build/
+build-eclipse/
+.next
+.nuxt
+
+# distribution directory, e.g. nuxt
+dist
 
 # Ignore logs output directory
 logs/
+*.log
+*debug*.log*
+*info*.log*
+*error*.log*
 
 # Ignore temp output directory
 temp/
 
-# java build artifacts class files
+# Ignore runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Java build artifacts class files
 *.class
 
-# eclipse project files
-.classpath
-.project
+# tar packages
+*.tgz
+*.tar.gz
 
-# android built artifacts
-*.apk
-*.ap_
-*.dex
-
-# android Studio
-*.iml
-.idea
-
-# OSX files
+# mac / OSX files
 .DS_Store
+
+# IDE / Editor
+.idea
+*.ipr
+*.iml
+*.iws
+
+# NetBeans
+nb-configuration.xml
+
+# Visual Studio Code
+.vscode
+.factorypath
+
+# vi swap files
+*.swp
+*.swo

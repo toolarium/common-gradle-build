@@ -75,6 +75,10 @@ configPackages.each { configName ->
 
 		def configDirectoryPath = "${configDirectory}/${configTypeProperty}"
 		def configFileExist = new File(configDirectoryPath).exists()
+		if (!configFileExist) {
+			configFileExist = new File(configDirectoryPath).mkdirs()
+		}
+		
 		if (!project.getProperty("configIgnoreEmptyPackages") || configFileExist) {
 
 			def taskName = "configJar${configTypeProperty}"

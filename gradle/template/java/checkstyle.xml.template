@@ -7,33 +7,31 @@
     <property name="charset" value="UTF-8"/>
 	<property name="severity" value="warning"/>
 	<property name="fileExtensions" value="java, properties, xml"/>
-	
+
 	<!-- Excludes all 'module-info.java' files              -->
     <!-- See https://checkstyle.org/config_filefilters.html -->
     <module name="BeforeExecutionExclusionFileFilter">
         <property name="fileNamePattern" value="module\-info\.java$"/>
     </module>
-	
+
 	<!-- Checks for whitespace                               -->
     <!-- See http://checkstyle.sf.net/config_whitespace.html -->
     <module name="FileTabCharacter">
         <property name="eachLine" value="true"/>
     </module>
-	
+
 	<!-- @@PROJECT_NAME@@ allows 250 line length -->
 	<module name="LineLength">
         <property name="fileExtensions" value="java"/>
         <property name="max" value="250"/>
         <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://"/>
     </module>
-	
+
 	<!-- suppressions -->
-	<!--
 	<module name="SuppressionFilter">
-		<property name="file" value="${config_loc}/suppressions.xml"/>
+		<property name="file" value="${samedir}/checkstyle-suppressions.xml"/>
 	</module>
-	-->
-	
+
 	<module name="TreeWalker">
 		<!-- suppress by comment -->
 		<module name="SuppressWithNearbyCommentFilter">
@@ -45,7 +43,7 @@
 			<property name="offCommentFormat" value="CHECKSTYLE OFF\: ([\w\|]+)"/>
 			<property name="onCommentFormat" value="CHECKSTYLE ON\: ([\w\|]+)"/>
 			<property name="checkFormat" value="$1"/>
-		</module>		
+		</module>
 		<!--<module name="FileContentsHolder"/>-->
 		<module name="OuterTypeFilename"/>
         <module name="IllegalTokenText">
@@ -59,7 +57,7 @@
             <property name="allowNonPrintableEscapes" value="true"/>
         </module>
         <module name="AvoidStarImport"/>
-        <module name="OneTopLevelClass"/>	
+        <module name="OneTopLevelClass"/>
 	        <module name="NoLineWrap"/>
         <module name="EmptyBlock">
             <property name="option" value="TEXT"/>
@@ -229,20 +227,19 @@
             <property name="target" value="CLASS_DEF, INTERFACE_DEF, ENUM_DEF, METHOD_DEF, CTOR_DEF, VARIABLE_DEF"/>
         </module>
         <module name="JavadocMethod">
-            <property name="scope" value="protected"/>
-            <property name="allowMissingParamTags" value="true"/>
-            <property name="allowMissingThrowsTags" value="true"/>
-            <property name="allowMissingReturnTag" value="true"/>
+            <property name="scope" value="private"/>
+			<property name="validateThrows" value="true"/>
+            <property name="allowMissingParamTags" value="false"/>
+            <!--<property name="allowMissingThrowsTags" value="true"/>-->
+            <property name="allowMissingReturnTag" value="false"/>
             <!--<property name="allowedAnnotations" value="Override, Test"/>-->
-            <property name="allowThrowsTagsForSubclasses" value="true"/>
-        </module>
-		<!--
-        <module name="MissingJavadocMethod">
-            <property name="scope" value="public"/>
-            <property name="minLineCount" value="2"/>
-            <property name="allowedAnnotations" value="Override, Test"/>
-        </module>
-		-->
+            <!--<property name="allowThrowsTagsForSubclasses" value="true"/>-->
+		</module>
+		<module name="MissingJavadocMethod">
+			<property name="scope" value="private"/>
+			<property name="minLineCount" value="-1"/>
+			<!--<property name="allowedAnnotations" value="Override, Test"/>-->
+		</module>
         <module name="MethodName">
             <property name="format" value="^[a-z][a-z0-9][a-zA-Z0-9_]*$"/>
             <!--<message key="name.invalidPattern" value="Method name ''{0}'' must match pattern ''{1}''."/>-->
@@ -343,9 +340,10 @@
 		<module name="ParameterAssignment"/>
 		<module name="StringLiteralEquality"/>
 		<module name="SuperFinalize"/>
+        <module name="DeclarationOrder"/>
 		<!-- @@PROJECT_NAME@@ add on -->
 	</module>
-	
+
 	<module name="PackageHtml">
 		<property name="severity" value="ignore"/>
 	</module>
@@ -353,8 +351,7 @@
 	<module name="FileLength">
 		<property name="max" value="3000"/>
 	</module>
-	<module name="FileTabCharacter"/>
 	<module name="RegexpHeader">
-		<property name="headerFile" value="${configDir}/checkstyle-file-header.txt"/>
+		<property name="headerFile" value="${samedir}/checkstyle-file-header.txt"/>
 	</module>
 </module>

@@ -1,0 +1,70 @@
+/*
+ * quarkus.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+
+
+if (!project.hasProperty('commonGradleBuildUrl')) {
+    ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
+}
+
+
+/***************************************************************************************
+ * Set additional template path
+ ***************************************************************************************/
+ext.projectTypeTemplatePath='quarkus'
+project.ext.set("useJUnit", false)
+
+
+/***************************************************************************************
+ * Depending on java-library
+ ***************************************************************************************/
+apply from: "${commonGradleBuildUrl}/java-library.gradle"
+
+
+/***************************************************************************************
+ * Don't do project validation in case of quarkus dev
+ ***************************************************************************************/
+quarkusDev {
+    projectValidation.enabled = false
+    setCommonGradleProperty('hasProjectValidationExecuted', true)
+}
+run.dependsOn quarkusDev
+
+
+/***************************************************************************************
+ * Defines the dependencies
+ ***************************************************************************************/
+dependencies {
+    implementation enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}")
+}
+
+
+/***************************************************************************************
+ * Define default log manager
+ ***************************************************************************************/
+test {
+    systemProperty "java.util.logging.manager", "org.jboss.logmanager.LogManager"
+}
+
+
+/***************************************************************************************
+ * project java validation
+ ***************************************************************************************/
+projectValidation {
+	doFirst {
+		if (project.getProperty('IS_NEW')) {
+			registerEndMessage("" << NELINE \
+								<< "  To get started, got to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
+								<< "      " + colorize(HIGHLITE_LEVEL, "$startExecutable run") + "" << NELINE \
+								<< "" << NELINE \
+								<< "  To build (build & package jars, run tests), got to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
+								<< "      " + colorize(HIGHLITE_LEVEL, "$startExecutable") + "" << NELINE \
+								<< "" << NELINE \
+								<< "  To test, got to  " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
+								<< "      " + colorize(HIGHLITE_LEVEL, "$startExecutable test") + "" << NELINE)
+		}
+	}
+}

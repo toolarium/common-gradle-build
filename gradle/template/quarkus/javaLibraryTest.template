@@ -6,22 +6,27 @@
  */
 package @@packageName@@;
 
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
+import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 
 
 /**
  * @@className@@
  */
+@QuarkusTest
 public class @@className@@ {
     /**
      * Test @@classNameUnderTest@@ method
      */
-    @Test void testSomeLibraryMethod() {
-        @@classNameUnderTest@@ classUnderTest = new @@classNameUnderTest@@();
-        assertTrue(classUnderTest.someLibraryMethod(), "someLibraryMethod should return 'true'");
+    @Test void testHelloEndpoint() {
+        given()
+          .when().get("/hello")
+          .then()
+             .statusCode(200)
+             .body(is("hello"));
     }
     
     

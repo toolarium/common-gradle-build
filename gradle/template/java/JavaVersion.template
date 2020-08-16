@@ -1,39 +1,83 @@
-package @@PACKAGE@@;	
+package @@PACKAGE@@;    
 
-
-public class Version {	
-	public static final String PROJECT_NAME        = "@@PROJECT_NAME@@";
-	public static final String GROUP_ID            = "@@GROUP_ID@@";
-	public static final String COMPONENT_ID        = "@@COMPONENT_ID@@";
-	public static final String PROJECT_TYPE        = "@@PROJECT_TYPE@@";	
-	public static final String PACKAGE             = "@@PACKAGE@@";
-	public static final String DESCRIPTION         = "@@DESCRIPTION@@";
-	public static final String URL                 = "@@URL@@";
-	public static final String LICENSE             = "@@LICENSE@@";
-	public static final int MAJOR_NUMBER           = @@MAJOR_NUMBER@@;
-	public static final int MINOR_NUMBER           = @@MINOR_NUMBER@@;
-	public static final int REVISION_NUMBER        = @@REVISION_NUMBER@@;
-	public static final String QUALIFIER           = "@@QUALIFIER@@";
-	public static final String SCM_NUMBER          = "@@SCM_NUMBER@@";
-	public static final String BUILD_TIMESTAMP     = "@@BUILD_TIMESTAMP@@";
-	public static final boolean IS_RELEASE_VERSION = @@IS_RELEASE_VERSION@@;
-	public static final String VERSION             = "@@VERSION@@";
-	
-	public static void main(String[] args) {
-		System.out.println("project-name       : " + PROJECT_NAME);
-		System.out.println("group-id           : " + GROUP_ID);
-		System.out.println("component-id       : " + COMPONENT_ID);
-		System.out.println("project-type       : " + PROJECT_TYPE);
-		System.out.println("package            : " + PACKAGE);
-		System.out.println("description        : " + DESCRIPTION);
-		System.out.println("url                : " + URL);
-		System.out.println("license            : " + LICENSE);
-		System.out.println("version            : " + VERSION);
-		System.out.println("is-release-version : " + IS_RELEASE_VERSION);
-		System.out.println("build-timestamp    : " + BUILD_TIMESTAMP);
-	}
-	
-	public static String getVersion() {
-		return VERSION;
-	}
+/**
+ * The version class
+ */
+public class Version {    
+    /** The project name */
+    public static final String PROJECT_NAME        = "@@PROJECT_NAME@@";
+    
+    /** The group id */
+    public static final String GROUP_ID            = "@@GROUP_ID@@";
+    
+    /** The component id */
+    public static final String COMPONENT_ID        = "@@COMPONENT_ID@@";
+    
+    /** The project type */
+    public static final String PROJECT_TYPE        = "@@PROJECT_TYPE@@";    
+    
+    /** The package */
+    public static final String PACKAGE             = "@@PACKAGE@@";
+    
+    /** The description */
+    public static final String DESCRIPTION         = "@@DESCRIPTION@@";
+    
+    /** The url of the project */
+    public static final String URL                 = "@@URL@@";
+    
+    /** The license */
+    public static final String LICENSE             = "@@LICENSE@@";
+    
+    /** The major number */
+    public static final int MAJOR_NUMBER           = @@MAJOR_NUMBER@@;
+    
+    /** The minor number */
+    public static final int MINOR_NUMBER           = @@MINOR_NUMBER@@;
+    
+    /** The revision number */
+    public static final int REVISION_NUMBER        = @@REVISION_NUMBER@@;
+    
+    /** The version qualifier */
+    public static final String QUALIFIER           = "@@QUALIFIER@@";
+    
+    /** The source management number */
+    public static final String SCM_NUMBER          = "@@SCM_NUMBER@@";
+    
+    /** The build timestamp */
+    public static final String BUILD_TIMESTAMP     = "@@BUILD_TIMESTAMP@@";
+    
+    /** Define if it is a release version */
+    public static final boolean IS_RELEASE_VERSION = @@IS_RELEASE_VERSION@@;
+    
+    /** The full version number */
+    public static final String VERSION             = "@@VERSION@@";
+    
+    
+    /**
+     * Main class to print build / version information
+     *     
+     * @param args the arguments
+     */
+    public static void main(String[] args) {
+        System.out.println("project-name       : " + PROJECT_NAME);
+        System.out.println("group-id           : " + GROUP_ID);
+        System.out.println("component-id       : " + COMPONENT_ID);
+        System.out.println("project-type       : " + PROJECT_TYPE);
+        System.out.println("package            : " + PACKAGE);
+        System.out.println("description        : " + DESCRIPTION);
+        System.out.println("url                : " + URL);
+        System.out.println("license            : " + LICENSE);
+        System.out.println("version            : " + VERSION);
+        System.out.println("is-release-version : " + IS_RELEASE_VERSION);
+        System.out.println("build-timestamp    : " + BUILD_TIMESTAMP);
+    }
+    
+    
+    /**
+     * Get the version number
+     * @return the version number
+     */
+    public static String getVersion() {
+        return VERSION;
+    }
 }

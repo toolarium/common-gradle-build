@@ -28,6 +28,8 @@ if (!userDir.toString().equals(cbProjectRootDir.toString())) {
 	setCommonGradleProperty("rootDirectory", "$defaultRootDirectory")
 }
 
+group projectGroupId
+
 
 /***************************************************************************************
  * Project initialisation
@@ -68,7 +70,12 @@ ext.projectInitialisation = { ->
 	setCommonGradleProperty('HAS_ONLINE_CONNECTION', isServerAvailable(onlineCheckConnectionUrl, onlineCheckConnectionUrlTimeout))
 
 	// read and set common gradle build version
-	def usedVersion = readRemoteVersion(commonGradleBuildUrl.substring(0, commonGradleBuildUrl.length() - 'gradle'.length()) + "VERSION")
+	def versionUrl = commonGradleBuildUrl;
+	while (versionUrl.endsWith('/')) {
+		versionUrl = versionUrl.substring(0, versionUrl.length() - 1)		
+	}
+	
+	def usedVersion = readRemoteVersion(versionUrl.substring(0, versionUrl.length() - 'gradle'.length()) + "VERSION")
 	if (usedVersion !=null && !usedVersion.isEmpty()) {
 		project.ext.set('commonGradleBuildVersion', usedVersion)
 	}
@@ -80,6 +87,15 @@ ext.projectInitialisation = { ->
     }
     project.ext.set('buildToolVersionStackMessage', buildToolVersionStackMessage)
 
+	// guess start executable
+    def startExecutable = "gradle"
+    if (cbVersion!=null && !cbVersion.isEmpty()) {
+        startExecutable = "cb"
+    } else if (new File("$rootDirectory/gradlew").exists() || new File("$rootDirectory/gradlew.bat").exists()) {
+        startExecutable = "gradlew"
+    }
+	setCommonGradleProperty('startExecutable', startExecutable)
+	
 	isReady = isReady \
 					&& !createGraldeHomeProperties
 
@@ -303,7 +319,7 @@ ext.projectInitialisation = { ->
 
 			def testDependencyVersion
 			if (!project.hasProperty('testDependencyVersion')) {
-				testDependencyVersion = "5.3.1"
+				testDependencyVersion = "5.6.2"
 			} else {
 				testDependencyVersion = project.getProperty('testDependencyVersion')
 			}
@@ -353,7 +369,7 @@ ext.projectInitialisation = { ->
 					<< " ${STAR_LINE}/" << NELINE \
 					<< "dependencies {" << NELINE \
 					<< "\t// see https://docs.gradle.org/current/userguide/java_library_plugin.html" << NELINE \
-					<< "\t// e.g.: implementation 'net.sf.jptools:jptools:1.7.0'" << NELINE \
+					<< "\t// e.g.: implementation 'net.sf.jptools:jptools:1.7.1'" << NELINE \
 					<< "}" << NELINE
 				}
 			}

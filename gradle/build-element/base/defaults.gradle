@@ -47,6 +47,10 @@ setCommonGradleDefaultPropertyIfNull("commonGradleTemplateJavaPath", "${commonGr
 setCommonGradleDefaultPropertyIfNull("commonGradleTemplateScmPath", "${commonGradleTemplatePath}/scm")
 setCommonGradleDefaultPropertyIfNull("commonGradleTemplateConfigPath", "${commonGradleTemplatePath}/config")
 
+// common gradle conf directory
+setCommonGradleDefaultPropertyIfNull("commonGradleConfigPathName", "conf")
+setCommonGradleDefaultPropertyIfNull("commonGradleConfigPath", "${commonGradleBuildUrl}/${commonGradleConfigPathName}")
+
 
 /***************************************************************************************
  * common project files
@@ -73,14 +77,14 @@ setCommonGradleDefaultPropertyIfNull("includeVersionFile", true)
 setCommonGradleDefaultPropertyIfNull("createChangelogFile", false)
 setCommonGradleDefaultPropertyIfNull("includeChangelogFile", false)
 
-// config directory
+// project config directory
 setCommonGradleDefaultPropertyIfNull("configDirectoryName", "conf")
 setCommonGradleDefaultPropertyIfNull("configDirectory", "$rootDirectory/$configDirectoryName")
 setCommonGradleDefaultPropertyIfNull("configIgnoreEmptyPackages", true)
 setCommonGradleDefaultPropertyIfNull("configPackages", "")
 
 // build directory
-setCommonGradleDefaultPropertyIfNull("buildDirectory", "$rootDirectory/build")
+setCommonGradleDefaultPropertyIfNull("gradleBuildDirectory", "$rootDirectory/build")
 
 // .gradle directory
 setCommonGradleDefaultPropertyIfNull("gradleDirectory", "$rootDirectory/.gradle")
@@ -122,6 +126,7 @@ setCommonGradleDefaultPropertyIfNull("initScmForNewProjects", true)
 setCommonGradleDefaultPropertyIfNull("initScmWithNewFiles", true)
 setCommonGradleDefaultPropertyIfNull("initCheckstyle", true)
 setCommonGradleDefaultPropertyIfNull("initShowGradle", true)
+setCommonGradleDefaultPropertyIfNull("initEclipse", true)
 setCommonGradleDefaultPropertyIfNull("installGradleWrapper", true)
 
 
@@ -193,16 +198,20 @@ if (!project.hasProperty('mavenPassword')) {
  * testing
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("initTesting", true)
-if (initTesting) {
-	setCommonGradleDefaultPropertyIfNull("testDependencyVersion", "5.3.1")
+setCommonGradleDefaultPropertyIfNull("useJUnit", true)
 
-	if (testDependencyVersion!=null && !testDependencyVersion.isEmpty()) {
-		if (testDependencyVersion.startsWith("4.")) {
-			setCommonGradleDefaultPropertyIfNull("testImplementationDependency", "junit:junit:${testDependencyVersion}")
-			setCommonGradleDefaultPropertyIfNull("testRuntimeOnlyDependency", "junit:junit:${testDependencyVersion}")
-		} else {
-			setCommonGradleDefaultPropertyIfNull("testImplementationDependency", "org.junit.jupiter:junit-jupiter-api:${testDependencyVersion}")
-			setCommonGradleDefaultPropertyIfNull("testRuntimeOnlyDependency", "org.junit.jupiter:junit-jupiter-engine:${testDependencyVersion}")
+if (initTesting) {
+	if (useJUnit) {
+		setCommonGradleDefaultPropertyIfNull("testDependencyVersion", "5.6.2")
+
+		if (testDependencyVersion!=null && !testDependencyVersion.isEmpty()) {
+			if (testDependencyVersion.startsWith("4.")) {
+				setCommonGradleDefaultPropertyIfNull("testImplementationDependency", "junit:junit:${testDependencyVersion}")
+				setCommonGradleDefaultPropertyIfNull("testRuntimeOnlyDependency", "junit:junit:${testDependencyVersion}")
+			} else {
+				setCommonGradleDefaultPropertyIfNull("testImplementationDependency", "org.junit.jupiter:junit-jupiter-api:${testDependencyVersion}")
+				setCommonGradleDefaultPropertyIfNull("testRuntimeOnlyDependency", "org.junit.jupiter:junit-jupiter-engine:${testDependencyVersion}")
+			}
 		}
 	}
 }
@@ -217,11 +226,38 @@ setCommonGradleDefaultPropertyIfNull("checkstyleMaxWarnings", 0)
 setCommonGradleDefaultPropertyIfNull("checkstyleXMLReport", false)
 setCommonGradleDefaultPropertyIfNull("checkstyleHTMLReport", true)
 setCommonGradleDefaultPropertyIfNull("checkstyleConfigurationPath", "${configDirectory}/checkstyle")
-setCommonGradleDefaultPropertyIfNull("checkstyleConfiguration", "${checkstyleConfigurationPath}/checkstyle.xml")
+setCommonGradleDefaultPropertyIfNull("checkstyleConfigurationFilename", "checkstyle.xml")
+setCommonGradleDefaultPropertyIfNull("checkstyleConfiguration", "${checkstyleConfigurationPath}/${checkstyleConfigurationFilename}")
 setCommonGradleDefaultPropertyIfNull("checkstyleDefaultConfigurationFileHeaderUrl", "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/template/java/checkstyle-file-header.txt.template")
+setCommonGradleDefaultPropertyIfNull("checkstyleDefaultConfigurationFileSupressionUrl", "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/template/java/checkstyle-suppressions.xml.template")
 setCommonGradleDefaultPropertyIfNull("checkstyleDefaultConfigurationUrl", "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/template/java/checkstyle.xml.template")
 // 'https://raw.githubusercontent.com/checkstyle/checkstyle/master/src/main/resources/google_checks.xml' issues with current
 //setCommonGradleDefaultPropertyIfNull("checkstyleCustomStylesheet", "${checkstyleConfigurationPath}/checkstyle.xml")
+
+
+/***************************************************************************************
+ * test coverage: jacoco
+ ***************************************************************************************/
+setCommonGradleDefaultPropertyIfNull("jacocoToolDefaultVersion", '0.8.5')
+setCommonGradleDefaultPropertyIfNull("jacocoXMLReport", false)
+setCommonGradleDefaultPropertyIfNull("jacocoCSVReport", false)
+setCommonGradleDefaultPropertyIfNull("jacocoHTMLReport", true)
+setCommonGradleDefaultPropertyIfNull("jacocoReportPath", "${buildDir}/reports/testcoverage")
+
+
+/***************************************************************************************
+ * quarkus plugin defaults
+ ***************************************************************************************/
+setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", '1.7.0.Final')
+setCommonGradleDefaultPropertyIfNull("quarkusPlatformArtifactId", 'quarkus-universe-bom')
+setCommonGradleDefaultPropertyIfNull("quarkusPlatformGroupId", 'io.quarkus')
+setCommonGradleDefaultPropertyIfNull("quarkusPlatformVersion", "${quarkusPluginVersion}")
+
+
+/***************************************************************************************
+ * node plugin defaults
+ ***************************************************************************************/
+setCommonGradleDefaultPropertyIfNull("nodePluginVersion", '2.2.4')
 
 
 /***************************************************************************************
@@ -245,14 +281,14 @@ setCommonGradleDefaultPropertyIfNull("projectComponentIdIsPartOfProjectName", tr
 setCommonGradleDefaultPropertyIfNull("projectComponentIdSeparator", "-")
 setCommonGradleDefaultPropertyIfNull("projectRootPackageNamePrefix", "")
 setCommonGradleDefaultPropertyIfNull("validateRootFiles", true)
-setCommonGradleDefaultPropertyIfNull("validateRootDirectories", true)
+setCommonGradleDefaultPropertyIfNull("validateRootDirectories", false)
 setCommonGradleDefaultPropertyIfNull("validateProjectNameAndFolder", false)
 
 
 /***************************************************************************************
  * allowedMainDirectories & allowedMainFiles
  ***************************************************************************************/
-addCommonGradlePropertyList("allowedMainDirectories", buildDirectory)
+addCommonGradlePropertyList("allowedMainDirectories", gradleBuildDirectory)
 addCommonGradlePropertyList("allowedMainDirectories", gradleDirectory)
 addCommonGradlePropertyList("allowedMainDirectories", configDirectory)
 addCommonGradlePropertyList("allowedMainDirectories", srcDirectory)
@@ -299,3 +335,13 @@ setCommonGradleDefaultPropertyIfNull("onlineCheckConnectionUrlTimeout", 1500)
  ***************************************************************************************/
 setCommonGradleProperty("validBuild", true)
 setCommonGradleDefaultPropertyIfNull("validBuildMessage", "")
+
+
+/***************************************************************************************
+ * resource bundle
+ ***************************************************************************************/
+setCommonGradleDefaultPropertyIfNull("commonGradleConfigResourcebundleName", "Resourcebundle.xls")
+setCommonGradleDefaultPropertyIfNull("commonGradleConfigResourcebundlePath", "${configDirectory}/${commonGradleConfigResourcebundleName}")
+setCommonGradleDefaultPropertyIfNull("commonGradleResourcebundleOututPath", "${generatedCommonGradleBuildSources}/resources/main/resourcebundle")
+
+

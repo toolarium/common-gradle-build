@@ -14,11 +14,18 @@ init {
 	projectInitialisation()
 
 	def hostname = getHostName()
-	def headerLength = INDENT.length() + 11 + rootProject.name.length() + projectGroupId.length()
 	def header = "Project " + colorize(TITLE_LEVEL, rootProject.name)
+	def headerLength = INDENT.length() + 11 + rootProject.name.length()
+	if (project.hasProperty('projectGroupId')) {
+	    headerLength += projectGroupId.length()
+	}
+	
 	def length = MAX_LINELENGTH - headerLength - INDENT.length()
 	if (length > 0 && project.hasProperty('projectDescription')) {
-		header = header + " ($projectGroupId)"
+		if (project.hasProperty('projectGroupId') && projectGroupId.length() > 0) {
+			header = header + " ($projectGroupId)"
+		}
+		
 		def printDescription = projectDescription
 		if (printDescription.length() > length)
 			printDescription = printDescription.substring(0, length - 5) + "..."
@@ -91,9 +98,30 @@ init {
 
 
 /***************************************************************************************
+ * Show buildscript configuration classpath
+ ***************************************************************************************/
+task showClasspath {
+	group = 'Verification'
+	description = 'Show the buildscript configuration classpath'
+    doLast {
+        buildscript.configurations.classpath.each { println it.name }
+    }
+}
+
+
+/***************************************************************************************
  * Project validation
  ***************************************************************************************/
 task projectValidation {
 	group = 'Verification'
 	description = 'Project validation'
+}
+
+
+/***************************************************************************************
+ * Run project 
+ ***************************************************************************************/
+task run {
+	group = 'Verification'
+	description = 'Run in development mode the project'
 }

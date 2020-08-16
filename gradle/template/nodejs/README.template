@@ -56,9 +56,22 @@ Give an example
 
 Add additional notes about how to deploy this on a live system
 
-## Built With
+## Build Setup
 
-* [cb](https://github.com/toolarium/common-build) - The toolarium common build
+```bash
+# install dependencies
+$ npm install
+
+# serve with hot reload at localhost:3000
+$ npm run dev
+
+# build for production and launch server
+$ npm run build
+$ npm run start
+
+# generate static project
+$ npm run generate
+```
 
 ## Contributing
 

@@ -10,16 +10,30 @@ apply plugin: 'eclipse'
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.classpath")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.project")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.checkstyle")
-addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.eclipseproduct")
 addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/.settings")
+
+
+/***************************************************************************************
+ * Project validation
+ ***************************************************************************************/
+projectValidation {
+	doFirst {
+		if (project.hasProperty('initEclipse') && project.getProperty('initEclipse')) {
+			createEclipseFiles()
+		}
+	}
+}
 
 
 /***************************************************************************************
  * Properly synch eclipse .classpath file
  ***************************************************************************************/
 eclipse {
-	classpath  {
-		defaultOutputDir = file('build/eclipse')
+	//if you want parts of paths in resulting file to be replaced by variables (files):
+	pathVariables 'GRADLE_HOME': file('d:/devtools/current/gradle')
+
+	classpath {
+		defaultOutputDir = file('build-eclipse')
 		/*
 		file {
 			whenMerged {
@@ -82,53 +96,58 @@ ext.createEclipseFiles = { overwrite = false ->
 			new File(rootDirectory, classpathFile).withWriter { w ->
 				w << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << NELINE \
 					<< "<classpath>" << NELINE \
-					<< "	<classpathentry kind=\"src\" output=\"build/eclipse/${srcMainDirectoryName}\" path=\"${srcMainDirectory}/java\">" << NELINE \
+					<< "	<classpathentry kind=\"src\" output=\"build-eclipse/${srcMainDirectoryName}\" path=\"${srcMainDirectory}/java\">" << NELINE \
 					<< "		<attributes>" << NELINE \
 					<< "			<attribute name=\"gradle_scope\" value=\"${srcMainDirectoryName}\"/>" << NELINE \
 					<< "			<attribute name=\"gradle_used_by_scope\" value=\"${srcMainDirectoryName},${srcTestDirectoryName}\"/>" << NELINE \
 					<< "		</attributes>" << NELINE \
 					<< "	</classpathentry>" << NELINE \
-					<< "	<classpathentry kind=\"src\" output=\"build/eclipse/${srcMainDirectoryName}\" path=\"${srcMainDirectory}/resources\">" << NELINE \
+					<< "	<classpathentry kind=\"src\" output=\"build-eclipse/${srcMainDirectoryName}\" path=\"${srcMainDirectory}/resources\">" << NELINE \
 					<< "		<attributes>" << NELINE \
 					<< "			<attribute name=\"gradle_scope\" value=\"${srcMainDirectoryName}\"/>" << NELINE \
 					<< "			<attribute name=\"gradle_used_by_scope\" value=\"${srcMainDirectoryName},${srcTestDirectoryName}\"/>" << NELINE \
 					<< "		</attributes>" << NELINE \
 					<< "	</classpathentry>" << NELINE \
-					<< "	<classpathentry kind=\"src\" output=\"build/eclipse/${srcMainDirectoryName}\" path=\"${generatedCommonGradleBuildJavaSources}\">" << NELINE \
+					<< "	<classpathentry kind=\"src\" output=\"build-eclipse/${srcMainDirectoryName}\" path=\"${generatedCommonGradleBuildJavaSources}\">" << NELINE \
 					<< "		<attributes>" << NELINE \
 					<< "			<attribute name=\"gradle_scope\" value=\"${srcMainDirectoryName}\"/>" << NELINE \
 					<< "			<attribute name=\"gradle_used_by_scope\" value=\"${srcMainDirectoryName},${srcTestDirectoryName}\"/>" << NELINE \
 					<< "		</attributes>" << NELINE \
 					<< "	</classpathentry>" << NELINE \
-					<< "	<classpathentry kind=\"src\" output=\"build/eclipse/${srcMainDirectoryName}\" path=\"${generatedCommonGradleBuildResourcesSources}\">" << NELINE \
+					<< "	<classpathentry kind=\"src\" output=\"build-eclipse/${srcMainDirectoryName}\" path=\"${generatedCommonGradleBuildResourcesSources}\">" << NELINE \
 					<< "		<attributes>" << NELINE \
 					<< "			<attribute name=\"gradle_scope\" value=\"${srcMainDirectoryName}\"/>" << NELINE \
 					<< "			<attribute name=\"gradle_used_by_scope\" value=\"${srcMainDirectoryName},${srcTestDirectoryName}\"/>" << NELINE \
 					<< "		</attributes>" << NELINE \
 					<< "	</classpathentry>" << NELINE \
-					<< "	<classpathentry kind=\"src\" output=\"build/eclipse/${srcTestDirectoryName}\" path=\"${srcTestDirectory}/java\">" << NELINE \
+					<< "	<classpathentry kind=\"src\" output=\"build-eclipse/${srcTestDirectoryName}\" path=\"${srcTestDirectory}/java\">" << NELINE \
 					<< "		<attributes>" << NELINE \
 					<< "			<attribute name=\"gradle_scope\" value=\"${srcTestDirectoryName}\"/>" << NELINE \
 					<< "			<attribute name=\"gradle_used_by_scope\" value=\"${srcTestDirectoryName}\"/>" << NELINE \
 					<< "			<attribute name=\"test\" value=\"true\"/>" << NELINE \
 					<< "		</attributes>" << NELINE \
 					<< "	</classpathentry>" << NELINE \
-					<< "	<classpathentry kind=\"src\" output=\"build/eclipse/${srcTestDirectoryName}\" path=\"${srcTestDirectory}/resources\">" << NELINE \
+					<< "	<classpathentry kind=\"src\" output=\"build-eclipse/${srcTestDirectoryName}\" path=\"${srcTestDirectory}/resources\">" << NELINE \
 					<< "		<attributes>" << NELINE \
 					<< "			<attribute name=\"gradle_scope\" value=\"${srcTestDirectoryName}\"/>" << NELINE \
 					<< "			<attribute name=\"gradle_used_by_scope\" value=\"${srcTestDirectoryName}\"/>" << NELINE \
 					<< "			<attribute name=\"test\" value=\"true\"/>" << NELINE \
+					<< "		</attributes>" << NELINE \
+					<< "	</classpathentry>" << NELINE \
+					<< "	<!-- <classpathentry kind=\"con\" path=\"org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8/\"/> -->" << NELINE \
+					<< "	<classpathentry kind=\"con\" path=\"org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11/\">" << NELINE \
+					<< "		<attributes>" << NELINE \
+					<< "			<attribute name=\"module\" value=\"true\"/>" << NELINE \
 					<< "		</attributes>" << NELINE \
 					<< "	</classpathentry>" << NELINE \
 					<< "	<classpathentry kind=\"con\" path=\"org.eclipse.buildship.core.gradleclasspathcontainer\"/>" << NELINE \
-					<< "	<classpathentry kind=\"output\" path=\"build/eclipse/classes\"/>" << NELINE \
-					<< "	<!-- <classpathentry kind=\"con\" path=\"org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11/\"/> -->" << NELINE \
-					<< "	<!-- <classpathentry kind=\"con\" path=\"org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8/\"/> -->" << NELINE \
+					<< "	<classpathentry kind=\"con\" path=\"org.eclipse.jdt.junit.JUNIT_CONTAINER/5\"/>" << NELINE \
+					<< "	<classpathentry kind=\"output\" path=\"build-eclipse/classes\"/>" << NELINE \
 					<< "</classpath>" << NELINE
 			}			
 		}
 	}
-
+	
 	def projectFile = ".project"
 	if (overwrite || !new File("${rootDirectory}", "${projectFile}").exists()) {
 		logInfo("Write file " + colorize(HIGHLITE_LEVEL, rootDirectory + "/" + projectFile) + colorize(INFO_LEVEL, "..."))
@@ -157,14 +176,23 @@ ext.createEclipseFiles = { overwrite = false ->
 					<< "<projectDescription>" << NELINE \
 					<< "	<name>${rootProject.name}</name>" << NELINE \
 					<< "	<comment>${projectDescription}</comment>" << NELINE \
-					<< "	<projects/>" << NELINE \
+					<< "	<projects>" << NELINE \
+					<< "	</projects>" << NELINE \
 					<< "	<buildSpec>" << NELINE \
 					<< "		<buildCommand>" << NELINE \
 					<< "			<name>org.eclipse.jdt.core.javabuilder</name>" << NELINE \
-					<< "			<arguments/>" << NELINE \
+					<< "			<arguments>" << NELINE \
+					<< "			</arguments>" << NELINE \
 					<< "		</buildCommand>" << NELINE \
 					<< "		<buildCommand>" << NELINE \
 					<< "			<name>org.eclipse.buildship.core.gradleprojectbuilder</name>" << NELINE \
+					<< "			<arguments>" << NELINE \
+					<< "			<arguments>" << NELINE \
+					<< "			</arguments>" << NELINE \
+					<< "		</buildCommand>" << NELINE \
+					<< "		<buildCommand>" << NELINE \
+					<< "			<name>net.sf.eclipsecs.core.CheckstyleBuilder</name>" << NELINE \
+					<< "			<arguments>" << NELINE \
 					<< "			<arguments>" << NELINE \
 					<< "			</arguments>" << NELINE \
 					<< "		</buildCommand>" << NELINE \
@@ -172,11 +200,57 @@ ext.createEclipseFiles = { overwrite = false ->
 					<< "	<natures>" << NELINE \
 					<< "		<nature>org.eclipse.jdt.core.javanature</nature>" << NELINE \
 					<< "		<nature>org.eclipse.buildship.core.gradleprojectnature</nature>" << NELINE \
+					<< "		<nature>net.sf.eclipsecs.core.CheckstyleNature</nature>" << NELINE \
 					<< "	</natures>" << NELINE \
-					<< " 	<linkedResources/>" << NELINE \
-					<< " 	<filteredResources/>" << NELINE \
 					<< "</projectDescription>" << NELINE
 			}			
+		}
+	}
+	
+	def checkstyleFile = ".checkstyle"
+	if (project.hasProperty('runtimeCheckstyleConfigurationPath') && (overwrite || !new File("${rootDirectory}", "${checkstyleFile}").exists())) {
+		logInfo("Write file " + colorize(HIGHLITE_LEVEL, rootDirectory + "/" + checkstyleFile) + colorize(INFO_LEVEL, "..."))
+		
+		def runtimeCheckstyleConfigurationPath = project.getProperty('runtimeCheckstyleConfigurationPath')
+		def checkstyleConfigurationName = "${rootProject.name}"
+		if (project.hasProperty('checkstyleConfigurationName')) {
+			checkstyleConfigurationName = project.getProperty('checkstyleConfigurationName')
+		}
+		
+		def eclipseCheckstyleTemplate = 'eclipse-checkstyle.template'	
+		if (new File("${commonGradleTemplateJavaPath}", "${eclipseCheckstyleTemplate}").exists()) {
+			printInfo("> Create " + colorize(HIGHLITE_LEVEL, checkstyleFile) + " from template ${eclipseCheckstyleTemplate}.")
+			copy {
+				from "${commonGradleTemplateJavaPath}"
+				include "${eclipseCheckstyleTemplate}"
+				into "${rootDirectory}"
+				rename { String fileName -> fileName.replace(eclipseCheckstyleTemplate, checkstyleFile) }
+				filter { line -> line.replaceAll('@@PROJECT_NAME@@', "${rootProject.name}".toString()) }
+				filter { line -> line.replaceAll('@@GROUP_ID@@', "${project.ext.projectGroupId}".toString()) }
+				filter { line -> line.replaceAll('@@COMPONENT_ID@@', "${project.ext.projectComponentId}".toString()) }
+				filter { line -> line.replaceAll('@@PACKAGE@@', "${project.ext.projectRootPackageName}".toString()) }
+				filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.projectDescription}".toString()) }
+				filter { line -> line.replaceAll('@@URL@@', "${project.ext.projectUrl}".toString()) }
+				filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.licenseText}".toString()) }
+				filter { line -> line.replaceAll('@@MAIN@@', "${srcMainDirectoryName}".toString()) }
+				filter { line -> line.replaceAll('@@TEST@@', "${srcTestDirectoryName}".toString()) }
+				filter { line -> line.replaceAll('@@CHECKSTYLE_CONFIGURATION_NAME@@', "${checkstyleConfigurationName}".toString()) }
+				filter { line -> line.replaceAll('@@CHECKSTYLE_CONFIGURATION_PATH@@', "${runtimeCheckstyleConfigurationPath}".toString()) }
+			}
+		} else {
+			printInfo("> Create " + colorize(HIGHLITE_LEVEL, checkstyleFile) + " with default values.")
+			new File(rootDirectory, checkstyleFile).withWriter { w ->
+				w << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << NELINE \
+					<< "" << NELINE \
+					<< "<fileset-config file-format-version=\"1.2.0\" simple-config=\"true\" sync-formatter=\"false\">" << NELINE \
+					<< "	<local-check-config name=\"${checkstyleConfigurationName}\" location=\"${runtimeCheckstyleConfigurationPath}/checkstyle.xml\" type=\"external\" description=\"\">" << NELINE \
+					<< "	<	<additional-data name=\"protect-config-file\" value=\"true\"/>" << NELINE \
+					<< "	</local-check-config>" << NELINE \
+					<< "	<fileset name=\"all\" enabled=\"true\" check-config-name=\"${checkstyleConfigurationName}\" local=\"true\">" << NELINE \
+					<< "		<file-match-pattern match-pattern=\".\" include-pattern=\"true\"/>" << NELINE \
+					<< "	</fileset>" << NELINE \
+					<< "</fileset-config>" << NELINE
+			}
 		}
 	}
 	
@@ -209,19 +283,8 @@ ext.createEclipseFiles = { overwrite = false ->
 		} else {
 			printInfo("> Create " + colorize(HIGHLITE_LEVEL, eclipseBuildSettingsFile) + " with default values.")
 			new File(eclipseBuildSettingsPath, eclipseBuildSettingsFile).withWriter { w ->
-				w << "arguments=" << NELINE \
-					<< "auto.sync=false" << NELINE \
-					<< "build.scans.enabled=false" << NELINE \
-					<< "connection.gradle.distribution=GRADLE_DISTRIBUTION(WRAPPER)" << NELINE \
-					<< "connection.project.dir=" << NELINE \
-					<< "eclipse.preferences.version=1" << NELINE \
-					<< "gradle.user.home=" << NELINE \
-					<< "java.home=" << NELINE \
-					<< "jvm.arguments=" << NELINE \
-					<< "offline.mode=false" << NELINE \
-					<< "override.workspace.settings=true" << NELINE \
-					<< "show.console.view=true" << NELINE \
-					<< "show.executions.view=false" << NELINE
+				w << "connection.project.dir=" << NELINE \
+					<< "eclipse.preferences.version=1" << NELINE
 			}			
 		}
 	}
