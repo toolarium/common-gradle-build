@@ -38,6 +38,7 @@ if (commonGradleBuildHomeBase == null || commonGradleBuildHomeBase.isEmpty()) {
 		commonGradleBuildHomeBase = commonGradleHomeDirectory + "/common-gradle-build-home"
 	}
 }
+def commonGradleBuildHome=commonGradleBuildHomeBase
 
 if (commonGradleBuildHomeBase == null || commonGradleBuildHomeBase.isEmpty()) {
 	ext.commonGradleBuildHomeBase=commonGradleBuildHomeBase
@@ -60,7 +61,7 @@ if (!project.hasProperty('commonGradleBuildHomeGitUrl')) {
 
 			if (result!=null) {
 				// in case we found, use this
-				ext.commonGradleBuildHome=commonGradleBuildHomeBase + "/" + result.getName()
+				commonGradleBuildHome=commonGradleBuildHomeBase + "/" + result.getName()
 			}
 		}
 	} catch (Exception e) {
@@ -69,6 +70,8 @@ if (!project.hasProperty('commonGradleBuildHomeGitUrl')) {
 
 	bootStraplogLifecycle("> Use common-gradle-build-home from " + ext.commonGradleBuildHome)
 }
+project.ext.set('commonGradleBuildHome', commonGradleBuildHome)
+bootStraplogInfo("> Found common-gradle-build home path: ${commonGradleBuildHome}")
 
 
 /***************************************************************************************
@@ -80,9 +83,6 @@ if (!project.hasProperty('commonGradleBuildHomeGitUrl')) {
  *     ext.commonGradleBuildUrl='file:/C:/projects/toolarium/common-gradle-build/gradle' 
  *     apply from: "${commonGradleBuildUrl}/common.gradle"
  ***************************************************************************************/
-project.ext.set('commonGradleBuildHome', commonGradleBuildHome)
-bootStraplogInfo("> Found common-gradle-build home path: ${commonGradleBuildHome}")
-
 def localCommonGradleBuildUrl = System.getenv('COMMON_GRADLE_BUILD_URL') 
 if (localCommonGradleBuildUrl != null && !localCommonGradleBuildUrl.isEmpty()) {
 	project.ext.set('commonGradleBuildUrl', localCommonGradleBuildUrl)
