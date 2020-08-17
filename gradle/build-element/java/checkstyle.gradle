@@ -134,6 +134,7 @@ ext.createCheckstyleConfiguration = { overwrite = false ->
 				filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.projectDescription}".toString()) }
 				filter { line -> line.replaceAll('@@URL@@', "${project.ext.projectUrl}".toString()) }
 				filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.licenseText}".toString()) }
+				filter { line -> line.replaceAll('@@LICENSE_ORGANISATION@@', "${project.ext.licenseOrganisation}".toString()) }			
 				filter { line -> line.replaceAll('@@MAJOR_NUMBER@@', "${project.ext.majorVersionNumber}".toString()) }
 				filter { line -> line.replaceAll('@@MINOR_NUMBER@@', "${project.ext.minorVersionNumber}".toString()) }
 				filter { line -> line.replaceAll('@@REVISION_NUMBER@@', "${project.ext.revisionVersionNumber}".toString()) }
@@ -158,6 +159,7 @@ ext.createCheckstyleConfiguration = { overwrite = false ->
 				filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.projectDescription}".toString()) }
 				filter { line -> line.replaceAll('@@URL@@', "${project.ext.projectUrl}".toString()) }
 				filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.licenseText}".toString()) }
+				filter { line -> line.replaceAll('@@LICENSE_ORGANISATION@@', "${project.ext.licenseOrganisation}".toString()) }			
 				filter { line -> line.replaceAll('@@MAJOR_NUMBER@@', "${project.ext.majorVersionNumber}".toString()) }
 				filter { line -> line.replaceAll('@@MINOR_NUMBER@@', "${project.ext.minorVersionNumber}".toString()) }
 				filter { line -> line.replaceAll('@@REVISION_NUMBER@@', "${project.ext.revisionVersionNumber}".toString()) }
@@ -182,6 +184,7 @@ ext.createCheckstyleConfiguration = { overwrite = false ->
 				filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.projectDescription}".toString()) }
 				filter { line -> line.replaceAll('@@URL@@', "${project.ext.projectUrl}".toString()) }
 				filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.licenseText}".toString()) }
+				filter { line -> line.replaceAll('@@LICENSE_ORGANISATION@@', "${project.ext.licenseOrganisation}".toString()) }			
 				filter { line -> line.replaceAll('@@MAJOR_NUMBER@@', "${project.ext.majorVersionNumber}".toString()) }
 				filter { line -> line.replaceAll('@@MINOR_NUMBER@@', "${project.ext.minorVersionNumber}".toString()) }
 				filter { line -> line.replaceAll('@@REVISION_NUMBER@@', "${project.ext.revisionVersionNumber}".toString()) }
@@ -217,6 +220,7 @@ ext.createCheckstyleConfiguration = { overwrite = false ->
 					filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.projectDescription}".toString()) }
 					filter { line -> line.replaceAll('@@URL@@', "${project.ext.projectUrl}".toString()) }
 					filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.licenseText}".toString()) }
+					filter { line -> line.replaceAll('@@LICENSE_ORGANISATION@@', "${project.ext.licenseOrganisation}".toString()) }			
 					filter { line -> line.replaceAll('@@MAJOR_NUMBER@@', "${project.ext.majorVersionNumber}".toString()) }
 					filter { line -> line.replaceAll('@@MINOR_NUMBER@@', "${project.ext.minorVersionNumber}".toString()) }
 					filter { line -> line.replaceAll('@@REVISION_NUMBER@@', "${project.ext.revisionVersionNumber}".toString()) }
@@ -251,6 +255,7 @@ ext.createCheckstyleConfiguration = { overwrite = false ->
 					filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.projectDescription}".toString()) }
 					filter { line -> line.replaceAll('@@URL@@', "${project.ext.projectUrl}".toString()) }
 					filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.licenseText}".toString()) }
+					filter { line -> line.replaceAll('@@LICENSE_ORGANISATION@@', "${project.ext.licenseOrganisation}".toString()) }			
 					filter { line -> line.replaceAll('@@MAJOR_NUMBER@@', "${project.ext.majorVersionNumber}".toString()) }
 					filter { line -> line.replaceAll('@@MINOR_NUMBER@@', "${project.ext.minorVersionNumber}".toString()) }
 					filter { line -> line.replaceAll('@@REVISION_NUMBER@@', "${project.ext.revisionVersionNumber}".toString()) }
@@ -285,6 +290,7 @@ ext.createCheckstyleConfiguration = { overwrite = false ->
 					filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.projectDescription}".toString()) }
 					filter { line -> line.replaceAll('@@URL@@', "${project.ext.projectUrl}".toString()) }
 					filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.licenseText}".toString()) }
+					filter { line -> line.replaceAll('@@LICENSE_ORGANISATION@@', "${project.ext.licenseOrganisation}".toString()) }								
 					filter { line -> line.replaceAll('@@MAJOR_NUMBER@@', "${project.ext.majorVersionNumber}".toString()) }
 					filter { line -> line.replaceAll('@@MINOR_NUMBER@@', "${project.ext.minorVersionNumber}".toString()) }
 					filter { line -> line.replaceAll('@@REVISION_NUMBER@@', "${project.ext.revisionVersionNumber}".toString()) }

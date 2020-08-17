@@ -151,9 +151,27 @@ ext.downloadCommonGradleBuildHome = { ->
 		return
 	}
 
-	def commonGradleBuildHomeVersionFileUrl = project.getProperty('commonGradleBuildHomeVersionFileUrl')
-	if (commonGradleBuildHomeVersionFileUrl==null || "${commonGradleBuildHomeVersionFileUrl}".isEmpty()) {
-		return
+	def commonGradleBuildHomeVersionFileUrl=project.getProperty('commonGradleBuildHomeVersionFileUrl')
+	if (commonGradleBuildHomeVersionFileUrl==null || "${commonGradleBuildHomeVersionFileUrl}".isEmpty()) {	
+		def GITHUB_URL="https://github.com/"
+		def GITHUB_RAWURL="https://raw.githubusercontent.com/"
+		if ("${commonGradleBuildHomeGitUrl}".startsWith(GITHUB_URL)) {
+			// exchange https://github.com/ with https://raw.githubusercontent.com/
+			commonGradleBuildHomeVersionFileUrl="$GITHUB_RAWURL" + commonGradleBuildHomeGitUrl.substring(GITHUB_URL.length())
+			if ("$commonGradleBuildHomeVersionFileUrl".endsWith(".git")) {
+				// .git -> /master/VERSION
+				commonGradleBuildHomeVersionFileUrl=commonGradleBuildHomeVersionFileUrl.substring(0, commonGradleBuildHomeVersionFileUrl.length() - 4) + "/master/VERSION"
+			}
+		} else if ("$commonGradleBuildHomeGitUrl".endsWith(".git")) {
+			// .git -> /raw/branch/master/VERSION
+			commonGradleBuildHomeVersionFileUrl=commonGradleBuildHomeGitUrl.substring(0, commonGradleBuildHomeGitUrl.length() - 4) + "/raw/branch/master/VERSION"
+		}
+		
+		if (commonGradleBuildHomeVersionFileUrl==null || "${commonGradleBuildHomeVersionFileUrl}".isEmpty()) {	
+			return
+		} else {
+			bootStraplogLifecycle("  > Remote verison url: ${commonGradleBuildHomeGitUrl} -> ${commonGradleBuildHomeVersionFileUrl}")
+		}
 	}
 
 	def commonGradleBuildHomeFile = new File(commonGradleBuildHome)
@@ -162,7 +180,7 @@ ext.downloadCommonGradleBuildHome = { ->
 		commonGradleBuildHomeFile.mkdirs()			
 	} 
 
-	bootStraplogLifecycle("> Create common-gradle-build home, download of the ${commonGradleBuildHomeGitUrl}.")
+	bootStraplogLifecycle("  > Create common-gradle-build home, download of the ${commonGradleBuildHomeGitUrl}.")
 	cloneGitProject(commonGradleBuildHome, commonGradleBuildHomeGitUrl, commonGradleBuildHomeVersionFileUrl, project.getProperty('commonGradleBuildCacheLastCheckTimeout'))
 }
 

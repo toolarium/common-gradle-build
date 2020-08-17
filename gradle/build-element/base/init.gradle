@@ -85,7 +85,15 @@ init {
 	}
 
 	if (initShowPath) {
-		printInfo("Project: ${cbProjectRootDir}, Home: ${userHomeDirectory.replace('\\', '/')}")
+		def projectInfo = "Project: ${cbProjectRootDir}"
+		def homeDirInfo = "Home: ${userHomeDirectory.replace('\\', '/')}"
+		def restLength = MAX_LINELENGTH - projectInfo.length() - INDENT.length()
+		if (homeDirInfo.length() < (restLength-3) ) { 
+			printInfo("${projectInfo}, ${homeDirInfo}")
+		} else {
+			printInfo("${projectInfo}")
+			printInfo("${homeDirInfo}")
+		}
 	}
 
 	if (initShowTempPath) {

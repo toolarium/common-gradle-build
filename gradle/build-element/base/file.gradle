@@ -142,6 +142,7 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 			filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.projectDescription}".toString()) }
 			filter { line -> line.replaceAll('@@URL@@', "${project.ext.projectUrl}".toString()) }
 			filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.licenseText}".toString()) }
+			filter { line -> line.replaceAll('@@LICENSE_ORGANISATION@@', "${project.ext.licenseOrganisation}".toString()) }			
 			filter { line -> line.replaceAll('@@MAJOR_NUMBER@@', "${project.ext.majorVersionNumber}".toString()) }
 			filter { line -> line.replaceAll('@@MINOR_NUMBER@@', "${project.ext.minorVersionNumber}".toString()) }
 			filter { line -> line.replaceAll('@@REVISION_NUMBER@@', "${project.ext.revisionVersionNumber}".toString()) }
@@ -196,4 +197,53 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 		logDebug("Template file ${theTemplatePath}/${inputTemplateFilename} don't exist.")
 		return false
 	}
+}
+
+
+/** 
+ * Copy a file
+ 
+ * fileToCopy contains the filename and path
+ * fileDest contains the filename and path
+ */
+ext.copyFile = { fileToCopy, fileDest, overwrite = false ->
+	if (fileToCopy==null || "${fileToCopy}".isEmpty()) {
+		return false
+	}
+	if (fileDest==null || "${fileDest}".isEmpty()) {
+		return false
+	}
+
+	String srcFilename = getFilename(fileToCopy);
+	String srcFilePath = getFilePath(fileToCopy);
+	if (srcFilePath==null || !new File(srcFilePath).exists() || !new File("${srcFilePath}/${srcFilename}").exists()) {
+		printWarn("> Could not find file " + colorize(HIGHLITE_LEVEL, fileToCopy) + colorize(INFO_LEVEL, "."))
+		return false
+	}
+
+	String destFilename = getFilename(fileDest);
+	String destFilePath = getFilePath(fileDest);
+	if (destFilePath!=null && !new File(destFilePath).exists()) {
+		logInfo("Create " + colorize(HIGHLITE_LEVEL, destFilePath) + colorize(INFO_LEVEL, "."))
+		if (!new File(destFilePath).mkdirs()) {
+			printWarn("> Could not create path " + colorize(HIGHLITE_LEVEL, destFilePath) + ".")
+			return false
+		}
+	}
+	
+	if (overwrite || !new File("${destFilePath}/${destFilename}").exists()) {
+		if ("${srcFilename}".equals("${destFilename}")) {
+			// just copy
+			logInfo("Copy file " + colorize(HIGHLITE_LEVEL, "${srcFilePath}/${srcFilename}") + colorize(INFO_LEVEL, " to ") + colorize(HIGHLITE_LEVEL, "${destFilePath}/${destFilename}") + colorize(INFO_LEVEL, ".") )
+			copy { from "${srcFilePath}" include "${srcFilename}" into "${destFilePath}" } 
+			return true
+		} else {
+			// copy and rename
+			logInfo("Copy and rename file " + colorize(HIGHLITE_LEVEL, "${srcFilePath}/${srcFilename}") + colorize(INFO_LEVEL, " to ") + colorize(HIGHLITE_LEVEL, "${destFilePath}/${destFilename}") + colorize(INFO_LEVEL, ".") )
+			copy { from "${srcFilePath}" include "${srcFilename}" into "${destFilePath}" rename { String fileName -> fileName.replace("${srcFilename}", "${destFilename}") } }
+			return true
+		}
+	}
+
+	return false
 }

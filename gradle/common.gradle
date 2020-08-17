@@ -105,18 +105,20 @@ if (!project.hasProperty('commonGradleBuildElementPath')) {
  ***************************************************************************************/
 def includeFile = "${commonGradleBuildUrl}/"
 
-if (project.hasProperty('projectType')) {
+
+if (project.hasProperty('noProjectType') && project.getProperty('noProjectType')) {
+	includeFile = null
+} else if (project.hasProperty('projectType')) {
 	def t = project.getProperty('projectType')
 	includeFile += t
 	if (!t.endsWith('.gradle')) {
 		includeFile += '.gradle'
 	}
 	bootStraplogInfo("> Use projectType ${t}: ${includeFile}")
-	
 } else {
 	// check project type
 	def hasSrc = new File('src').exists()
-	def hasConfig = new File('config').exists()
+	def hasConfig = new File('conf').exists()
 	def hasFiles = new File('.').listFiles().count { true }
 
 	def hasSrcMain = hasSrc && new File('src/main').exists()

@@ -1,0 +1,67 @@
+/*
+ * cgb-home.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+
+ 
+if (!project.hasProperty('commonGradleBuildUrl')) {
+    ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
+}
+
+if (!project.hasProperty('commonGradleBuildElementPath')) {
+	ext.commonGradleBuildElementPath="${commonGradleBuildUrl}/build-element"
+}
+
+
+apply from: "${commonGradleBuildElementPath}/base.gradle"
+apply from: "${commonGradleBuildElementPath}/base/gradle.gradle"
+
+
+/***************************************************************************************
+ * default tasks
+ ***************************************************************************************/
+defaultTasks 'projectValidation'
+
+
+/***************************************************************************************
+ * project config validation
+ ***************************************************************************************/
+projectValidation {
+	doLast {
+		def gradlePath = "$rootDirectory/gradle"
+		if (project.getProperty('IS_NEW') || !new File(gradlePath).exists() || !new File("$gradlePath/defaults.gradle").exists()) {			
+			printInfo("> Copy templates from " + colorize(HIGHLITE_LEVEL, commonGradleTemplatePath) + ".") 
+
+			new File(gradlePath).mkdirs()
+			copyFile("${commonGradleTemplateBasePath}/defaults.gradle.template", "${gradlePath}/defaults.gradle")
+			
+			def gradleTemplatePath = "${gradlePath}/${commonGradleTemplatePathName}"
+			new File(gradleTemplatePath).mkdirs()
+			def gradleBaseTemplatePath = "${gradleTemplatePath}/base"
+			new File(gradleBaseTemplatePath).mkdirs()
+			copy { from "${commonGradleTemplateBasePath}" include "*.template" exclude "defaults.gradle.template" into "${gradleBaseTemplatePath}" }
+
+			def gradleConfigTemplatePath = "${gradleTemplatePath}/config"
+			new File(gradleConfigTemplatePath).mkdirs()
+			copy { from "${commonGradleTemplateConfigPath}" include "*.template" into "${gradleConfigTemplatePath}" }
+			
+			def gradleJavaTemplatePath = "${gradleTemplatePath}/java"
+			new File(gradleJavaTemplatePath).mkdirs()
+			copy { from "${commonGradleTemplateJavaPath}" include "*.template" into "${gradleJavaTemplatePath}" }
+			
+			def gradleNodeJsTemplatePath = "${gradleTemplatePath}/nodejs"
+			new File(gradleNodeJsTemplatePath).mkdirs()
+			copy { from "${commonGradleTemplateNodeJsPath}" include "*.template" into "${gradleNodeJsTemplatePath}" }
+
+			def gradleQuarkusTemplatePath = "${gradleTemplatePath}/quarkus"
+			new File(gradleQuarkusTemplatePath).mkdirs()
+			copy { from "${commonGradleTemplateQuarkusPath}" include "*.template" into "${gradleQuarkusTemplatePath}" }
+			
+			def gradleScmTemplatePath = "${gradleTemplatePath}/scm"
+			new File(gradleScmTemplatePath).mkdirs()
+			copy { from "${commonGradleTemplateScmPath}" include "*.template" into "${gradleScmTemplatePath}" }
+		} 
+	}
+}

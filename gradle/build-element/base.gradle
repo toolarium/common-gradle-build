@@ -230,15 +230,23 @@ gradle.taskGraph.whenReady { taskGraph ->
  * project validation
  ***************************************************************************************/
 projectValidation {
+	// check common gradle build cache
+	try {
+		downloadCommonGradleBuildCache()
+	} catch (Exception e) {
+		printWarn("Could not download common gradle build to cache: " + e.getMessage())
+	}
+
+	// check common gradle build home
+	try {
+		downloadCommonGradleBuildHome()
+	} catch (Exception e) {
+		printWarn("Could not download common gradle build home: " + e.getMessage())
+	}
+
 	doFirst {
 		hasProjectValidationExecuted=true
 		logInfo("Project validation....")
-
-		// check common gradle build cache
-		downloadCommonGradleBuildCache()
-
-		// check common gradle build home
-		downloadCommonGradleBuildHome()
 
 		// validate project name
 		def projectNameRegularExpressionPattern = ~"${projectNameRegularExpressionPattern}"

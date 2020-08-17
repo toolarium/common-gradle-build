@@ -28,7 +28,9 @@ if (!userDir.toString().equals(cbProjectRootDir.toString())) {
 	setCommonGradleProperty("rootDirectory", "$defaultRootDirectory")
 }
 
-group projectGroupId
+if (project.hasProperty('projectGroupId')) {
+	group projectGroupId
+}
 
 
 /***************************************************************************************
@@ -203,7 +205,7 @@ ext.projectInitialisation = { ->
 				new File(licenseFile).withWriter { w ->
 					w << "MIT License" << NELINE \
 					<< "" << NELINE \
-					<< "Copyright (c) ${YEAR} ${rootProject.name}" << NELINE \
+					<< "Copyright (c) ${YEAR} ${licenseOrganisation}" << NELINE \
 					<< "" << NELINE \
 					<< "Permission is hereby granted, free of charge, to any person obtaining a copy" << NELINE \
 					<< "of this software and associated documentation files (the \"Software\"), to deal" << NELINE \
@@ -358,7 +360,7 @@ ext.projectInitialisation = { ->
 					w << "/*" << NELINE \
 					<< " * build.gradle" << NELINE \
 					<< " * " << NELINE \
-					<< " * Copyright by ${rootProject.name}, all rights reserved." << NELINE \
+					<< " * Copyright by ${licenseOrganisation}, all rights reserved." << NELINE \
 					<< " * ${licenseText}" << NELINE \
 					<< " */" << NELINE \
 					<< "apply from: \"${defaultCommonGradleBuildUrl}\"" << NELINE \

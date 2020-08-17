@@ -56,6 +56,7 @@
 /***************************************************************************************
  * project basic settings
  ***************************************************************************************/
+//setCommonGradleProperty("licenseOrganisation", "your-organisation-name")
 //setCommonGradleProperty("licenseText", "MIT License: https://mit-license.org")
 //setCommonGradleProperty("licenseUrl", "https://mit-license.org")
 

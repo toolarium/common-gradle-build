@@ -27,11 +27,13 @@ apply from: "${commonGradleBuildUrl}/java-library.gradle"
 /***************************************************************************************
  * Don't do project validation in case of quarkus dev
  ***************************************************************************************/
-quarkusDev {
-    projectValidation.enabled = false
-    setCommonGradleProperty('hasProjectValidationExecuted', true)
+if (!project.getProperty('IS_NEW')) {
+	quarkusDev {
+		projectValidation.enabled = false
+		setCommonGradleProperty('hasProjectValidationExecuted', true)
+	}
+	run.dependsOn quarkusDev
 }
-run.dependsOn quarkusDev
 
 
 /***************************************************************************************

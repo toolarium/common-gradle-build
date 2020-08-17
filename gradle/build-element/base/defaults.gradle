@@ -43,9 +43,11 @@ setCommonGradleDefaultPropertyIfNull("commonGradleBuildElementPath", "${commonGr
 setCommonGradleDefaultPropertyIfNull("commonGradleTemplatePathName", "template")
 setCommonGradleDefaultPropertyIfNull("commonGradleTemplatePath", "${commonGradleBuildUrl}/${commonGradleTemplatePathName}")
 setCommonGradleDefaultPropertyIfNull("commonGradleTemplateBasePath", "${commonGradleTemplatePath}/base")
-setCommonGradleDefaultPropertyIfNull("commonGradleTemplateJavaPath", "${commonGradleTemplatePath}/java")
-setCommonGradleDefaultPropertyIfNull("commonGradleTemplateScmPath", "${commonGradleTemplatePath}/scm")
 setCommonGradleDefaultPropertyIfNull("commonGradleTemplateConfigPath", "${commonGradleTemplatePath}/config")
+setCommonGradleDefaultPropertyIfNull("commonGradleTemplateJavaPath", "${commonGradleTemplatePath}/java")
+setCommonGradleDefaultPropertyIfNull("commonGradleTemplateNodeJsPath", "${commonGradleTemplatePath}/nodejs")
+setCommonGradleDefaultPropertyIfNull("commonGradleTemplateQuarkusPath", "${commonGradleTemplatePath}/quarkus")
+setCommonGradleDefaultPropertyIfNull("commonGradleTemplateScmPath", "${commonGradleTemplatePath}/scm")
 
 // common gradle conf directory
 setCommonGradleDefaultPropertyIfNull("commonGradleConfigPathName", "conf")
@@ -139,6 +141,7 @@ setCommonGradleDefaultPropertyIfNull("showCreatedArtefacts", true)
 /***************************************************************************************
  * project basic settings
  ***************************************************************************************/
+setCommonGradleDefaultPropertyIfNull("licenseOrganisation", "${rootProject.name}")
 setCommonGradleDefaultPropertyIfNull("licenseText", "MIT License: https://mit-license.org")
 setCommonGradleDefaultPropertyIfNull("licenseUrl", "https://mit-license.org")
 setCommonGradleDefaultPropertyIfNull("projectUrl", "")

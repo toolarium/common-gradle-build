@@ -52,6 +52,7 @@ projectValidation {
 					filter { line -> line.replaceAll('@@fileName@@', "${className}.java".toString()) }
 					filter { line -> line.replaceAll('@@packageName@@', "${projectRootPackageName}".toString()) }
 					filter { line -> line.replaceAll('@@LICENSE@@', "${licenseText}".toString()) }
+					filter { line -> line.replaceAll('@@LICENSE_ORGANISATION@@', "${licenseOrganisation}".toString()) }
 				}
 			} else {
 				printInfo("> Create file " + colorize(HIGHLITE_LEVEL, "${mainJavaSourcPath}/${className}.java") + " with default values.")
@@ -59,7 +60,7 @@ projectValidation {
 					w << "/*" << NELINE \
 						<< " * ${className}.java" << NELINE \
 						<< " *" << NELINE \
-						<< " * Copyright by ${rootProject.name}, all rights reserved." << NELINE \
+						<< " * Copyright by ${licenseOrganisation}, all rights reserved." << NELINE \
 						<< " * ${licenseText}" << NELINE \
 						<< "*/" << NELINE \
 						<< "package ${projectRootPackageName};" << NELINE \
@@ -97,6 +98,7 @@ projectValidation {
 					filter { line -> line.replaceAll('@@fileName@@', "${testClassName}.java".toString()) }
 					filter { line -> line.replaceAll('@@packageName@@', "${projectRootPackageName}".toString()) }
 					filter { line -> line.replaceAll('@@LICENSE@@', "${licenseText}".toString()) }
+					filter { line -> line.replaceAll('@@LICENSE_ORGANISATION@@', "${licenseOrganisation}".toString()) }
 				}
 			} else {
 				printInfo("> Create file " + colorize(HIGHLITE_LEVEL, "${testJavaSourcPath}/${testClassName}.java") + " with default values.")
@@ -104,7 +106,7 @@ projectValidation {
 					w << "/*" << NELINE \
 						<< " * ${testClassName}.java" << NELINE \
 						<< " *" << NELINE \
-						<< " * Copyright by ${rootProject.name}, all rights reserved." << NELINE \
+						<< " * Copyright by ${licenseOrganisation}, all rights reserved." << NELINE \
 						<< " * ${licenseText}" << NELINE \
 						<< "*/" << NELINE \
 						<< "package ${projectRootPackageName};" << NELINE \
