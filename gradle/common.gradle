@@ -40,7 +40,7 @@ if (commonGradleBuildHomeBase == null || commonGradleBuildHomeBase.isEmpty()) {
 }
 
 def commonGradleBuildHome=commonGradleBuildHomeBase
-if (project.hasProperty('commonGradleBuildHomeGitUrl')) {
+if (commonGradleBuildHomeBase!=null && !commonGradleBuildHomeBase.isEmpty()) {
 	try {
 		if (new File(commonGradleBuildHomeBase).exists()) {
 			def result = null

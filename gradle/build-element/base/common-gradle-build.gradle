@@ -176,7 +176,7 @@ ext.downloadCommonGradleBuildHome = { ->
 
 	def commonGradleBuildHomeFile = new File(commonGradleBuildHomeBase)
 	if (!commonGradleBuildHomeFile.exists()) {
-		bootStraplogLifecycle("> Create path: ${commonGradleBuildHomeBase}.")
+		bootStraplogLifecycle("  > Create path: ${commonGradleBuildHomeBase}.")
 		commonGradleBuildHomeFile.mkdirs()			
 	} 
 

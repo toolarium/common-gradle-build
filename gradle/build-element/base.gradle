@@ -44,7 +44,7 @@ if (project.hasProperty('commonGradleBuildHome')) {
 
 		// apply from home
 		if (new File(commonGradleBuildHomeDefaultsFile).exists()) {
-			bootStraplogLifecycle("> Found defaults in common-gradle-build home path, apply.")
+			bootStraplogLifecycle("  > Found defaults in common-gradle-build home path, apply.")
 			def userDefined = "[${commonGradleBuildHomeDefaultsFile}]"
 			userDefined += LINE.substring(userDefined.length())
 			logInfo(userDefined)
