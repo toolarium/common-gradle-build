@@ -38,13 +38,9 @@ if (commonGradleBuildHomeBase == null || commonGradleBuildHomeBase.isEmpty()) {
 		commonGradleBuildHomeBase = commonGradleHomeDirectory + "/common-gradle-build-home"
 	}
 }
+
 def commonGradleBuildHome=commonGradleBuildHomeBase
-
-if (commonGradleBuildHomeBase == null || commonGradleBuildHomeBase.isEmpty()) {
-	ext.commonGradleBuildHomeBase=commonGradleBuildHomeBase
-}
-
-if (!project.hasProperty('commonGradleBuildHomeGitUrl')) {
+if (project.hasProperty('commonGradleBuildHomeGitUrl')) {
 	try {
 		if (new File(commonGradleBuildHomeBase).exists()) {
 			def result = null
@@ -71,6 +67,7 @@ if (!project.hasProperty('commonGradleBuildHomeGitUrl')) {
 	bootStraplogLifecycle("> Use common-gradle-build-home from " + ext.commonGradleBuildHome)
 }
 project.ext.set('commonGradleBuildHome', commonGradleBuildHome)
+project.ext.set('commonGradleBuildHomeBase', commonGradleBuildHomeBase)
 bootStraplogInfo("> Found common-gradle-build home path: ${commonGradleBuildHome}")
 
 
