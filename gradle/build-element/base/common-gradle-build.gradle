@@ -137,12 +137,12 @@ ext.downloadCommonGradleBuildCache = { ->
  * Download common gradle build home
  ***************************************************************************************/
 ext.downloadCommonGradleBuildHome = { ->
-	if (!project.hasProperty('commonGradleBuildHome') || !project.hasProperty('commonGradleBuildHomeGitUrl') || !project.hasProperty('commonGradleBuildHomeVersionFileUrl') || !project.hasProperty('commonGradleBuildCacheLastCheckTimeout')) {
+	if (!project.hasProperty('commonGradleBuildHomeBase') || !project.hasProperty('commonGradleBuildHomeGitUrl') || !project.hasProperty('commonGradleBuildHomeVersionFileUrl') || !project.hasProperty('commonGradleBuildCacheLastCheckTimeout')) {
 		return
 	}
 
-	def commonGradleBuildHome = project.getProperty('commonGradleBuildHome')
-	if (commonGradleBuildHome==null || "${commonGradleBuildHome}".isEmpty()) {
+	def commonGradleBuildHomeBase = project.getProperty('commonGradleBuildHomeBase')
+	if (commonGradleBuildHomeBase==null || "${commonGradleBuildHomeBase}".isEmpty()) {
 		return
 	}
 
@@ -174,14 +174,14 @@ ext.downloadCommonGradleBuildHome = { ->
 		}
 	}
 
-	def commonGradleBuildHomeFile = new File(commonGradleBuildHome)
+	def commonGradleBuildHomeFile = new File(commonGradleBuildHomeBase)
 	if (!commonGradleBuildHomeFile.exists()) {
-		bootStraplogLifecycle("> Create path: ${commonGradleBuildHome}.")
+		bootStraplogLifecycle("> Create path: ${commonGradleBuildHomeBase}.")
 		commonGradleBuildHomeFile.mkdirs()			
 	} 
 
 	bootStraplogLifecycle("  > Create common-gradle-build home, download of the ${commonGradleBuildHomeGitUrl}.")
-	cloneGitProject(commonGradleBuildHome, commonGradleBuildHomeGitUrl, commonGradleBuildHomeVersionFileUrl, project.getProperty('commonGradleBuildCacheLastCheckTimeout'))
+	cloneGitProject(commonGradleBuildHomeBase, commonGradleBuildHomeGitUrl, commonGradleBuildHomeVersionFileUrl, project.getProperty('commonGradleBuildCacheLastCheckTimeout'))
 }
 
 

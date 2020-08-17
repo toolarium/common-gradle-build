@@ -31,12 +31,43 @@ if (commonGradleBuildCache == null || commonGradleBuildCache.isEmpty()) {
 project.ext.set('commonGradleBuildCache', commonGradleBuildCache)
 bootStraplogInfo("> Found common-gradle-build cache path: ${commonGradleBuildCache}")
 
-def commonGradleBuildHome = System.getenv('COMMON_GRADLE_BUILD_HOME') 
-if (commonGradleBuildHome == null || commonGradleBuildHome.isEmpty()) {
-	commonGradleBuildHome = System.getProperty('COMMON_GRADLE_BUILD_HOME') 
-	if (commonGradleBuildHome == null || commonGradleBuildHome.isEmpty()) {
-		commonGradleBuildHome = commonGradleHomeDirectory + "/common-gradle-build-home"
+def commonGradleBuildHomeBase = System.getenv('COMMON_GRADLE_BUILD_HOME') 
+if (commonGradleBuildHomeBase == null || commonGradleBuildHomeBase.isEmpty()) {
+	commonGradleBuildHomeBase = System.getProperty('COMMON_GRADLE_BUILD_HOME') 
+	if (commonGradleBuildHomeBase == null || commonGradleBuildHomeBase.isEmpty()) {
+		commonGradleBuildHomeBase = commonGradleHomeDirectory + "/common-gradle-build-home"
 	}
+}
+
+if (commonGradleBuildHomeBase == null || commonGradleBuildHomeBase.isEmpty()) {
+	ext.commonGradleBuildHomeBase=commonGradleBuildHomeBase
+}
+
+if (!project.hasProperty('commonGradleBuildHomeGitUrl')) {
+	try {
+		if (new File(commonGradleBuildHomeBase).exists()) {
+			def result = null
+			File[] files = new File(commonGradleBuildHomeBase).listFiles(); // select newest directory
+			if (files != null && files.length > 0) {
+				for (File file : files) {
+					if (file.isDirectory()) {
+						if (result == null || (result.lastModified() < file.lastModified())) {
+							result = file
+						}
+					}
+				}
+			}
+
+			if (result!=null) {
+				// in case we found, use this
+				ext.commonGradleBuildHome=commonGradleBuildHomeBase + "/" + result.getName()
+			}
+		}
+	} catch (Exception e) {
+		bootStraplogWarn("Could not select cached version of the common-gradle-build: " + e.getMessage())
+	}
+
+	bootStraplogLifecycle("> Use common-gradle-build-home from " + ext.commonGradleBuildHome)
 }
 
 
@@ -105,10 +136,7 @@ if (!project.hasProperty('commonGradleBuildElementPath')) {
  ***************************************************************************************/
 def includeFile = "${commonGradleBuildUrl}/"
 
-
-if (project.hasProperty('noProjectType') && project.getProperty('noProjectType')) {
-	includeFile = null
-} else if (project.hasProperty('projectType')) {
+if (project.hasProperty('projectType')) {
 	def t = project.getProperty('projectType')
 	includeFile += t
 	if (!t.endsWith('.gradle')) {
