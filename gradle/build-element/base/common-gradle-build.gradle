@@ -1,5 +1,5 @@
 /*
- * common-gradle-build-version.gradle
+ * common-gradle-build.gradle
  *
  * Copyright by toolarium, all rights reserved.
  * MIT License: https://mit-license.org
@@ -9,7 +9,7 @@
 /***************************************************************************************
  * Read the remote version
  ***************************************************************************************/
-ext.readRemoteVersion = { inputUrl ->
+ext.readRemoteVersion = { inputUrl, gitUrl=null ->
 	def hasOnlineConnection = project.hasProperty('HAS_ONLINE_CONNECTION') && project.getProperty('HAS_ONLINE_CONNECTION')
 	if (!hasOnlineConnection) {
 		return ""
@@ -45,7 +45,38 @@ ext.readRemoteVersion = { inputUrl ->
 			remoteVersion += "." + qualifier
 		}
 	} catch (Exception e) {
-		printWarn("Could not read remote version [" + colorize(HIGHLITE_LEVEL, url) + colorize(WARN_LEVEL, "]: " +e.getMessage())) 
+		if (gitUrl!=null) {
+			def tempBaseFolder=System.getenv('TMP')
+			if (tempBaseFolder == null) {
+				tempBaseFolder=System.getenv('TEMP')
+			}
+			if (tempBaseFolder == null) {
+				tempBaseFolder="$rootDirectory"
+			}
+	        tempBaseFolder = tempBaseFolder.replace('\\', '/')
+			
+			def randomNumber=Math.abs(new Random().nextInt() % 1000000) + 1
+			def tempName="cgb-" + randomNumber
+			def tempFolder="${tempBaseFolder}/${tempName}.tmp"
+			logDebug("Create temp path " + colorize(HIGHLITE_LEVEL, tempFolder))			
+			logDebug("> Get remote version of " + colorize(HIGHLITE_LEVEL, gitUrl) + " into " + colorize(HIGHLITE_LEVEL, tempFolder) + ".")
+			gitClone(tempFolder, gitUrl)
+				
+			def tempVersion="${tempName}-VERSION"
+			logDebug("Filter VERSION file " + colorize(HIGHLITE_LEVEL, tempVersion))
+			copy { from "${tempFolder}" include "VERSION" into "${tempBaseFolder}" rename { String fileName -> fileName.replace("VERSION", tempVersion) } }
+			logDebug("Delete folder " + colorize(HIGHLITE_LEVEL, tempFolder))
+			delete tempFolder
+			logDebug("Read temp VERSION file " + colorize(HIGHLITE_LEVEL, "$tempBaseFolder/$tempVersion"))
+			remoteVersion=readRemoteVersion("file:/$tempBaseFolder/$tempVersion")
+			logDebug("Delete file " + colorize(HIGHLITE_LEVEL, "$tempBaseFolder/$tempVersion"))
+			delete "$tempBaseFolder/$tempVersion"
+			logDebug("Read remote version: ${remoteVersion}")
+		}
+		
+		if (remoteVersion==null) {
+			printWarn("Could not read remote version [" + colorize(HIGHLITE_LEVEL, url) + colorize(WARN_LEVEL, "]: " +e.getMessage())) 
+		}
 	}
 	
 	return remoteVersion
@@ -214,7 +245,7 @@ ext.cloneGitProject = {localDirectory, gitUrl, remoteVersionFileUrl, lastCheckTi
 	}
 
 	if ((lastCheck == null) || (timeout > lastCheckTimeout)) {
-		def remoteVersion = readRemoteVersion(remoteVersionFileUrl)		
+		def remoteVersion = readRemoteVersion(remoteVersionFileUrl, gitUrl)		
 
 		if (remoteVersion!=null && !remoteVersion.isEmpty()) {
 			def localDirectoryRemoteVersion = "${localDirectory}/${remoteVersion}"
@@ -224,9 +255,9 @@ ext.cloneGitProject = {localDirectory, gitUrl, remoteVersionFileUrl, lastCheckTi
 				printInfo("> Download version " + colorize(HIGHLITE_LEVEL, remoteVersion) + " of " + colorize(HIGHLITE_LEVEL, gitUrl) + " into " + colorize(HIGHLITE_LEVEL, localDirectoryRemoteVersion) + ".")
 				gitClone(localDirectoryRemoteVersion, gitUrl)			
 			}
-		}
 			
-		writeLastCheck(remoteVersion, lastCheckFile)
+			writeLastCheck(remoteVersion, lastCheckFile)
+		}			
 	} else {
 		logInfo("Don't check it's inside time range: " + colorize(HIGHLITE_LEVEL, timeout))
 	}	

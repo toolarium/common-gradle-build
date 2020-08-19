@@ -60,6 +60,13 @@ ext.openGit = { directory = projectDir ->
  	try	
 	{
 		logInfo("Open git...")
+
+		//if (System.getenv('GIT_USERNAME')!=null && System.getenv('GIT_PASSWORD')!=null) {
+			//credentials: new Credentials(username, password)		
+			//CredentialsProvider cp = new UsernamePasswordCredentialsProvider(username, password);
+			//git.pull().setCredentialsProvider(cp).call();		
+		//}
+		
 		def git = org.ajoberstar.grgit.Grgit.open(dir: directory)
 	} catch (java.lang.IllegalStateException e) {
 		printLine(ERROR_LEVEL, true)
@@ -296,7 +303,7 @@ ext.gitClone = { inputCloneDir, inputCloneUrl, overwrite = true ->
 			printWarn("Could not checkout [" + colorize(HIGHLITE_LEVEL, cloneUrl) + colorize(WARN_LEVEL, "] because no online connection!"))
 			return
 		}
-
+		
 		if (new File(cloneDir).exists()) {
 			if (overwrite) {
 				git = openGit(cloneDir)
@@ -312,9 +319,13 @@ ext.gitClone = { inputCloneDir, inputCloneUrl, overwrite = true ->
 			printWarn("Checkout directory already exist [" + colorize(HIGHLITE_LEVEL, cloneDir) + colorize(WARN_LEVEL, "]!"))
 			return
 		}
-
-		logInfo("GIT checkout [" + colorize(HIGHLITE_LEVEL, cloneUrl) + colorize(INFO_LEVEL, "] into [") + colorize(HIGHLITE_LEVEL, cloneDir) + colorize(INFO_LEVEL, "]."))
-		git = org.ajoberstar.grgit.Grgit.clone(dir: cloneDir, uri: cloneUrl)
+		
+		logInfo("GIT checkout [" + colorize(HIGHLITE_LEVEL, cloneUrl) + colorize(INFO_LEVEL, "] into [") + colorize(HIGHLITE_LEVEL, cloneDir) + colorize(INFO_LEVEL, "]."))		
+		//if (System.getenv('GIT_USERNAME')!=null && System.getenv('GIT_PASSWORD')!=null) {
+		//	git = org.ajoberstar.grgit.Grgit.clone(dir: cloneDir, uri: cloneUrl, credentials: Credentials("$System.env.GIT_USERNAME", "$System.env.GIT_PASSWORD"))
+		//} else {
+			git = org.ajoberstar.grgit.Grgit.clone(dir: cloneDir, uri: cloneUrl)
+		//}
 	} catch (Exception e) {
 		printWarn("Could not checkout [" + colorize(HIGHLITE_LEVEL, cloneUrl) + colorize(WARN_LEVEL, "] into [") + colorize(HIGHLITE_LEVEL, cloneDir) + colorize(WARN_LEVEL, "]: " + e.getMessage()))
 	} finally {
