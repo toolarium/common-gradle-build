@@ -44,9 +44,12 @@ if (project.hasProperty('commonGradleBuildHome')) {
 
 		// apply from home
 		if (new File(commonGradleBuildHomeDefaultsFile).exists()) {
-			bootStraplogLifecycle("  > Found defaults in common-gradle-build home path, apply.")
+			bootStraplogLifecycle("> Found defaults in common-gradle-build home path, apply.")
 			def userDefined = "[${commonGradleBuildHomeDefaultsFile}]"
-			userDefined += LINE.substring(userDefined.length())
+			
+			if (LINE.length()>userDefined.length()) {
+				userDefined += LINE.substring(userDefined.length())
+			}
 			logInfo(userDefined)
 			apply from: "${commonGradleBuildHomeDefaultsFile}"
 			logInfo(userDefined)
@@ -65,6 +68,7 @@ apply from: "${commonGradleBuildElementPath}/base/init.gradle"
 apply from: "${commonGradleBuildElementPath}/base/gradle.gradle"
 apply from: "${commonGradleBuildElementPath}/base/config.gradle"
 apply from: "${commonGradleBuildElementPath}/base/project-report.gradle"
+apply from: "${commonGradleBuildElementPath}/base/exec.gradle"
 apply from: "${commonGradleBuildElementPath}/release.gradle"
 apply from: "${commonGradleBuildElementPath}/scm/git.gradle"
 //apply from: "${commonGradleBuildElementPath}/scm/changelog.gradle"
@@ -116,8 +120,15 @@ gradle.buildFinished { buildResult ->
 	//println("=>"+gradle.startParameter.getTaskNames())
 	//println "BUILD FINISHED" + buildResult
 
+	def startupTime=NOW
 	//def startupTime = java.lang.management.ManagementFactory.getRuntimeMXBean().getStartTime()
-	def duration = ((((long)(new Date().getTime()/ 1000.0))*1000) - NOW.getTime()) / 1000.0
+	def cbStartupTimestamp=System.getenv('CB_START_TIMESTAMP')
+	if (cbStartupTimestamp!=null && !cbStartupTimestamp.isEmpty()) {
+		startupTime = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").parse(cbStartupTimestamp)
+		logInfo("Common build startup time " + cbStartupTimestamp)
+	}
+	
+	def duration = ((((long)(new Date().getTime()/ 1000.0))*1000) - startupTime.getTime()) / 1000.0
 	if (duration == null || duration < 0) {
 		duration = 1
 	}
@@ -153,7 +164,7 @@ gradle.buildFinished { buildResult ->
 		}
 
 		if (gradle.startParameter.getLogLevel() == org.gradle.api.logging.LogLevel.QUIET) {
-			printInfo(colorize(SUCCESS_LEVEL, "BUILD SUCCESSFUL") + ", task execution used ~" + duration + "s")
+			printInfo(colorize(SUCCESS_LEVEL, "BUILD SUCCESSFUL") + " in ~" + duration + "s                      ")
 		}
 	}
 

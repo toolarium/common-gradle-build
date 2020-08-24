@@ -169,17 +169,17 @@ ext.downloadCommonGradleBuildCache = { ->
  ***************************************************************************************/
 ext.downloadCommonGradleBuildHome = { ->
 	if (!project.hasProperty('commonGradleBuildHomeBase') || !project.hasProperty('commonGradleBuildHomeGitUrl') || !project.hasProperty('commonGradleBuildHomeVersionFileUrl') || !project.hasProperty('commonGradleBuildCacheLastCheckTimeout')) {
-		return
+		return false
 	}
 
 	def commonGradleBuildHomeBase = project.getProperty('commonGradleBuildHomeBase')
 	if (commonGradleBuildHomeBase==null || "${commonGradleBuildHomeBase}".isEmpty()) {
-		return
+		return false
 	}
 
 	def commonGradleBuildHomeGitUrl = project.getProperty('commonGradleBuildHomeGitUrl')
 	if (commonGradleBuildHomeGitUrl==null || "${commonGradleBuildHomeGitUrl}".isEmpty()) {
-		return
+		return false
 	}
 
 	def commonGradleBuildHomeVersionFileUrl=project.getProperty('commonGradleBuildHomeVersionFileUrl')
@@ -199,7 +199,7 @@ ext.downloadCommonGradleBuildHome = { ->
 		}
 		
 		if (commonGradleBuildHomeVersionFileUrl==null || "${commonGradleBuildHomeVersionFileUrl}".isEmpty()) {	
-			return
+			return false
 		} else {
 			bootStraplogLifecycle("  > Remote verison url: ${commonGradleBuildHomeGitUrl} -> ${commonGradleBuildHomeVersionFileUrl}")
 		}
@@ -211,8 +211,18 @@ ext.downloadCommonGradleBuildHome = { ->
 		commonGradleBuildHomeFile.mkdirs()			
 	} 
 
-	bootStraplogLifecycle("  > Create common-gradle-build home, download of the ${commonGradleBuildHomeGitUrl}.")
-	cloneGitProject(commonGradleBuildHomeBase, commonGradleBuildHomeGitUrl, commonGradleBuildHomeVersionFileUrl, project.getProperty('commonGradleBuildCacheLastCheckTimeout'))
+	bootStraplogLifecycle("  > Check common-gradle-build home if update is needed of ${commonGradleBuildHomeGitUrl}.")
+	def result = cloneGitProject(commonGradleBuildHomeBase, commonGradleBuildHomeGitUrl, commonGradleBuildHomeVersionFileUrl, project.getProperty('commonGradleBuildCacheLastCheckTimeout'))
+	if (result) {	
+		String folderPath = "C:/test/test"
+		def files = new FileNameFinder().getFileNames(commonGradleBuildHomeBase, '*.tsp')
+		if (files!=null) {
+			logInfo("Removes file to force common build to use newest version: " + files)
+			files.each { new File(it).delete()}
+		}
+	}
+	
+	return result
 }
 
 
@@ -223,12 +233,12 @@ ext.cloneGitProject = {localDirectory, gitUrl, remoteVersionFileUrl, lastCheckTi
 
 	if (gitUrl==null || "${gitUrl}".isEmpty() || remoteVersionFileUrl==null || "${remoteVersionFileUrl}".isEmpty()) {
 		logDebug("Invalid git url or remote version file url.")
-		return
+		return false
 	}
 
 	if (localDirectory==null || "${localDirectory}".isEmpty()) {
 		logDebug("Invalid local directory.")
-		return
+		return false
 	}
 	
 	if (!new File(localDirectory).exists()) {
@@ -244,6 +254,7 @@ ext.cloneGitProject = {localDirectory, gitUrl, remoteVersionFileUrl, lastCheckTi
 		timeout = new Date().getTime() - lastCheck.getTime()
 	}
 
+	def result = false
 	if ((lastCheck == null) || (timeout > lastCheckTimeout)) {
 		def remoteVersion = readRemoteVersion(remoteVersionFileUrl, gitUrl)		
 
@@ -253,7 +264,7 @@ ext.cloneGitProject = {localDirectory, gitUrl, remoteVersionFileUrl, lastCheckTi
 			logInfo("Remote version: " + colorize(HIGHLITE_LEVEL, remoteVersion) + colorize(HIGHLITE_LEVEL, " of $gitUrl in $localDirectoryRemoteVersion"))			
 			if (!new File(localDirectoryRemoteVersion).exists()) {
 				printInfo("> Download version " + colorize(HIGHLITE_LEVEL, remoteVersion) + " of " + colorize(HIGHLITE_LEVEL, gitUrl) + " into " + colorize(HIGHLITE_LEVEL, localDirectoryRemoteVersion) + ".")
-				gitClone(localDirectoryRemoteVersion, gitUrl)			
+				result = gitClone(localDirectoryRemoteVersion, gitUrl)			
 			}
 			
 			writeLastCheck(remoteVersion, lastCheckFile)
@@ -261,6 +272,8 @@ ext.cloneGitProject = {localDirectory, gitUrl, remoteVersionFileUrl, lastCheckTi
 	} else {
 		logInfo("Don't check it's inside time range: " + colorize(HIGHLITE_LEVEL, timeout))
 	}	
+	
+	return result
 }
 
 

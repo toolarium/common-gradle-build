@@ -133,6 +133,13 @@ setCommonGradleDefaultPropertyIfNull("installGradleWrapper", true)
 
 
 /***************************************************************************************
+ * Use git credentials manager
+ * Issue in grgit
+ ***************************************************************************************/
+setCommonGradleDefaultPropertyIfNull("scmUseCredentialManager", false)
+
+
+/***************************************************************************************
  * show created artefacts
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("showCreatedArtefacts", true)

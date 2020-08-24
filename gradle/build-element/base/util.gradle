@@ -7,6 +7,38 @@
 
 
 /** 
+ * Read os specific configuration: osEnvironment, separator, scriptEnding
+ */
+ext.readOSConfiguration = { ->
+    if (!project.hasProperty('separator') || !project.hasProperty('scriptEnding') || !project.hasProperty('osEnvironment')) {
+        def osEnvironment=getOsName()
+        def separator='/'
+        def scriptEnding='.sh'
+
+        if (osEnvironment.toLowerCase().startsWith("windows")) {
+            def sout = new StringBuilder(), serr = new StringBuilder()
+			separator='\\'
+			scriptEnding='.bat'
+			
+			try {
+				execRawCommand([ 'uname' ], 2000, sout, serr)
+				if (sout.toString().toLowerCase().startsWith('cygwin')) {
+					osEnvironment="cygwin"
+					scriptEnding='.bat'
+				}
+			} catch(Exception ex) {
+				logDebug("Not cygwin environment.")
+			}
+        }
+
+        setCommonGradleProperty('separator', separator)
+        setCommonGradleProperty('scriptEnding', scriptEnding)
+        setCommonGradleProperty('osEnvironment', osEnvironment)
+    }
+}
+
+
+/** 
  * Get the arch type
  */
 ext.parseInteger = { value, defaultValue = 0, type = "" ->

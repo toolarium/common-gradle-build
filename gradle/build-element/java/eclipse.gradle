@@ -33,7 +33,7 @@ eclipse {
 	pathVariables 'GRADLE_HOME': file('d:/devtools/current/gradle')
 
 	classpath {
-		defaultOutputDir = file('build-eclipse')
+		defaultOutputDir = file('bin')
 		/*
 		file {
 			whenMerged {
@@ -97,38 +97,38 @@ ext.createEclipseFiles = { overwrite = false ->
 			new File(rootDirectory, classpathFile).withWriter { w ->
 				w << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << NELINE \
 					<< "<classpath>" << NELINE \
-					<< "	<classpathentry kind=\"src\" output=\"build-eclipse/${srcMainDirectoryName}\" path=\"${srcMainDirectory}/java\">" << NELINE \
+					<< "	<classpathentry kind=\"src\" output=\"bin/${srcMainDirectoryName}\" path=\"${srcMainDirectory}/java\">" << NELINE \
 					<< "		<attributes>" << NELINE \
 					<< "			<attribute name=\"gradle_scope\" value=\"${srcMainDirectoryName}\"/>" << NELINE \
 					<< "			<attribute name=\"gradle_used_by_scope\" value=\"${srcMainDirectoryName},${srcTestDirectoryName}\"/>" << NELINE \
 					<< "		</attributes>" << NELINE \
 					<< "	</classpathentry>" << NELINE \
-					<< "	<classpathentry kind=\"src\" output=\"build-eclipse/${srcMainDirectoryName}\" path=\"${srcMainDirectory}/resources\">" << NELINE \
+					<< "	<classpathentry kind=\"src\" output=\"bin/${srcMainDirectoryName}\" path=\"${srcMainDirectory}/resources\">" << NELINE \
 					<< "		<attributes>" << NELINE \
 					<< "			<attribute name=\"gradle_scope\" value=\"${srcMainDirectoryName}\"/>" << NELINE \
 					<< "			<attribute name=\"gradle_used_by_scope\" value=\"${srcMainDirectoryName},${srcTestDirectoryName}\"/>" << NELINE \
 					<< "		</attributes>" << NELINE \
 					<< "	</classpathentry>" << NELINE \
-					<< "	<classpathentry kind=\"src\" output=\"build-eclipse/${srcMainDirectoryName}\" path=\"${generatedCommonGradleBuildJavaSources}\">" << NELINE \
+					<< "	<classpathentry kind=\"src\" output=\"bin/${srcMainDirectoryName}\" path=\"${generatedCommonGradleBuildJavaSources}\">" << NELINE \
 					<< "		<attributes>" << NELINE \
 					<< "			<attribute name=\"gradle_scope\" value=\"${srcMainDirectoryName}\"/>" << NELINE \
 					<< "			<attribute name=\"gradle_used_by_scope\" value=\"${srcMainDirectoryName},${srcTestDirectoryName}\"/>" << NELINE \
 					<< "		</attributes>" << NELINE \
 					<< "	</classpathentry>" << NELINE \
-					<< "	<classpathentry kind=\"src\" output=\"build-eclipse/${srcMainDirectoryName}\" path=\"${generatedCommonGradleBuildResourcesSources}\">" << NELINE \
+					<< "	<classpathentry kind=\"src\" output=\"bin/${srcMainDirectoryName}\" path=\"${generatedCommonGradleBuildResourcesSources}\">" << NELINE \
 					<< "		<attributes>" << NELINE \
 					<< "			<attribute name=\"gradle_scope\" value=\"${srcMainDirectoryName}\"/>" << NELINE \
 					<< "			<attribute name=\"gradle_used_by_scope\" value=\"${srcMainDirectoryName},${srcTestDirectoryName}\"/>" << NELINE \
 					<< "		</attributes>" << NELINE \
 					<< "	</classpathentry>" << NELINE \
-					<< "	<classpathentry kind=\"src\" output=\"build-eclipse/${srcTestDirectoryName}\" path=\"${srcTestDirectory}/java\">" << NELINE \
+					<< "	<classpathentry kind=\"src\" output=\"bin/${srcTestDirectoryName}\" path=\"${srcTestDirectory}/java\">" << NELINE \
 					<< "		<attributes>" << NELINE \
 					<< "			<attribute name=\"gradle_scope\" value=\"${srcTestDirectoryName}\"/>" << NELINE \
 					<< "			<attribute name=\"gradle_used_by_scope\" value=\"${srcTestDirectoryName}\"/>" << NELINE \
 					<< "			<attribute name=\"test\" value=\"true\"/>" << NELINE \
 					<< "		</attributes>" << NELINE \
 					<< "	</classpathentry>" << NELINE \
-					<< "	<classpathentry kind=\"src\" output=\"build-eclipse/${srcTestDirectoryName}\" path=\"${srcTestDirectory}/resources\">" << NELINE \
+					<< "	<classpathentry kind=\"src\" output=\"bin/${srcTestDirectoryName}\" path=\"${srcTestDirectory}/resources\">" << NELINE \
 					<< "		<attributes>" << NELINE \
 					<< "			<attribute name=\"gradle_scope\" value=\"${srcTestDirectoryName}\"/>" << NELINE \
 					<< "			<attribute name=\"gradle_used_by_scope\" value=\"${srcTestDirectoryName}\"/>" << NELINE \
@@ -143,7 +143,7 @@ ext.createEclipseFiles = { overwrite = false ->
 					<< "	</classpathentry>" << NELINE \
 					<< "	<classpathentry kind=\"con\" path=\"org.eclipse.buildship.core.gradleclasspathcontainer\"/>" << NELINE \
 					<< "	<classpathentry kind=\"con\" path=\"org.eclipse.jdt.junit.JUNIT_CONTAINER/5\"/>" << NELINE \
-					<< "	<classpathentry kind=\"output\" path=\"build-eclipse/classes\"/>" << NELINE \
+					<< "	<classpathentry kind=\"output\" path=\"build\"/>" << NELINE \
 					<< "</classpath>" << NELINE
 			}			
 		}

@@ -1,5 +1,5 @@
 /*
- * cgb-home.gradle
+ * config-home.gradle
  *
  * Copyright by toolarium, all rights reserved.
  * MIT License: https://mit-license.org
@@ -36,6 +36,20 @@ projectValidation {
 
 			new File(gradlePath).mkdirs()
 			copyFile("${commonGradleTemplateBasePath}/defaults.gradle.template", "${gradlePath}/defaults.gradle")
+
+			def confPath = "$rootDirectory/conf"
+			new File(confPath).mkdirs()
+			copy { from "${commonGradleConfigPath}" include "*" exclude "jptools" into "${confPath}" }
+			
+			def binPath = "$rootDirectory/bin"
+			new File(binPath).mkdirs()
+			def commonBuildHome=System.getenv('CB_HOME') 
+			if (commonBuildHome!=null) {
+				copyFile("${commonBuildHome}/bin/sample/cb-custom-sample.bat", "${binPath}/cb-custom.bat")
+				copyFile("${commonBuildHome}/bin/sample/cb-custom-sample.sh", "${binPath}/cb-custom.sh")
+				//copyFile("${commonBuildHome}/conf/dockterm-types.properties", "${confPath}/dockterm-types.properties")
+				//copyFile("${commonBuildHome}/conf/dockterm-types.properties", "${confPath}/dockterm-types.properties")
+			}
 			
 			def gradleTemplatePath = "${gradlePath}/${commonGradleTemplatePathName}"
 			new File(gradleTemplatePath).mkdirs()

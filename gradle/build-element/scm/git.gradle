@@ -52,6 +52,8 @@ ext.isGitAvailable = { ->
 	return false
 }
 
+apply from: "${commonGradleBuildElementPath}/base/exec.gradle"
+
 
 /** 	
  * Open git 
@@ -61,13 +63,29 @@ ext.openGit = { directory = projectDir ->
 	{
 		logInfo("Open git...")
 
-		//if (System.getenv('GIT_USERNAME')!=null && System.getenv('GIT_PASSWORD')!=null) {
-			//credentials: new Credentials(username, password)		
-			//CredentialsProvider cp = new UsernamePasswordCredentialsProvider(username, password);
-			//git.pull().setCredentialsProvider(cp).call();		
-		//}
-		
-		def git = org.ajoberstar.grgit.Grgit.open(dir: directory)
+		// use credential manager
+		org.ajoberstar.grgit.Credentials credentials = null
+		/*
+		if (project.hasProperty('scmUseCredentialManager') && project.getProperty('scmUseCredentialManager')) {
+			def credentialContent=requestCredentials(cloneUrl)
+			if (credentialContent!=null) {
+				logInfo("Got credentials for [" + credentialContent[0] + "] of git repository: ${cloneUrl}")
+				credentials = new org.ajoberstar.grgit.Credentials(credentialContent[0], credentialContent[1]);		
+				//System.properties["org.ajoberstar.grgit.auth.username"]=credentialContent[0]
+				//System.properties["org.ajoberstar.grgit.auth.password"]=credentialContent[1]
+				//System.properties["org.ajoberstar.grgit.auth.force=hardcoded"]="true"
+			}
+		}
+		*/
+
+		def git
+		if (credentials!=null) {
+			//logInfo("Try to open git with credentials: ${cloneUrl}")
+			git = org.ajoberstar.grgit.Grgit.open(dir: directory, credentials: credentials)
+		} else {
+			//logInfo("Try to open git without any credentials: ${cloneUrl}")
+			git = org.ajoberstar.grgit.Grgit.open(dir: directory)
+		}
 	} catch (java.lang.IllegalStateException e) {
 		printLine(ERROR_LEVEL, true)
 		printInfo(colorize(ERROR_LEVEL, 'ERROR') + ": Can not access to git repository: " + e.getMessage() )
@@ -297,11 +315,12 @@ ext.gitClone = { inputCloneDir, inputCloneUrl, overwrite = true ->
 	def cloneDir = inputCloneDir.trim() //.replace('\', '/')
 	def cloneUrl = inputCloneUrl.trim()
 	def git = null
+	def result = false
 	
     try {
 		if (!HAS_ONLINE_CONNECTION) {
 			printWarn("Could not checkout [" + colorize(HIGHLITE_LEVEL, cloneUrl) + colorize(WARN_LEVEL, "] because no online connection!"))
-			return
+			return false 
 		}
 		
 		if (new File(cloneDir).exists()) {
@@ -313,24 +332,57 @@ ext.gitClone = { inputCloneDir, inputCloneUrl, overwrite = true ->
 				git.clean(directories: true)
 				logInfo("GIT pull [" + colorize(HIGHLITE_LEVEL, cloneDir) + colorize(INFO_LEVEL, "]."))
 				git.pull()			
-				return
+				return false
 			} 
 			
 			printWarn("Checkout directory already exist [" + colorize(HIGHLITE_LEVEL, cloneDir) + colorize(WARN_LEVEL, "]!"))
-			return
+			return false
 		}
 		
 		logInfo("GIT checkout [" + colorize(HIGHLITE_LEVEL, cloneUrl) + colorize(INFO_LEVEL, "] into [") + colorize(HIGHLITE_LEVEL, cloneDir) + colorize(INFO_LEVEL, "]."))		
-		//if (System.getenv('GIT_USERNAME')!=null && System.getenv('GIT_PASSWORD')!=null) {
-		//	git = org.ajoberstar.grgit.Grgit.clone(dir: cloneDir, uri: cloneUrl, credentials: Credentials("$System.env.GIT_USERNAME", "$System.env.GIT_PASSWORD"))
-		//} else {
+
+		// use credential manager
+		org.ajoberstar.grgit.Credentials credentials = null
+		if (project.hasProperty('scmUseCredentialManager') && project.getProperty('scmUseCredentialManager')) {
+			def credentialContent=requestCredentials(cloneUrl)
+			if (credentialContent!=null) {
+				logInfo("Got credentials for [" + credentialContent[0] + "] of git repository: ${cloneUrl}")
+				credentials = new org.ajoberstar.grgit.Credentials(credentialContent[0], credentialContent[1]);		
+				//System.properties["org.ajoberstar.grgit.auth.username"]=credentialContent[0]
+				//System.properties["org.ajoberstar.grgit.auth.password"]=credentialContent[1]
+				//System.properties["org.ajoberstar.grgit.auth.force=hardcoded"]="true"
+			}
+		}
+		
+		if (credentials!=null) {
+			logInfo("Try to clone git with credentials: ${cloneUrl}")			
+			/*
+		    org.eclipse.jgit.api.Git.cloneRepository()
+				.setURI(cloneUrl)
+				.setDirectory(new File(cloneDir))
+				.setCredentialsProvider(new org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider(credentials.username, credentials.password))
+				.call();
+			*/
+			git = org.ajoberstar.grgit.Grgit.clone(dir: cloneDir, uri: cloneUrl, credentials: credentials)
+		} else {
+			logInfo("Try to clone git without any credentials: ${cloneUrl}")
+			/*
+		    org.eclipse.jgit.api.Git.cloneRepository()
+				.setURI(cloneUrl)
+				.setDirectory(new File(cloneDir))
+				.call();
+			*/
 			git = org.ajoberstar.grgit.Grgit.clone(dir: cloneDir, uri: cloneUrl)
-		//}
+			result = true
+		}
 	} catch (Exception e) {
 		printWarn("Could not checkout [" + colorize(HIGHLITE_LEVEL, cloneUrl) + colorize(WARN_LEVEL, "] into [") + colorize(HIGHLITE_LEVEL, cloneDir) + colorize(WARN_LEVEL, "]: " + e.getMessage()))
+		//e.printStackTrace()
 	} finally {
 		closeGit(git)
 	}	
+	
+	return result
 }
 
 
@@ -357,6 +409,52 @@ def getGitBranchNameCmdline() {
 	}
 	
 	return ""
+}
+
+
+/**
+ * Request credentials from git credential manager (in case common-build is installed)
+ */
+ext.requestCredentials = { url, timeout=-1 ->
+	try {
+		def cbHome=System.getenv('CB_HOME')
+		if (cbHome!=null) {
+			readOSConfiguration()
+			def osEnvironment=project.getProperty('osEnvironment')
+			def separator=project.getProperty('separator')
+			def scriptEnding=project.getProperty('scriptEnding')
+
+			def scriptBin = "cb-credential${scriptEnding}".toString()
+			def scriptPath = "$cbHome${separator}bin${separator}include${separator}${scriptBin}".toString()
+			if (osEnvironment.startsWith('cygwin')) {
+				def sout = new StringBuilder(), serr = new StringBuilder()
+				execRawCommand(['cmd', '/c', 'cygpath', '-w', scriptPath ], timeout, sout, serr)
+				scriptPath=sout.toString().replace('\r', ' ').replace('\n', ' ')
+			}
+
+			def cmdCall="${scriptPath} --print \"${url}\"".toString()
+			def args = [ cmdCall ]
+			def windowsArgs = ['cmd', '/c', cmdCall]
+			def sout = new StringBuilder(), serr = new StringBuilder()
+			execOSCommand(args, windowsArgs, timeout, sout, serr)
+
+			if (sout!=null) {
+				def urlStr = sout.toString().replace('\r', ' ').replace('\n', ' ')
+				if (urlStr.length()>0) {
+					def credentialContent=new String(urlStr.decodeBase64())
+					def idx =credentialContent.indexOf(':')
+					if (idx>0) {
+						logInfo("Read credentials for url ${url}.")
+						return [credentialContent.substring(0, idx), credentialContent.substring(idx + 1)]
+					}
+				}
+			}
+		}
+	} catch(Exception ex) {
+		printWarn("Could not read credential for url ${url}: " + ex.getMessage())
+	}
+	
+	return null
 }
 
 

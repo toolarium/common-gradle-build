@@ -86,7 +86,20 @@ ext.projectInitialisation = { ->
     def cbVersion = System.env['CB_VERSION']
     if (cbVersion!=null && !cbVersion.isEmpty()) {
         buildToolVersionStackMessage += ", Common Build ${cbVersion}"
+
+		def cbCustomConfig = System.env['CB_CUSTOM_CONFIG']
+		if (cbCustomConfig!=null && !cbCustomConfig.isEmpty()) {
+			def cbCustomConfigVersion="n/a"
+	
+			def cbEnvCustomConfigVersion = System.env['CB_CUSTOM_CONFIG_VERSION']
+			if (cbEnvCustomConfigVersion!=null && !cbEnvCustomConfigVersion.isEmpty()) {
+				cbCustomConfigVersion=cbEnvCustomConfigVersion
+			}
+			
+			buildToolVersionStackMessage += ", Custom Config ${cbCustomConfigVersion}"
+		}
     }
+		
     project.ext.set('buildToolVersionStackMessage', buildToolVersionStackMessage)
 
 	// guess start executable

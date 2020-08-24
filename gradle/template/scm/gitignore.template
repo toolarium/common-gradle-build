@@ -16,6 +16,7 @@ jspm_packages/
 coverage/
 
 # Ignore build output directory
+bin/
 build/
 build-eclipse/
 .next

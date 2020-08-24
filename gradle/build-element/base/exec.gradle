@@ -1,0 +1,46 @@
+/*
+ * exec.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+
+
+/***************************************************************************************
+ * Execute a command
+ * sample: def stdout = new StringBuilder(), stderr = new StringBuilder()
+ *         execCommand(['ls', '$PWD'], 
+ *                     ['cmd', '/c', '%CD%', 'dir'], 
+ *                     2000,
+ *					   stdout, stderr)
+ ***************************************************************************************/
+ext.execOSCommand = { args, windowsArgs, timeout=10000, sout=System.out, serr=System.err ->
+	def osArgs = args
+    if (getOsName().startsWith("windows")) {
+        osArgs = windowsArgs
+    }
+
+	execRawCommand(osArgs, timeout, sout, serr)
+}
+
+
+/***************************************************************************************
+ * Execute a command
+ * sample: def args = ['cmd', '/c', 'C:\\WINDOS', 'dir']
+ *         execCommand(args, 2000)
+ *     or
+ *         def sout = new StringBuilder(), serr = new StringBuilder()
+ *         execCommand(args, 2000, sout, serr)
+ *         println sout
+ ***************************************************************************************/
+ext.execRawCommand = { args, timeout=10000, sout=System.out, serr=System.err ->
+	def proc = new ProcessBuilder(args)
+	Process process = proc.start()
+	process.consumeProcessOutput(sout, serr)
+	
+	if (timeout>0) {
+		process.waitForOrKill(timeout)
+	} else {
+		process.waitForProcessOutput()
+	}
+}
