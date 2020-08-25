@@ -211,10 +211,14 @@ ext.downloadCommonGradleBuildHome = { ->
 		commonGradleBuildHomeFile.mkdirs()			
 	} 
 
-	bootStraplogLifecycle("  > Check common-gradle-build home if update is needed of ${commonGradleBuildHomeGitUrl}.")
+	bootStraplogInfo("  > Check common-gradle-build home if update is needed of ${commonGradleBuildHomeGitUrl}.")
 	def result = cloneGitProject(commonGradleBuildHomeBase, commonGradleBuildHomeGitUrl, commonGradleBuildHomeVersionFileUrl, project.getProperty('commonGradleBuildCacheLastCheckTimeout'))
-	if (result) {	
-		String folderPath = "C:/test/test"
+	if (result) {
+		//def checkstyleFile = ".checkstyle"
+		//if (new File(checkstyleFile).exists()) {
+		//	new File(checkstyleFile).delete()
+		//}
+		
 		def files = new FileNameFinder().getFileNames(commonGradleBuildHomeBase, '*.tsp')
 		if (files!=null) {
 			logInfo("Removes file to force common build to use newest version: " + files)

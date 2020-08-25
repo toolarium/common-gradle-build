@@ -96,7 +96,7 @@ ext.projectInitialisation = { ->
 				cbCustomConfigVersion=cbEnvCustomConfigVersion
 			}
 			
-			buildToolVersionStackMessage += ", Custom Config ${cbCustomConfigVersion}"
+			buildToolVersionStackMessage += ", ${commonGradleBuildCustomConfigName} ${cbCustomConfigVersion}"
 		}
     }
 		
@@ -413,8 +413,8 @@ ext.createCommonGradleBuildSourcesPath = { ->
 /***************************************************************************************
  * Check if the project type has a different template
  ***************************************************************************************/
-ext.getTemplateFile = { templateFilename ->
-	def projectTypeTemplatePath = 'base'
+ext.getTemplateFile = { templateFilename, defaultProjectTypeTemplatePath='base' ->
+	def projectTypeTemplatePath = defaultProjectTypeTemplatePath
 	
     try {
         if (project.hasProperty('projectTypeTemplatePath')) {

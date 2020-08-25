@@ -10,70 +10,80 @@
  * Checkstyle configuraiton
  ***************************************************************************************/
 if (project.hasProperty('initCheckstyle') && project.getProperty('initCheckstyle')) {
-	apply plugin: 'checkstyle'
+	def runtimeCheckstyleConfigurationPath = null
 
-	// work around: set the checkstyle as absolute path
-	setCommonGradleProperty("doCreateCheckstyleConfiguration", true)
-	def runtimeCheckstyleConfigurationPath = project.getProperty('checkstyleConfigurationPath')
-	if (runtimeCheckstyleConfigurationPath.startsWith("./")) {
-		runtimeCheckstyleConfigurationPath = cbProjectRootDir + "/" + checkstyleConfigurationPath.substring(2)
-	}
-	
-	def checkstyleConfigurationFilename = project.getProperty('checkstyleConfigurationFilename')
-	if (project.hasProperty('commonGradleBuildHome')) {
-		def checkstyleGradleBuildHomePath = project.getProperty('commonGradleBuildHome') + "/checkstyle"
-		if (new File(checkstyleGradleBuildHomePath + "/${checkstyleConfigurationFilename}").exists()) {
-			logInfo("> Found global checkstyle configuration in " + colorize(HIGHLITE_LEVEL, checkstyleGradleBuildHomePath) + ".")
-			runtimeCheckstyleConfigurationPath = checkstyleGradleBuildHomePath
-			setCommonGradleProperty("runtimeCheckstyleConfigurationPath", runtimeCheckstyleConfigurationPath)
+	// in case we have a global configuration and we only reference we don't have a local copy in the project
+	if (project.hasProperty('referenceCheckstyleConfiguration') && project.getProperty('referenceCheckstyleConfiguration')
+		&& project.hasProperty('commonGradleBuildHome') && project.hasProperty('commonGradleConfigPathName')) {
+		def homeCheckstyleConfigurationPath = project.getProperty('commonGradleBuildHome') + "/" + project.getProperty('commonGradleConfigPathName') + "/checkstyle"
+		
+		if (new File(homeCheckstyleConfigurationPath).exists()) {
 			setCommonGradleProperty("doCreateCheckstyleConfiguration", false)
+			runtimeCheckstyleConfigurationPath = homeCheckstyleConfigurationPath
+			setCommonGradleProperty("runtimeCheckstyleConfigurationPath", runtimeCheckstyleConfigurationPath)
+			logInfo("Use reference checkstyle configuration " + colorize(HIGHLITE_LEVEL, runtimeCheckstyleConfigurationPath) + ".")
+		}
+	}	
+
+	if (runtimeCheckstyleConfigurationPath==null) {
+		// work around: set the checkstyle as absolute path
+		setCommonGradleProperty("doCreateCheckstyleConfiguration", true)
+		runtimeCheckstyleConfigurationPath = project.getProperty('checkstyleConfigurationPath')
+		if (runtimeCheckstyleConfigurationPath.startsWith("./")) {
+			runtimeCheckstyleConfigurationPath = cbProjectRootDir + "/" + checkstyleConfigurationPath.substring(2)
 		}
 	}
 	
-	checkstyle {
-		maxWarnings = project.getProperty('checkstyleMaxWarnings')
+	if (runtimeCheckstyleConfigurationPath!=null && !runtimeCheckstyleConfigurationPath.isEmpty() && new File("${runtimeCheckstyleConfigurationPath}/${checkstyleConfigurationFilename}").exists()) {
+		apply plugin: 'checkstyle'
 		
-		if (project.hasProperty('checkstyleToolVersion') && project.getProperty('checkstyleToolVersion')!=null && !project.getProperty('checkstyleToolVersion').isEmpty()) {
-			toolVersion = project.getProperty('checkstyleToolVersion')
+		checkstyle {
+			maxWarnings = project.getProperty('checkstyleMaxWarnings')
+			
+			if (project.hasProperty('checkstyleToolVersion') && project.getProperty('checkstyleToolVersion')!=null && !project.getProperty('checkstyleToolVersion').isEmpty()) {
+				toolVersion = project.getProperty('checkstyleToolVersion')
+			}
+			
+			configProperties = [
+					'samedir': runtimeCheckstyleConfigurationPath
+				]
+				
+			logInfo("> Checkstyle file " + colorize(HIGHLITE_LEVEL, "${runtimeCheckstyleConfigurationPath}/${checkstyleConfigurationFilename}") + ".")
+			configFile file("${runtimeCheckstyleConfigurationPath}/${checkstyleConfigurationFilename}")
 		}
 		
-		configProperties = [
-				'samedir': runtimeCheckstyleConfigurationPath
-			]
-			
-		logInfo("> Checkstyle file " + colorize(HIGHLITE_LEVEL, "${runtimeCheckstyleConfigurationPath}/${checkstyleConfigurationFilename}") + ".")
-		configFile file("${runtimeCheckstyleConfigurationPath}/${checkstyleConfigurationFilename}")
-	}
-	
-	tasks.withType(Checkstyle) {
-		reports {
-			if (project.hasProperty('checkstyleXMLReport')) {
-				xml.enabled project.getProperty('checkstyleXMLReport')
-			} else {
-				xml.enabled false
-			}
-			
-			if (project.hasProperty('checkstyleHTMLReport')) {
-				html.enabled project.getProperty('checkstyleHTMLReport')
-			} else {
-				html.enabled true
-			}
-			
-			if (project.hasProperty('checkstyleCustomStylesheet')) {
-				html.stylesheet resources.text.fromFile(project.getProperty('checkstyleCustomStylesheet'))
+		tasks.withType(Checkstyle) {
+			reports {
+				if (project.hasProperty('checkstyleXMLReport')) {
+					xml.enabled project.getProperty('checkstyleXMLReport')
+				} else {
+					xml.enabled false
+				}
+				
+				if (project.hasProperty('checkstyleHTMLReport')) {
+					html.enabled project.getProperty('checkstyleHTMLReport')
+				} else {
+					html.enabled true
+				}
+				
+				if (project.hasProperty('checkstyleCustomStylesheet')) {
+					html.stylesheet resources.text.fromFile(project.getProperty('checkstyleCustomStylesheet'))
+				}
 			}
 		}
-	}
 
-	// define main directory
-	checkstyleMain {
-		source = project.getProperty('srcMainDirectory')
-	}
+		// define main directory
+		checkstyleMain {
+			source = project.getProperty('srcMainDirectory')
+		}
 
 
-	// define test directory
-	checkstyleTest {
-		source = project.getProperty('srcTestDirectory')
+		// define test directory
+		checkstyleTest {
+			source = project.getProperty('srcTestDirectory')
+		}
+	} else {
+		printWarn("Could not load checkstyle configuration (${runtimeCheckstyleConfigurationPath})!")
 	}
 }
 
@@ -96,219 +106,20 @@ projectValidation {
  * Create checkstyle configuraiton
  ***************************************************************************************/
 ext.createCheckstyleConfiguration = { overwrite = false ->
-	def configDirectory = project.getProperty('configDirectory')
-	def checkstylePath = "$configDirectory/checkstyle/"
 	def checkstyleFile = project.getProperty('checkstyleConfigurationFilename')
-	def checkstyleFileHeader = "checkstyle-file-header.txt"
-	def checkstyleFileSupression = "checkstyle-suppressions.xml"
-		
-	if (overwrite || !new File("${checkstylePath}", "${checkstyleFile}").exists()) {
-		new File(configDirectory).mkdirs()
-		if (new File(checkstylePath).mkdirs()) {
-			printInfo("> Created path " + colorize(HIGHLITE_LEVEL, checkstylePath) + ".")
+	if (overwrite || !new File("$checkstyleConfigurationPath/${checkstyleFile}").exists()) {
+		def checkstyleConfigurationPath = project.getProperty('checkstyleConfigurationPath')	
+		if (new File(checkstyleConfigurationPath).mkdirs()) {
+			printInfo("> Created path " + colorize(HIGHLITE_LEVEL, checkstyleConfigurationPath) + ".")
 		}
 		
-		def commonGradleTemplateJavaPath= project.getProperty('commonGradleTemplateJavaPath')
-		logInfo("Write file " + colorize(HIGHLITE_LEVEL, checkstylePath + "/" + checkstyleFile) + colorize(INFO_LEVEL, "..."))
-		def checkstyleTemplate = 'checkstyle.xml.template'
-		def checkstyleFileHeaderTemplate = 'checkstyle-file-header.txt.template'
-		def checkstyleFileSupressionTemplate = 'checkstyle-suppressions.xml.template'
-		def srcMainDirectoryName = project.getProperty('srcMainDirectoryName')
-		def srcTestDirectoryName = project.getProperty('srcTestDirectoryName')
-		def srcMainDirectory = project.getProperty('srcMainDirectory')
-		def srcTestDirectory = project.getProperty('srcTestDirectory')
-		
-		if (new File("${commonGradleTemplateJavaPath}", "${checkstyleTemplate}").exists()) {
-			printInfo("> Create " + colorize(HIGHLITE_LEVEL, checkstyleFile) + " from template ${checkstyleTemplate}.")
-			copy {
-				from "${commonGradleTemplateJavaPath}"
-				include "${checkstyleTemplate}"
-				into "${checkstylePath}"
-				rename { String fileName -> fileName.replace(checkstyleTemplate, checkstyleFile) }
-				filter { line -> line.replaceAll('@@rootProject.name@@', "${rootProject.name }".toString()) }					
-				filter { line -> line.replaceAll('@@PROJECT_NAME@@', "${rootProject.name}".toString()) }
-				filter { line -> line.replaceAll('@@PROJECT_TYPE@@', "${project.ext.projectType}".toString()) }
-				filter { line -> line.replaceAll('@@GROUP_ID@@', "${project.ext.projectGroupId}".toString()) }
-				filter { line -> line.replaceAll('@@COMPONENT_ID@@', "${project.ext.projectComponentId}".toString()) }
-				filter { line -> line.replaceAll('@@PACKAGE@@', "${project.ext.projectRootPackageName}".toString()) }
-				filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.projectDescription}".toString()) }
-				filter { line -> line.replaceAll('@@URL@@', "${project.ext.projectUrl}".toString()) }
-				filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.licenseText}".toString()) }
-				filter { line -> line.replaceAll('@@LICENSE_ORGANISATION@@', "${project.ext.licenseOrganisation}".toString()) }			
-				filter { line -> line.replaceAll('@@MAJOR_NUMBER@@', "${project.ext.majorVersionNumber}".toString()) }
-				filter { line -> line.replaceAll('@@MINOR_NUMBER@@', "${project.ext.minorVersionNumber}".toString()) }
-				filter { line -> line.replaceAll('@@REVISION_NUMBER@@', "${project.ext.revisionVersionNumber}".toString()) }
-				filter { line -> line.replaceAll('@@QUALIFIER@@', "${project.ext.qualifierVersionNumber}".toString()) }
-				filter { line -> line.replaceAll('@@SCM_NUMBER@@', "${project.ext.scmVersionNumber}".toString()) }
-				filter { line -> line.replaceAll('@@BUILD_TIMESTAMP@@', "${project.ext.BUILD_TIMESTAMP}".toString()) }
-				filter { line -> line.replaceAll('@@IS_RELEASE_VERSION@@', "${project.ext.isReleaseVersion}".toString()) }
-				filter { line -> line.replaceAll('@@VERSION@@', "${project.version}".toString()) }
-			}
-
-			printInfo("> Create " + colorize(HIGHLITE_LEVEL, checkstyleFileHeader) + " from template ${checkstyleFileHeaderTemplate}.")
-			copy {
-				from "${commonGradleTemplateJavaPath}"
-				include "${checkstyleFileHeaderTemplate}"
-				into "${checkstylePath}"
-				rename { String fileName -> fileName.replace(checkstyleFileHeaderTemplate, checkstyleFileHeader) }
-				filter { line -> line.replaceAll('@@PROJECT_NAME@@', "${rootProject.name}".toString()) }
-				filter { line -> line.replaceAll('@@PROJECT_TYPE@@', "${project.ext.projectType}".toString()) }
-				filter { line -> line.replaceAll('@@GROUP_ID@@', "${project.ext.projectGroupId}".toString()) }
-				filter { line -> line.replaceAll('@@COMPONENT_ID@@', "${project.ext.projectComponentId}".toString()) }
-				filter { line -> line.replaceAll('@@PACKAGE@@', "${project.ext.projectRootPackageName}".toString()) }
-				filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.projectDescription}".toString()) }
-				filter { line -> line.replaceAll('@@URL@@', "${project.ext.projectUrl}".toString()) }
-				filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.licenseText}".toString()) }
-				filter { line -> line.replaceAll('@@LICENSE_ORGANISATION@@', "${project.ext.licenseOrganisation}".toString()) }			
-				filter { line -> line.replaceAll('@@MAJOR_NUMBER@@', "${project.ext.majorVersionNumber}".toString()) }
-				filter { line -> line.replaceAll('@@MINOR_NUMBER@@', "${project.ext.minorVersionNumber}".toString()) }
-				filter { line -> line.replaceAll('@@REVISION_NUMBER@@', "${project.ext.revisionVersionNumber}".toString()) }
-				filter { line -> line.replaceAll('@@QUALIFIER@@', "${project.ext.qualifierVersionNumber}".toString()) }
-				filter { line -> line.replaceAll('@@SCM_NUMBER@@', "${project.ext.scmVersionNumber}".toString()) }
-				filter { line -> line.replaceAll('@@BUILD_TIMESTAMP@@', "${project.ext.BUILD_TIMESTAMP}".toString()) }
-				filter { line -> line.replaceAll('@@IS_RELEASE_VERSION@@', "${project.ext.isReleaseVersion}".toString()) }
-				filter { line -> line.replaceAll('@@VERSION@@', "${project.version}".toString()) }
-			}
-			
-			printInfo("> Create " + colorize(HIGHLITE_LEVEL, checkstyleFileSupression) + " from template ${checkstyleFileSupressionTemplate}.")
-			copy {
-				from "${commonGradleTemplateJavaPath}"
-				include "${checkstyleFileSupressionTemplate}"
-				into "${checkstylePath}"
-				rename { String fileName -> fileName.replace(checkstyleFileSupressionTemplate, checkstyleFileSupression) }
-				filter { line -> line.replaceAll('@@PROJECT_NAME@@', "${rootProject.name}".toString()) }
-				filter { line -> line.replaceAll('@@PROJECT_TYPE@@', "${project.ext.projectType}".toString()) }
-				filter { line -> line.replaceAll('@@GROUP_ID@@', "${project.ext.projectGroupId}".toString()) }
-				filter { line -> line.replaceAll('@@COMPONENT_ID@@', "${project.ext.projectComponentId}".toString()) }
-				filter { line -> line.replaceAll('@@PACKAGE@@', "${project.ext.projectRootPackageName}".toString()) }
-				filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.projectDescription}".toString()) }
-				filter { line -> line.replaceAll('@@URL@@', "${project.ext.projectUrl}".toString()) }
-				filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.licenseText}".toString()) }
-				filter { line -> line.replaceAll('@@LICENSE_ORGANISATION@@', "${project.ext.licenseOrganisation}".toString()) }			
-				filter { line -> line.replaceAll('@@MAJOR_NUMBER@@', "${project.ext.majorVersionNumber}".toString()) }
-				filter { line -> line.replaceAll('@@MINOR_NUMBER@@', "${project.ext.minorVersionNumber}".toString()) }
-				filter { line -> line.replaceAll('@@REVISION_NUMBER@@', "${project.ext.revisionVersionNumber}".toString()) }
-				filter { line -> line.replaceAll('@@QUALIFIER@@', "${project.ext.qualifierVersionNumber}".toString()) }
-				filter { line -> line.replaceAll('@@SCM_NUMBER@@', "${project.ext.scmVersionNumber}".toString()) }
-				filter { line -> line.replaceAll('@@BUILD_TIMESTAMP@@', "${project.ext.BUILD_TIMESTAMP}".toString()) }
-				filter { line -> line.replaceAll('@@IS_RELEASE_VERSION@@', "${project.ext.isReleaseVersion}".toString()) }
-				filter { line -> line.replaceAll('@@VERSION@@', "${project.version}".toString()) }
-			}
-		} else if (HAS_ONLINE_CONNECTION) {
-			def temp = checkstylePath + "/download/"
-			new File(temp).mkdirs()
-			
-			def checkstyleDefaultConfigurationUrl = project.getProperty('checkstyleDefaultConfigurationUrl')
-			if (checkstyleDefaultConfigurationUrl!=null && !checkstyleDefaultConfigurationUrl.isEmpty()) {			
-				printInfo("> Get " + colorize(HIGHLITE_LEVEL, checkstyleFile) + " from " + colorize(HIGHLITE_LEVEL, checkstyleDefaultConfigurationUrl) + ".")
-			
-				// download
-				def f = new File(temp + "/" + checkstyleTemplate)
-				new URL(checkstyleDefaultConfigurationUrl).withInputStream { i -> f.withOutputStream { it << i } }			
-				
-				copy {
-					from "${temp}"
-					include "${checkstyleTemplate}"
-					into "${checkstylePath}"
-					rename { String fileName -> fileName.replace(checkstyleTemplate, checkstyleFile) }
-					filter { line -> line.replaceAll('@@rootProject.name@@', "${rootProject.name }".toString()) }					
-					filter { line -> line.replaceAll('@@PROJECT_NAME@@', "${rootProject.name}".toString()) }
-					filter { line -> line.replaceAll('@@PROJECT_TYPE@@', "${project.ext.projectType}".toString()) }
-					filter { line -> line.replaceAll('@@GROUP_ID@@', "${project.ext.projectGroupId}".toString()) }
-					filter { line -> line.replaceAll('@@COMPONENT_ID@@', "${project.ext.projectComponentId}".toString()) }
-					filter { line -> line.replaceAll('@@PACKAGE@@', "${project.ext.projectRootPackageName}".toString()) }
-					filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.projectDescription}".toString()) }
-					filter { line -> line.replaceAll('@@URL@@', "${project.ext.projectUrl}".toString()) }
-					filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.licenseText}".toString()) }
-					filter { line -> line.replaceAll('@@LICENSE_ORGANISATION@@', "${project.ext.licenseOrganisation}".toString()) }			
-					filter { line -> line.replaceAll('@@MAJOR_NUMBER@@', "${project.ext.majorVersionNumber}".toString()) }
-					filter { line -> line.replaceAll('@@MINOR_NUMBER@@', "${project.ext.minorVersionNumber}".toString()) }
-					filter { line -> line.replaceAll('@@REVISION_NUMBER@@', "${project.ext.revisionVersionNumber}".toString()) }
-					filter { line -> line.replaceAll('@@QUALIFIER@@', "${project.ext.qualifierVersionNumber}".toString()) }
-					filter { line -> line.replaceAll('@@SCM_NUMBER@@', "${project.ext.scmVersionNumber}".toString()) }
-					filter { line -> line.replaceAll('@@BUILD_TIMESTAMP@@', "${project.ext.BUILD_TIMESTAMP}".toString()) }
-					filter { line -> line.replaceAll('@@IS_RELEASE_VERSION@@', "${project.ext.isReleaseVersion}".toString()) }
-					filter { line -> line.replaceAll('@@VERSION@@', "${project.version}".toString()) }
-				}
-				
-				f.delete()
-			}
-			
-			def checkstyleDefaultConfigurationFileHeaderUrl = project.getProperty('checkstyleDefaultConfigurationFileHeaderUrl')
-			if (checkstyleDefaultConfigurationFileHeaderUrl!=null && !checkstyleDefaultConfigurationFileHeaderUrl.isEmpty()) {
-				printInfo("> Get " + colorize(HIGHLITE_LEVEL, checkstyleFileHeader) + " from " + colorize(HIGHLITE_LEVEL, checkstyleDefaultConfigurationFileHeaderUrl) + ".")
-			
-				// download
-				def f = new File(temp + "/" + checkstyleFileHeaderTemplate)
-				new URL(checkstyleDefaultConfigurationFileHeaderUrl).withInputStream { i -> f.withOutputStream { it << i } }			
-			
-				copy {
-					from "${temp}"
-					include "${checkstyleFileHeaderTemplate}"
-					into "${checkstylePath}"
-					rename { String fileName -> fileName.replace(checkstyleFileHeaderTemplate, checkstyleFileHeader) }
-					filter { line -> line.replaceAll('@@PROJECT_NAME@@', "${rootProject.name}".toString()) }
-					filter { line -> line.replaceAll('@@PROJECT_TYPE@@', "${project.ext.projectType}".toString()) }
-					filter { line -> line.replaceAll('@@GROUP_ID@@', "${project.ext.projectGroupId}".toString()) }
-					filter { line -> line.replaceAll('@@COMPONENT_ID@@', "${project.ext.projectComponentId}".toString()) }
-					filter { line -> line.replaceAll('@@PACKAGE@@', "${project.ext.projectRootPackageName}".toString()) }
-					filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.projectDescription}".toString()) }
-					filter { line -> line.replaceAll('@@URL@@', "${project.ext.projectUrl}".toString()) }
-					filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.licenseText}".toString()) }
-					filter { line -> line.replaceAll('@@LICENSE_ORGANISATION@@', "${project.ext.licenseOrganisation}".toString()) }			
-					filter { line -> line.replaceAll('@@MAJOR_NUMBER@@', "${project.ext.majorVersionNumber}".toString()) }
-					filter { line -> line.replaceAll('@@MINOR_NUMBER@@', "${project.ext.minorVersionNumber}".toString()) }
-					filter { line -> line.replaceAll('@@REVISION_NUMBER@@', "${project.ext.revisionVersionNumber}".toString()) }
-					filter { line -> line.replaceAll('@@QUALIFIER@@', "${project.ext.qualifierVersionNumber}".toString()) }
-					filter { line -> line.replaceAll('@@SCM_NUMBER@@', "${project.ext.scmVersionNumber}".toString()) }
-					filter { line -> line.replaceAll('@@BUILD_TIMESTAMP@@', "${project.ext.BUILD_TIMESTAMP}".toString()) }
-					filter { line -> line.replaceAll('@@IS_RELEASE_VERSION@@', "${project.ext.isReleaseVersion}".toString()) }
-					filter { line -> line.replaceAll('@@VERSION@@', "${project.version}".toString()) }
-				}
-				
-				f.delete()
-			}
-
-			def checkstyleDefaultConfigurationFileSupressionUrl = project.getProperty('checkstyleDefaultConfigurationFileSupressionUrl')
-			if (checkstyleDefaultConfigurationFileSupressionUrl!=null && !checkstyleDefaultConfigurationFileSupressionUrl.isEmpty()) {
-				printInfo("> Get " + colorize(HIGHLITE_LEVEL, checkstyleFileSupression) + " from " + colorize(HIGHLITE_LEVEL, checkstyleDefaultConfigurationFileSupressionUrl) + ".")
-			
-				// download
-				def f = new File(temp + "/" + checkstyleFileSupressionTemplate)
-				new URL(checkstyleDefaultConfigurationFileSupressionUrl).withInputStream { i -> f.withOutputStream { it << i } }			
-			
-				copy {
-					from "${temp}"
-					include "${checkstyleFileSupressionTemplate}"
-					into "${checkstylePath}"
-					rename { String fileName -> fileName.replace(checkstyleFileSupressionTemplate, checkstyleFileSupression) }
-					filter { line -> line.replaceAll('@@PROJECT_NAME@@', "${rootProject.name}".toString()) }
-					filter { line -> line.replaceAll('@@PROJECT_TYPE@@', "${project.ext.projectType}".toString()) }
-					filter { line -> line.replaceAll('@@GROUP_ID@@', "${project.ext.projectGroupId}".toString()) }
-					filter { line -> line.replaceAll('@@COMPONENT_ID@@', "${project.ext.projectComponentId}".toString()) }
-					filter { line -> line.replaceAll('@@PACKAGE@@', "${project.ext.projectRootPackageName}".toString()) }
-					filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.projectDescription}".toString()) }
-					filter { line -> line.replaceAll('@@URL@@', "${project.ext.projectUrl}".toString()) }
-					filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.licenseText}".toString()) }
-					filter { line -> line.replaceAll('@@LICENSE_ORGANISATION@@', "${project.ext.licenseOrganisation}".toString()) }								
-					filter { line -> line.replaceAll('@@MAJOR_NUMBER@@', "${project.ext.majorVersionNumber}".toString()) }
-					filter { line -> line.replaceAll('@@MINOR_NUMBER@@', "${project.ext.minorVersionNumber}".toString()) }
-					filter { line -> line.replaceAll('@@REVISION_NUMBER@@', "${project.ext.revisionVersionNumber}".toString()) }
-					filter { line -> line.replaceAll('@@QUALIFIER@@', "${project.ext.qualifierVersionNumber}".toString()) }
-					filter { line -> line.replaceAll('@@SCM_NUMBER@@', "${project.ext.scmVersionNumber}".toString()) }
-					filter { line -> line.replaceAll('@@BUILD_TIMESTAMP@@', "${project.ext.BUILD_TIMESTAMP}".toString()) }
-					filter { line -> line.replaceAll('@@IS_RELEASE_VERSION@@', "${project.ext.isReleaseVersion}".toString()) }
-					filter { line -> line.replaceAll('@@VERSION@@', "${project.version}".toString()) }
-				}
-				
-				f.delete()
-			}
-			
-			new File(temp).delete()
-		} else {
-			def errorMessage = " Could not find checkstyle configuration (no template nor online connection)!"
-			printInfo(colorize(ERROR_LEVEL, 'ERROR') + ":" +errorMessage)
-			throw new GradleException("ERROR:" + errorMessage)
+		if (!createFileFromTemplate("$checkstyleConfigurationPath/$checkstyleFile", getTemplateFile('checkstyle.xml.template', 'checkstyle'))) {
+			printInfo("> No checkstyle configuration file found, ignore checkstyle.")
+		} else if (!createFileFromTemplate("$checkstyleConfigurationPath/checkstyle-file-header.txt", getTemplateFile('checkstyle-file-header.txt.template', 'checkstyle'))) {
+			printInfo("> No checkstyle configuration file found, ignore checkstyle.")
+		} else  if (!createFileFromTemplate("$checkstyleConfigurationPath/checkstyle-suppressions.xml", getTemplateFile('checkstyle-suppressions.xml.template', 'checkstyle'))) {
+			printInfo("> No checkstyle configuration file found, ignore checkstyle.")
 		}
 	}
 }
+

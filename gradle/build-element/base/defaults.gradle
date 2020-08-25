@@ -24,6 +24,7 @@ setCommonGradleDefaultPropertyIfNull("commonGradleBuildReleasesPreRelease", fals
 setCommonGradleDefaultPropertyIfNull("commonGradleBuildGitUrl", "https://github.com/toolarium/common-gradle-build.git")
 setCommonGradleDefaultPropertyIfNull("commonGradleBuildHomeGitUrl", "")
 setCommonGradleDefaultPropertyIfNull("commonGradleBuildHomeVersionFileUrl", "")
+setCommonGradleDefaultPropertyIfNull("commonGradleBuildCustomConfigName", "Custom Config")
 
 
 /***************************************************************************************
@@ -43,7 +44,9 @@ setCommonGradleDefaultPropertyIfNull("commonGradleBuildElementPath", "${commonGr
 setCommonGradleDefaultPropertyIfNull("commonGradleTemplatePathName", "template")
 setCommonGradleDefaultPropertyIfNull("commonGradleTemplatePath", "${commonGradleBuildUrl}/${commonGradleTemplatePathName}")
 setCommonGradleDefaultPropertyIfNull("commonGradleTemplateBasePath", "${commonGradleTemplatePath}/base")
+setCommonGradleDefaultPropertyIfNull("commonGradleTemplateCheckstylePath", "${commonGradleTemplatePath}/checkstyle")
 setCommonGradleDefaultPropertyIfNull("commonGradleTemplateConfigPath", "${commonGradleTemplatePath}/config")
+setCommonGradleDefaultPropertyIfNull("commonGradleTemplateEclipsePath", "${commonGradleTemplatePath}/eclipse")
 setCommonGradleDefaultPropertyIfNull("commonGradleTemplateJavaPath", "${commonGradleTemplatePath}/java")
 setCommonGradleDefaultPropertyIfNull("commonGradleTemplateNodeJsPath", "${commonGradleTemplatePath}/nodejs")
 setCommonGradleDefaultPropertyIfNull("commonGradleTemplateQuarkusPath", "${commonGradleTemplatePath}/quarkus")
@@ -238,11 +241,7 @@ setCommonGradleDefaultPropertyIfNull("checkstyleHTMLReport", true)
 setCommonGradleDefaultPropertyIfNull("checkstyleConfigurationPath", "${configDirectory}/checkstyle")
 setCommonGradleDefaultPropertyIfNull("checkstyleConfigurationFilename", "checkstyle.xml")
 setCommonGradleDefaultPropertyIfNull("checkstyleConfiguration", "${checkstyleConfigurationPath}/${checkstyleConfigurationFilename}")
-setCommonGradleDefaultPropertyIfNull("checkstyleDefaultConfigurationFileHeaderUrl", "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/template/java/checkstyle-file-header.txt.template")
-setCommonGradleDefaultPropertyIfNull("checkstyleDefaultConfigurationFileSupressionUrl", "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/template/java/checkstyle-suppressions.xml.template")
-setCommonGradleDefaultPropertyIfNull("checkstyleDefaultConfigurationUrl", "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/template/java/checkstyle.xml.template")
-// 'https://raw.githubusercontent.com/checkstyle/checkstyle/master/src/main/resources/google_checks.xml' issues with current
-//setCommonGradleDefaultPropertyIfNull("checkstyleCustomStylesheet", "${checkstyleConfigurationPath}/checkstyle.xml")
+setCommonGradleDefaultPropertyIfNull("referenceCheckstyleConfiguration", "true")
 
 
 /***************************************************************************************

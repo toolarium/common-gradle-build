@@ -37,10 +37,15 @@ if (commonGradleBuildHomeBase == null || commonGradleBuildHomeBase.isEmpty()) {
 	if (commonGradleBuildHomeBase == null || commonGradleBuildHomeBase.isEmpty()) {
 		commonGradleBuildHomeBase = commonGradleHomeDirectory + "/common-gradle-build-home"
 	}
+} else {
+	commonGradleBuildHomeBase = commonGradleBuildHomeBase.replace('\\', '/')
 }
 
 def commonGradleBuildHome=commonGradleBuildHomeBase
-if (commonGradleBuildHomeBase!=null && !commonGradleBuildHomeBase.isEmpty()) {
+def commonCustomConfigVersion = System.getenv('CB_CUSTOM_CONFIG_VERSION')
+if (commonCustomConfigVersion!=null && !commonCustomConfigVersion.isEmpty()) {
+	commonGradleBuildHome=commonGradleBuildHomeBase + "/" + commonCustomConfigVersion
+} else if (commonGradleBuildHomeBase!=null && !commonGradleBuildHomeBase.isEmpty()) {
 	try {
 		if (new File(commonGradleBuildHomeBase).exists()) {
 			def result = null

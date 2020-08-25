@@ -415,5 +415,7 @@ projectValidation {
  ***************************************************************************************/
 ext.registerEndMessage = { message ->
 	def msg = message.toString()
+	msg += "\n  Do you like common-build?\n" 
+	msg += "  -> Go give it a star on " + colorize(TITLE_LEVEL, "https://github.com/toolarium/common-build") + "!\n"
 	setCommonGradleProperty("endMessage", msg)
 }

@@ -161,13 +161,46 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 			
 			filter { line -> line.replaceAll('@@sourceCompatibility@@', "${project.ext.sourceCompatibility}".toString()) }
 			filter { line -> line.replaceAll('@@targetCompatibility@@', "${project.ext.targetCompatibility}".toString()) }
+
+			// main source
+			if (project.hasProperty('srcMainDirectoryName')) {
+				filter { line -> line.replaceAll('@@MAIN@@', "${project.ext.srcMainDirectoryName}".toString()) }
+			}						
+			if (project.hasProperty('srcMainDirectory')) {
+				filter { line -> line.replaceAll('@@SRC_MAIN@@', "${project.ext.srcMainDirectory}".toString()) }
+			}
 			
+			// test source
+			if (project.hasProperty('srcTestDirectoryName')) {			
+				filter { line -> line.replaceAll('@@TEST@@', "${srcTestDirectoryName}".toString()) }
+			}						
+			if (project.hasProperty('srcTestDirectory')) {			
+				filter { line -> line.replaceAll('@@SRC_TEST@@', "${srcTestDirectory}".toString()) }
+			}
+
+			// genereated source
+			if (project.hasProperty('generatedCommonGradleBuildJavaSources')) {			
+				filter { line -> line.replaceAll('@@SRC_GEN_MAIN@@', "${generatedCommonGradleBuildJavaSources}".toString()) }
+			}
+			if (project.hasProperty('generatedCommonGradleBuildResourcesSources')) {			
+				filter { line -> line.replaceAll('@@SRC_GEN_RESOURCES@@', "${generatedCommonGradleBuildResourcesSources}".toString()) }
+			}
+
+			// checkstyle
+			def checkstyleConfigurationNameToSet = "${rootProject.name}"
+			if (project.hasProperty('checkstyleConfigurationName')) {
+				checkstyleConfigurationNameToSet = project.getProperty('checkstyleConfigurationName')
+			}
+			filter { line -> line.replaceAll('@@CHECKSTYLE_CONFIGURATION_NAME@@', "${checkstyleConfigurationNameToSet}".toString()) }
+			if (project.hasProperty('runtimeCheckstyleConfigurationPath')) {			
+				filter { line -> line.replaceAll('@@CHECKSTYLE_CONFIGURATION_PATH@@', "${runtimeCheckstyleConfigurationPath}".toString()) }
+			}
 			if (project.hasProperty('checkstyleToolVersion')) {
 				filter { line -> line.replaceAll('@@checkstyleToolVersion@@', "${project.ext.checkstyleToolVersion}".toString()) }
 			} else {
 				filter { line -> line.replaceAll('@@checkstyleToolVersion@@', "${project.ext.checkstyleToolDefaultVersion}".toString()) }
 			}
-			
+	
 			if (project.hasProperty('testDependencyVersion')) {
 				filter { line -> line.replaceAll('@@testDependencyVersion@@', "${project.ext.testDependencyVersion}".toString()) }
 			}
@@ -190,8 +223,21 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 			if (project.hasProperty('nodePluginVersion')) {
 				filter { line -> line.replaceAll('@@NODE_PLUGIN_VERSION@@', "${project.ext.nodePluginVersion}".toString()) }
 			}
+			
+			if (project.hasProperty('className')) {
+				filter { line -> line.replaceAll('@@className@@', "${project.ext.className}".toString()) }
+			}
+			if (project.hasProperty('classNameUnderTest')) {
+				filter { line -> line.replaceAll('@@classNameUnderTest@@', "${project.ext.classNameUnderTest}".toString()) }
+			}
+			if (project.hasProperty('fileName')) {
+				filter { line -> line.replaceAll('@@fileName@@', "${project.ext.fileName}".toString()) }
+			}
+			if (project.hasProperty('packageName')) {
+				filter { line -> line.replaceAll('@@packageName@@', "${project.ext.packageName}".toString()) }
+			}
 		}
-		
+				
 		return true
 	} else {
 		logDebug("Template file ${theTemplatePath}/${inputTemplateFilename} don't exist.")

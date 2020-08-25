@@ -6,6 +6,12 @@
  */
 
 
+/***************************************************************************************
+ * Set additional template path
+ ***************************************************************************************/
+ext.projectTypeTemplatePath='quarkus'
+
+
 if (!project.hasProperty('commonGradleBuildUrl')) {
     ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
 }
@@ -14,7 +20,6 @@ if (!project.hasProperty('commonGradleBuildUrl')) {
 /***************************************************************************************
  * Set additional template path
  ***************************************************************************************/
-ext.projectTypeTemplatePath='quarkus'
 project.ext.set("useJUnit", false)
 
 
@@ -56,8 +61,14 @@ test {
  * project java validation
  ***************************************************************************************/
 projectValidation {
-	doFirst {
+	doLast {
 		if (project.getProperty('IS_NEW')) {
+			new File(srcMainResourcesDirectory).mkdirs()
+			createFileFromTemplate("${srcMainResourcesDirectory}/applications.properties", getTemplateFile("applications.properties.template")) 
+			def quarkusResourcePath = srcMainResourcesDirectory + "/META-INF/resources"
+			new File(quarkusResourcePath).mkdirs()
+			createFileFromTemplate("${quarkusResourcePath}/index.html", getTemplateFile("index.html.template")) 
+
 			registerEndMessage("" << NELINE \
 								<< "  To get started, got to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
 								<< "      " + colorize(HIGHLITE_LEVEL, "$startExecutable run") + "" << NELINE \

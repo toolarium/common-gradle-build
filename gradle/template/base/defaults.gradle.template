@@ -9,12 +9,7 @@
  * also the change.
  */
 
- 
-/***************************************************************************************
- * gradle cache and home properties file
- ***************************************************************************************/
-//setCommonGradleProperty("commonGradleBuildHomeGitUrl", "your-git-project-where-you-have-defined-your-defaults")
-//setCommonGradleProperty("commonGradleBuildHomeVersionFileUrl", "version-file-of-the-git-project-where-you-have-defined-your-defaults")
+
 /*
    structure of the repository:
       gradle
@@ -24,10 +19,25 @@
 
  
 /***************************************************************************************
+ * gradle cache and home properties file
+ ***************************************************************************************/
+//setCommonGradleProperty("commonGradleBuildHomeGitUrl", "your-git-project-where-you-have-defined-your-defaults")
+//setCommonGradleProperty("commonGradleBuildHomeVersionFileUrl", "version-file-of-the-git-project-where-you-have-defined-your-defaults")
+//setCommonGradleProperty("commonGradleBuildCustomConfigName", "Custom Config")
+
+
+/***************************************************************************************
+ * reference the license always global
+ ***************************************************************************************/
+setCommonGradleProperty("licenseFile", "$commonGradleBuildHome/$licenseFilename")
+
+
+/***************************************************************************************
  * common project files
  ***************************************************************************************/
 //setCommonGradleProperty("includeReadmeFile", false)
 //setCommonGradleProperty("includeLicenseFile", true)
+
 //setCommonGradleProperty("createChangelogFile", false)
 //setCommonGradleProperty("includeChangelogFile", false)
 
@@ -101,31 +111,30 @@
 //setCommonGradleProperty("checkstyleMaxWarnings", 0)
 //setCommonGradleProperty("checkstyleXMLReport", false)
 //setCommonGradleProperty("checkstyleHTMLReport", true)
-//setCommonGradleProperty("checkstyleConfiguration", "${configDirectory}/checkstyle/checkstyle.xml")
-//setCommonGradleProperty("checkstyleDefaultConfigurationFileHeaderUrl", "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/template/java/checkstyle-file-header.txt.template")
-//setCommonGradleDefaultPropertyIfNull("checkstyleDefaultConfigurationFileSupressionUrl", "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/template/java/checkstyle-suppressions.xml.template")
-//setCommonGradleProperty("checkstyleDefaultConfigurationUrl", "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/template/java/checkstyle.xml.template")
+//setCommonGradleProperty("checkstyleConfigurationPath", "${configDirectory}/checkstyle")
+//setCommonGradleProperty("checkstyleConfiguration", "${checkstyleConfigurationPath}/checkstyle.xml")
+//setCommonGradleProperty("referenceCheckstyleConfiguration", "true")
 
 
 /***************************************************************************************
  * test coverage: jacoco
  ***************************************************************************************/
-//setCommonGradleDefaultPropertyIfNull("jacocoToolDefaultVersion", '0.8.5')
-//setCommonGradleDefaultPropertyIfNull("jacocoXMLReport", false)
-//setCommonGradleDefaultPropertyIfNull("jacocoCSVReport", false)
-//setCommonGradleDefaultPropertyIfNull("jacocoHTMLReport", true)
+//setCommonGradleProperty("jacocoToolDefaultVersion", '0.8.5')
+//setCommonGradleProperty("jacocoXMLReport", false)
+//setCommonGradleProperty("jacocoCSVReport", false)
+//setCommonGradleProperty("jacocoHTMLReport", true)
 
 
 /***************************************************************************************
  * quarkus plugin version
  ***************************************************************************************/
-//setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", '1.7.0.Final')
+//setCommonGradleProperty("quarkusPluginVersion", '1.7.0.Final')
 
 
 /***************************************************************************************
  * node plugin version
  ***************************************************************************************/
-//setCommonGradleDefaultPropertyIfNull("nodePluginVersion", '2.2.4')
+//setCommonGradleProperty("nodePluginVersion", '2.2.4')
 
 
 /***************************************************************************************

@@ -30,7 +30,7 @@ projectValidation {
  ***************************************************************************************/
 eclipse {
 	//if you want parts of paths in resulting file to be replaced by variables (files):
-	pathVariables 'GRADLE_HOME': file('d:/devtools/current/gradle')
+	//pathVariables 'GRADLE_HOME': file('c:/devtools/current/gradle')
 
 	classpath {
 		defaultOutputDir = file('bin')
@@ -61,38 +61,15 @@ ext.createEclipseFiles = { overwrite = false ->
 	if (overwrite || !new File("${rootDirectory}", "${classpathFile}").exists()) {
 		def commonGradleTemplateJavaPath= project.getProperty('commonGradleTemplateJavaPath')
 		logInfo("Write file " + colorize(HIGHLITE_LEVEL, rootDirectory + "/" + classpathFile) + colorize(INFO_LEVEL, "..."))
-		def eclipseClasspathTemplate = 'eclipse-classpath.template'
+		def eclipseClasspathTemplateName = 'eclipse-classpath.template'
 		def srcMainDirectoryName = project.getProperty('srcMainDirectoryName')
 		def srcTestDirectoryName = project.getProperty('srcTestDirectoryName')
 		def srcMainDirectory = project.getProperty('srcMainDirectory')
 		def srcTestDirectory = project.getProperty('srcTestDirectory')
 		def generatedCommonGradleBuildJavaSources = project.getProperty('generatedCommonGradleBuildJavaSources')
 		def generatedCommonGradleBuildResourcesSources = project.getProperty('generatedCommonGradleBuildResourcesSources')
-		
-		if (new File("${commonGradleTemplateJavaPath}", "${eclipseClasspathTemplate}").exists()) {
-			printInfo("> Create " + colorize(HIGHLITE_LEVEL, classpathFile) + " from template ${eclipseClasspathTemplate}.")
-			copy {
-				from "${commonGradleTemplateJavaPath}"
-				include "${eclipseClasspathTemplate}"
-				into "${rootDirectory}"
-				rename { String fileName -> fileName.replace(eclipseClasspathTemplate, classpathFile) }
-				filter { line -> line.replaceAll('@@PROJECT_NAME@@', "${rootProject.name}".toString()) }
-				filter { line -> line.replaceAll('@@GROUP_ID@@', "${project.ext.projectGroupId}".toString()) }
-				filter { line -> line.replaceAll('@@COMPONENT_ID@@', "${project.ext.projectComponentId}".toString()) }
-				filter { line -> line.replaceAll('@@PACKAGE@@', "${project.ext.projectRootPackageName}".toString()) }
-				filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.projectDescription}".toString()) }
-				filter { line -> line.replaceAll('@@URL@@', "${project.ext.projectUrl}".toString()) }
-				filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.licenseText}".toString()) }
-				filter { line -> line.replaceAll('@@LICENSE_ORGANISATION@@', "${project.ext.licenseOrganisation}".toString()) }							
-				filter { line -> line.replaceAll('@@SRC_MAIN@@', "${srcMainDirectory}".toString()) }
-				filter { line -> line.replaceAll('@@SRC_TEST@@', "${srcTestDirectory}".toString()) }
-				filter { line -> line.replaceAll('@@MAIN@@', "${srcMainDirectoryName}".toString()) }
-				filter { line -> line.replaceAll('@@TEST@@', "${srcTestDirectoryName}".toString()) }
-				filter { line -> line.replaceAll('@@SRC_GEN_MAIN@@', "${generatedCommonGradleBuildJavaSources}".toString()) }
-				filter { line -> line.replaceAll('@@SRC_GEN_RESOURCES@@', "${generatedCommonGradleBuildResourcesSources}".toString()) }
-				
-			}
-		} else {
+
+		if (!createFileFromTemplate(rootDirectory + "/" + classpathFile, getTemplateFile(eclipseClasspathTemplateName, 'eclipse'))) {
 			printInfo("> Create " + colorize(HIGHLITE_LEVEL, classpathFile) + " with default values.")
 			new File(rootDirectory, classpathFile).withWriter { w ->
 				w << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << NELINE \
@@ -153,25 +130,8 @@ ext.createEclipseFiles = { overwrite = false ->
 	if (overwrite || !new File("${rootDirectory}", "${projectFile}").exists()) {
 		logInfo("Write file " + colorize(HIGHLITE_LEVEL, rootDirectory + "/" + projectFile) + colorize(INFO_LEVEL, "..."))
 		def eclipseProjectTemplate = 'eclipse-project.template'	
-		if (new File("${commonGradleTemplateJavaPath}", "${eclipseProjectTemplate}").exists()) {
-			printInfo("> Create " + colorize(HIGHLITE_LEVEL, projectFile) + " from template ${eclipseProjectTemplate}.")
-			copy {
-				from "${commonGradleTemplateJavaPath}"
-				include "${eclipseProjectTemplate}"
-				into "${rootDirectory}"
-				rename { String fileName -> fileName.replace(eclipseProjectTemplate, projectFile) }
-				filter { line -> line.replaceAll('@@PROJECT_NAME@@', "${rootProject.name}".toString()) }
-				filter { line -> line.replaceAll('@@GROUP_ID@@', "${project.ext.projectGroupId}".toString()) }
-				filter { line -> line.replaceAll('@@COMPONENT_ID@@', "${project.ext.projectComponentId}".toString()) }
-				filter { line -> line.replaceAll('@@PACKAGE@@', "${project.ext.projectRootPackageName}".toString()) }
-				filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.projectDescription}".toString()) }
-				filter { line -> line.replaceAll('@@URL@@', "${project.ext.projectUrl}".toString()) }
-				filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.licenseText}".toString()) }
-				filter { line -> line.replaceAll('@@LICENSE_ORGANISATION@@', "${project.ext.licenseOrganisation}".toString()) }							
-				filter { line -> line.replaceAll('@@MAIN@@', "${srcMainDirectoryName}".toString()) }
-				filter { line -> line.replaceAll('@@TEST@@', "${srcTestDirectoryName}".toString()) }
-			}
-		} else {
+
+		if (!createFileFromTemplate(rootDirectory + "/" + projectFile, getTemplateFile(eclipseProjectTemplate, 'eclipse'))) {
 			printInfo("> Create " + colorize(HIGHLITE_LEVEL, projectFile) + " with default values.")
 			new File(rootDirectory, projectFile).withWriter { w ->
 				w << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << NELINE \
@@ -213,34 +173,14 @@ ext.createEclipseFiles = { overwrite = false ->
 	if (project.hasProperty('runtimeCheckstyleConfigurationPath') && (overwrite || !new File("${rootDirectory}", "${checkstyleFile}").exists())) {
 		logInfo("Write file " + colorize(HIGHLITE_LEVEL, rootDirectory + "/" + checkstyleFile) + colorize(INFO_LEVEL, "..."))
 		
-		def runtimeCheckstyleConfigurationPath = project.getProperty('runtimeCheckstyleConfigurationPath')
+		def runtimeCheckstyleConfigurationPath = project.getProperty('runtimeCheckstyleConfigurationPath').replace('\\', '/')
 		def checkstyleConfigurationName = "${rootProject.name}"
 		if (project.hasProperty('checkstyleConfigurationName')) {
 			checkstyleConfigurationName = project.getProperty('checkstyleConfigurationName')
 		}
 		
 		def eclipseCheckstyleTemplate = 'eclipse-checkstyle.template'	
-		if (new File("${commonGradleTemplateJavaPath}", "${eclipseCheckstyleTemplate}").exists()) {
-			printInfo("> Create " + colorize(HIGHLITE_LEVEL, checkstyleFile) + " from template ${eclipseCheckstyleTemplate}.")
-			copy {
-				from "${commonGradleTemplateJavaPath}"
-				include "${eclipseCheckstyleTemplate}"
-				into "${rootDirectory}"
-				rename { String fileName -> fileName.replace(eclipseCheckstyleTemplate, checkstyleFile) }
-				filter { line -> line.replaceAll('@@PROJECT_NAME@@', "${rootProject.name}".toString()) }
-				filter { line -> line.replaceAll('@@GROUP_ID@@', "${project.ext.projectGroupId}".toString()) }
-				filter { line -> line.replaceAll('@@COMPONENT_ID@@', "${project.ext.projectComponentId}".toString()) }
-				filter { line -> line.replaceAll('@@PACKAGE@@', "${project.ext.projectRootPackageName}".toString()) }
-				filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.projectDescription}".toString()) }
-				filter { line -> line.replaceAll('@@URL@@', "${project.ext.projectUrl}".toString()) }
-				filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.licenseText}".toString()) }
-				filter { line -> line.replaceAll('@@LICENSE_ORGANISATION@@', "${project.ext.licenseOrganisation}".toString()) }							
-				filter { line -> line.replaceAll('@@MAIN@@', "${srcMainDirectoryName}".toString()) }
-				filter { line -> line.replaceAll('@@TEST@@', "${srcTestDirectoryName}".toString()) }
-				filter { line -> line.replaceAll('@@CHECKSTYLE_CONFIGURATION_NAME@@', "${checkstyleConfigurationName}".toString()) }
-				filter { line -> line.replaceAll('@@CHECKSTYLE_CONFIGURATION_PATH@@', "${runtimeCheckstyleConfigurationPath}".toString()) }
-			}
-		} else {
+		if (!createFileFromTemplate(rootDirectory + "/" + checkstyleFile, getTemplateFile(eclipseCheckstyleTemplate, 'eclipse'))) {
 			printInfo("> Create " + colorize(HIGHLITE_LEVEL, checkstyleFile) + " with default values.")
 			new File(rootDirectory, checkstyleFile).withWriter { w ->
 				w << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << NELINE \
@@ -266,29 +206,12 @@ ext.createEclipseFiles = { overwrite = false ->
 	
 		logInfo("Write file " + colorize(HIGHLITE_LEVEL, eclipseBuildSettingsPath + "/" + eclipseBuildSettingsFile) + colorize(INFO_LEVEL, "..."))
 		def eclipseBuildSettingTemplate = 'eclipse-build-settings.template'	
-		if (new File("${commonGradleTemplateJavaPath}", "${eclipseBuildSettingTemplate}").exists()) {
-			printInfo("> Create " + colorize(HIGHLITE_LEVEL, eclipseBuildSettingsFile) + " from template ${eclipseBuildSettingTemplate}.")
-			copy {
-				from "${commonGradleTemplateJavaPath}"
-				include "${eclipseBuildSettingTemplate}"
-				into "${eclipseBuildSettingsPath}"
-				rename { String fileName -> fileName.replace(eclipseBuildSettingTemplate, eclipseBuildSettingsFile) }
-				filter { line -> line.replaceAll('@@PROJECT_NAME@@', "${rootProject.name}".toString()) }
-				filter { line -> line.replaceAll('@@GROUP_ID@@', "${project.ext.projectGroupId}".toString()) }
-				filter { line -> line.replaceAll('@@COMPONENT_ID@@', "${project.ext.projectComponentId}".toString()) }
-				filter { line -> line.replaceAll('@@PACKAGE@@', "${project.ext.projectRootPackageName}".toString()) }
-				filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.projectDescription}".toString()) }
-				filter { line -> line.replaceAll('@@URL@@', "${project.ext.projectUrl}".toString()) }
-				filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.licenseText}".toString()) }
-				filter { line -> line.replaceAll('@@LICENSE_ORGANISATION@@', "${project.ext.licenseOrganisation}".toString()) }							
-				filter { line -> line.replaceAll('@@MAIN@@', "${srcMainDirectoryName}".toString()) }
-				filter { line -> line.replaceAll('@@TEST@@', "${srcTestDirectoryName}".toString()) }
-			}
-		} else {
+		
+		if (!createFileFromTemplate(eclipseBuildSettingsPath + "/" + eclipseBuildSettingsFile, getTemplateFile(eclipseBuildSettingTemplate, 'eclipse'))) {
 			printInfo("> Create " + colorize(HIGHLITE_LEVEL, eclipseBuildSettingsFile) + " with default values.")
 			new File(eclipseBuildSettingsPath, eclipseBuildSettingsFile).withWriter { w ->
 				w << "connection.project.dir=" << NELINE \
-					<< "eclipse.preferences.version=1" << NELINE
+				  << "eclipse.preferences.version=1" << NELINE
 			}			
 		}
 	}
