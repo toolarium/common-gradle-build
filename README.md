@@ -1,5 +1,7 @@
 # common-gradle-build
-![Screenshot](docs/logo/common-gradle-build-small.png)
+[![License](https://img.shields.io/github/license/toolarium/common-gradle-build)](https://opensource.org/licenses/MIT)
+
+<img align="right" height="110" src="docs/logo/common-gradle-build-small.png">
 
 Defines common gradle build scripts.
 
