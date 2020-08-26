@@ -38,11 +38,11 @@ apply from: "${commonGradleBuildElementPath}/base/gradle.gradle"
  * common node dirctories and files
  ***************************************************************************************/
 addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/node_modules")
-addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/package.json")
-addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/package-lock.json")
-
 addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/coverage")
 addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/test")
+
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/package.json")
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/package-lock.json")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.babelrc")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.eslintrc.js")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.prettierrc")
@@ -97,16 +97,21 @@ if (!project.getProperty('IS_NEW')) {
 }
 
 
+defaultTasks /*'clean', */'build'
+
+
 /***************************************************************************************
- * Genearate app task
+ * clean
  ***************************************************************************************/
-task generateApp2(type: NpxTask) {
-print 1
+task clean(type: NpmTask) {
+	group = 'NPM tasks'
+	description = 'Clean'
+	args = ['run', 'clean']
 }
 
 
 /***************************************************************************************
- * npm run build
+ * build
  ***************************************************************************************/
 task build(type: NpmTask) {
 	group = 'NPM tasks'
@@ -116,23 +121,30 @@ task build(type: NpmTask) {
 
 
 /***************************************************************************************
- * npm run build
+ * test
  ***************************************************************************************/
-task npmBuild(type: NpmTask) {
+task test(type: NpmTask) {
 	group = 'NPM tasks'
-	description = 'Excute npm build'
-	args = ['run', 'build']
+	description = 'Excute npm test'
+	args = ['run', 'test']
 }
+
+//runDev.dependsOn run
 
 
 /***************************************************************************************
  * npm run start
  ***************************************************************************************/
-task start(type: NpmTask) {
+task runDev(type: NpmTask) {
 	group = 'NPM tasks'
 	description = 'Excute npm start'
-	args = ['run', 'start']
+//    tasks = ['build']
+//    tasks = ['build', 'lint', 'test']
+	args = ['run', 'dev']
 }
+runDev.dependsOn build
+
+//run.dependsOn runDev
 
 
 /***************************************************************************************
@@ -164,27 +176,8 @@ ext.generatePackageJson = { outputPath = "${$rootDirectory}",
 							packageJsonTemplateName = null,
 							packageJsonTemplate ->							
 	if (overwrite || !new File("${outputPath}", "${filename}").exists()) {
-		logInfo("Write file " + colorize(HIGHLITE_LEVEL, outputPath + "/" + filename) + colorize(INFO_LEVEL, "..."))
-		
-		if (packageJsonTemplateName!=null && new File("${commonGradleTemplateJavaPath}", "${packageJsonTemplateName}").exists()) {
-			printInfo("> Create " + colorize(HIGHLITE_LEVEL, filename) + " from template ${packageJsonTemplateName}.")
-			copy {
-				from "${commonGradleTemplateJavaPath}"
-				include "${packageJsonTemplateName}"
-				into "${outputPath}"
-				rename { String f -> f.replace(packageJsonTemplateName, filename) }
-				filter { line -> line.replaceAll('@@PROJECT_NAME@@', "${rootProject.name}".toString()) }
-				filter { line -> line.replaceAll('@@GROUP_ID@@', "${project.ext.projectGroupId}".toString()) }
-				filter { line -> line.replaceAll('@@COMPONENT_ID@@', "${project.ext.projectComponentId}".toString()) }
-				filter { line -> line.replaceAll('@@PACKAGE@@', "${project.ext.projectRootPackageName}".toString()) }
-				filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.projectDescription}".toString()) }
-				filter { line -> line.replaceAll('@@URL@@', "${project.ext.projectUrl}".toString()) }
-				filter { line -> line.replaceAll('@@LICENSE@@', "${project.ext.licenseText}".toString()) }
-				filter { line -> line.replaceAll('@@LICENSE_ORGANISATION@@', "${project.ext.licenseOrganisation}".toString()) }
-				filter { line -> line.replaceAll('@@MAIN@@', "${srcMainDirectoryName}".toString()) }
-				filter { line -> line.replaceAll('@@TEST@@', "${srcTestDirectoryName}".toString()) }
-			}
-		} else {
+		logInfo("Write file " + colorize(HIGHLITE_LEVEL, outputPath + "/" + filename) + colorize(INFO_LEVEL, "..."))		
+		if (packageJsonTemplateName==null || !createFileFromTemplate(rootDirectory + "/" + filename, getTemplateFile(packageJsonTemplateName))) {
 			printInfo("> Create " + colorize(HIGHLITE_LEVEL, filename) + " with default values.")
 			new File(outputPath, filename).withWriter { packageJsonTemplate }			
 		}

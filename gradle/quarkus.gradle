@@ -61,6 +61,11 @@ test {
  * project java validation
  ***************************************************************************************/
 projectValidation {
+	if (project.getProperty('IS_NEW')) {
+		bootStraplogLifecycle("  > Just create project structure, skip build.")
+		gradle.startParameter.excludedTaskNames += "build"
+	}
+
 	doLast {
 		if (project.getProperty('IS_NEW')) {
 			new File(srcMainResourcesDirectory).mkdirs()

@@ -40,6 +40,11 @@ addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/nuxt.config.js")
  * project validation
  ***************************************************************************************/
 projectValidation {
+	if (project.getProperty('IS_NEW')) {
+		bootStraplogLifecycle("  > Just create project structure, skip build.")
+		gradle.startParameter.excludedTaskNames += "build"
+	}
+
 	doFirst {
 		if (project.getProperty('IS_NEW')) {
 			/*
