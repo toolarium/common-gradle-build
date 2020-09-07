@@ -94,76 +94,76 @@ if (!project.getProperty('IS_NEW')) {
 		// defined for Gradle. Disable this option if you want to configure the proxy for npm or yarn on your own (in the .npmrc file for instance).
 		//useGradleProxySettings = true
 	}
-}
 
 
-defaultTasks /*'clean', */'build'
+	defaultTasks /*'clean', */'build'
 
 
-/***************************************************************************************
- * clean
- ***************************************************************************************/
-task clean(type: NpmTask) {
-	group = 'NPM tasks'
-	description = 'Clean'
-	args = ['run', 'clean']
-}
+	/***************************************************************************************
+	 * clean
+	 ***************************************************************************************/
+	task clean(type: NpmTask) {
+		group = 'NPM tasks'
+		description = 'Clean'
+		args = ['run', 'clean']
+	}
 
 
-/***************************************************************************************
- * build
- ***************************************************************************************/
-task build(type: NpmTask) {
-	group = 'NPM tasks'
-	description = 'Excute npm build'
-	args = ['run', 'build']
-}
+	/***************************************************************************************
+	 * build
+	 ***************************************************************************************/
+	task build(type: NpmTask) {
+		group = 'NPM tasks'
+		description = 'Excute npm build'
+		args = ['run', 'build']
+	}
 
 
-/***************************************************************************************
- * test
- ***************************************************************************************/
-task test(type: NpmTask) {
-	group = 'NPM tasks'
-	description = 'Excute npm test'
-	args = ['run', 'test']
-}
+	/***************************************************************************************
+	 * test
+	 ***************************************************************************************/
+	task test(type: NpmTask) {
+		group = 'NPM tasks'
+		description = 'Excute npm test'
+		args = ['run', 'test']
+	}
 
-//runDev.dependsOn run
-
-
-/***************************************************************************************
- * npm run start
- ***************************************************************************************/
-task runDev(type: NpmTask) {
-	group = 'NPM tasks'
-	description = 'Excute npm start'
-//    tasks = ['build']
-//    tasks = ['build', 'lint', 'test']
-	args = ['run', 'dev']
-}
-runDev.dependsOn build
-
-//run.dependsOn runDev
+	//runDev.dependsOn run
 
 
-/***************************************************************************************
- * npm run audit
- ***************************************************************************************/
-task audit(type: NpmTask) {
-	group = 'NPM tasks'
-	description = 'Excute npm audit'
-	args = ['run', 'npmaudit']
-}
+	/***************************************************************************************
+	 * npm run start
+	 ***************************************************************************************/
+	task runDev(type: NpmTask) {
+		group = 'NPM tasks'
+		description = 'Excute npm start'
+	//    tasks = ['build']
+	//    tasks = ['build', 'lint', 'test']
+		args = ['run', 'dev']
+	}
+	runDev.dependsOn build
+
+	//run.dependsOn runDev
 
 
-/***************************************************************************************
- * npm run lint
- ***************************************************************************************/
-task lint(type: NpmTask) {
-	group = 'NPM tasks'
-	description = 'Excute npm lint'
-	args = ['run', 'lint']
+	/***************************************************************************************
+	 * npm run audit
+	 ***************************************************************************************/
+	task audit(type: NpmTask) {
+		group = 'NPM tasks'
+		description = 'Excute npm audit'
+		args = ['run', 'npmaudit']
+	}
+
+
+	/***************************************************************************************
+	 * npm run lint
+	 ***************************************************************************************/
+	task lint(type: NpmTask) {
+		group = 'NPM tasks'
+		description = 'Excute npm lint'
+		args = ['run', 'lint']
+	}
 }
 
 
