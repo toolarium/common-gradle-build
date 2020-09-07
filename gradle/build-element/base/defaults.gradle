@@ -116,7 +116,8 @@ setCommonGradleDefaultPropertyIfNull("srcMainDirectory", "${srcDirectory}/${srcM
 setCommonGradleDefaultPropertyIfNull("srcTestDirectory", "${srcDirectory}/${srcTestDirectoryName}")
 
 // software generation settings
-setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBuildSources", "build/generated/sources/common-gradle-build")
+setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBaseBuildSources", "$rootDirectory/build/generated/sources")
+setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBuildSources", "$generatedCommonGradleBaseBuildSources/common-gradle-build")
 
 
 /***************************************************************************************
@@ -161,8 +162,12 @@ setCommonGradleDefaultPropertyIfNull("projectType", "java-library")
 /***************************************************************************************
  * compile settings
  ***************************************************************************************/
-setCommonGradleDefaultPropertyIfNull("sourceCompatibility", JavaVersion.VERSION_1_8)
-setCommonGradleDefaultPropertyIfNull("targetCompatibility", JavaVersion.VERSION_1_8 /*parseVersion("${System.properties['java.version']}")*/)
+//setCommonGradleDefaultPropertyIfNull("sourceCompatibility", JavaVersion.VERSION_1_8)
+//setCommonGradleDefaultPropertyIfNull("targetCompatibility", JavaVersion.VERSION_1_8)
+//setCommonGradleDefaultPropertyIfNull("sourceCompatibility", JavaVersion.VERSION_11)
+//setCommonGradleDefaultPropertyIfNull("targetCompatibility", JavaVersion.VERSION_11)
+setCommonGradleDefaultPropertyIfNull("sourceCompatibility", parseVersion("${System.properties['java.version']}"))
+setCommonGradleDefaultPropertyIfNull("targetCompatibility", parseVersion("${System.properties['java.version']}"))
 setCommonGradleDefaultPropertyIfNull("fileEncoding", "UTF-8")
 setCommonGradleDefaultPropertyIfNull("compileJavaFork", false)
 setCommonGradleDefaultPropertyIfNull("compileJavaHome", "")
@@ -241,7 +246,7 @@ setCommonGradleDefaultPropertyIfNull("checkstyleHTMLReport", true)
 setCommonGradleDefaultPropertyIfNull("checkstyleConfigurationPath", "${configDirectory}/checkstyle")
 setCommonGradleDefaultPropertyIfNull("checkstyleConfigurationFilename", "checkstyle.xml")
 setCommonGradleDefaultPropertyIfNull("checkstyleConfiguration", "${checkstyleConfigurationPath}/${checkstyleConfigurationFilename}")
-setCommonGradleDefaultPropertyIfNull("referenceCheckstyleConfiguration", "true")
+setCommonGradleDefaultPropertyIfNull("referenceCheckstyleConfiguration", "false")
 
 
 /***************************************************************************************
@@ -267,6 +272,35 @@ setCommonGradleDefaultPropertyIfNull("quarkusPlatformVersion", "${quarkusPluginV
  * node plugin defaults
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("nodePluginVersion", '2.2.4')
+
+
+/***************************************************************************************
+ * openapi plugin defaults
+ ***************************************************************************************/
+setCommonGradleDefaultPropertyIfNull("srcMainApiSpecDirectoryName", "api-spec")
+setCommonGradleDefaultPropertyIfNull("srcMainApiSpecDirectory", "${srcMainDirectory}/${srcMainApiSpecDirectoryName}")
+//setCommonGradleDefaultPropertyIfNull("openapiPluginVersion", '4.3.1')
+setCommonGradleDefaultPropertyIfNull("openapiPluginVersion", '5.0.0-beta')
+//setCommonGradleDefaultPropertyIfNull("openapiLibrary", 'okhttp-gson')
+//setCommonGradleDefaultPropertyIfNull("openapiGeneratorName", 'java')
+setCommonGradleDefaultPropertyIfNull("openapiGeneratorName", 'jaxrs-spec')
+
+setCommonGradleDefaultPropertyIfNull("openapiLibrary", 'quarkus')
+setCommonGradleDefaultPropertyIfNull("openapiDocs", 'true')
+setCommonGradleDefaultPropertyIfNull("openapiTests", 'true')
+setCommonGradleDefaultPropertyIfNull("openapiModelDocs", 'false')
+setCommonGradleDefaultPropertyIfNull("openapiModelTests", 'false')
+
+setCommonGradleDefaultPropertyIfNull("openapiDateLibrary", "java8")
+setCommonGradleDefaultPropertyIfNull("openapiInterfaceOnly", "true")
+setCommonGradleDefaultPropertyIfNull("openapiUseJava8Features", 'true')
+setCommonGradleDefaultPropertyIfNull("openapiUseBeanValidation", 'false')
+setCommonGradleDefaultPropertyIfNull("openapiNullable", "false")
+setCommonGradleDefaultPropertyIfNull("openapiAsyncNative", 'false')
+setCommonGradleDefaultPropertyIfNull("openapiBigDecimalAsString", 'true')
+setCommonGradleDefaultPropertyIfNull("openapiBooleanGetterPrefix", "get")
+setCommonGradleDefaultPropertyIfNull("openapiHideGenerationTimestamp", 'true')
+setCommonGradleDefaultPropertyIfNull("openapiUseGzipFeature", 'true')
 
 
 /***************************************************************************************
@@ -342,8 +376,11 @@ setCommonGradleDefaultPropertyIfNull("onlineCheckConnectionUrlTimeout", 1500)
 /***************************************************************************************
  * valid build attributes
  ***************************************************************************************/
-setCommonGradleProperty("validBuild", true)
+setCommonGradleDefaultPropertyIfNull("validBuild", true)
 setCommonGradleDefaultPropertyIfNull("validBuildMessage", "")
+setCommonGradleDefaultPropertyIfNull("errorMessagePrefix", "\nERROR")
+setCommonGradleDefaultPropertyIfNull("logErrorMessage", false)
+setCommonGradleDefaultPropertyIfNull("errorMessageColor", WARN_LEVEL)
 
 
 /***************************************************************************************
@@ -352,5 +389,3 @@ setCommonGradleDefaultPropertyIfNull("validBuildMessage", "")
 setCommonGradleDefaultPropertyIfNull("commonGradleConfigResourcebundleName", "Resourcebundle.xls")
 setCommonGradleDefaultPropertyIfNull("commonGradleConfigResourcebundlePath", "${configDirectory}/${commonGradleConfigResourcebundleName}")
 setCommonGradleDefaultPropertyIfNull("commonGradleResourcebundleOututPath", "${generatedCommonGradleBuildSources}/resources/main/resourcebundle")
-
-

@@ -28,13 +28,14 @@ projectValidation {
 /***************************************************************************************
  * Properly synch eclipse .classpath file
  ***************************************************************************************/
+/*
 eclipse {
 	//if you want parts of paths in resulting file to be replaced by variables (files):
 	//pathVariables 'GRADLE_HOME': file('c:/devtools/current/gradle')
 
 	classpath {
-		defaultOutputDir = file('bin')
-		/*
+		defaultOutputDir = file('bin/default')
+		
 		file {
 			whenMerged {
 				// use default Output for all source-folders. see also defaultOutputDir per project
@@ -46,10 +47,9 @@ eclipse {
 				}
 			}
 		}
-		*/
 	}
 }
-
+*/
 
 /***************************************************************************************
  * Create eclipse file 
@@ -169,30 +169,33 @@ ext.createEclipseFiles = { overwrite = false ->
 		}
 	}
 	
-	def checkstyleFile = ".checkstyle"
-	if (project.hasProperty('runtimeCheckstyleConfigurationPath') && (overwrite || !new File("${rootDirectory}", "${checkstyleFile}").exists())) {
-		logInfo("Write file " + colorize(HIGHLITE_LEVEL, rootDirectory + "/" + checkstyleFile) + colorize(INFO_LEVEL, "..."))
-		
-		def runtimeCheckstyleConfigurationPath = project.getProperty('runtimeCheckstyleConfigurationPath').replace('\\', '/')
-		def checkstyleConfigurationName = "${rootProject.name}"
-		if (project.hasProperty('checkstyleConfigurationName')) {
-			checkstyleConfigurationName = project.getProperty('checkstyleConfigurationName')
-		}
-		
-		def eclipseCheckstyleTemplate = 'eclipse-checkstyle.template'	
-		if (!createFileFromTemplate(rootDirectory + "/" + checkstyleFile, getTemplateFile(eclipseCheckstyleTemplate, 'eclipse'))) {
-			printInfo("> Create " + colorize(HIGHLITE_LEVEL, checkstyleFile) + " with default values.")
-			new File(rootDirectory, checkstyleFile).withWriter { w ->
-				w << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << NELINE \
-					<< "" << NELINE \
-					<< "<fileset-config file-format-version=\"1.2.0\" simple-config=\"true\" sync-formatter=\"false\">" << NELINE \
-					<< "	<local-check-config name=\"${checkstyleConfigurationName}\" location=\"${runtimeCheckstyleConfigurationPath}/checkstyle.xml\" type=\"external\" description=\"\">" << NELINE \
-					<< "	<	<additional-data name=\"protect-config-file\" value=\"true\"/>" << NELINE \
-					<< "	</local-check-config>" << NELINE \
-					<< "	<fileset name=\"all\" enabled=\"true\" check-config-name=\"${checkstyleConfigurationName}\" local=\"true\">" << NELINE \
-					<< "		<file-match-pattern match-pattern=\".\" include-pattern=\"true\"/>" << NELINE \
-					<< "	</fileset>" << NELINE \
-					<< "</fileset-config>" << NELINE
+	if (project.hasProperty('initCheckstyle') && project.getProperty('initCheckstyle')) {
+println "=======>	" + project.getProperty('initCheckstyle')
+		def checkstyleFile = ".checkstyle"
+		if (project.hasProperty('runtimeCheckstyleConfigurationPath') && (overwrite || !new File("${rootDirectory}", "${checkstyleFile}").exists())) {
+			logInfo("Write file " + colorize(HIGHLITE_LEVEL, rootDirectory + "/" + checkstyleFile) + colorize(INFO_LEVEL, "..."))
+			
+			def runtimeCheckstyleConfigurationPath = project.getProperty('runtimeCheckstyleConfigurationPath').replace('\\', '/')
+			def checkstyleConfigurationName = "${rootProject.name}"
+			if (project.hasProperty('checkstyleConfigurationName')) {
+				checkstyleConfigurationName = project.getProperty('checkstyleConfigurationName')
+			}
+			
+			def eclipseCheckstyleTemplate = 'eclipse-checkstyle.template'	
+			if (!createFileFromTemplate(rootDirectory + "/" + checkstyleFile, getTemplateFile(eclipseCheckstyleTemplate, 'eclipse'))) {
+				printInfo("> Create " + colorize(HIGHLITE_LEVEL, checkstyleFile) + " with default values.")
+				new File(rootDirectory, checkstyleFile).withWriter { w ->
+					w << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << NELINE \
+						<< "" << NELINE \
+						<< "<fileset-config file-format-version=\"1.2.0\" simple-config=\"true\" sync-formatter=\"false\">" << NELINE \
+						<< "	<local-check-config name=\"${checkstyleConfigurationName}\" location=\"${runtimeCheckstyleConfigurationPath}/checkstyle.xml\" type=\"external\" description=\"\">" << NELINE \
+						<< "	<	<additional-data name=\"protect-config-file\" value=\"true\"/>" << NELINE \
+						<< "	</local-check-config>" << NELINE \
+						<< "	<fileset name=\"all\" enabled=\"true\" check-config-name=\"${checkstyleConfigurationName}\" local=\"true\">" << NELINE \
+						<< "		<file-match-pattern match-pattern=\".\" include-pattern=\"true\"/>" << NELINE \
+						<< "	</fileset>" << NELINE \
+						<< "</fileset-config>" << NELINE
+				}
 			}
 		}
 	}

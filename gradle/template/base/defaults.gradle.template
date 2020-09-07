@@ -113,7 +113,7 @@ setCommonGradleProperty("licenseFile", "$commonGradleBuildHome/$licenseFilename"
 //setCommonGradleProperty("checkstyleHTMLReport", true)
 //setCommonGradleProperty("checkstyleConfigurationPath", "${configDirectory}/checkstyle")
 //setCommonGradleProperty("checkstyleConfiguration", "${checkstyleConfigurationPath}/checkstyle.xml")
-//setCommonGradleProperty("referenceCheckstyleConfiguration", "true")
+setCommonGradleProperty("referenceCheckstyleConfiguration", "true")
 
 
 /***************************************************************************************
@@ -135,6 +135,12 @@ setCommonGradleProperty("licenseFile", "$commonGradleBuildHome/$licenseFilename"
  * node plugin version
  ***************************************************************************************/
 //setCommonGradleProperty("nodePluginVersion", '2.2.4')
+
+
+/***************************************************************************************
+ * openapi plugin version
+ ***************************************************************************************/
+//setCommonGradleProperty("openapiPluginVersion", '4.3.1')
 
 
 /***************************************************************************************

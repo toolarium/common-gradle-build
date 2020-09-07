@@ -1,0 +1,24 @@
+/*
+ * build.gradle
+ *
+ * Copyright by @@LICENSE_ORGANISATION@@, all rights reserved.
+ * @@LICENSE@@
+ */
+plugins {
+    id "org.openapi.generator" version "${openapiPluginVersion}"
+}
+
+apply from: "@@COMMON_GRADLE_BUILD_URL@@"
+
+
+/@@STAR_LINE@@
+ * Define project dependencies
+ @@STAR_LINE@@/
+dependencies {
+    // see https://docs.gradle.org/current/userguide/java_library_plugin.html
+
+    implementation 'javax.validation:validation-api:2.0.1.Final'
+    implementation 'javax.ws.rs:javax.ws.rs-api:2.1.1'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.11.2'
+    implementation 'javax.annotation:javax.annotation-api:1.3.2'
+}

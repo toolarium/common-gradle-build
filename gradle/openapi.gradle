@@ -1,0 +1,355 @@
+/*
+ * java-rest-api.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+buildscript {
+  repositories {
+    maven { url "https://repo1.maven.org/maven2" }
+  }
+  dependencies {
+    classpath "org.openapitools:openapi-generator-gradle-plugin:${openapiPluginVersion}"
+  }
+}
+
+// check plugin
+if (project.plugins.findPlugin('org.openapi.generator')==null) {
+	ext.validBuild=false
+	ext.errorMessagePrefix=""
+	ext.validBuildMessage = "Missing the openapi gradle plugin!\n-> Please add the following lines at the beginning of you build.gradle:\n\n" \
+		+ "plugins {\n" \
+		+ "    id \"org.openapi.generator\" version \"${openapiPluginVersion}\"\n" \
+		+ "}\n";
+} else {
+	apply plugin: 'org.openapi.generator'
+}
+
+
+/***************************************************************************************
+ * Set additional template path
+ ***************************************************************************************/
+ext.projectTypeTemplatePath='openapi'
+ext.initCheckstyle=false
+
+
+if (!project.hasProperty('commonGradleBuildUrl')) {
+    ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
+}
+
+if (!project.hasProperty('commonGradleBuildElementPath')) {
+	ext.commonGradleBuildElementPath="${commonGradleBuildUrl}/build-element"
+}
+apply from: "${commonGradleBuildElementPath}/java-base.gradle"
+
+
+/***************************************************************************************
+ * define default directories
+ ***************************************************************************************/
+setCommonGradleProperty('createSrcMainJavaDirectory', false)
+setCommonGradleProperty('createSrcTestJavaDirectory', false)
+setCommonGradleProperty('createSrcMainResourcesDirectory', false)
+setCommonGradleProperty('createSrcTestResourcesDirectory', false)
+
+/*
+task parseAll {
+	def parsedfile = (new XmlParser()).parse("d:/myfile.xml")
+	parsedfile.list.each { file ->
+		def jwsTask = task "parseJws${file.name.capitalize()}" { 
+			doLast {
+				// parse logic
+			}
+		}
+
+		parseAll.dependsOn jwsTask
+	}
+
+	def jprTask = task parseJpr {
+		doLast {
+			// parse logic
+		}
+	}
+}
+
+parseAll.dependsOn jprTask
+*/
+
+
+/* sample
+task generatePetStore3(type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
+    String basePackage = "com.example.petstore"
+    verbose = false
+    library = "resttemplate"
+    generatorName = "java"
+    inputSpec = "${project.rootDir}/src/main/api-spec/openapi-sample.yaml".toString()
+    outputDir = "${project.buildDir}/generated/api/petstore"
+    invokerPackage = basePackage
+    apiPackage = basePackage + ".controller"
+    modelPackage = basePackage + ".model"
+    configOptions = [
+            dateLibrary: "java8-localdatetime"
+    ]
+}
+*/
+
+
+/***************************************************************************************
+ * define the openapi generator settings
+ ***************************************************************************************/
+task openApiProcess {
+	
+	if (validBuild) {
+		// create common gradle build java source path
+		createCommonGradleBuildSourcesPath()
+		createGenerateCommonGradleBuildJavaSourcePath()
+
+		if (new File(srcMainApiSpecDirectory).exists()) {
+			def result = null		
+			File[] files = new File(srcMainApiSpecDirectory).listFiles({File file -> file.name.toLowerCase().endsWith(".yaml") || 
+																					 file.name.toLowerCase().endsWith(".json")} as FileFilter)
+			if (files != null && files.length > 0) {		
+				def yamlPath = srcMainApiSpecDirectory;
+				if (yamlPath.startsWith("./")) {
+					yamlPath = "${project.rootDir}" + yamlPath.substring(1)
+				}
+				def srcPath = project.getProperty('generatedCommonGradleBuildSources');
+				if (srcPath.startsWith("./")) {
+					srcPath = "${project.rootDir}" + srcPath.substring(1)
+				}
+
+				logInfo(" > Settings: "				
+							+ "generatorName: " + colorize(HIGHLITE_LEVEL, "${openapiGeneratorName}".toString()) + ", "
+							+ "library: " + colorize(HIGHLITE_LEVEL, "${openapiLibrary}".toString()) + "\n"
+							+ "               apiDocs: " + colorize(HIGHLITE_LEVEL, "${openapiDocs}".toString()) + ", "
+							+ "apiTests: " + colorize(HIGHLITE_LEVEL, "${openapiTests}".toString()) + ", "
+							+ "modelDocs: " + colorize(HIGHLITE_LEVEL, "${openapiModelDocs}".toString()) + ", "
+							+ "modelTests: " + colorize(HIGHLITE_LEVEL, "${openapiModelTests}".toString()) + "\n"
+							+ "               dateLibrary: " + colorize(HIGHLITE_LEVEL, "${openapiDateLibrary}".toString()) + ", "
+							+ "interfaceOnly: " + colorize(HIGHLITE_LEVEL, "${openapiInterfaceOnly}".toString()) + ", "
+							+ "java8: " + colorize(HIGHLITE_LEVEL, "${openapiUseJava8Features}".toString()) + "\n"
+							+ "               useBeanValidation: " + colorize(HIGHLITE_LEVEL, "${openapiUseBeanValidation}".toString()) + ", "	
+							+ "asyncNative: " + colorize(HIGHLITE_LEVEL, "${openapiAsyncNative}".toString()) + "\n"
+							+ "               bigDecimalAsString: " + colorize(HIGHLITE_LEVEL, "${openapiBigDecimalAsString}".toString()) + ", "
+							+ "booleanGetterPrefix: " + colorize(HIGHLITE_LEVEL, "${openapiBooleanGetterPrefix}".toString()) + "\n"
+							+ "               hideGenerationTimestamp: " + colorize(HIGHLITE_LEVEL, "${openapiHideGenerationTimestamp}".toString()) + ", "
+							+ "useGzipFeature: " + colorize(HIGHLITE_LEVEL, "${openapiUseGzipFeature}".toString()))
+			
+				for (File file : files) {
+					if (!file.isDirectory()) {
+						def fileName = file.getName()
+						def apiName = file.getName().replace(".yaml", "");
+
+						def outPath = generatedCommonGradleBaseBuildSources;
+						if (outPath.startsWith("./")) {
+							outPath = "${project.rootDir}" + outPath.substring(1) + "/" + apiName
+						}
+
+						//def createOpenApi = tasks.create(name: "openApiGenerate${apiName}", dependsOn: openApiProcess, type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
+						def openApiTaskName="openApiGenerate${apiName}"
+						def createOpenApi = tasks.create(name: "${openApiTaskName}", type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
+							logInfo("Create the open api task " + colorize(HIGHLITE_LEVEL, "[$openApiTaskName]") + " for [" + colorize(HIGHLITE_LEVEL, srcMainApiSpecDirectory + "/" + fileName) + colorize(INFO_LEVEL, "]."))						
+							printInfo("> Generate source from openapi [" + colorize(HIGHLITE_LEVEL, srcMainApiSpecDirectory + "/" + fileName) + "].")
+
+							verbose = false
+							inputSpec = "${yamlPath}/${fileName}".toString()
+							outputDir = "${outPath}".toString()
+							generatorName = "${openapiGeneratorName}".toString()
+							id = "${rootProject.name}".toString()
+							groupId = "${project.ext.projectGroupId}".toString()					
+							apiPackage = "${project.ext.projectRootPackageName}.${apiName}.api".toString()
+							invokerPackage = "${project.ext.projectRootPackageName}.${apiName}.client".toString()
+							modelPackage = "${project.ext.projectRootPackageName}.${apiName}.dto".toString()
+							//templateDir = "$rootDir/src/main/resources/api/templates".toString()
+							version = "${project.version}".toString()
+
+							library = "${openapiLibrary}".toString()
+							//snapshotVersion = "${}"
+								
+							// modelFilesConstrainedTo = [
+							//	"Error"
+							//] 
+							
+							configOptions = [
+								//sourceFolder : "${srcPath}".toString(),						
+								apiDocs : "${openapiDocs}".toString(),
+								apiTests : "${openapiTests}".toString(),
+								modelDocs : "${openapiModelDocs}".toString(),
+								modelTests : "${openapiModelTests}".toString(),
+
+								artifactVersion : "${project.version}".toString(),
+								artifactDescription : "${project.ext.projectDescription}".toString(),
+								//artifactUrl = "${}"
+								developerOrganization : "${project.ext.licenseOrganisation}".toString(),
+								developerOrganizationUrl : "${project.ext.projectUrl}".toString(),
+								licenseName : "${project.ext.licenseText}".toString(),
+								licenseUrl : "${project.ext.licenseUrl}".toString(),
+
+								dateLibrary : "${openapiDateLibrary}".toString(),
+								interfaceOnly : "${openapiInterfaceOnly}".toString(),
+								java8 : "${openapiUseJava8Features}".toString(),
+								useBeanValidation : "${openapiUseJava8Features}".toString(),
+								//useOptional: "true",
+								//useLombok: "true",
+								fullJavaUtil : 'true',
+								//useSwaggerAnnotations : 'false',
+								disallowAdditionalPropertiesIfNotPresent : 'false',
+								openApiNullable : "${openapiNullable}".toString(),
+								asyncNative : "${openapiAsyncNative}".toString(),
+								bigDecimalAsString : "${openapiBigDecimalAsString}".toString(),
+								booleanGetterPrefix : "${openapiBooleanGetterPrefix}".toString(),
+								hideGenerationTimestamp : "${openapiHideGenerationTimestamp}".toString(),
+								useGzipFeature : "${openapiUseGzipFeature}".toString(),
+								//snapshotVersion = "${}"
+								//sourceFolder = "${}"
+							]
+							
+							def generatedCommonGradleBuildSources = project.getProperty('generatedCommonGradleBuildSources');
+							sourceSets.main.java.srcDirs += "${outPath}/src/gen/java/"
+							logInfo("Set source set to " + colorize(HIGHLITE_LEVEL, sourceSets.main.java.srcDirs))
+						}
+							
+						compileJava.dependsOn createOpenApi
+						
+					}
+				}
+			}
+		}
+	}
+}
+
+// TODO:
+build.dependsOn openApiProcess
+//openApiValidate
+
+/***************************************************************************************
+ * project java validation
+ ***************************************************************************************/
+projectValidation {
+	doLast {
+		if (project.hasProperty('IS_NEW_SRC_FOLDER') && project.getProperty('IS_NEW_SRC_FOLDER')) {
+            logInfo("Create a sample service...")
+			def openapiTemplate = 'openapi-sample.yaml.template'
+			def apiName = 'openapi-sample'
+			setCommonGradleProperty("fileName", "${apiName}.yaml".toString())
+			if (!createFileFromTemplate("${srcMainApiSpecDirectory}/${fileName}", getTemplateFile(openapiTemplate, 'openapi'))) {
+				printInfo("> Create file " + colorize(HIGHLITE_LEVEL, "${srcMainApiSpecDirectory}/${fileName}") + " with default values.")
+				new File(srcMainApiSpecDirectory, "${fileName}").withWriter { w ->
+					w << "openapi: \"3.0.3\"" << NELINE \
+						<< "info:" << NELINE \
+						<< "  version: 1.0.0" << NELINE \
+						<< "  title: Sample Petstore" << NELINE \
+						<< "  license:" << NELINE \
+						<< "    name: Copyright by ${licenseOrganisation}, all rights reserved." << NELINE \
+						<< "servers:" << NELINE \
+						<< "  - url: \"http://mypetstore.tech/v1\"" << NELINE \
+						<< "paths:" << NELINE \
+						<< "  /pets:" << NELINE \
+						<< "    get:" << NELINE \
+						<< "      summary: List all pets" << NELINE \
+						<< "      operationId: listPets" << NELINE \
+						<< "      tags:" << NELINE \
+						<< "        - pets" << NELINE \
+						<< "      parameters:" << NELINE \
+						<< "        - name: limit" << NELINE \
+						<< "          in: query" << NELINE \
+						<< "          description: Defines how many items to return at one time (max 50)" << NELINE \
+						<< "          required: false" << NELINE \
+						<< "          schema:" << NELINE \
+						<< "            type: integer" << NELINE \
+						<< "            format: int32" << NELINE \
+						<< "      responses:" << NELINE \
+						<< "        200:" << NELINE \
+						<< "          description: An array of pets (paged)" << NELINE \
+						<< "          headers:" << NELINE \
+						<< "            x-next:" << NELINE \
+						<< "              description: A link to the next page of responses" << NELINE \
+						<< "              schema:" << NELINE \
+						<< "                type: string" << NELINE \
+						<< "          content:" << NELINE \
+						<< "            application/json:" << NELINE \
+						<< "              schema:" << NELINE \
+						<< "                $ref: \"#/components/schemas/Pets\"" << NELINE \
+						<< "        default:" << NELINE \
+						<< "          description: Unexpected error" << NELINE \
+						<< "          content:" << NELINE \
+						<< "            application/json:" << NELINE \
+						<< "              schema:" << NELINE \
+						<< "                $ref: \"#/components/schemas/Error\"" << NELINE \
+						<< "    post:" << NELINE \
+						<< "      summary: Create a pet" << NELINE \
+						<< "      operationId: createPets" << NELINE \
+						<< "      tags:" << NELINE \
+						<< "        - pets" << NELINE \
+						<< "      responses:" << NELINE \
+						<< "        201:" << NELINE \
+						<< "          description: Created pet" << NELINE \
+						<< "        default:" << NELINE \
+						<< "          description: Unexpected error" << NELINE \
+						<< "          content:" << NELINE \
+						<< "            application/json:" << NELINE \
+						<< "              schema:" << NELINE \
+						<< "                $ref: \"#/components/schemas/Error\"" << NELINE \
+						<< "  /pets/{petId}:" << NELINE \
+						<< "    get:" << NELINE \
+						<< "      summary: Information for a pet" << NELINE \
+						<< "      operationId: getPetById" << NELINE \
+						<< "      tags:" << NELINE \
+						<< "        - pets" << NELINE \
+						<< "      parameters:" << NELINE \
+						<< "        - name: petId" << NELINE \
+						<< "          in: path" << NELINE \
+						<< "          required: true" << NELINE \
+						<< "          description: The id of the pet to retrieve" << NELINE \
+						<< "          schema:" << NELINE \
+						<< "            type: string" << NELINE \
+						<< "      responses:" << NELINE \
+						<< "        200:" << NELINE \
+						<< "          description: Expected response to a valid request" << NELINE \
+						<< "          content:" << NELINE \
+						<< "            application/json:" << NELINE \
+						<< "              schema:" << NELINE \
+						<< "                $ref: \"#/components/schemas/Pets\"" << NELINE \
+						<< "        default:" << NELINE \
+						<< "          description: Unexpected error" << NELINE \
+						<< "          content:" << NELINE \
+						<< "            application/json:" << NELINE \
+						<< "              schema:" << NELINE \
+						<< "                $ref: \"#/components/schemas/Error\"" << NELINE \
+						<< "components:" << NELINE \
+						<< "  schemas:" << NELINE \
+						<< "    Pet:" << NELINE \
+						<< "      required:" << NELINE \
+						<< "        - id" << NELINE \
+						<< "        - name" << NELINE \
+						<< "      properties:" << NELINE \
+						<< "        id:" << NELINE \
+						<< "          type: integer" << NELINE \
+						<< "          format: int64" << NELINE \
+						<< "        name:" << NELINE \
+						<< "          type: string" << NELINE \
+						<< "        tag:" << NELINE \
+						<< "          type: string" << NELINE \
+						<< "    Pets:" << NELINE \
+						<< "      type: array" << NELINE \
+						<< "      items:" << NELINE \
+						<< "        $ref: \"#/components/schemas/Pet\"" << NELINE \
+						<< "    Error:" << NELINE \
+						<< "      required:" << NELINE \
+						<< "        - code" << NELINE \
+						<< "        - message" << NELINE \
+						<< "      properties:" << NELINE \
+						<< "        code:" << NELINE \
+						<< "          type: integer" << NELINE \
+						<< "          format: int32" << NELINE \
+						<< "        message:" << NELINE \
+						<< "          type: string" << NELINE \
+						<< "" << NELINE
+					}
+				}
+			
+			registerEndMessage("" << NELINE \
+								<< "  To get started (build & package jars, run tests), got to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
+								<< "      " + colorize(HIGHLITE_LEVEL, startExecutable) + "" << NELINE)
+		}
+	}
+}

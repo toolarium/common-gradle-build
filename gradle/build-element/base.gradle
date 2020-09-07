@@ -139,14 +139,26 @@ gradle.buildFinished { buildResult ->
 			printNewline()
 		}
 
+		def errorMessagePrefix = ""
+		if (project.hasProperty('errorMessagePrefix') && !project.getProperty('errorMessagePrefix').toString().isEmpty()) {
+			errorMessagePrefix = project.getProperty('errorMessagePrefix') + ": "
+		}
 		if (errorMessage!=null && !errorMessage.isEmpty()) {
-			printLine(ERROR_LEVEL, true)
-			printInfo(colorize(ERROR_LEVEL, "ERROR: " + errorMessage))
-			printLine(ERROR_LEVEL, true)
-			throw new GradleException("ERROR: " + errorMessage)
+			errorMessage = errorMessagePrefix + errorMessage
+			if (project.hasProperty('logErrorMessage') && project.getProperty('logErrorMessage')) {				
+				printLine(ERROR_LEVEL, true)
+				printInfo(colorize(ERROR_LEVEL, errorMessage))
+				printLine(ERROR_LEVEL, true)
+			}
+			
+			if (project.hasProperty('errorMessageColor') && project.getProperty('errorMessageColor')!=null) {
+				errorMessage = colorize(project.getProperty('errorMessageColor'), errorMessage)				
+			}
+			
+			throw new GradleException(errorMessage)
 		} else {
 			printLine(ERROR_LEVEL)
-			throw new GradleException("ERROR")
+			throw new GradleException(errorMessagePrefix)
 		}
 	}
 

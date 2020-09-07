@@ -223,6 +223,9 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 			if (project.hasProperty('nodePluginVersion')) {
 				filter { line -> line.replaceAll('@@NODE_PLUGIN_VERSION@@', "${project.ext.nodePluginVersion}".toString()) }
 			}
+			if (project.hasProperty('openapiPluginVersion')) {
+				filter { line -> line.replaceAll('@@OPENAPI_PLUGIN_VERSION@@', "${project.ext.openapiPluginVersion}".toString()) }
+			}
 			
 			if (project.hasProperty('className')) {
 				filter { line -> line.replaceAll('@@className@@', "${project.ext.className}".toString()) }

@@ -67,26 +67,8 @@ tasks.withType(JavaCompile) {
 		def mainDirectoryName = project.getProperty('srcMainDirectoryName')
 		if (destinationDir.getName().endsWith(mainDirectoryName)) {
 
-			def generatedCommonGradleBuildJavaSources = project.getProperty('generatedCommonGradleBuildSources');
-			new File(generatedCommonGradleBuildJavaSources).mkdirs()
-			generatedCommonGradleBuildJavaSources += "/java"
-			new File(generatedCommonGradleBuildJavaSources).mkdirs()
-			generatedCommonGradleBuildJavaSources += "/" + mainDirectoryName
-			new File(generatedCommonGradleBuildJavaSources).mkdirs()
-			setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBuildJavaSources", generatedCommonGradleBuildJavaSources)
-			logInfo("Generate java source directory is [" + colorize(HIGHLITE_LEVEL, generatedCommonGradleBuildJavaSources) + colorize(INFO_LEVEL, "]"))
-
-			def generatedCommonGradleBuildResourcesSources = project.getProperty('generatedCommonGradleBuildSources');
-			generatedCommonGradleBuildResourcesSources += "/resources"
-			new File(generatedCommonGradleBuildResourcesSources).mkdirs()
-			generatedCommonGradleBuildResourcesSources += "/" + mainDirectoryName
-			new File(generatedCommonGradleBuildResourcesSources).mkdirs()
-			setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBuildResourcesSources", generatedCommonGradleBuildResourcesSources)
-			logInfo("Generate resources source directory is [" + colorize(HIGHLITE_LEVEL, generatedCommonGradleBuildResourcesSources) + colorize(INFO_LEVEL, "]"))
-
-			// create path in generated source
-			def generatedCommonGradleBuildJavaSourcPath = createPackagePath(generatedCommonGradleBuildJavaSources, projectRootPackageName)
-			setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBuildJavaSourcPath", generatedCommonGradleBuildJavaSourcPath)
+			// create common gradle build java source path
+			createGenerateCommonGradleBuildJavaSourcePath()
 
 			// create java version
 			createJavaVersion()
@@ -125,50 +107,44 @@ projectValidation {
 ext.createJavaSourcePath = { ->
 	createSourcePath()
 
-	logInfo("Check Java source and test folders...")
-	setCommonGradleProperty('createSrcMainJavaDirectory', !new File(srcMainJavaDirectory).exists())
-	setCommonGradleProperty('createSrcTestJavaDirectory', !new File(srcTestJavaDirectory).exists())
-	setCommonGradleProperty('createSrcMainResourcesDirectory', !new File(srcMainResourcesDirectory).exists())
-	setCommonGradleProperty('createSrcTestResourcesDirectory', !new File(srcTestResourcesDirectory).exists())
+	if (project.hasProperty('srcMainJavaDirectory')) {
+		def srcMainJavaDirectory = project.getProperty('srcMainJavaDirectory')
+		if (srcMainJavaDirectory!=null && !srcMainJavaDirectory.isEmpty()) {
+			logInfo("Check Java source and test folders...")
+			setCommonGradleProperty('createSrcMainJavaDirectory', !new File(srcMainJavaDirectory).exists())
+			setCommonGradleProperty('createSrcTestJavaDirectory', !new File(srcTestJavaDirectory).exists())
+			setCommonGradleProperty('createSrcMainResourcesDirectory', !new File(srcMainResourcesDirectory).exists())
+			setCommonGradleProperty('createSrcTestResourcesDirectory', !new File(srcTestResourcesDirectory).exists())
 
-	if (project.getProperty('createSrcMainJavaDirectory')) {
-		printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcMainJavaDirectory) + ".")
-		if (new File(srcMainJavaDirectory ).mkdirs()
-            || new File(srcMainJavaDirectory + '/' + projectRootPackageName.replace('.', '/')).mkdirs()) {
-            setCommonGradleProperty('IS_NEW_SRC_FOLDER', true)
-        }
+			if (project.getProperty('createSrcMainJavaDirectory')) {
+				printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcMainJavaDirectory) + ".")
+				if (new File(srcMainJavaDirectory ).mkdirs()
+					|| new File(srcMainJavaDirectory + '/' + projectRootPackageName.replace('.', '/')).mkdirs()) {
+					setCommonGradleProperty('IS_NEW_SRC_FOLDER', true)
+				}
+			}
+
+			if (project.getProperty('createSrcMainResourcesDirectory')) {
+				printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcMainResourcesDirectory) + ".")
+				new File(srcMainResourcesDirectory).mkdir()
+			}
+
+			if (project.getProperty('createSrcTestJavaDirectory')) {
+				printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcTestJavaDirectory) + ".")
+				if (new File(srcTestJavaDirectory).mkdirs()
+					|| new File(srcTestJavaDirectory + '/' + projectRootPackageName.replace('.', '/')).mkdirs()) {
+					setCommonGradleProperty('IS_NEW_SRC_FOLDER', true)
+				}
+			}
+
+			if (project.getProperty('createSrcTestResourcesDirectory')) {
+				printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcTestResourcesDirectory) + ".")
+				new File(srcTestResourcesDirectory).mkdir()
+			}
+		}
 	}
 
-	if (project.getProperty('createSrcMainResourcesDirectory')) {
-		printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcMainResourcesDirectory) + ".")
-		new File(srcMainResourcesDirectory).mkdir()
-	}
-
-	if (project.getProperty('createSrcTestJavaDirectory')) {
-		printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcTestJavaDirectory) + ".")
-		if (new File(srcTestJavaDirectory).mkdirs()
-            || new File(srcTestJavaDirectory + '/' + projectRootPackageName.replace('.', '/')).mkdirs()) {
-            setCommonGradleProperty('IS_NEW_SRC_FOLDER', true)
-        }
-	}
-
-	if (project.getProperty('createSrcTestResourcesDirectory')) {
-		printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcTestResourcesDirectory) + ".")
-		new File(srcTestResourcesDirectory).mkdir()
-	}
-
-	def mainDirectoryName = project.getProperty('srcMainDirectoryName')
-	def generatedCommonGradleBuildJavaSources = project.getProperty('generatedCommonGradleBuildSources');
-	generatedCommonGradleBuildJavaSources += "/java"
-	generatedCommonGradleBuildJavaSources += "/" + mainDirectoryName
-	setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBuildJavaSources", generatedCommonGradleBuildJavaSources)
-
-	def generatedCommonGradleBuildResourcesSources = project.getProperty('generatedCommonGradleBuildSources');
-	generatedCommonGradleBuildResourcesSources += "/resources"
-	generatedCommonGradleBuildResourcesSources += "/" + mainDirectoryName
-	setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBuildResourcesSources", generatedCommonGradleBuildResourcesSources)
-
-	
+	createGenerateCommonGradleBuildJavaSourcePath()
 	if (sourceCompatibility!=null && !sourceCompatibility.toString().isEmpty() && targetCompatibility!=null && !targetCompatibility.toString().isEmpty()) {
 		def sourceVersion = parseVersion(sourceCompatibility)
 		def targetVersion = parseVersion(targetCompatibility)
@@ -177,3 +153,32 @@ ext.createJavaSourcePath = { ->
 		}
 	}
 }
+
+
+/**
+ * Create generated common gradle build java source path
+ */
+ext.createGenerateCommonGradleBuildJavaSourcePath = { ->
+	def mainDirectoryName = project.getProperty('srcMainDirectoryName')
+	def generatedCommonGradleBuildJavaSources = project.getProperty('generatedCommonGradleBuildSources');
+	new File(generatedCommonGradleBuildJavaSources).mkdirs()
+	generatedCommonGradleBuildJavaSources += "/java"
+	new File(generatedCommonGradleBuildJavaSources).mkdirs()
+	generatedCommonGradleBuildJavaSources += "/" + mainDirectoryName
+	new File(generatedCommonGradleBuildJavaSources).mkdirs()
+	setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBuildJavaSources", generatedCommonGradleBuildJavaSources)
+	logInfo("Generate java source directory is [" + colorize(HIGHLITE_LEVEL, generatedCommonGradleBuildJavaSources) + colorize(INFO_LEVEL, "]"))
+
+	def generatedCommonGradleBuildResourcesSources = project.getProperty('generatedCommonGradleBuildSources');
+	generatedCommonGradleBuildResourcesSources += "/resources"
+	new File(generatedCommonGradleBuildResourcesSources).mkdirs()
+	generatedCommonGradleBuildResourcesSources += "/" + mainDirectoryName
+	new File(generatedCommonGradleBuildResourcesSources).mkdirs()
+	setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBuildResourcesSources", generatedCommonGradleBuildResourcesSources)
+	logInfo("Generate resources source directory is [" + colorize(HIGHLITE_LEVEL, generatedCommonGradleBuildResourcesSources) + colorize(INFO_LEVEL, "]"))
+
+	// create path in generated source
+	def generatedCommonGradleBuildJavaSourcPath = createPackagePath(generatedCommonGradleBuildJavaSources, projectRootPackageName)
+	setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBuildJavaSourcPath", generatedCommonGradleBuildJavaSourcPath)
+}
+

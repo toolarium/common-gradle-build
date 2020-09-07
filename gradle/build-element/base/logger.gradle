@@ -89,3 +89,131 @@ ext.printLine = { color = HIGHLITE_LEVEL, force = false, message = null ->
 	
 	newLogSection()
 }
+
+
+/**
+ * Defines term colors
+ */
+public enum TermColors {
+	NONE,
+	ANSI16,
+	ANSI256,
+	TRUECOLOR;
+}
+
+
+/**
+ * Returns the best guess at the current terminal's support for ANSI colors.
+ * This will always return `NONE` if [isConsoleAvailable()] returns false.
+ *
+ * @param default The value to return if support can't be detected.
+ * @see https://github.com/ajalt/mordant/blob/master/mordant/src/main/kotlin/com/github/ajalt/mordant/TerminalCapabilities.kt
+ */
+//LoggingManager loggingManager = getLogging();
+//println loggingManager.getLevel()
+//println project.getLogging().getLevel()
+//println detectANSISupport()
+
+ext.detectANSISupport = { ->
+	// consoles built in to some IDEs/Editors support color, but always cause System.console() to return null
+	if (isIntellijConsole()) {
+		return TermColors.ANSI16
+	}		
+	
+	if (hasEnvironmentValueSet("TERM_PROGRAM", "vscode")) {
+		return TermColors.ANSI256; // github.com/Microsoft/vscode/pull/30346
+	}
+
+	if (!isConsoleAvailable()) {
+		return TermColors.NONE;
+	}
+
+	if (hasEnvironmentValueSet("COLORTERM", "24bit") || (hasEnvironmentValueSet("COLORTERM", "truecolor"))) {
+		return TermColors.TRUECOLOR;
+	}
+
+	if (hasEnvironmentValueSet("TERM_PROGRAM", "hyper")) {
+		return TermColors.TRUECOLOR; // stackoverflow.com/q/7052683
+	}
+
+	if (hasEnvironmentValueSet("TERM_PROGRAM", "apple_terminal")) {
+		return TermColors.ANSI256;
+	}
+
+	if (hasEnvironmentValueSet("TERM_PROGRAM", "iterm.app")) {			
+		def value = getEnvironmentValue("TERM_PROGRAM_VERSION");
+		if (value!=null && !value.isEmpty()) {
+			val ver = parseInteger(value)
+			if (ver!=null && ver>=3) {
+				return TermColors.TRUECOLOR;
+			}				
+			return TermColors.ANSI256;
+		}
+	}
+	
+	val term = getEnvironmentValue("TERM");
+	if (term==null || term.isEmpty()) {
+		return TermColors.NONE;
+	}
+	
+	if (term.endsWith("-256color") || term.endsWith("-256")) {
+		return TermColors.ANSI256
+	}
+
+	if (term.equalsIgnoreCase("cygwin")) {
+		if (getOsName().equals("windows")) {
+			// new versions of windows 10 cmd.exe supports truecolor, and most other terminal emulators
+			// like ConEmu and mintty support truecolor, although they might downsample it.
+			return TermColors.TRUECOLOR;
+		}
+		
+		return TermColors.ANSI256;
+	}
+
+	if (term.equalsIgnoreCase("xterm")
+		|| term.equalsIgnoreCase("vt100")
+		|| term.equalsIgnoreCase("screen")
+		|| term.equalsIgnoreCase("ansi")
+		|| term.equalsIgnoreCase("rxvt")) {
+		return TermColors.ANSI16;			
+	}
+
+	if (term.equalsIgnoreCase("dumb")) {
+		return TermColors.NONE;
+	}
+	
+	return TermColors.NONE
+}
+
+// Although we really want to know if stdout is a tty regardless of stdin, this is the best the java gives
+// us. We might want to add some JNI code to do that in the future.
+/** Return true if stdout and stdin are both ttys. */
+private boolean isConsoleAvailable() {
+	return System.console() != null
+}
+
+private String getEnvironmentValue(String environmentVariableName) {
+	def value = System.getenv(environmentVariableName);		
+	if (value!=null && !value.isEmpty()) {
+		return value.toString().toLowerCase();
+	}		
+	return "";
+}
+
+private boolean hasEnvironmentValueSet(String environmentVariableName, String value) {
+	return getEnvironmentValue(environmentVariableName).equalsIgnoreCase(value);
+}
+
+private boolean isIntellijConsole() {
+	if (java.lang.management.ManagementFactory.getRuntimeMXBean() != null) {
+		try {
+			def bean = java.lang.management.ManagementFactory.getRuntimeMXBean();
+			def jvmArgs = bean.inputArguments;
+			return jvmArgs.any { it.startsWith("-javaagent") && "idea_rt.jar" in it }
+		} catch (SecurityException e) {
+			return false;
+		}
+	}
+	
+	return false;
+}
