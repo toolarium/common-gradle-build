@@ -29,12 +29,6 @@ apply from: "${commonGradleBuildElementPath}/base/gradle.gradle"
 
 
 /***************************************************************************************
- * default tasks
- ***************************************************************************************/
-//defaultTasks 'clean', 'build'
-
-
-/***************************************************************************************
  * common node dirctories and files
  ***************************************************************************************/
 addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/node_modules")
@@ -128,8 +122,6 @@ if (!project.getProperty('IS_NEW')) {
 		args = ['run', 'test']
 	}
 
-	//runDev.dependsOn run
-
 
 	/***************************************************************************************
 	 * npm run start
@@ -137,23 +129,24 @@ if (!project.getProperty('IS_NEW')) {
 	task runDev(type: NpmTask) {
 		group = 'NPM tasks'
 		description = 'Excute npm start'
-	//    tasks = ['build']
-	//    tasks = ['build', 'lint', 'test']
+	    //tasks = ['build', 'lint', 'test']
 		args = ['run', 'dev']
 	}
-	runDev.dependsOn build
-
-	//run.dependsOn runDev
+	//runDev.dependsOn build
+	//runDev.dependsOn run
+	run.dependsOn runDev
 
 
 	/***************************************************************************************
 	 * npm run audit
 	 ***************************************************************************************/
+	 /*
 	task audit(type: NpmTask) {
 		group = 'NPM tasks'
 		description = 'Excute npm audit'
 		args = ['run', 'npmaudit']
 	}
+	*/
 
 
 	/***************************************************************************************

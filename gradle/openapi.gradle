@@ -4,12 +4,23 @@
  * Copyright by toolarium, all rights reserved.
  * MIT License: https://mit-license.org
  */
+ 
+def openapiPluginVersion="5.0.0-beta"
+if (project.hasProperty('openapiPluginVersion')) {
+	openapiPluginVersion = project.getProperty('openapiPluginVersion')
+}
+
 buildscript {
   repositories {
     maven { url "https://repo1.maven.org/maven2" }
   }
   dependencies {
-    classpath "org.openapitools:openapi-generator-gradle-plugin:${openapiPluginVersion}"
+	def openapiPluginVersion="5.0.0-beta"
+	if (project.hasProperty('openapiPluginVersion')) {
+		openapiPluginVersion = project.getProperty('openapiPluginVersion')
+	}
+  
+    classpath "org.openapitools:openapi-generator-gradle-plugin:" + openapiPluginVersion
   }
 }
 
@@ -19,7 +30,7 @@ if (project.plugins.findPlugin('org.openapi.generator')==null) {
 	ext.errorMessagePrefix=""
 	ext.validBuildMessage = "Missing the openapi gradle plugin!\n-> Please add the following lines at the beginning of you build.gradle:\n\n" \
 		+ "plugins {\n" \
-		+ "    id \"org.openapi.generator\" version \"${openapiPluginVersion}\"\n" \
+		+ "    id \"org.openapi.generator\" version \"" + openapiPluginVersion + "\"\n" \
 		+ "}\n";
 } else {
 	apply plugin: 'org.openapi.generator'
@@ -34,7 +45,7 @@ ext.initCheckstyle=false
 
 
 if (!project.hasProperty('commonGradleBuildUrl')) {
-    ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
+	ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
 }
 
 if (!project.hasProperty('commonGradleBuildElementPath')) {
@@ -217,9 +228,18 @@ task openApiProcess {
 	}
 }
 
+
+if (!project.getProperty('IS_NEW')) {
+	build.dependsOn openApiProcess
+} else {
+	ext.validBuild=true
+	ext.errorMessagePrefix=""
+	ext.validBuildMessage=""
+	defaultTasks 'projectValidation'
+}
 // TODO:
-build.dependsOn openApiProcess
 //openApiValidate
+
 
 /***************************************************************************************
  * project java validation
