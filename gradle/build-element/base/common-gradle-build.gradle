@@ -308,7 +308,7 @@ ext.getNewestGithubRelease = {localDirectory, commonGradleBuildReleasesUrl, preR
 		timeout = new Date().getTime() - lastCheck.getTime()
 	}
 
-	if ((lastCheck == null) || (timeout > lastCheckTimeout)) {
+	if ((lastCheck == null) || (lastCheckTimeout==null) || (timeout > lastCheckTimeout)) {
 		def remoteVersion = readLatestGithubReleaseVersion(commonGradleBuildReleasesUrl, preRelease)		
 
 		if (remoteVersion!=null && !remoteVersion.isEmpty()) {
@@ -316,7 +316,7 @@ ext.getNewestGithubRelease = {localDirectory, commonGradleBuildReleasesUrl, preR
 			
 			logInfo("Remote version: " + colorize(HIGHLITE_LEVEL, remoteVersion) + colorize(HIGHLITE_LEVEL, " of $commonGradleBuildReleasesUrl in $localDirectoryRemoteVersion"))			
 			if (!new File(localDirectoryRemoteVersion).exists()) {
-				printInfo("> Download version " + colorize(HIGHLITE_LEVEL, remoteVersion) + " of " + colorize(HIGHLITE_LEVEL, commonGradleBuildReleasesUrl) + " into " + colorize(HIGHLITE_LEVEL, localDirectoryRemoteVersion) + ".")				
+				logInfo("> Download version " + colorize(HIGHLITE_LEVEL, remoteVersion) + " of " + colorize(HIGHLITE_LEVEL, commonGradleBuildReleasesUrl) + " into " + colorize(HIGHLITE_LEVEL, localDirectoryRemoteVersion) + ".")				
 				downloadAndUnzipNewestGithubRelease(commonGradleBuildReleasesUrl, preRelease, localDirectory)
 			}
 		}

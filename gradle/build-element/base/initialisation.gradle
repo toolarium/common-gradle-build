@@ -44,6 +44,11 @@ ext.projectInitialisation = { ->
 	def createVersionFile = !new File(versionFile).exists()
 	def createReadmeFile = !new File(readmeFile).exists()
 	def createLicenseFile = !new File(licenseFile).exists()
+	if (createLicenseFile && !"$rootDirectory/$licenseFilename".toString().equalsIgnoreCase(licenseFile.toString())) {
+		// incase the license file not corresponds to a local file, just ignore
+		createLicenseFile = false
+	}
+	
 	def createChangelogFile = createChangelogFile && !new File(changelogFile).exists()
 	def createEditorConfigFile = !new File(editorConfigFile).exists()
 	def createGraldeHomeProperties = !new File(gradleHomePropertiesFile).exists()

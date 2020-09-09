@@ -164,6 +164,8 @@ if (!project.getProperty('IS_NEW')) {
 		description = 'Excute npm lint'
 		args = ['run', 'lint']
 	}
+} else {
+	defaultTasks 'projectValidation'
 }
 
 

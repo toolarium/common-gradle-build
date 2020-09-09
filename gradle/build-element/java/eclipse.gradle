@@ -11,6 +11,7 @@ addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.classpath")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.project")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.checkstyle")
 addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/.settings")
+addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/bin")
 
 
 /***************************************************************************************
@@ -170,7 +171,6 @@ ext.createEclipseFiles = { overwrite = false ->
 	}
 	
 	if (project.hasProperty('initCheckstyle') && project.getProperty('initCheckstyle')) {
-println "=======>	" + project.getProperty('initCheckstyle')
 		def checkstyleFile = ".checkstyle"
 		if (project.hasProperty('runtimeCheckstyleConfigurationPath') && (overwrite || !new File("${rootDirectory}", "${checkstyleFile}").exists())) {
 			logInfo("Write file " + colorize(HIGHLITE_LEVEL, rootDirectory + "/" + checkstyleFile) + colorize(INFO_LEVEL, "..."))
