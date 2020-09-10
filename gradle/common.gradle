@@ -44,7 +44,7 @@ if (commonGradleBuildHomeBase == null || commonGradleBuildHomeBase.isEmpty()) {
 def commonGradleBuildHome=commonGradleBuildHomeBase
 def commonCustomConfigVersion = System.getenv('CB_CUSTOM_CONFIG_VERSION')
 if (commonCustomConfigVersion!=null && !commonCustomConfigVersion.isEmpty()) {
-	bootStraplogInfo("> Take common-gradle-build version from environment variable CB_CUSTOM_CONFIG_VERSION: ${CB_CUSTOM_CONFIG_VERSION}")
+	bootStraplogInfo("> Take common-gradle-build version from environment variable CB_CUSTOM_CONFIG_VERSION: ${commonCustomConfigVersion}")
 	commonGradleBuildHome=commonGradleBuildHomeBase + "/" + commonCustomConfigVersion
 } else if (commonGradleBuildHomeBase!=null && !commonGradleBuildHomeBase.isEmpty()) {
 	try {
