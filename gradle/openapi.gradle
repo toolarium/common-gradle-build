@@ -159,7 +159,7 @@ task openApiProcess {
 						def openApiTaskName="openApiGenerate${apiName}"
 						def createOpenApi = tasks.create(name: "${openApiTaskName}", type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
 							logInfo("Create the open api task " + colorize(HIGHLITE_LEVEL, "[$openApiTaskName]") + " for [" + colorize(HIGHLITE_LEVEL, srcMainApiSpecDirectory + "/" + fileName) + colorize(INFO_LEVEL, "]."))						
-							printInfo("> Generate source from openapi [" + colorize(HIGHLITE_LEVEL, srcMainApiSpecDirectory + "/" + fileName) + "].")
+							printInfo("> Generate source from openapi " + colorize(HIGHLITE_LEVEL, fileName) + ".")
 
 							verbose = false
 							inputSpec = "${yamlPath}/${fileName}".toString()
