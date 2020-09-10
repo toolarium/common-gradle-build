@@ -21,6 +21,7 @@ setCommonGradleDefaultPropertyIfNull("gradleHomePropertiesFile", "$gradleHome/gr
 setCommonGradleDefaultPropertyIfNull("defaultCommonGradleBuildUrl", "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/common.gradle")
 setCommonGradleDefaultPropertyIfNull("commonGradleBuildReleasesUrl", "https://api.github.com/repos/toolarium/common-gradle-build/releases")
 setCommonGradleDefaultPropertyIfNull("commonGradleBuildReleasesPreRelease", false)
+setCommonGradleDefaultPropertyIfNull("commonGradleBuildReleaseVersion", "")
 setCommonGradleDefaultPropertyIfNull("commonGradleBuildGitUrl", "https://github.com/toolarium/common-gradle-build.git")
 setCommonGradleDefaultPropertyIfNull("commonGradleBuildHomeGitUrl", "")
 setCommonGradleDefaultPropertyIfNull("commonGradleBuildHomeVersionFileUrl", "")

@@ -28,33 +28,47 @@ ext.readGithubReleases = { url ->
 /** 
  * Select github release
  */
-ext.selectGithubNewestRelease = { url, preRelease = false ->
+ext.selectGithubRelease = { url, preRelease = false, releaseName = null ->
 	def releases = readGithubReleases(url)
 	
-	def newestRelease
+	def resolvedRelease
 	if (releases !=null) {
+	
 		try {
 			def filteredReleases = releases
 			if (!preRelease) {
 				filteredReleases = releases.findAll{ "false".equalsIgnoreCase(it.prerelease.toString()) }	
+			} else {
+				logInfo("Include pre release.") 
+			}			
+			
+			if (releaseName!=null && !releaseName.toString().trim().isEmpty()) {
+				def filterReleaseName = releaseName
+				if (!filterReleaseName.startsWith("v") ) {
+					filterReleaseName = "v" + filterReleaseName
+				}
+			
+				logInfo("Filter by name [" + colorize(HIGHLITE_LEVEL, filterReleaseName) + colorize(INFO_LEVEL, "].")) 
+				filteredReleases = filteredReleases.findAll{ filterReleaseName.equalsIgnoreCase(it.name.toString()) }	
 			}
 			
-			newestRelease = filteredReleases[0]
+			resolvedRelease = filteredReleases[0]
+			logInfo("Resolved release [" + colorize(HIGHLITE_LEVEL, resolvedRelease) + colorize(INFO_LEVEL, "].")) 
 		} catch (Exception e) {
 			printWarn("Could not read github release for [" + colorize(HIGHLITE_LEVEL, url) + colorize(WARN_LEVEL, "]: " +e.getMessage())) 
 		}
 	}
 	
-	return newestRelease
+	return resolvedRelease
 }
 
 
 /** 
- * Read latets release version
+ * Read github release version
  */
-ext.readLatestGithubReleaseVersion = {url, preRelease = false ->
+ext.readGithubReleaseVersion = {url, preRelease = false, releaseName = null ->
 	def remoteVersion
-	def release = selectGithubNewestRelease(url, preRelease)	
+	def release = selectGithubRelease(url, preRelease, releaseName)	
 	if (release!=null && release.zipball_url!=null) {
 		def releaseVersion = release.name
 		
@@ -74,13 +88,12 @@ ext.readLatestGithubReleaseVersion = {url, preRelease = false ->
 
 
 /** 
- * Download and unzip newest github release
+ * Download and unzip github release
  */
-ext.downloadAndUnzipNewestGithubRelease = {url, preRelease = false, destDir ->
-	def release = selectGithubNewestRelease(url, preRelease)	
+ext.downloadAndUnzipGithubRelease = {url, preRelease = false, destDir, releaseName = null ->
+	def release = selectGithubRelease(url, preRelease, releaseName)	
 	if (release!=null && release.zipball_url!=null) {
-		def releaseVersion = release.name
-		
+		def releaseVersion = release.name		
 		if (releaseVersion==null || releaseVersion.isEmpty()) {
 			releaseVersion = release.tag_name
 		}
@@ -90,7 +103,7 @@ ext.downloadAndUnzipNewestGithubRelease = {url, preRelease = false, destDir ->
 		}
 		
 		logInfo("Remote version: " + colorize(HIGHLITE_LEVEL, releaseVersion) + colorize(HIGHLITE_LEVEL, " of  $url into $destDir"))			
-		printInfo "> Found new release version " + releaseVersion
+		printInfo "> Found release version " + releaseVersion
 		def fileZip = new File("${destDir}/${releaseVersion}.zip")
 		if (fileZip.exists()) {
 			printWarn("Could not download release $releaseVersion from github, file already exist [" + colorize(HIGHLITE_LEVEL, fileZip) + colorize(WARN_LEVEL, "].")) 

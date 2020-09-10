@@ -27,6 +27,14 @@
 
 
 /***************************************************************************************
+ * to reference to a specific version of the common gradle build. 
+ * empty commonGradleBuildReleaseVersion means just use the newest version (default)
+ ***************************************************************************************/
+//setCommonGradleProperty("commonGradleBuildReleasesPreRelease", false)
+//setCommonGradleProperty("commonGradleBuildReleaseVersion", "")
+
+
+/***************************************************************************************
  * reference the license always global
  ***************************************************************************************/
 setCommonGradleProperty("licenseFile", "$commonGradleBuildHome/$licenseFilename")

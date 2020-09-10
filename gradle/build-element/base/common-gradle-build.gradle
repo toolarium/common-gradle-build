@@ -89,9 +89,11 @@ ext.readRemoteVersion = { inputUrl, gitUrl=null ->
 ext.readLastCheck = { filename ->
 	def lastCheck = null		
 	if (new File(filename).exists()) {
+		InputStream stream = null
 		try {
+			stream = new FileInputStream(new File(filename))
 			Properties prop = new Properties()
-			prop.load(new FileInputStream(new File(filename)))
+			prop.load(stream)
 			def value = prop.getProperty("lastCheck")
 
 			if (value!=null && !value.isEmpty()) {
@@ -99,10 +101,48 @@ ext.readLastCheck = { filename ->
 			}
 		} catch (Exception ex) {
 			printWarn("Could not read [" + colorize(HIGHLITE_LEVEL, filename) + colorize(WARN_LEVEL, "]: " + ex.getMessage())) 
-		}
+		} finally {
+			if (stream!=null) {
+				try {
+				 stream.close()
+				} catch (Exception cex) {
+				}
+			}
+		}		
 	}
 	
 	return lastCheck
+}
+
+
+/***************************************************************************************
+ * Read last version
+ ***************************************************************************************/
+ext.readLastVersion = { filename ->
+	def lastVersion = null		
+	if (new File(filename).exists()) {
+		InputStream stream = null
+	
+		try {
+			stream = new FileInputStream(new File(filename))
+			Properties prop = new Properties()
+			prop.load(stream)
+			if (prop.getProperty("version")!=null && !prop.getProperty("version").toString().trim().isEmpty()) {
+				lastVersion = prop.getProperty("version")
+			}
+		} catch (Exception ex) {
+			printWarn("Could not read [" + colorize(HIGHLITE_LEVEL, filename) + colorize(WARN_LEVEL, "]: " + ex.getMessage())) 
+		} finally {
+			if (stream!=null) {
+				try {
+				 stream.close()
+				} catch (Exception cex) {
+				}
+			}
+		}
+	}
+	
+	return lastVersion
 }
 
 
@@ -160,7 +200,16 @@ ext.downloadCommonGradleBuildCache = { ->
 		new File(gradleHome).mkdirs()			
 	} 
 
-	getNewestGithubRelease(commonGradleBuildCache, commonGradleBuildReleasesUrl, preRelease, project.getProperty('commonGradleBuildCacheLastCheckTimeout'))
+	//  use per default the newest version, in case commonGradleBuildReleaseVersion is null or empty
+	def releaseName = null
+	if (project.hasProperty('commonGradleBuildReleaseVersion')) {		
+		if (!project.getProperty('commonGradleBuildReleaseVersion').toString().trim().isEmpty()) {
+			releaseName = project.getProperty('commonGradleBuildReleaseVersion').toString().trim()
+		}
+	}
+
+	bootStraplogInfo("  > Check common-gradle-build if update is needed of ${commonGradleBuildReleasesUrl}.")
+	getGithubRelease(commonGradleBuildCache, commonGradleBuildReleasesUrl, preRelease, project.getProperty('commonGradleBuildCacheLastCheckTimeout'), releaseName)
 }
 
 
@@ -253,13 +302,12 @@ ext.cloneGitProject = {localDirectory, gitUrl, remoteVersionFileUrl, lastCheckTi
     def lastCheckFile = "${localDirectory}/lastCheck.properties"
 	def timeout = 0
 	def lastCheck = readLastCheck(lastCheckFile)
-
 	if (lastCheck != null) {
 		timeout = new Date().getTime() - lastCheck.getTime()
 	}
 
 	def result = false
-	if ((lastCheck == null) || (timeout > lastCheckTimeout)) {
+	if ((lastCheck == null) || (lastCheckTimeout==null) || (timeout > lastCheckTimeout)) {
 		def remoteVersion = readRemoteVersion(remoteVersionFileUrl, gitUrl)		
 
 		if (remoteVersion!=null && !remoteVersion.isEmpty()) {
@@ -274,7 +322,7 @@ ext.cloneGitProject = {localDirectory, gitUrl, remoteVersionFileUrl, lastCheckTi
 			writeLastCheck(remoteVersion, lastCheckFile)
 		}			
 	} else {
-		logInfo("Don't check it's inside time range: " + colorize(HIGHLITE_LEVEL, timeout))
+		logInfo("Don't check it's inside time range (" + colorize(HIGHLITE_LEVEL, timeout) + colorize(INFO_LEVEL, "), next check: ") + colorize(HIGHLITE_LEVEL, lastCheck))
 	}	
 	
 	return result
@@ -282,9 +330,9 @@ ext.cloneGitProject = {localDirectory, gitUrl, remoteVersionFileUrl, lastCheckTi
 
 
 /***************************************************************************************
- * Get newest github release
+ * Get github release
  ***************************************************************************************/
-ext.getNewestGithubRelease = {localDirectory, commonGradleBuildReleasesUrl, preRelease, lastCheckTimeout ->
+ext.getGithubRelease = {localDirectory, commonGradleBuildReleasesUrl, preRelease, lastCheckTimeout, releaseName = null ->
 	if (commonGradleBuildReleasesUrl==null || "${commonGradleBuildReleasesUrl}".isEmpty()) {
 		logDebug("Invalid git url or remote version file url.")
 		return
@@ -303,26 +351,36 @@ ext.getNewestGithubRelease = {localDirectory, commonGradleBuildReleasesUrl, preR
     def lastCheckFile = "${localDirectory}/lastCheck.properties"
 	def timeout = 0
 	def lastCheck = readLastCheck(lastCheckFile)
-
 	if (lastCheck != null) {
 		timeout = new Date().getTime() - lastCheck.getTime()
 	}
 
 	if ((lastCheck == null) || (lastCheckTimeout==null) || (timeout > lastCheckTimeout)) {
-		def remoteVersion = readLatestGithubReleaseVersion(commonGradleBuildReleasesUrl, preRelease)		
-
-		if (remoteVersion!=null && !remoteVersion.isEmpty()) {
-			def localDirectoryRemoteVersion = "${localDirectory}/${remoteVersion}"
-			
-			logInfo("Remote version: " + colorize(HIGHLITE_LEVEL, remoteVersion) + colorize(HIGHLITE_LEVEL, " of $commonGradleBuildReleasesUrl in $localDirectoryRemoteVersion"))			
-			if (!new File(localDirectoryRemoteVersion).exists()) {
-				logInfo("> Download version " + colorize(HIGHLITE_LEVEL, remoteVersion) + " of " + colorize(HIGHLITE_LEVEL, commonGradleBuildReleasesUrl) + " into " + colorize(HIGHLITE_LEVEL, localDirectoryRemoteVersion) + ".")				
-				downloadAndUnzipNewestGithubRelease(commonGradleBuildReleasesUrl, preRelease, localDirectory)
-			}
+		def expectedReleaseExist = false
+		if (releaseName!=null && !"${releaseName}".toString().trim().isEmpty()) {
+			expectedReleaseExist = (new File("${localDirectory}/${releaseName}").exists())
 		}
-			
+	
+		def remoteVersion = null
+		if (!expectedReleaseExist) {
+			remoteVersion = readGithubReleaseVersion(commonGradleBuildReleasesUrl, preRelease, releaseName)
+			if (remoteVersion!=null && !remoteVersion.isEmpty()) {
+				def localDirectoryRemoteVersion = "${localDirectory}/${remoteVersion}"				
+				logInfo("Remote version: " + colorize(HIGHLITE_LEVEL, remoteVersion) + colorize(INFO_LEVEL, " of [")  + colorize(HIGHLITE_LEVEL, commonGradleBuildReleasesUrl) + colorize(INFO_LEVEL, "] in [") + colorize(HIGHLITE_LEVEL, localDirectoryRemoteVersion) + colorize(INFO_LEVEL, "]."))
+				if (!new File(localDirectoryRemoteVersion).exists()) {
+					logInfo("> Download version " + colorize(HIGHLITE_LEVEL, remoteVersion) + colorize(INFO_LEVEL, " of [") + colorize(HIGHLITE_LEVEL, commonGradleBuildReleasesUrl) + colorize(INFO_LEVEL, "] into [") + colorize(HIGHLITE_LEVEL, localDirectoryRemoteVersion) + colorize(INFO_LEVEL, "]."))
+					downloadAndUnzipGithubRelease(commonGradleBuildReleasesUrl, preRelease, localDirectory, releaseName)
+				} else {
+					logInfo("Remote version: " + colorize(HIGHLITE_LEVEL, remoteVersion) + colorize(INFO_LEVEL, " already exist in [") + colorize(HIGHLITE_LEVEL,localDirectoryRemoteVersion) + colorize(INFO_LEVEL, "]."))
+				}
+			}
+		} else {
+			remoteVersion = releaseName
+			logInfo("Version: " + colorize(HIGHLITE_LEVEL, remoteVersion) + colorize(INFO_LEVEL, " already exist in [") + colorize(HIGHLITE_LEVEL,localDirectoryRemoteVersion) + colorize(INFO_LEVEL, "]."))
+		}		
+		
 		writeLastCheck(remoteVersion, lastCheckFile)
 	} else {
-		logInfo("Don't check it's inside time range: " + colorize(HIGHLITE_LEVEL, timeout))
+		logInfo("Don't check it's inside time range (" + colorize(HIGHLITE_LEVEL, timeout) + colorize(INFO_LEVEL, "), next check: ") + colorize(HIGHLITE_LEVEL, lastCheck))
 	}	
 }

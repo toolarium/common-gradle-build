@@ -48,21 +48,26 @@ if (commonCustomConfigVersion!=null && !commonCustomConfigVersion.isEmpty()) {
 } else if (commonGradleBuildHomeBase!=null && !commonGradleBuildHomeBase.isEmpty()) {
 	try {
 		if (new File(commonGradleBuildHomeBase).exists()) {
-			def result = null
-			File[] files = new File(commonGradleBuildHomeBase).listFiles(); // select newest directory
-			if (files != null && files.length > 0) {
-				for (File file : files) {
-					if (file.isDirectory()) {
-						if (result == null || (result.lastModified() < file.lastModified())) {
-							result = file
+			def lastCheckVersion = readLastCheckVersion("${commonGradleBuildHomeBase}/lastCheck.properties")			
+			if (lastCheckVersion==null) {			
+				def result = null
+				File[] files = new File(commonGradleBuildHomeBase).listFiles(); // select newest directory
+				if (files != null && files.length > 0) {
+					for (File file : files) {
+						if (file.isDirectory()) {
+							if (result == null || (result.lastModified() < file.lastModified())) {
+								result = file
+							}
 						}
 					}
 				}
-			}
 
-			if (result!=null) {
-				// in case we found, use this
-				commonGradleBuildHome=commonGradleBuildHomeBase + "/" + result.getName()
+				if (result!=null) {
+					// in case we found, use this
+					commonGradleBuildHome=commonGradleBuildHomeBase + "/" + result.getName()
+				}
+			} else {
+				commonGradleBuildHome=commonGradleBuildHomeBase + "/" + lastCheckVersion
 			}
 		}
 	} catch (Exception e) {
@@ -182,4 +187,35 @@ if (project.hasProperty('projectType')) {
  ***************************************************************************************/
 if (includeFile!=null && !includeFile.isEmpty()) {
 	apply from: "$includeFile"
+}
+
+
+/***************************************************************************************
+ * Read last version
+ ***************************************************************************************/
+ext.readLastCheckVersion = { filename ->
+	def lastVersion = null		
+	if (new File(filename).exists()) {
+		InputStream stream = null
+	
+		try {
+			stream = new FileInputStream(new File(filename))
+			Properties prop = new Properties()
+			prop.load(stream)
+			if (prop.getProperty("version")!=null && !prop.getProperty("version").toString().trim().isEmpty()) {
+				lastVersion = prop.getProperty("version")
+			}
+		} catch (Exception ex) {
+			printWarn("Could not read [" + colorize(HIGHLITE_LEVEL, filename) + colorize(WARN_LEVEL, "]: " + ex.getMessage())) 
+		} finally {
+			if (stream!=null) {
+				try {
+				 stream.close()
+				} catch (Exception cex) {
+				}
+			}
+		}
+	}
+	
+	return lastVersion
 }
