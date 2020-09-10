@@ -14,6 +14,37 @@ ext.bootStraplogWarn = { message -> logger.warn "${BOOTSTRAPSTYLER['yellow'](mes
 
 
 /***************************************************************************************
+ * Read last version
+ ***************************************************************************************/
+ext.readLastCheckVersion = { filename ->
+	def lastVersion = null		
+	if (new File(filename).exists()) {
+		InputStream stream = null
+	
+		try {
+			stream = new FileInputStream(new File(filename))
+			Properties prop = new Properties()
+			prop.load(stream)
+			if (prop.getProperty("version")!=null && !prop.getProperty("version").toString().trim().isEmpty()) {
+				lastVersion = prop.getProperty("version")
+			}
+		} catch (Exception ex) {
+			bootStraplogWarn("> Could not read [" + colorize(HIGHLITE_LEVEL, filename) + colorize(WARN_LEVEL, "]: " + ex.getMessage())) 
+		} finally {
+			if (stream!=null) {
+				try {
+				 stream.close()
+				} catch (Exception cex) {
+				}
+			}
+		}
+	}
+	
+	return lastVersion
+}
+
+
+/***************************************************************************************
  * define proper cache and home environment:
  * - cache path: 	contains the versions cached on local machine
  * - home path: 	contains an optional template directory and defaults.gradle file to 
@@ -197,35 +228,4 @@ if (project.hasProperty('projectType')) {
  ***************************************************************************************/
 if (includeFile!=null && !includeFile.isEmpty()) {
 	apply from: "$includeFile"
-}
-
-
-/***************************************************************************************
- * Read last version
- ***************************************************************************************/
-ext.readLastCheckVersion = { filename ->
-	def lastVersion = null		
-	if (new File(filename).exists()) {
-		InputStream stream = null
-	
-		try {
-			stream = new FileInputStream(new File(filename))
-			Properties prop = new Properties()
-			prop.load(stream)
-			if (prop.getProperty("version")!=null && !prop.getProperty("version").toString().trim().isEmpty()) {
-				lastVersion = prop.getProperty("version")
-			}
-		} catch (Exception ex) {
-			printWarn("Could not read [" + colorize(HIGHLITE_LEVEL, filename) + colorize(WARN_LEVEL, "]: " + ex.getMessage())) 
-		} finally {
-			if (stream!=null) {
-				try {
-				 stream.close()
-				} catch (Exception cex) {
-				}
-			}
-		}
-	}
-	
-	return lastVersion
 }
