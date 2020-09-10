@@ -150,12 +150,10 @@ ext.createEclipseFiles = { overwrite = false ->
 					<< "		<buildCommand>" << NELINE \
 					<< "			<name>org.eclipse.buildship.core.gradleprojectbuilder</name>" << NELINE \
 					<< "			<arguments>" << NELINE \
-					<< "			<arguments>" << NELINE \
 					<< "			</arguments>" << NELINE \
 					<< "		</buildCommand>" << NELINE \
 					<< "		<buildCommand>" << NELINE \
 					<< "			<name>net.sf.eclipsecs.core.CheckstyleBuilder</name>" << NELINE \
-					<< "			<arguments>" << NELINE \
 					<< "			<arguments>" << NELINE \
 					<< "			</arguments>" << NELINE \
 					<< "		</buildCommand>" << NELINE \
