@@ -49,7 +49,7 @@ if (commonCustomConfigVersion!=null && !commonCustomConfigVersion.isEmpty()) {
 } else if (commonGradleBuildHomeBase!=null && !commonGradleBuildHomeBase.isEmpty()) {
 	try {
 		if (new File(commonGradleBuildHomeBase).exists()) {
-			def lastCheckVersion = readLastCheckVersion("${commonGradleBuildHomeBase}/lastCheck.properties")			
+			def lastCheckVersion = readLastCheckVersion("${commonGradleBuildHomeBase}/lastCheck.properties")
 			if (lastCheckVersion==null) {			
 				def result = null
 				File[] files = new File(commonGradleBuildHomeBase).listFiles(); // select newest directory
@@ -69,7 +69,7 @@ if (commonCustomConfigVersion!=null && !commonCustomConfigVersion.isEmpty()) {
 					commonGradleBuildHome=commonGradleBuildHomeBase + "/" + result.getName()
 				}
 			} else {
-				bootStraplogInfo("> Take common-gradle-build home version from " + commonGradleBuildHomeBase + "/" + lastCheckVersion + ": ${lastCheckVersion}")
+				bootStraplogInfo("> Take common-gradle-build home version from ${commonGradleBuildHomeBase}/lastCheck.properties: ${lastCheckVersion}")
 				commonGradleBuildHome=commonGradleBuildHomeBase + "/" + lastCheckVersion
 			}
 		}
@@ -108,7 +108,7 @@ if (localCommonGradleBuildUrl != null && !localCommonGradleBuildUrl.isEmpty()) {
 if (!project.hasProperty('commonGradleBuildUrl')) {
 	try {
 		if (new File(commonGradleBuildCache).exists()) {
-			def lastCheckVersion = readLastCheckVersion("${commonGradleBuildHomeBase}/lastCheck.properties")			
+			def lastCheckVersion = readLastCheckVersion("${commonGradleBuildCache}/lastCheck.properties")
 			if (lastCheckVersion==null) {			
 				def result = null
 				File[] files = new File(commonGradleBuildCache).listFiles(); // select newest directory
@@ -128,7 +128,7 @@ if (!project.hasProperty('commonGradleBuildUrl')) {
 					ext.commonGradleBuildUrl=commonGradleBuildCache + "/" + result.getName() + "/gradle"
 				}
 			} else {
-				bootStraplogInfo("> Take common-gradle-build version from " + commonGradleBuildCache + "/" + lastCheckVersion + ": ${lastCheckVersion}")
+				bootStraplogInfo("> Take common-gradle-build version from ${commonGradleBuildCache}/lastCheck.properties: ${lastCheckVersion}")
 				ext.commonGradleBuildUrl=commonGradleBuildCache + "/" + lastCheckVersion + "/gradle"
 			}
 		}
