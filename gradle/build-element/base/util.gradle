@@ -7,6 +7,23 @@
 
 
 /** 
+ * Add an error
+ */
+ext.addError = { message ->
+	ext.validBuild=false
+	ext.errorMessagePrefix=""
+	
+	if (message!=null && !message.isEmpty()) {
+		if (!ext.validBuildMessage.toString().trim().isEmpty()) {
+			ext.validBuildMessage+="\n"
+		}
+		
+		ext.validBuildMessage+="  - ${message}\n"
+	}
+}
+
+
+/** 
  * Read os specific configuration: osEnvironment, separator, scriptEnding
  */
 ext.readOSConfiguration = { ->

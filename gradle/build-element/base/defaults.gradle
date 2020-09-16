@@ -330,6 +330,29 @@ setCommonGradleDefaultPropertyIfNull("validateProjectNameAndFolder", false)
 
 
 /***************************************************************************************
+ * set project type rules
+ ***************************************************************************************/
+ // projectNameTypeRegularExpressionPattern is used to support additional check names 
+ // against a pattern. The projectNameRegularExpressionPattern builds the general name 
+ // pattern, whereas the projectNameTypeRegularExpressionPattern could check patterns 
+ // for specific name rules depending on the project type. Null or empty means no 
+ // additional rule.
+setCommonGradleDefaultPropertyIfNull("projectNameTypeRegularExpressionPattern", '')
+
+// In normal case multiple source files is the regular case. For specific project
+// types this can be used to have only a single input file.
+setCommonGradleDefaultPropertyIfNull("allowMultipleSourceFiles", 'true')
+
+// Define the input source file pattern. Null or empty means no pattern. In
+// case of a pattern definition is made, please also adapt the 
+// sampleInputSourceFileName
+setCommonGradleDefaultPropertyIfNull("inputSourceFilePattern", '')
+
+// Define the sample input source file name. Null or empty takes the default.
+setCommonGradleDefaultPropertyIfNull("sampleInputSourceFileName", '')
+
+
+/***************************************************************************************
  * allowedMainDirectories & allowedMainFiles
  ***************************************************************************************/
 addCommonGradlePropertyList("allowedMainDirectories", gradleBuildDirectory)

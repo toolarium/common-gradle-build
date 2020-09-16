@@ -42,6 +42,10 @@ if (project.plugins.findPlugin('org.openapi.generator')==null) {
  ***************************************************************************************/
 ext.projectTypeTemplatePath='openapi'
 ext.initCheckstyle=false
+ext.projectNameTypeRegularExpressionPattern='^.*-api-spec$'
+ext.allowMultipleSourceFiles=false
+ext.inputSourceFilePattern='^' + "${rootProject.name}".replace("-api-spec", "-api") + '.yaml$'
+ext.sampleInputSourceFileName="${rootProject.name}".replace("-api-spec", "-api")
 
 
 if (!project.hasProperty('commonGradleBuildUrl')) {
@@ -108,7 +112,6 @@ task generatePetStore3(type: org.openapitools.generator.gradle.plugin.tasks.Gene
  * define the openapi generator settings
  ***************************************************************************************/
 task openApiProcess {
-	
 	if (validBuild) {
 		// create common gradle build java source path
 		createCommonGradleBuildSourcesPath()
@@ -118,7 +121,19 @@ task openApiProcess {
 			def result = null		
 			File[] files = new File(srcMainApiSpecDirectory).listFiles({File file -> file.name.toLowerCase().endsWith(".yaml") || 
 																					 file.name.toLowerCase().endsWith(".json")} as FileFilter)
-			if (files != null && files.length > 0) {		
+			if (files != null && files.length > 0) {
+				if (files.length > 1 && !allowMultipleSourceFiles) {
+					addError("Multiple input source files found which is not allowed!")
+				}
+
+				if (project.hasProperty('inputSourceFilePattern') && !project.getProperty('inputSourceFilePattern').toString().trim().isEmpty()) {
+					for (File file : files) {
+						if (!(file.getName() ==~ inputSourceFilePattern)) {
+							addError("Input source file " + file.getName() + " don't follow rule ($inputSourceFilePattern)!")
+						}
+					}
+				}
+			
 				def yamlPath = srcMainApiSpecDirectory;
 				if (yamlPath.startsWith("./")) {
 					yamlPath = "${project.rootDir}" + yamlPath.substring(1)
@@ -152,8 +167,9 @@ task openApiProcess {
 
 						def outPath = generatedCommonGradleBaseBuildSources;
 						if (outPath.startsWith("./")) {
-							outPath = "${project.rootDir}" + outPath.substring(1) + "/" + apiName
+							outPath = "${project.rootDir}" + outPath.substring(1)
 						}
+						outPath = "${outPath}" + "/" + apiName + "/" + "v" + majorVersionNumber + "/"
 
 						//def createOpenApi = tasks.create(name: "openApiGenerate${apiName}", dependsOn: openApiProcess, type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
 						def openApiTaskName="openApiGenerate${apiName}"
@@ -245,11 +261,25 @@ if (!project.getProperty('IS_NEW')) {
  * project java validation
  ***************************************************************************************/
 projectValidation {
+	doFirst {
+		if (project.hasProperty('projectNameTypeRegularExpressionPattern') && !project.getProperty('projectNameTypeRegularExpressionPattern').toString().trim().isEmpty()) {
+			if (!(rootProject.name ==~ projectNameTypeRegularExpressionPattern)) {
+				addError("Project name " + rootProject.name + " don't follow project type rule ($projectNameTypeRegularExpressionPattern)!")
+			}
+		}
+	}
+	
 	doLast {
+		
 		if (project.hasProperty('IS_NEW_SRC_FOLDER') && project.getProperty('IS_NEW_SRC_FOLDER')) {
             logInfo("Create a sample service...")
 			def openapiTemplate = 'openapi-sample.yaml.template'
+			
 			def apiName = 'openapi-sample'
+			if (project.hasProperty('sampleInputSourceFileName') && !project.getProperty('sampleInputSourceFileName').toString().trim().isEmpty()) {
+				apiName = project.getProperty('sampleInputSourceFileName')
+			}
+			
 			setCommonGradleProperty("fileName", "${apiName}.yaml".toString())
 			if (!createFileFromTemplate("${srcMainApiSpecDirectory}/${fileName}", getTemplateFile(openapiTemplate, 'openapi'))) {
 				printInfo("> Create file " + colorize(HIGHLITE_LEVEL, "${srcMainApiSpecDirectory}/${fileName}") + " with default values.")
