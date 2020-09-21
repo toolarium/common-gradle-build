@@ -119,6 +119,7 @@ task openApiProcess {
 
 		if (new File(srcMainApiSpecDirectory).exists()) {
 			def result = null		
+			def versionNumberPackageAddon="v" + majorVersionNumber
 			File[] files = new File(srcMainApiSpecDirectory).listFiles({File file -> file.name.toLowerCase().endsWith(".yaml") || 
 																					 file.name.toLowerCase().endsWith(".json")} as FileFilter)
 			if (files != null && files.length > 0) {
@@ -165,12 +166,27 @@ task openApiProcess {
 						def fileName = file.getName()
 						def apiName = file.getName().replace(".yaml", "");
 
+						// check version number
+						def expectedVersionNumber = "${project.ext.majorVersionNumber}.${project.ext.minorVersionNumber}.${project.ext.revisionVersionNumber}".toString()
+						def versionRegex = /^.+version\s?:.+$/
+						for (String line : file.readLines().findAll({ x -> x ==~ versionRegex })) {
+							def trimmedLine = line.toString().trim().replace("version", "").trim();
+							if (trimmedLine.startsWith(':')) {
+								trimmedLine = trimmedLine.substring(1).trim();
+								if (!expectedVersionNumber.equals(trimmedLine)) {
+									def openAPIWarningMessage = "Version number [$trimmedLine] in file [$fileName] don't match with project verion number [$expectedVersionNumber]!"
+									printInfo("> " + openAPIWarningMessage)
+									addError(openAPIWarningMessage)
+								}
+							}
+						}
+						
 						def outPath = generatedCommonGradleBaseBuildSources;
 						if (outPath.startsWith("./")) {
 							outPath = "${project.rootDir}" + outPath.substring(1)
 						}
-						outPath = "${outPath}" + "/" + apiName + "/" + "v" + majorVersionNumber + "/"
-
+						outPath = "${outPath}" + "/" + apiName + "/"
+						
 						//def createOpenApi = tasks.create(name: "openApiGenerate${apiName}", dependsOn: openApiProcess, type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
 						def openApiTaskName="openApiGenerate${apiName}"
 						def createOpenApi = tasks.create(name: "${openApiTaskName}", type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
@@ -183,9 +199,9 @@ task openApiProcess {
 							generatorName = "${openapiGeneratorName}".toString()
 							id = "${rootProject.name}".toString()
 							groupId = "${project.ext.projectGroupId}".toString()					
-							apiPackage = "${project.ext.projectRootPackageName}.${apiName}.api".toString()
-							invokerPackage = "${project.ext.projectRootPackageName}.${apiName}.client".toString()
-							modelPackage = "${project.ext.projectRootPackageName}.${apiName}.dto".toString()
+							apiPackage = "${project.ext.projectRootPackageName}.${versionNumberPackageAddon}.api".toString()
+							invokerPackage = "${project.ext.projectRootPackageName}.${versionNumberPackageAddon}.client".toString()
+							modelPackage = "${project.ext.projectRootPackageName}.${versionNumberPackageAddon}.dto".toString()
 							//templateDir = "$rootDir/src/main/resources/api/templates".toString()
 							version = "${project.version}".toString()
 
@@ -286,7 +302,7 @@ projectValidation {
 				new File(srcMainApiSpecDirectory, "${fileName}").withWriter { w ->
 					w << "openapi: \"3.0.3\"" << NELINE \
 						<< "info:" << NELINE \
-						<< "  version: 1.0.0" << NELINE \
+						<< "  version: ${project.ext.majorVersionNumber}.${project.ext.minorVersionNumber}.${project.ext.revisionVersionNumber}" << NELINE \
 						<< "  title: Sample Petstore" << NELINE \
 						<< "  license:" << NELINE \
 						<< "    name: Copyright by ${licenseOrganisation}, all rights reserved." << NELINE \
