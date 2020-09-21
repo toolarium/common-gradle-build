@@ -1,6 +1,6 @@
 openapi: "3.0.3"
 info:
-  version: 1.0.0
+  version: @@MAJOR_NUMBER@@.@@MINOR_NUMBER@@.@@REVISION_NUMBER@@
   title: Sample Petstore
   license:
     name: Copyright by @@LICENSE_ORGANISATION@@, all rights reserved.
