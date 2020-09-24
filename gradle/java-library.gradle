@@ -63,6 +63,8 @@ projectValidation {
 						<< "" << NELINE \
 						<< "    /**" << NELINE \
 						<< "     * Library method" << NELINE \
+						<< "     *" << NELINE \
+						<< "     * @return returns the result" << NELINE \
 						<< "     */" << NELINE \
 						<< "    public boolean someLibraryMethod() {" << NELINE \
 						<< "        return true;" << NELINE \
