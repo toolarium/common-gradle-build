@@ -4,6 +4,7 @@
  * Copyright by @@LICENSE_ORGANISATION@@, all rights reserved.
  * @@LICENSE@@
  */
+
 package @@packageName@@;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -13,11 +14,11 @@ import org.junit.jupiter.api.Test;
 
 
 /**
- * @@className@@
+ * @@className@@.
  */
 public class @@className@@ {
     /**
-     * Test @@classNameUnderTest@@ method
+     * Test @@classNameUnderTest@@ method.
      */
     @Test void testSomeLibraryMethod() {
         @@classNameUnderTest@@ classUnderTest = new @@classNameUnderTest@@();
@@ -26,7 +27,7 @@ public class @@className@@ {
     
     
     /**
-     * Test Version
+     * Test Version.
      */
     @Test void testVersion() {
         assertEquals(Version.VERSION, Version.getVersion());

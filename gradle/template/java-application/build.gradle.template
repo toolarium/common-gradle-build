@@ -1,0 +1,26 @@
+/*
+ * build.gradle
+ *
+ * Copyright by @@LICENSE_ORGANISATION@@, all rights reserved.
+ * @@LICENSE@@
+ */
+plugins {
+  id 'com.github.johnrengelman.shadow' version '6.0.0'
+}
+
+apply from: "@@COMMON_GRADLE_BUILD_URL@@"
+
+
+/***************************************************************************************
+ * define the main class name
+ ***************************************************************************************/
+mainClassName = "@@applicationName@@"
+
+
+/@@STAR_LINE@@
+ * Define project dependencies
+ @@STAR_LINE@@/
+dependencies {
+    // see https://docs.gradle.org/current/userguide/java_library_plugin.html
+    // e.g.: implementation 'net.sf.jptools:jptools:1.7.1'
+}

@@ -187,7 +187,7 @@ ext.createEclipseFiles = { overwrite = false ->
 						<< "" << NELINE \
 						<< "<fileset-config file-format-version=\"1.2.0\" simple-config=\"true\" sync-formatter=\"false\">" << NELINE \
 						<< "	<local-check-config name=\"${checkstyleConfigurationName}\" location=\"${runtimeCheckstyleConfigurationPath}/checkstyle.xml\" type=\"external\" description=\"\">" << NELINE \
-						<< "	<	<additional-data name=\"protect-config-file\" value=\"true\"/>" << NELINE \
+						<< "	<additional-data name=\"protect-config-file\" value=\"true\"/>" << NELINE \
 						<< "	</local-check-config>" << NELINE \
 						<< "	<fileset name=\"all\" enabled=\"true\" check-config-name=\"${checkstyleConfigurationName}\" local=\"true\">" << NELINE \
 						<< "		<file-match-pattern match-pattern=\".\" include-pattern=\"true\"/>" << NELINE \

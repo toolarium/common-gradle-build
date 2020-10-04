@@ -16,6 +16,10 @@ if (!project.hasProperty('commonGradleBuildUrl')) {
     ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
 }
 
+if (!project.hasProperty('commonGradleBuildElementPath')) {
+	ext.commonGradleBuildElementPath="${commonGradleBuildUrl}/build-element"
+}
+
 
 /***************************************************************************************
  * Set additional template path
@@ -27,6 +31,7 @@ project.ext.set("useJUnit", false)
  * Depending on java-library
  ***************************************************************************************/
 apply from: "${commonGradleBuildUrl}/java-library.gradle"
+apply from: "${commonGradleBuildElementPath}/base/run.gradle"
 
 
 /***************************************************************************************
@@ -69,7 +74,7 @@ projectValidation {
 	doLast {
 		if (project.getProperty('IS_NEW')) {
 			new File(srcMainResourcesDirectory).mkdirs()
-			createFileFromTemplate("${srcMainResourcesDirectory}/applications.properties", getTemplateFile("applications.properties.template")) 
+			createFileFromTemplate("${srcMainResourcesDirectory}/application.properties", getTemplateFile("application.properties.template")) 
 			def quarkusResourcePath = srcMainResourcesDirectory + "/META-INF/resources"
 			new File(quarkusResourcePath).mkdirs()
 			createFileFromTemplate("${quarkusResourcePath}/index.html", getTemplateFile("index.html.template")) 

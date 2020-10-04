@@ -103,14 +103,14 @@ ext.downloadAndUnzipGithubRelease = {url, preRelease = false, destDir, releaseNa
 		}
 		
 		logInfo("Remote version: " + colorize(HIGHLITE_LEVEL, releaseVersion) + colorize(HIGHLITE_LEVEL, " of  $url into $destDir"))			
-		printInfo "> Found release version " + releaseVersion
+		printInfo("> New release " + colorize(HIGHLITE_LEVEL, releaseVersion) + " found on " + colorize(HIGHLITE_LEVEL, url) + ".")
 		def fileZip = new File("${destDir}/${releaseVersion}.zip")
 		if (fileZip.exists()) {
 			printWarn("Could not download release $releaseVersion from github, file already exist [" + colorize(HIGHLITE_LEVEL, fileZip) + colorize(WARN_LEVEL, "].")) 
 		}
 		
 		mkdir "$destDir"
-		printInfo("> Download version " + colorize(HIGHLITE_LEVEL, releaseVersion) + " of " + colorize(HIGHLITE_LEVEL, url) + " into " + colorize(HIGHLITE_LEVEL, "${destDir}/${releaseVersion}") + ".")
+		printInfo("> Download release " + colorize(HIGHLITE_LEVEL, releaseVersion) + " in " + colorize(HIGHLITE_LEVEL, "${destDir}/${releaseVersion}") + ".")
 		new URL(release.zipball_url).withInputStream { i -> fileZip.withOutputStream { it << i } }
 		unzip(fileZip, destDir, releaseVersion)
 		fileZip.delete();

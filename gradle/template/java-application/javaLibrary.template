@@ -21,4 +21,14 @@ public class @@className@@ {
     public boolean someLibraryMethod() {
         return true;
     }
+    
+    
+    /**
+     * The main class
+     *
+     * @param args the arguments
+     */
+    public static void main(String[] args) {
+        // the application
+    }
 }

@@ -4,13 +4,14 @@
  * Copyright by @@LICENSE_ORGANISATION@@, all rights reserved.
  * @@LICENSE@@
  */
+
 package @@packageName@@;
 
 import io.quarkus.test.junit.NativeImageTest;
 
 
 /**
- * Native@@className@@
+ * Native@@className@@.
  */
 @NativeImageTest
 public class Native@@className@@ extends @@className@@ {

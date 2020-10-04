@@ -4,6 +4,7 @@
  * Copyright by @@LICENSE_ORGANISATION@@, all rights reserved.
  * @@LICENSE@@
  */
+
 package @@packageName@@;
 
 import javax.ws.rs.GET;
@@ -13,13 +14,13 @@ import javax.ws.rs.core.MediaType;
 
  
 /**
- * @@className@@
+ * @@className@@.
  */
 @Path("/hello")
 public class @@className@@ {
 
     /**
-     * Hello method
+     * Hello method.
      *
      * @return the message
      */

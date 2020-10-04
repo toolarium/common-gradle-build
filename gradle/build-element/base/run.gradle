@@ -1,0 +1,17 @@
+/*
+ * run.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+
+
+/***************************************************************************************
+ * Run project 
+ ***************************************************************************************/
+//if (!project.tasks.findByName('run')) 
+//   tasks.create(name: "run") 
+task run {
+	group = 'Verification'
+	description = 'Run in development mode the project'
+}

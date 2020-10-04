@@ -15,6 +15,12 @@ if (!project.hasProperty('commonGradleBuildElementPath')) {
 }
 apply from: "${commonGradleBuildElementPath}/java-base.gradle"
 
+/***************************************************************************************
+ * define default java directories
+ ***************************************************************************************/
+setCommonGradleDefaultPropertyIfNull("className", "MyLibrary")
+setCommonGradleDefaultPropertyIfNull("testClassName", "${className}Test")
+
 
 /***************************************************************************************
  * define default java directories
@@ -36,12 +42,11 @@ projectValidation {
             logInfo("Create at least one java file...")
 			def javaLibraryTemplate = 'javaLibrary.template'
 			def slashedRootPackageName = projectRootPackageName.replace('.', '/')
-			def className = 'MyLibrary'
 			def commonGradleTemplateJavaPath = project.getProperty('commonGradleTemplateJavaPath')
 
 			def mainJavaSourcPath = createPackagePath(srcMainJavaDirectory, projectRootPackageName)
 			
-			setCommonGradleProperty("className", "${className}".toString())
+			//setCommonGradleProperty("className", "${className}".toString())
 			setCommonGradleProperty("fileName", "${className}.java".toString())
 			setCommonGradleProperty("packageName", "${projectRootPackageName}".toString())
 			if (!createFileFromTemplate("${mainJavaSourcPath}/${fileName}", getTemplateFile(javaLibraryTemplate, 'java'))) {
@@ -53,16 +58,17 @@ projectValidation {
 						<< " * Copyright by ${licenseOrganisation}, all rights reserved." << NELINE \
 						<< " * ${licenseText}" << NELINE \
 						<< "*/" << NELINE \
+						<< "" << NELINE \
 						<< "package ${projectRootPackageName};" << NELINE \
 						<< "" << NELINE \
 						<< "" << NELINE \
 						<< "/**" << NELINE \
-						<< " * ${className}" << NELINE \
+						<< " * ${className}." << NELINE \
 						<< " */" << NELINE \
 						<< "public class ${className} {" << NELINE \
 						<< "" << NELINE \
 						<< "    /**" << NELINE \
-						<< "     * Library method" << NELINE \
+						<< "     * Library method." << NELINE \
 						<< "     *" << NELINE \
 						<< "     * @return returns the result" << NELINE \
 						<< "     */" << NELINE \
@@ -76,11 +82,10 @@ projectValidation {
 
 			def testJavaSourcPath = createPackagePath(srcTestJavaDirectory, projectRootPackageName)
 			def javaLibraryTestTemplate = 'javaLibraryTest.template'
-			def testClassName = "${className}Test"					
+			setCommonGradleProperty("classNameUnderTest", "${className}".toString())
 			setCommonGradleProperty("className", "${testClassName}".toString())
 			setCommonGradleProperty("fileName", "${testClassName}.java".toString())
 			setCommonGradleProperty("packageName", "${projectRootPackageName}".toString())
-			setCommonGradleProperty("classNameUnderTest", "${className}".toString())
 			if (!createFileFromTemplate("${testJavaSourcPath}/${fileName}", getTemplateFile(javaLibraryTestTemplate, 'java'))) {
 				printInfo("> Create file " + colorize(HIGHLITE_LEVEL, "${testJavaSourcPath}/${testClassName}") + " with default values.")
 				new File(testJavaSourcPath, "${fileName}").withWriter { w ->
@@ -90,6 +95,7 @@ projectValidation {
 						<< " * Copyright by ${licenseOrganisation}, all rights reserved." << NELINE \
 						<< " * ${licenseText}" << NELINE \
 						<< "*/" << NELINE \
+						<< "" << NELINE \
 						<< "package ${projectRootPackageName};" << NELINE \
 						<< "" << NELINE \
 						<< "import static org.junit.jupiter.api.Assertions.assertTrue;" << NELINE \
@@ -98,15 +104,15 @@ projectValidation {
 						<< "" << NELINE \
 						<< "" << NELINE \
 						<< "/**" << NELINE \
-						<< " * ${testClassName}" << NELINE \
+						<< " * ${testClassName}." << NELINE \
 						<< " */" << NELINE \
 						<< "public class ${testClassName} {" << NELINE \
 						<< "" << NELINE \
 						<< "    /**" << NELINE \
-						<< "     * Test ${className} method" << NELINE \
+						<< "     * Test ${classNameUnderTest} method." << NELINE \
 						<< "     */" << NELINE \
 						<< "    @Test void testSomeLibraryMethod() {" << NELINE \
-						<< "        ${className} classUnderTest = new ${className}();" << NELINE \
+						<< "        ${classNameUnderTest} classUnderTest = new ${classNameUnderTest}();" << NELINE \
 						<< "        assertTrue(classUnderTest.someLibraryMethod(), \"someLibraryMethod should return 'true'\");" << NELINE \
 						<< "    }" << NELINE \
 						<< "}" << NELINE \

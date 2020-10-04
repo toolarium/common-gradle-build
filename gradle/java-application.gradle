@@ -1,0 +1,67 @@
+/*
+ * java-application.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+
+
+/***************************************************************************************
+ * Set additional template path
+ ***************************************************************************************/
+ext.projectTypeTemplatePath='java-application'
+ext.className='MyApplication'
+
+
+if (!project.hasProperty('commonGradleBuildUrl')) {
+    ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
+}
+
+apply from: "${commonGradleBuildUrl}/java-library.gradle"
+apply plugin: 'application'
+
+
+/***************************************************************************************
+ * excludes
+ ***************************************************************************************/
+if (project.tasks.findByName('shadowJar')) {
+	// exclude a file from Shadow Jar
+	shadowJar {
+		// allo service files
+		mergeServiceFiles()
+		
+		// in case we have spring
+		append("META-INF/spring.handlers")
+		append("META-INF/spring.schemas")
+		append("META-INF/spring.tooling")
+		/*
+		transform(PropertiesFileTransformer().apply {
+			paths = listOf("META-INF/spring.factories")
+			mergeStrategy = "append"
+		})
+		*/
+		
+		// excluse
+		exclude "META-INF/*.SF"
+		exclude "META-INF/*.DSA"
+		exclude "META-INF/*.RSA"
+		exclude "META-INF/LICENSE"
+		exclude "META-INF/VERSION"
+	}
+}
+
+
+/***************************************************************************************
+ * parameters can be passed e.g.: "-Dexec.args="--iterations 10 --runs 10 jptools file --sync""
+ ***************************************************************************************/
+run {
+    if (System.getProperty("exec.args") != null) {
+        args System.getProperty("exec.args").split()
+    }
+}
+
+
+/***************************************************************************************
+ * define the main class name (will be done in build.gradle))
+ ***************************************************************************************/
+//mainClassName = "my.packname.classname"

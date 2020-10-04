@@ -56,7 +56,7 @@ init {
 	def javaInfo = ""
 	if (initShowJava) {
 		userInfo = "(${System.properties['user.name']}, $encoding, ${System.properties['user.language']}, ${TimeZone.getDefault().getID()})"
-		javaInfo = "Java v" + colorize(HIGHLITE_LEVEL, System.properties['java.version']) + "${isUnlimitedJurisdictionMsg}, target " + colorize(HIGHLITE_LEVEL, targetCompatibility) + " (${vendorName}-${System.properties['java.vm.version']}), "
+		javaInfo = "Java " + colorize(HIGHLITE_LEVEL, System.properties['java.version']) + "${isUnlimitedJurisdictionMsg}, target " + colorize(HIGHLITE_LEVEL, targetCompatibility) + " (${vendorName}-${System.properties['java.vm.version']}), "
 	}
 
 		def osInfo = "${System.properties['os.name']} (${System.properties['os.arch']}) on ${hostname}"
@@ -123,13 +123,4 @@ task showClasspath {
 task projectValidation {
 	group = 'Verification'
 	description = 'Project validation'
-}
-
-
-/***************************************************************************************
- * Run project 
- ***************************************************************************************/
-task run {
-	group = 'Verification'
-	description = 'Run in development mode the project'
 }

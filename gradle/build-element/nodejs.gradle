@@ -26,6 +26,7 @@ ext.projectTypeTemplatePath='nodejs'
  ***************************************************************************************/
 apply from: "${commonGradleBuildElementPath}/base.gradle"
 apply from: "${commonGradleBuildElementPath}/base/gradle.gradle"
+apply from: "${commonGradleBuildElementPath}/base/run.gradle"
 
 
 /***************************************************************************************

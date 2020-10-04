@@ -4,6 +4,7 @@
  * Copyright by @@LICENSE_ORGANISATION@@, all rights reserved.
  * @@LICENSE@@
  */
+
 package @@packageName@@;
 
 import static io.restassured.RestAssured.given;
@@ -15,12 +16,12 @@ import org.junit.jupiter.api.Test;
 
 
 /**
- * @@className@@
+ * @@className@@.
  */
 @QuarkusTest
 public class @@className@@ {
     /**
-     * Test @@classNameUnderTest@@ method
+     * Test @@classNameUnderTest@@ method.
      */
     @Test void testHelloEndpoint() {
         given()
@@ -32,7 +33,7 @@ public class @@className@@ {
     
     
     /**
-     * Test Version
+     * Test Version.
      */
     @Test void testVersion() {
         assertEquals(Version.VERSION, Version.getVersion());

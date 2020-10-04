@@ -103,7 +103,7 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 	}
 	
 	if (!new File(theTemplatePath+"/"+inputTemplateFilename).exists()) {
-		logDebug("Could not found template file.")
+		logDebug("Could not found template file [${theTemplatePath}/${inputTemplateFilename}].")
 		return false
 	}
 	
@@ -229,6 +229,7 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 			
 			if (project.hasProperty('className')) {
 				filter { line -> line.replaceAll('@@className@@', "${project.ext.className}".toString()) }
+				filter { line -> line.replaceAll('@@applicationName@@', "${project.ext.projectRootPackageName}.${project.ext.className}".toString()) }
 			}
 			if (project.hasProperty('classNameUnderTest')) {
 				filter { line -> line.replaceAll('@@classNameUnderTest@@', "${project.ext.classNameUnderTest}".toString()) }
@@ -240,7 +241,7 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 				filter { line -> line.replaceAll('@@packageName@@', "${project.ext.packageName}".toString()) }
 			}
 		}
-				
+		
 		return true
 	} else {
 		logDebug("Template file ${theTemplatePath}/${inputTemplateFilename} don't exist.")
