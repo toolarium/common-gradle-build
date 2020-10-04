@@ -422,15 +422,27 @@ ext.getTemplateFile = { templateFilename, defaultProjectTypeTemplatePath='base' 
 	def projectTypeTemplatePath = defaultProjectTypeTemplatePath
 	
     try {
+		def theTemplatePath = project.getProperty('commonGradleTemplatePath')
+		
         if (project.hasProperty('projectTypeTemplatePath')) {
-            projectTypeTemplatePath = project.getProperty('projectTypeTemplatePath')
+			def projectSpecificSubPath = project.getProperty('projectTypeTemplatePath')
+			if (new File(theTemplatePath+"/"+projectSpecificSubPath+"/"+templateFilename).exists()) {
+				projectTypeTemplatePath = projectSpecificSubPath
+			}
 		}
 
-		def theTemplatePath = project.getProperty('commonGradleTemplatePath')
 		if (project.hasProperty('commonGradleBuildHome') ) {
 			def commonGradleBuildHome = project.getProperty('commonGradleBuildHome')
 			if (commonGradleBuildHome!=null && !"${commonGradleBuildHome}".isEmpty() && new File(commonGradleBuildHome).exists()) {
 				def homeTemplatePath = commonGradleBuildHome + "/gradle/" + project.getProperty('commonGradleTemplatePathName')
+				
+				if (project.hasProperty('projectTypeTemplatePath')) {
+					def projectSpecificSubPath = project.getProperty('projectTypeTemplatePath')
+					if (new File(homeTemplatePath+"/"+projectSpecificSubPath+"/"+templateFilename).exists()) {
+						projectTypeTemplatePath = projectSpecificSubPath
+					}
+				}
+				
 				if (new File(homeTemplatePath+"/"+projectTypeTemplatePath+"/"+templateFilename).exists()) {
 					logDebug("Take from home project-type template path: " + projectTypeTemplatePath+"/"+templateFilename + "!")
 					return projectTypeTemplatePath+"/"+templateFilename; // no home directory to return; will be handled in file.gradle
