@@ -26,12 +26,14 @@ if (project.hasProperty('initCheckstyle') && project.getProperty('initCheckstyle
 	}	
 
 	if (runtimeCheckstyleConfigurationPath==null) {
-		// work around: set the checkstyle as absolute path
 		setCommonGradleProperty("doCreateCheckstyleConfiguration", true)
+		// work around: set the checkstyle as absolute path
 		runtimeCheckstyleConfigurationPath = project.getProperty('checkstyleConfigurationPath')
 		if (runtimeCheckstyleConfigurationPath.startsWith("./")) {
 			runtimeCheckstyleConfigurationPath = cbProjectRootDir + "/" + checkstyleConfigurationPath.substring(2)
 		}
+		
+		setCommonGradleProperty("runtimeCheckstyleConfigurationPath", runtimeCheckstyleConfigurationPath)
 	}
 	
 	if (runtimeCheckstyleConfigurationPath!=null && !runtimeCheckstyleConfigurationPath.isEmpty() && new File("${runtimeCheckstyleConfigurationPath}/${checkstyleConfigurationFilename}").exists()) {
