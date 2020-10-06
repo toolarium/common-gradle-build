@@ -368,7 +368,7 @@ ext.getGithubRelease = {localDirectory, commonGradleBuildReleasesUrl, preRelease
 				def localDirectoryRemoteVersion = "${localDirectory}/${remoteVersion}"				
 				logInfo("Remote version: " + colorize(HIGHLITE_LEVEL, remoteVersion) + colorize(INFO_LEVEL, " of [")  + colorize(HIGHLITE_LEVEL, commonGradleBuildReleasesUrl) + colorize(INFO_LEVEL, "] in [") + colorize(HIGHLITE_LEVEL, localDirectoryRemoteVersion) + colorize(INFO_LEVEL, "]."))
 				if (!new File(localDirectoryRemoteVersion).exists()) {
-					logInfo("> Download version " + colorize(HIGHLITE_LEVEL, remoteVersion) + colorize(INFO_LEVEL, " of [") + colorize(HIGHLITE_LEVEL, commonGradleBuildReleasesUrl) + colorize(INFO_LEVEL, "] into [") + colorize(HIGHLITE_LEVEL, localDirectoryRemoteVersion) + colorize(INFO_LEVEL, "]."))
+					logInfo("Download version " + colorize(HIGHLITE_LEVEL, remoteVersion) + colorize(INFO_LEVEL, " of [") + colorize(HIGHLITE_LEVEL, commonGradleBuildReleasesUrl) + colorize(INFO_LEVEL, "] into [") + colorize(HIGHLITE_LEVEL, localDirectoryRemoteVersion) + colorize(INFO_LEVEL, "]."))
 					downloadAndUnzipGithubRelease(commonGradleBuildReleasesUrl, preRelease, localDirectory, releaseName)
 				} else {
 					logInfo("Remote version: " + colorize(HIGHLITE_LEVEL, remoteVersion) + colorize(INFO_LEVEL, " already exist in [") + colorize(HIGHLITE_LEVEL,localDirectoryRemoteVersion) + colorize(INFO_LEVEL, "]."))

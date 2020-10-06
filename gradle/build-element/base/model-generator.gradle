@@ -1,0 +1,25 @@
+/*
+ * model-generator.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+
+
+/***************************************************************************************
+ * Defines the model generator dependencies
+ ***************************************************************************************/
+task modelGeneratorDependency {
+	group = 'Verification'
+	description = 'Create resource bundles.'
+	
+	def commonGradleJptoolsModelGeneratorVersion=project.getProperty('commonGradleJptoolsModelGeneratorVersion')
+	def commonGradleJexcelapiModelGeneratorVersion=project.getProperty('commonGradleJexcelapiModelGeneratorVersion')
+	configurations {
+		modelGenerator
+    }
+	dependencies {
+		modelGenerator "net.sf.jptools:jptools:" + commonGradleJptoolsModelGeneratorVersion
+		modelGenerator "net.sourceforge.jexcelapi:jxl:" + commonGradleJexcelapiModelGeneratorVersion
+	}
+}

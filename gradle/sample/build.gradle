@@ -31,10 +31,31 @@ task sampleTask {
 	printInfo "Sample Task: " + myVar 
 
     doLast { 
-		printInfo "doLast -> start: " + myVar 
+		printInfo "sampleTask -> start: " + myVar 
 		myFunction()
-		printInfo "doLast -> end: " + myVar 
+		printInfo "sampleTask -> end: " + myVar 
     }
+}
+
+
+/***************************************************************************************
+ * sample clean build task --> see >cb tasks
+ ***************************************************************************************/
+task sampleCleanBuildTask (type: GradleBuild) {
+    tasks = ['clean']
+	group = 'Verification'
+	description = 'My clean build task'
+
+	doLast { 
+		printInfo "sampleCleanBuildTask -> start: " + myVar 
+		ext.isReadyToPublish = true
+		printInfo "sampleCleanBuildTask -> end: " + myVar 
+    }
+}
+
+// some condition
+if (project.hasProperty("isReadyToPublish")) {
+    sampleCleanBuildTask.finalizedBy build
 }
 
 

@@ -389,7 +389,7 @@ ext.projectInitialisation = { ->
 					<< " ${STAR_LINE}/" << NELINE \
 					<< "dependencies {" << NELINE \
 					<< "\t// see https://docs.gradle.org/current/userguide/java_library_plugin.html" << NELINE \
-					<< "\t// e.g.: implementation 'net.sf.jptools:jptools:1.7.1'" << NELINE \
+					<< "\t// e.g.: implementation 'net.sf.jptools:jptools:1.7.2'" << NELINE \
 					<< "}" << NELINE
 				}
 			}

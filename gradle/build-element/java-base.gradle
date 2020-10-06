@@ -18,7 +18,21 @@ apply from: "${commonGradleBuildElementPath}/java/checkstyle.gradle"
 apply from: "${commonGradleBuildElementPath}/java/testcoverage.gradle"
 apply from: "${commonGradleBuildElementPath}/java/eclipse.gradle"
 
-defaultTasks 'clean', 'build'
+defaultTasks 'clean', 'createResourceBundle', 'build'
+// createResourceBundle: ext.initResourceBundle=true or setCommonGradleProperty("initResourceBundle", true)	
+
+
+/***************************************************************************************
+ * Extend clean
+ ***************************************************************************************/
+clean {
+	doFirst {
+		delete "${rootDirectory}/bin/"
+		delete "${rootDirectory}/build-eclipse/"		
+		delete "${rootDirectory}/logs/"
+		delete "${rootDirectory}/temp/"
+	}
+}
 
 
 /**
@@ -54,8 +68,9 @@ if (project.hasProperty('generatedCommonGradleBuildSources') && !project.getProp
 	def generatedCommonGradleBuildSources = project.getProperty('generatedCommonGradleBuildSources');
 	def mainDirectoryName = project.getProperty('srcMainDirectoryName')
 	sourceSets.main.java.srcDirs += "${generatedCommonGradleBuildSources}/java/${mainDirectoryName}"
-	sourceSets.main.java.srcDirs += "${generatedCommonGradleBuildSources}/resources/${mainDirectoryName}"
+	sourceSets.main.resources.srcDirs += "${generatedCommonGradleBuildSources}/resources/${mainDirectoryName}"
 	logInfo("Set source set to " + colorize(HIGHLITE_LEVEL, sourceSets.main.java.srcDirs))
+	logInfo("Set resources set to " + colorize(HIGHLITE_LEVEL, sourceSets.main.resources.srcDirs))
 }
 
 

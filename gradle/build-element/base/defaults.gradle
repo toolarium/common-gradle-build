@@ -116,6 +116,11 @@ setCommonGradleDefaultPropertyIfNull("srcDirectory", "$rootDirectory/$srcDirecto
 setCommonGradleDefaultPropertyIfNull("srcMainDirectory", "${srcDirectory}/${srcMainDirectoryName}")
 setCommonGradleDefaultPropertyIfNull("srcTestDirectory", "${srcDirectory}/${srcTestDirectoryName}")
 
+// resources directories
+setCommonGradleDefaultPropertyIfNull("resourceDirectoryName", "resources")
+setCommonGradleDefaultPropertyIfNull("srcMainResourcesDirectory", "${srcMainDirectory}/${resourceDirectoryName}")
+setCommonGradleDefaultPropertyIfNull("srcTestResourcesDirectory", "${srcTestDirectory}/${resourceDirectoryName}")
+
 // software generation settings
 setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBaseBuildSources", "$rootDirectory/build/generated/sources")
 setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBuildSources", "$generatedCommonGradleBaseBuildSources/common-gradle-build")
@@ -263,7 +268,7 @@ setCommonGradleDefaultPropertyIfNull("jacocoReportPath", "${buildDir}/reports/te
 /***************************************************************************************
  * quarkus plugin defaults
  ***************************************************************************************/
-setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", '1.7.0.Final')
+setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", '1.8.1.Final')
 setCommonGradleDefaultPropertyIfNull("quarkusPlatformArtifactId", 'quarkus-universe-bom')
 setCommonGradleDefaultPropertyIfNull("quarkusPlatformGroupId", 'io.quarkus')
 setCommonGradleDefaultPropertyIfNull("quarkusPlatformVersion", "${quarkusPluginVersion}")
@@ -410,6 +415,18 @@ setCommonGradleDefaultPropertyIfNull("errorMessageColor", WARN_LEVEL)
 /***************************************************************************************
  * resource bundle
  ***************************************************************************************/
+setCommonGradleDefaultPropertyIfNull("initResourceBundle", false)
+setCommonGradleDefaultPropertyIfNull("hasResourceBundle", false)
 setCommonGradleDefaultPropertyIfNull("commonGradleConfigResourcebundleName", "Resourcebundle.xls")
 setCommonGradleDefaultPropertyIfNull("commonGradleConfigResourcebundlePath", "${configDirectory}/${commonGradleConfigResourcebundleName}")
-setCommonGradleDefaultPropertyIfNull("commonGradleResourcebundleOututPath", "${generatedCommonGradleBuildSources}/resources/main/resourcebundle")
+setCommonGradleDefaultPropertyIfNull("commonGradleResourcebundleOutputPath", "${generatedCommonGradleBuildSources}/resources/main")
+setCommonGradleDefaultPropertyIfNull("commonGradleResourcebundleOutputNamePrefix", "resourcebundle")
+setCommonGradleDefaultPropertyIfNull("commonGradleResourcebundleJsonSupport", false)
+setCommonGradleDefaultPropertyIfNull("commonGradleConfigResourcebundleMaxMemory", "512m")
+
+
+/***************************************************************************************
+ * resource bundle
+ ***************************************************************************************/
+setCommonGradleDefaultPropertyIfNull("commonGradleJptoolsModelGeneratorVersion", "1.7.2")
+setCommonGradleDefaultPropertyIfNull("commonGradleJexcelapiModelGeneratorVersion", "2.6.12")

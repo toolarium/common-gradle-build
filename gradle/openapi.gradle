@@ -11,17 +11,17 @@ if (project.hasProperty('openapiPluginVersion')) {
 }
 
 buildscript {
-  repositories {
-    maven { url "https://repo1.maven.org/maven2" }
-  }
-  dependencies {
-	def openapiPluginVersion="5.0.0-beta"
-	if (project.hasProperty('openapiPluginVersion')) {
-		openapiPluginVersion = project.getProperty('openapiPluginVersion')
+	repositories {
+		maven { url "https://repo1.maven.org/maven2" }
 	}
-  
-    classpath "org.openapitools:openapi-generator-gradle-plugin:" + openapiPluginVersion
-  }
+	dependencies {
+		def openapiPluginVersion="5.0.0-beta"
+		if (project.hasProperty('openapiPluginVersion')) {
+			openapiPluginVersion = project.getProperty('openapiPluginVersion')
+		}
+ 
+		classpath "org.openapitools:openapi-generator-gradle-plugin:" + openapiPluginVersion
+	}
 }
 
 // check plugin

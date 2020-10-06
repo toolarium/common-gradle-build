@@ -1,0 +1,78 @@
+/*
+ * resourcebundle.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+
+
+/***************************************************************************************
+ * Only if hasResourceBundle is set to true we process the resource bundle.
+ ***************************************************************************************/
+setCommonGradleProperty("hasResourceBundle", new File("${commonGradleConfigResourcebundlePath}").exists())
+if (project.hasProperty("initResourceBundle") && project.getProperty("initResourceBundle")) {
+	setCommonGradleProperty("hasResourceBundle", true)	
+}
+
+
+/***************************************************************************************
+ * Show buildscript configuration classpath
+ ***************************************************************************************/
+task createResourceBundle {
+	group = 'Verification'
+	description = 'Create resource bundles.'
+	
+    doLast {	
+		if (project.hasProperty("hasResourceBundle") && project.getProperty("hasResourceBundle")) {
+			generateResourceBundle()
+		}
+    }
+}
+createResourceBundle.dependsOn(modelGeneratorDependency)
+
+
+/***************************************************************************************
+ * Generate resource bundle.
+ ***************************************************************************************/
+ext.generateResourceBundle = { inputFile = "${commonGradleConfigResourcebundlePath}", outputPath = "${commonGradleResourcebundleOutputPath}", jsonSupport = commonGradleResourcebundleJsonSupport ->
+	if (!new File("${inputFile}").exists() && project.hasProperty("initResourceBundle") && project.getProperty("initResourceBundle")) {
+		printInfo("> Initialize empty resource bundle " + colorize(HIGHLITE_LEVEL, inputFile) + ".")
+		copyFile("$commonGradleConfigPath/$commonGradleConfigResourcebundleName", "${inputFile}", false)
+	}
+	
+	if (!new File("${inputFile}").exists()) {
+		return
+	}
+	
+	logInfo("Create resource bundle [" + colorize(HIGHLITE_LEVEL, inputFile) + colorize(INFO_LEVEL, "] into [") + colorize(HIGHLITE_LEVEL, outputPath) + colorize(INFO_LEVEL, "]."))
+	ant.java(taskname: "ResourceBundle",
+			classname: "jptools.util.application.GenericApplicationStarter",
+			fork: "true", newenvironment: "true", failonerror: "true",
+			maxmemory: "${commonGradleConfigResourcebundleMaxMemory}",
+			classpath: configurations.modelGenerator.asPath) {
+				arg(value: "-jptoolsConfig")
+				arg(value: "${commonGradleConfigPath}/jptools/modelgenerator-logger-silent.properties")
+				arg(value: "-type")
+				arg(value: "jptools.generator.ResourcebundleGenerator")
+				arg(value: "-logInfo")
+				arg(value: "ResourceBundle")
+				arg(value: "-o")
+				arg(value: "${outputPath}")
+				
+	if (!jsonSupport) {
+				arg(value: "-prefix")
+				arg(value: "${commonGradleResourcebundleOutputNamePrefix}")
+				arg(value: "-default")
+				arg(value: "true")
+	} else {
+				arg(value: "-json")
+				arg(value: "true")
+				arg(value: "-validate")
+				arg(value: "true")
+	}
+				arg(value: "-i")
+				arg(value: "${inputFile}")
+				arg(value: "-modelVersion")
+				arg(value: "${version}")	
+			}
+}

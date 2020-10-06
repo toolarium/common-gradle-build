@@ -136,7 +136,7 @@ setCommonGradleProperty("referenceCheckstyleConfiguration", "true")
 /***************************************************************************************
  * quarkus plugin version
  ***************************************************************************************/
-//setCommonGradleProperty("quarkusPluginVersion", '1.7.0.Final')
+//setCommonGradleProperty("quarkusPluginVersion", '1.8.1.Final')
 
 
 /***************************************************************************************

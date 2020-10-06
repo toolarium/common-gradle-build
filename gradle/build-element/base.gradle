@@ -74,6 +74,13 @@ apply from: "${commonGradleBuildElementPath}/scm/git.gradle"
 //apply from: "${commonGradleBuildElementPath}/scm/changelog.gradle"
 
 
+/***************************************************************************************
+ * model generator imports
+ ***************************************************************************************/
+apply from: "${commonGradleBuildElementPath}/base/model-generator.gradle"
+apply from: "${commonGradleBuildElementPath}/base/resourcebundle.gradle"
+
+
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // add dependencies to all tasks except some special ones
 if (!project.hasProperty('hasProjectValidationExecuted')) {
