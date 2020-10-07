@@ -6,6 +6,12 @@
  */
 
 
+/***************************************************************************************
+ * ResourceBundle.xls json support
+ ***************************************************************************************/
+ext.commonGradleResourcebundleJsonSupport=true
+
+
 if (!project.hasProperty('commonGradleBuildUrl')) {
     ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
 }
@@ -27,6 +33,7 @@ ext.projectTypeTemplatePath='nodejs'
 apply from: "${commonGradleBuildElementPath}/base.gradle"
 apply from: "${commonGradleBuildElementPath}/base/gradle.gradle"
 apply from: "${commonGradleBuildElementPath}/base/run.gradle"
+apply from: "${commonGradleBuildElementPath}/java/repository.gradle"
 
 
 /***************************************************************************************
@@ -91,7 +98,7 @@ if (!project.getProperty('IS_NEW')) {
 	}
 
 
-	defaultTasks /*'clean', */'build'
+	defaultTasks /*'clean', */'build', 'createResourceBundle'
 
 
 	/***************************************************************************************
@@ -159,7 +166,7 @@ if (!project.getProperty('IS_NEW')) {
 		args = ['run', 'lint']
 	}
 } else {
-	defaultTasks 'projectValidation'
+	defaultTasks 'projectValidation', 'createResourceBundle'
 }
 
 

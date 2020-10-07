@@ -5,7 +5,15 @@
  * MIT License: https://mit-license.org
  */
 
- 
+
+/***************************************************************************************
+ * ResourceBundle.xls support
+ ***************************************************************************************/
+ext.initResourceBundle=true
+ext.commonGradleResourcebundleJsonSupport=true
+ext.commonGradleResourcebundleOutputPath='static/locales'
+
+
 if (!project.hasProperty('commonGradleBuildUrl')) {
     ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
 }

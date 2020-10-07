@@ -19,7 +19,6 @@ apply from: "${commonGradleBuildElementPath}/java/testcoverage.gradle"
 apply from: "${commonGradleBuildElementPath}/java/eclipse.gradle"
 
 defaultTasks 'clean', 'createResourceBundle', 'build'
-// createResourceBundle: ext.initResourceBundle=true or setCommonGradleProperty("initResourceBundle", true)	
 
 
 /***************************************************************************************
