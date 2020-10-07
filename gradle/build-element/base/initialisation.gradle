@@ -45,7 +45,7 @@ ext.projectInitialisation = { ->
 	def createReadmeFile = !new File(readmeFile).exists()
 	def createLicenseFile = !new File(licenseFile).exists()
 	if (createLicenseFile && !"$rootDirectory/$licenseFilename".toString().equalsIgnoreCase(licenseFile.toString())) {
-		// incase the license file not corresponds to a local file, just ignore
+		// in case the license file not corresponds to a local file, just ignore
 		createLicenseFile = false
 	}
 	

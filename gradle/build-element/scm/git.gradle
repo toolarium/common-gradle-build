@@ -501,7 +501,6 @@ ext.createGitFiles = { overwrite = false ->
 		}
 	}
 		
-	def classpathFile = ".classpath"
 	def gitAttributeFile = '.gitattributes'
 	if (overwrite || !new File("${rootDirectory}", "${gitAttributeFile}").exists()) {
 		def gitAttributeFileTemplate = 'gitattributes.template'
