@@ -12,6 +12,13 @@
 ext.projectTypeTemplatePath='quarkus'
 
 
+/***************************************************************************************
+ * Work around: quarkus don't support multiple resources directories
+ ***************************************************************************************/
+ext.supportMultipleResourceFolder=false
+ext.commonGradleResourcebundleOutputPath='build/resources/main'
+
+
 if (!project.hasProperty('commonGradleBuildUrl')) {
     ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
 }

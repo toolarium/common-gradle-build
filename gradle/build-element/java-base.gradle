@@ -68,9 +68,16 @@ if (project.hasProperty('generatedCommonGradleBuildSources') && !project.getProp
 	def generatedCommonGradleBuildSources = project.getProperty('generatedCommonGradleBuildSources');
 	def mainDirectoryName = project.getProperty('srcMainDirectoryName')
 	sourceSets.main.java.srcDirs += "${generatedCommonGradleBuildSources}/java/${mainDirectoryName}"
-	sourceSets.main.resources.srcDirs += "${generatedCommonGradleBuildSources}/resources/${mainDirectoryName}"
 	logInfo("Set source set to " + colorize(HIGHLITE_LEVEL, sourceSets.main.java.srcDirs))
-	logInfo("Set resources set to " + colorize(HIGHLITE_LEVEL, sourceSets.main.resources.srcDirs))
+
+	def size = sourceSets.main.resources.srcDirs.size()
+	if (size>0 && supportMultipleResourceFolder) {
+		sourceSets.main.resources.srcDirs += "${generatedCommonGradleBuildSources}/resources/${mainDirectoryName}"
+		logInfo("Set resources set to " + colorize(HIGHLITE_LEVEL, sourceSets.main.resources.srcDirs))
+	} else {
+		//ext.generatedCommonGradleBuildSources=sourceSets.main.resources.srcDirs.iterator().next()
+		//def count = new File("${generatedCommonGradleBuildSources}/resources/${mainDirectoryName}").listFiles().count { it.name ==~ /.*s/ }
+	}
 }
 
 

@@ -120,9 +120,10 @@ setCommonGradleDefaultPropertyIfNull("srcTestDirectory", "${srcDirectory}/${srcT
 setCommonGradleDefaultPropertyIfNull("resourceDirectoryName", "resources")
 setCommonGradleDefaultPropertyIfNull("srcMainResourcesDirectory", "${srcMainDirectory}/${resourceDirectoryName}")
 setCommonGradleDefaultPropertyIfNull("srcTestResourcesDirectory", "${srcTestDirectory}/${resourceDirectoryName}")
+setCommonGradleDefaultPropertyIfNull("supportMultipleResourceFolder", true)
 
 // software generation settings
-setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBaseBuildSources", "$rootDirectory/build/generated/sources")
+setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBaseBuildSources", "$gradleBuildDirectory/generated/sources")
 setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBuildSources", "$generatedCommonGradleBaseBuildSources/common-gradle-build")
 
 
