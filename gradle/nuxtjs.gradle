@@ -81,6 +81,18 @@ projectValidation {
 							  + "}" + NELINE)
 			*/
 			
+			// use the defined files
+			new File(licenseFile).delete()
+			new File(readmeFile).delete()
+			createFileFromTemplate(readmeFile, getTemplateFile('README.template'))			
+			new File(editorConfigFile).delete()
+			createFileFromTemplate(editorConfigFile, getTemplateFile('editorconfig.template'))
+			
+			// generate git files if necessary
+			if (project.hasProperty('initScmForNewProjects') && project.getProperty('initScmForNewProjects')) {
+				createGitFiles(true)
+			}
+
 			registerEndMessage("" << NELINE \
 								<< "  To get started (equivalent to 'npm run dev'), got to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
 								<< "      " + colorize(HIGHLITE_LEVEL, "$startExecutable run") + "" << NELINE \
