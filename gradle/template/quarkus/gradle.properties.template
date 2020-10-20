@@ -20,3 +20,6 @@ org.gradle.jvmargs       = @@GRADLE_JVM_ARG@@
 org.gradle.logging.level = @@GRADLE_LOG_LEVEL@@
 org.gradle.console       = @@GRADLE_CONSOLE@@
 org.gradle.warning.mode  = @@GRADLE_WARNING_MODE@@
+
+# build always docker image or environment pararameter CB_BUILD_ALWAYS_DOCKER_IMAGE
+#buildAlwaysDockerImage  = true

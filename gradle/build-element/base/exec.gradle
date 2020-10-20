@@ -43,4 +43,6 @@ ext.execRawCommand = { args, timeout=10000, sout=System.out, serr=System.err ->
 	} else {
 		process.waitForProcessOutput()
 	}
+	
+	return process.exitValue()
 }

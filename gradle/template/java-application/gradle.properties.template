@@ -7,7 +7,10 @@ projectDescription       = @@DESCRIPTION@@
 projectUrl               = @@URL@@
 
 # tool information
-nodePluginVersion        = @@NODE_PLUGIN_VERSION@@
+# checkstyleToolVersion    = @@checkstyleToolVersion@@
+# testDependencyVersion    = @@testDependencyVersion@@
+# sourceCompatibility      = @@sourceCompatibility@@
+# targetCompatibility      = @@targetCompatibility@@
 
 # jvm information
 org.gradle.jvmargs       = @@GRADLE_JVM_ARG@@

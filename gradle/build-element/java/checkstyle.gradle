@@ -50,7 +50,7 @@ if (project.hasProperty('initCheckstyle') && project.getProperty('initCheckstyle
 					'samedir': runtimeCheckstyleConfigurationPath
 				]
 				
-			logInfo("> Checkstyle file " + colorize(HIGHLITE_LEVEL, "${runtimeCheckstyleConfigurationPath}/${checkstyleConfigurationFilename}") + ".")
+			logInfo("Checkstyle file " + colorize(HIGHLITE_LEVEL, "${runtimeCheckstyleConfigurationPath}/${checkstyleConfigurationFilename}") + ".")
 			configFile file("${runtimeCheckstyleConfigurationPath}/${checkstyleConfigurationFilename}")
 		}
 		

@@ -183,7 +183,8 @@ gradle.buildFinished { buildResult ->
 		}
 
 		if (gradle.startParameter.getLogLevel() == org.gradle.api.logging.LogLevel.QUIET) {
-			printInfo(colorize(SUCCESS_LEVEL, "BUILD SUCCESSFUL") + " in ~" + duration + "s                      ")
+			printLine()
+			printInfo("" + colorize(SUCCESS_LEVEL, "BUILD SUCCESSFUL") + " in ~" + duration + "s                      ")
 		}
 	}
 

@@ -240,6 +240,44 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 			if (project.hasProperty('packageName')) {
 				filter { line -> line.replaceAll('@@packageName@@', "${project.ext.packageName}".toString()) }
 			}
+				
+			// docker
+			if (project.hasProperty('dockerImage')) {
+				filter { line -> line.replaceAll('@@dockerImage@@', "${project.ext.dockerImage}".toString()) }
+			}
+			if (project.hasProperty('dockerUID')) {
+				filter { line -> line.replaceAll('@@dockerUID@@', "${project.ext.dockerUID}".toString()) }
+			}
+			if (project.hasProperty('dockerGID')) {
+				filter { line -> line.replaceAll('@@dockerGID@@', "${project.ext.dockerGID}".toString()) }
+			}
+			if (project.hasProperty('dockerExposePort')) {
+				filter { line -> line.replaceAll('@@dockerExposePort@@', "${project.ext.dockerExposePort}".toString()) }
+			}
+			if (project.hasProperty('dockerUser')) {
+				filter { line -> line.replaceAll('@@dockerUser@@', "${project.ext.dockerUser}".toString()) }
+			}
+			if (project.hasProperty('dockerGroup')) {
+				filter { line -> line.replaceAll('@@dockerGroup@@', "${project.ext.dockerGroup}".toString()) }
+			}
+			if (project.hasProperty('dockerTimezone')) {
+				filter { line -> line.replaceAll('@@dockerTimezone@@', "${project.ext.dockerTimezone}".toString()) }
+			}
+			if (project.hasProperty('dockerDeploymentSourcePath')) {
+				filter { line -> line.replaceAll('@@dockerDeploymentSourcePath@@', "${project.ext.dockerDeploymentSourcePath}".toString()) }
+			}
+			if (project.hasProperty('dockerDefaultEncoding')) {
+				filter { line -> line.replaceAll('@@dockerDefaultEncoding@@', "${project.ext.dockerDefaultEncoding}".toString()) }
+			}
+			if (project.hasProperty('dockerDefaultLanguage')) {
+				filter { line -> line.replaceAll('@@dockerDefaultLanguage@@', "${project.ext.dockerDefaultLanguage}".toString()) }
+			}
+			if (project.hasProperty('dockerDefaultLocale')) {
+				filter { line -> line.replaceAll('@@dockerDefaultLocale@@', "${project.ext.dockerDefaultLocale}".toString()) }
+			}
+			if (project.hasProperty('dockerDefaultJavaOptions')) {
+				filter { line -> line.replaceAll('@@dockerDefaultJavaOptions@@', "${project.ext.dockerDefaultJavaOptions}".toString()) }
+			}
 		}
 		
 		return true

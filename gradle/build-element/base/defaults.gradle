@@ -384,6 +384,9 @@ if (project.hasProperty('installGradleWrapper') && project.getProperty('installG
 	addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/gradlew.bat")
 }
 
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/Dockerfile")
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.dockerignore")
+
 
 /***************************************************************************************
  * version default settings
@@ -412,6 +415,28 @@ setCommonGradleDefaultPropertyIfNull("errorMessagePrefix", "\nERROR")
 setCommonGradleDefaultPropertyIfNull("logErrorMessage", false)
 setCommonGradleDefaultPropertyIfNull("errorMessageColor", WARN_LEVEL)
 
+
+/***************************************************************************************
+ * docker
+ ***************************************************************************************/
+setCommonGradleDefaultPropertyIfNull("srcDockerDirectoryName", "docker")
+setCommonGradleDefaultPropertyIfNull("srcDockerDirectory", "${srcDirectory}/${srcDockerDirectoryName}")
+setCommonGradleDefaultPropertyIfNull("dockerFile", "${srcDockerDirectory}/Dockerfile")
+setCommonGradleDefaultPropertyIfNull("dockerName", "")
+setCommonGradleDefaultPropertyIfNull("dockerArgs", "")
+setCommonGradleDefaultPropertyIfNull("buildAlwaysDockerImage", false)
+setCommonGradleDefaultPropertyIfNull("dockerDefaultPort", "8080")
+setCommonGradleDefaultPropertyIfNull("dockerUID", "3000")
+setCommonGradleDefaultPropertyIfNull("dockerGID", "${dockerUID}")
+setCommonGradleDefaultPropertyIfNull("dockerExposePort", "${dockerDefaultPort}")
+setCommonGradleDefaultPropertyIfNull("dockerUser", "appuser")
+setCommonGradleDefaultPropertyIfNull("dockerGroup", "appgroup")
+setCommonGradleDefaultPropertyIfNull("dockerTimezone", "" + java.util.TimeZone.getDefault().getID())
+setCommonGradleDefaultPropertyIfNull("dockerDefaultEncoding", "${fileEncoding}")
+setCommonGradleDefaultPropertyIfNull("dockerDefaultLanguage", "en")
+setCommonGradleDefaultPropertyIfNull("dockerDefaultLocale", "${dockerDefaultLanguage}_US")
+setCommonGradleDefaultPropertyIfNull("dockerDefaultJavaOptions", "-Djava.security.egd=file:/dev/./urandom")
+ 
 
 /***************************************************************************************
  * resource bundle

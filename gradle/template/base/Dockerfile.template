@@ -1,0 +1,61 @@
+#########################################################################
+#
+# Dockerfile
+#
+# Copyright by @@LICENSE_ORGANISATION@@, all rights reserved.
+# @@LICENSE@@
+#
+#########################################################################
+
+FROM @@dockerImage@@
+
+# define build settings
+ARG UID=@@dockerUID@@
+ARG GID=@@dockerGID@@
+ARG EXPOSE_PORT=@@dockerExposePort@@
+ARG RUNTIMEUSER=@@dockerUser@@
+ARG RUNTIMEGROUP=@@dockerGroup@@
+ARG TIMEZONE=@@dockerTimezone@@
+ARG DEPLOYMENT_PATH=/deployment
+ARG DEPLOYMENT_SOURCE_PATH=@@dockerDeploymentSourcePath@@
+ARG DEFAULT_ENCODING=@@dockerDefaultEncoding@@
+ARG DEFAULT_LOCALE=@@dockerDefaultLocale@@
+ARG DEFAULT_LANGUAGE=@@dockerDefaultLanguage@@
+ARG DEFAULT_JAVA_OPTIONS=@@dockerDefaultJavaOptions@@
+
+# set user and group
+RUN addgroup -g ${UID} ${RUNTIMEGROUP} \
+	&& adduser -D ${RUNTIMEUSER} -G ${RUNTIMEGROUP} -u ${GID}
+
+# set timezone
+RUN apk add --update \
+	&& apk add tzdata \
+	&& cp "/usr/share/zoneinfo/${TIMEZONE}" /etc/localtime \
+	&& echo "${TIMEZONE}" > /etc/timezone
+
+# create path
+RUN mkdir -p ${DEPLOYMENT_PATH} \
+    && chown ${RUNTIMEUSER}:${RUNTIMEGROUP} ${DEPLOYMENT_PATH} \
+    && chmod 755 ${DEPLOYMENT_PATH}
+
+# copy application
+COPY --chown=${RUNTIMEUSER}:${RUNTIMEGROUP} ${DEPLOYMENT_SOURCE_PATH} ${DEPLOYMENT_PATH}/app.jar
+
+# set language
+ENV LANG='${DEFAULT_LOCALE}.${DEFAULT_ENCODING}' LANGUAGE='${DEFAULT_LOCALE}:${DEFAULT_LANGUAGE}'
+
+# define JAVA_OPTIONS; with can be used to display the heap size: -XshowSettings:vm
+ENV JAVA_OPTIONS="${DEFAULT_JAVA_OPTIONS}"
+ENV EXPOSE_PORT="${EXPOSE_PORT}"					
+
+# expose port
+EXPOSE ${EXPOSE_PORT}
+
+# switch RUNTIMEUSER
+USER ${RUNTIMEUSER}
+
+# change working path
+WORKDIR ${DEPLOYMENT_PATH}
+
+# start service
+ENTRYPOINT [ "java", "-jar", "/deployment/app.jar" ]
