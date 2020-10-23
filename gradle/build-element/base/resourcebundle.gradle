@@ -50,6 +50,8 @@ ext.generateResourceBundle = { inputFile = "${commonGradleConfigResourcebundlePa
 			fork: "true", newenvironment: "true", failonerror: "true",
 			maxmemory: "${commonGradleConfigResourcebundleMaxMemory}",
 			classpath: configurations.modelGenerator.asPath) {
+				jvmarg(value: "-Dfile.encoding=${fileEncoding}")
+				jvmarg(value: "-Djxl.encoding=${excelFileEncoding}")
 				arg(value: "-jptoolsConfig")
 				arg(value: "${commonGradleConfigPath}/jptools/modelgenerator-logger-silent.properties")
 				arg(value: "-type")
