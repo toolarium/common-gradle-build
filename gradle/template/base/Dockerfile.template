@@ -12,31 +12,42 @@ FROM @@dockerImage@@
 # define build settings
 ARG UID=@@dockerUID@@
 ARG GID=@@dockerGID@@
-ARG EXPOSE_PORT=@@dockerExposePort@@
-ARG RUNTIMEUSER=@@dockerUser@@
-ARG RUNTIMEGROUP=@@dockerGroup@@
-ARG TIMEZONE=@@dockerTimezone@@
+ARG EXPOSE_PORT="@@dockerExposePort@@"
+ARG RUNTIMEUSER="@@dockerUser@@"
+ARG RUNTIMEGROUP="@@dockerGroup@@"
+ARG TIMEZONE="@@dockerTimezone@@"
+ARG DEPLOYMENT_SOURCE_PATH="@@dockerDeploymentSourcePath@@"
 ARG DEPLOYMENT_PATH=/deployment
-ARG DEPLOYMENT_SOURCE_PATH=@@dockerDeploymentSourcePath@@
-ARG DEFAULT_ENCODING=@@dockerDefaultEncoding@@
-ARG DEFAULT_LOCALE=@@dockerDefaultLocale@@
-ARG DEFAULT_LANGUAGE=@@dockerDefaultLanguage@@
-ARG DEFAULT_JAVA_OPTIONS=@@dockerDefaultJavaOptions@@
+ARG DEFAULT_ENCODING="@@dockerDefaultEncoding@@"
+ARG DEFAULT_LOCALE="@@dockerDefaultLocale@@"
+ARG DEFAULT_LANGUAGE="@@dockerDefaultLanguage@@"
+ARG DEFAULT_JAVA_OPTIONS="@@dockerDefaultJavaOptions@@"
+
+# set meta data
+LABEL vendor="@@LICENSE_ORGANISATION@@" \
+    group-id="@@GROUP_ID@@" \
+    component-id="@@COMPONENT_ID@@" \
+	description="@@DESCRIPTION@@" \
+	url="@@URL@@" \
+	license="@@LICENSE@@" \
+	version="@@VERSION@@" \
+	is-release-version="@@IS_RELEASE_VERSION@@" \
+	build-timestamp="@@BUILD_TIMESTAMP_SHORT@@"
 
 # set user and group
 RUN addgroup -g ${UID} ${RUNTIMEGROUP} \
 	&& adduser -D ${RUNTIMEUSER} -G ${RUNTIMEGROUP} -u ${GID}
 
 # set timezone
-RUN apk add --update \
-	&& apk add tzdata \
+RUN apk --no-cache add --update \
+	&& apk --no-cache add tzdata \
 	&& cp "/usr/share/zoneinfo/${TIMEZONE}" /etc/localtime \
 	&& echo "${TIMEZONE}" > /etc/timezone
 
-# create path
+# create path and set permissions for user
 RUN mkdir -p ${DEPLOYMENT_PATH} \
-    && chown ${RUNTIMEUSER}:${RUNTIMEGROUP} ${DEPLOYMENT_PATH} \
-    && chmod 755 ${DEPLOYMENT_PATH}
+    && chown -R ${RUNTIMEUSER}:${RUNTIMEGROUP} ${DEPLOYMENT_PATH} \
+    && chmod -R 755 ${DEPLOYMENT_PATH}
 
 # copy application
 COPY --chown=${RUNTIMEUSER}:${RUNTIMEGROUP} ${DEPLOYMENT_SOURCE_PATH} ${DEPLOYMENT_PATH}/app.jar

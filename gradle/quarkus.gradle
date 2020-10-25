@@ -18,13 +18,23 @@ ext.projectTypeTemplatePath='quarkus'
 ext.supportMultipleResourceFolder=false
 ext.commonGradleResourcebundleOutputPath='build/resources/main'
 
-
 if (!project.hasProperty('commonGradleBuildUrl')) {
     ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
 }
 
 if (!project.hasProperty('commonGradleBuildElementPath')) {
 	ext.commonGradleBuildElementPath="${commonGradleBuildUrl}/build-element"
+}
+
+// set docker image standards
+if (!project.hasProperty("dockerImage")) {
+	project.ext.set("dockerImage", "adoptopenjdk/openjdk11:alpine-jre")
+}
+if (!project.hasProperty("dockerDefaultJavaOptions")) {
+	project.ext.set("dockerDefaultJavaOptions", "-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager -Djava.security.egd=file:/dev/./urandom")
+}
+if (!project.hasProperty("dockerDeploymentSourcePath")) {
+	project.ext.set("dockerDeploymentSourcePath", 'build/*-runner.jar')
 }
 
 
@@ -39,6 +49,7 @@ project.ext.set("useJUnit", false)
  ***************************************************************************************/
 apply from: "${commonGradleBuildUrl}/java-library.gradle"
 apply from: "${commonGradleBuildElementPath}/base/run.gradle"
+apply from: "${commonGradleBuildElementPath}/base/docker.gradle"
 
 
 /***************************************************************************************

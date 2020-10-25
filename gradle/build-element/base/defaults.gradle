@@ -126,6 +126,10 @@ setCommonGradleDefaultPropertyIfNull("supportMultipleResourceFolder", true)
 setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBaseBuildSources", "$gradleBuildDirectory/generated/sources")
 setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBuildSources", "$generatedCommonGradleBaseBuildSources/common-gradle-build")
 
+// package files
+setCommonGradleDefaultPropertyIfNull("robotsFile", "robots.txt")
+setCommonGradleDefaultPropertyIfNull("redirectIndexFile", "index.html")
+
 
 /***************************************************************************************
  * view init settings
@@ -176,6 +180,7 @@ setCommonGradleDefaultPropertyIfNull("projectType", "java-library")
 setCommonGradleDefaultPropertyIfNull("sourceCompatibility", parseVersion("${System.properties['java.version']}"))
 setCommonGradleDefaultPropertyIfNull("targetCompatibility", parseVersion("${System.properties['java.version']}"))
 setCommonGradleDefaultPropertyIfNull("fileEncoding", "UTF-8")
+setCommonGradleDefaultPropertyIfNull("excelFileEncoding", "UTF-8")
 setCommonGradleDefaultPropertyIfNull("compileJavaFork", false)
 setCommonGradleDefaultPropertyIfNull("compileJavaHome", "")
 
@@ -253,7 +258,7 @@ setCommonGradleDefaultPropertyIfNull("checkstyleHTMLReport", true)
 setCommonGradleDefaultPropertyIfNull("checkstyleConfigurationPath", "${configDirectory}/checkstyle")
 setCommonGradleDefaultPropertyIfNull("checkstyleConfigurationFilename", "checkstyle.xml")
 setCommonGradleDefaultPropertyIfNull("checkstyleConfiguration", "${checkstyleConfigurationPath}/${checkstyleConfigurationFilename}")
-setCommonGradleDefaultPropertyIfNull("referenceCheckstyleConfiguration", "false")
+setCommonGradleDefaultPropertyIfNull("projectIndividualCheckstyleConfiguration", true)
 
 
 /***************************************************************************************
@@ -293,21 +298,21 @@ setCommonGradleDefaultPropertyIfNull("openapiPluginVersion", '5.0.0-beta')
 setCommonGradleDefaultPropertyIfNull("openapiGeneratorName", 'jaxrs-spec')
 
 setCommonGradleDefaultPropertyIfNull("openapiLibrary", 'quarkus')
-setCommonGradleDefaultPropertyIfNull("openapiDocs", 'true')
-setCommonGradleDefaultPropertyIfNull("openapiTests", 'true')
-setCommonGradleDefaultPropertyIfNull("openapiModelDocs", 'false')
-setCommonGradleDefaultPropertyIfNull("openapiModelTests", 'false')
+setCommonGradleDefaultPropertyIfNull("openapiDocs", true)
+setCommonGradleDefaultPropertyIfNull("openapiTests", true)
+setCommonGradleDefaultPropertyIfNull("openapiModelDocs", false)
+setCommonGradleDefaultPropertyIfNull("openapiModelTests", false)
 
 setCommonGradleDefaultPropertyIfNull("openapiDateLibrary", "java8")
-setCommonGradleDefaultPropertyIfNull("openapiInterfaceOnly", "true")
-setCommonGradleDefaultPropertyIfNull("openapiUseJava8Features", 'true')
-setCommonGradleDefaultPropertyIfNull("openapiUseBeanValidation", 'false')
-setCommonGradleDefaultPropertyIfNull("openapiNullable", "false")
-setCommonGradleDefaultPropertyIfNull("openapiAsyncNative", 'false')
-setCommonGradleDefaultPropertyIfNull("openapiBigDecimalAsString", 'true')
+setCommonGradleDefaultPropertyIfNull("openapiInterfaceOnly", true)
+setCommonGradleDefaultPropertyIfNull("openapiUseJava8Features", true)
+setCommonGradleDefaultPropertyIfNull("openapiUseBeanValidation", false)
+setCommonGradleDefaultPropertyIfNull("openapiNullable", false)
+setCommonGradleDefaultPropertyIfNull("openapiAsyncNative", false)
+setCommonGradleDefaultPropertyIfNull("openapiBigDecimalAsString", true)
 setCommonGradleDefaultPropertyIfNull("openapiBooleanGetterPrefix", "get")
-setCommonGradleDefaultPropertyIfNull("openapiHideGenerationTimestamp", 'true')
-setCommonGradleDefaultPropertyIfNull("openapiUseGzipFeature", 'true')
+setCommonGradleDefaultPropertyIfNull("openapiHideGenerationTimestamp", true)
+setCommonGradleDefaultPropertyIfNull("openapiUseGzipFeature", true)
 
 
 /***************************************************************************************
@@ -347,7 +352,7 @@ setCommonGradleDefaultPropertyIfNull("projectNameTypeRegularExpressionPattern", 
 
 // In normal case multiple source files is the regular case. For specific project
 // types this can be used to have only a single input file.
-setCommonGradleDefaultPropertyIfNull("allowMultipleSourceFiles", 'true')
+setCommonGradleDefaultPropertyIfNull("allowMultipleSourceFiles", true)
 
 // Define the input source file pattern. Null or empty means no pattern. In
 // case of a pattern definition is made, please also adapt the 
@@ -384,9 +389,6 @@ if (project.hasProperty('installGradleWrapper') && project.getProperty('installG
 	addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/gradlew.bat")
 }
 
-addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/Dockerfile")
-addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.dockerignore")
-
 
 /***************************************************************************************
  * version default settings
@@ -419,9 +421,15 @@ setCommonGradleDefaultPropertyIfNull("errorMessageColor", WARN_LEVEL)
 /***************************************************************************************
  * docker
  ***************************************************************************************/
+setCommonGradleDefaultPropertyIfNull("projectIndividualDockerfie", true)
+setCommonGradleDefaultPropertyIfNull("createProjectIndividualDockerfie", true)
 setCommonGradleDefaultPropertyIfNull("srcDockerDirectoryName", "docker")
-setCommonGradleDefaultPropertyIfNull("srcDockerDirectory", "${srcDirectory}/${srcDockerDirectoryName}")
-setCommonGradleDefaultPropertyIfNull("dockerFile", "${srcDockerDirectory}/Dockerfile")
+setCommonGradleDefaultPropertyIfNull("srcDockerDirectory", "${srcMainDirectory}/${srcDockerDirectoryName}")
+setCommonGradleDefaultPropertyIfNull("dockerFileTemplateName", "Dockerfile.template")
+setCommonGradleDefaultPropertyIfNull("dockerFilename", "Dockerfile")
+setCommonGradleDefaultPropertyIfNull("dockerIgnoreFilename", ".dockerignore")
+setCommonGradleDefaultPropertyIfNull("dockerFile", "${srcDockerDirectory}/${dockerFilename}")
+setCommonGradleDefaultPropertyIfNull("dockerIgnoreFile", "${rootDirectory}/${dockerIgnoreFilename}")
 setCommonGradleDefaultPropertyIfNull("dockerName", "")
 setCommonGradleDefaultPropertyIfNull("dockerArgs", "")
 setCommonGradleDefaultPropertyIfNull("buildAlwaysDockerImage", false)
@@ -436,7 +444,24 @@ setCommonGradleDefaultPropertyIfNull("dockerDefaultEncoding", "${fileEncoding}")
 setCommonGradleDefaultPropertyIfNull("dockerDefaultLanguage", "en")
 setCommonGradleDefaultPropertyIfNull("dockerDefaultLocale", "${dockerDefaultLanguage}_US")
 setCommonGradleDefaultPropertyIfNull("dockerDefaultJavaOptions", "-Djava.security.egd=file:/dev/./urandom")
- 
+setCommonGradleDefaultPropertyIfNull("dockerEnableAccessLog", false)
+setCommonGradleDefaultPropertyIfNull("dockerBuildPull", "--pull --force-rm")
+setCommonGradleDefaultPropertyIfNull("dockerBuildCompress", "--compress")
+setCommonGradleDefaultPropertyIfNull("dockerBuildArgs", "") // "--build-arg "
+setCommonGradleDefaultPropertyIfNull("dockerRepositoryHost", "localhost")
+setCommonGradleDefaultPropertyIfNull("dockerRepositoryUser", "")
+setCommonGradleDefaultPropertyIfNull("dockerRepositoryPassword", "")
+
+if (!"$dockerIgnoreFile".toString().isEmpty()) {
+	addCommonGradlePropertyList("allowedMainFiles", "$dockerIgnoreFile")
+}
+
+
+/***************************************************************************************
+ * nuxt
+ ***************************************************************************************/
+setCommonGradleDefaultPropertyIfNull("forceStaticTarget", false)
+
 
 /***************************************************************************************
  * resource bundle

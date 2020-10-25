@@ -13,7 +13,7 @@ if (project.hasProperty('initCheckstyle') && project.getProperty('initCheckstyle
 	def runtimeCheckstyleConfigurationPath = null
 
 	// in case we have a global configuration and we only reference we don't have a local copy in the project
-	if (project.hasProperty('referenceCheckstyleConfiguration') && project.getProperty('referenceCheckstyleConfiguration')
+	if ((!project.hasProperty('projectIndividualCheckstyleConfiguration') || !project.getProperty('projectIndividualCheckstyleConfiguration'))
 		&& project.hasProperty('commonGradleBuildHome') && project.hasProperty('commonGradleConfigPathName')) {
 		def homeCheckstyleConfigurationPath = project.getProperty('commonGradleBuildHome') + "/" + project.getProperty('commonGradleConfigPathName') + "/checkstyle"
 		

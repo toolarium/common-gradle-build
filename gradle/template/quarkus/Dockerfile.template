@@ -21,7 +21,7 @@ ARG DEPLOYMENT_PATH=/deployment
 ARG DEFAULT_ENCODING="@@dockerDefaultEncoding@@"
 ARG DEFAULT_LOCALE="@@dockerDefaultLocale@@"
 ARG DEFAULT_LANGUAGE="@@dockerDefaultLanguage@@"
-ARG ENABLE_ACCESS_LOG=@@dockerEnableAccessLog@@
+ARG DEFAULT_JAVA_OPTIONS="@@dockerDefaultJavaOptions@@"
 
 # set meta data
 LABEL vendor="@@LICENSE_ORGANISATION@@" \
@@ -44,38 +44,30 @@ RUN apk --no-cache add --update \
 	&& cp "/usr/share/zoneinfo/${TIMEZONE}" /etc/localtime \
 	&& echo "${TIMEZONE}" > /etc/timezone
 
-# disable access log
-RUN if [ "${ENABLE_ACCESS_LOG}" = "false" ] ; then rm /var/log/nginx/access.log && ln -s /dev/null /var/log/nginx/access.log; fi
-
 # create path and set permissions for user
 RUN mkdir -p ${DEPLOYMENT_PATH} \
-  && chown -R ${RUNTIMEUSER}:${RUNTIMEGROUP} ${DEPLOYMENT_PATH} \
-  && chmod -R 755 ${DEPLOYMENT_PATH} \
-  && chown -R ${RUNTIMEUSER}:${RUNTIMEGROUP} /var/cache/nginx \
-  && chown -R ${RUNTIMEUSER}:${RUNTIMEGROUP} /var/log/nginx \
-  && touch /var/run/nginx.pid \
-  && chown -R ${RUNTIMEUSER}:${RUNTIMEGROUP} /var/run/nginx.pid
+    && chown -R ${RUNTIMEUSER}:${RUNTIMEGROUP} ${DEPLOYMENT_PATH} \
+    && chmod -R 755 ${DEPLOYMENT_PATH}
 
-# define port and root directory in the default.conf
-RUN cp /etc/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf.org \
-  && echo -e "server {\n \
-  listen $EXPOSE_PORT;\n \
-  root $DEPLOYMENT_PATH;\n \
-  index index.html index.html;\n \
-  location / {\n \
-    try_files $uri /index.html =404;\n \
-  }\n \
-}" > /etc/nginx/conf.d/default.conf
-
-# comment user directive because we run as non root user
-RUN cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.org \
-  && cat /etc/nginx/nginx.conf.org | sed 's/^user /#user /' > /etc/nginx/nginx.conf
-
-# copy the application
-COPY --chown=${RUNTIMEUSER}:${RUNTIMEGROUP} ${DEPLOYMENT_SOURCE_PATH} ${DEPLOYMENT_PATH}
+# copy application
+COPY --chown=${RUNTIMEUSER}:${RUNTIMEGROUP} build/lib/* ${DEPLOYMENT_PATH}/lib/
+COPY --chown=${RUNTIMEUSER}:${RUNTIMEGROUP} ${DEPLOYMENT_SOURCE_PATH} ${DEPLOYMENT_PATH}/app.jar
 
 # set language
 ENV LANG='${DEFAULT_LOCALE}.${DEFAULT_ENCODING}' LANGUAGE='${DEFAULT_LOCALE}:${DEFAULT_LANGUAGE}'
 
+# define JAVA_OPTIONS; with can be used to display the heap size: -XshowSettings:vm
+ENV JAVA_OPTIONS="${DEFAULT_JAVA_OPTIONS}"
+ENV EXPOSE_PORT="${EXPOSE_PORT}"					
+
+# expose port
+EXPOSE ${EXPOSE_PORT}
+
 # switch RUNTIMEUSER
 USER ${RUNTIMEUSER}
+
+# change working path
+WORKDIR ${DEPLOYMENT_PATH}
+
+# start service
+ENTRYPOINT [ "java", "-jar", "/deployment/app.jar" ]

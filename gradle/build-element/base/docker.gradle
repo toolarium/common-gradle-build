@@ -9,42 +9,61 @@
 /***************************************************************************************
  * Check if docker installation is ready to use
  ***************************************************************************************/
+//setCommonGradleDefaultPropertyIfNull("dockerFileTemplateName", "Dockerfile-node.properties.template")
+setCommonGradleDefaultPropertyIfNull("dockerFileTemplateName", "Dockerfile.properties.template")
+setCommonGradleDefaultPropertyIfNull("IS_NEW_SRC_FOLDER", false)
+
 ext.dockerInstallationValidated=false
 ext.dockerInstallationCommandAvailable=false
 ext.dockerInstallationAvailable=false
 ext.checkDockerInstallation = { ->
 	if (!dockerInstallationValidated) {
 		dockerInstallationValidated=true
-		def cmdCall="docker --version".toString()
-		def sout = new StringBuilder(), serr = new StringBuilder()
-		def existStatus = execOSCommand([ cmdCall ], [ 'cmd', '/c', cmdCall ], -1, sout, serr)
-		dockerInstallationCommandAvailable=(existStatus==0)
+		def exitStatus = execCommand("docker --version")
+		dockerInstallationCommandAvailable=(exitStatus==0)
 		
 		if (dockerInstallationCommandAvailable) {
 			logInfo("Docker installation is available.")
-
-			cmdCall="docker info".toString()
-			sout = new StringBuilder()
-			serr = new StringBuilder()
-			existStatus = execOSCommand([ cmdCall ], [ 'cmd', '/c', cmdCall ], -1, sout, serr)
-			dockerInstallationAvailable=(existStatus==0)
+			
+			exitStatus = execCommand("docker info")
+			dockerInstallationAvailable=(exitStatus==0)
 
 			if (dockerInstallationAvailable) {
 				logInfo("Docker installation is ready.")
 			} else {
-				ext.validBuild=false
-				ext.errorMessagePrefix=""
-				ext.validBuildMessage = "Docker installation is not ready:\n" + sout.toString()
+				setCommonGradleProperty("errorMessagePrefix", "")
+				addError("Docker installation is not ready.")
 			}
 		} else {
-			ext.validBuild=false
-			ext.errorMessagePrefix=""
-			ext.validBuildMessage = "Missing docker installation.";
+			setCommonGradleProperty("errorMessagePrefix", "")
+			addError("Missing docker installation.")
 		}
 	}
 	
 	return dockerInstallationAvailable
 } 
+
+
+/***************************************************************************************
+ * Execute docker command
+ ***************************************************************************************/
+ext.execDocker = { cmd, errorMessage ->
+	def sout = new StringBuilder(), serr = new StringBuilder()				
+	def exitStatus = execCommand(cmd, -1, sout, serr)
+	if (exitStatus>0) {
+		addError("$errorMessage")
+		if (sout!=null && !sout.toString().isEmpty()) {
+			addError(sout.toString())
+		}
+		if (serr!=null && !serr.toString().isEmpty()) {
+			addError(serr.toString())
+		}
+		
+		throw new GradleException(errorMessage)		
+	}
+	
+	return exitStatus
+}
 
 
 /***************************************************************************************
@@ -54,59 +73,76 @@ task dockerBuild {
 	group = 'Build'
 	description = 'Create a docker image.'
 
-	if (!project.getProperty('IS_NEW') && checkDockerInstallation()) {
-		doLast {
+	doLast {
+		if (!project.getProperty('IS_NEW') && checkDockerInstallation()) {
+			def dockerSourceMessage="project"
+			def deleteDockerfile=false
+			def deleteDockerIgnoreFile=false
+			def localDockerFile="$dockerFile"
+			def localFileExist=new File("$localDockerFile").exists()
+			def localDockerfileIgnoreExist = new File("$dockerIgnoreFile").exists()
+			def supportProjectDockerfile=project.hasProperty("projectIndividualDockerfie") && project.getProperty("projectIndividualDockerfie")
+			def createProjectDockerfile=project.hasProperty("createProjectIndividualDockerfie") && project.getProperty("createProjectIndividualDockerfie")
+
+			if (supportProjectDockerfile && createProjectDockerfile) {
+				if (!localFileExist) {
+					// create local file
+					createFileFromTemplate("$localDockerFile", getTemplateFile("$dockerFileTemplateName"))
+					if (project.hasProperty('dockerIgnoreFilename') && !project.getProperty('dockerIgnoreFilename').toString().isEmpty()) {
+						createFileFromTemplate("$dockerIgnoreFile", getTemplateFile('dockerignore.template'))
+					}
+				}
+				// use local file
+			} else if (supportProjectDockerfile && localFileExist) {
+				// use local file
+				if (!localDockerfileIgnoreExist && !"$dockerIgnoreFile".toString().isEmpty()) {
+					deleteDockerIgnoreFile=createFileFromTemplate("$dockerIgnoreFile", getTemplateFile('dockerignore.template'))
+				}
+			} else {
+				dockerSourceMessage="global"
+				def tempBaseFolder=System.getenv('TMP')
+				if (tempBaseFolder == null) {
+					tempBaseFolder=System.getenv('TEMP')
+				}
+				if (tempBaseFolder == null) {
+					tempBaseFolder="$rootDirectory/temp"
+				}
+				tempBaseFolder = tempBaseFolder.replace('\\', '/')
+				localDockerFile="${tempBaseFolder}/${rootProject.name}-${project.version}-dockerfile"
+			
+				createFileFromTemplate("$localDockerFile", getTemplateFile("$dockerFileTemplateName"), true, false)
+				deleteDockerfile=true
+
+				if (!"$dockerIgnoreFile".toString().isEmpty()) {
+					deleteDockerIgnoreFile=true
+					createFileFromTemplate("$dockerIgnoreFile", getTemplateFile('dockerignore.template'))				
+				}
+			}
+			
 			def dockerBuildName="${rootProject.name}:${project.version}"
+			logInfo("Use dockerfile [" +colorize(HIGHLITE_LEVEL,  dockerBuildName) + colorize(INFO_LEVEL, "]."))
 			if( project.hasProperty("dockerName") && !project.getProperty("dockerName").toString().isEmpty() ) {
 				dockerBuildName="$dockerName"
 			}
 			
-			def dockerfileName="$dockerFile"
-			if (dockerfileName.startsWith("./")) {
-				dockerfileName = cbProjectRootDir + "/" + dockerfileName.substring(2)
+			if (localDockerFile.startsWith("./")) {
+				localDockerFile = cbProjectRootDir + "/" + localDockerFile.substring(2)
 			}
 				
-			printInfo("> Create docker image " +colorize(HIGHLITE_LEVEL,  dockerBuildName) + ".")
-			def cmdCall="docker build -t $dockerBuildName -f $dockerfileName $cbProjectRootDir".toString()
-			logInfo("Execute: [" + colorize(HIGHLITE_LEVEL, cmdCall) + colorize(HIGHLITE_LEVEL, "]."))
-			def args = [ cmdCall ]
-			def windowsArgs = [ 'cmd', '/c', cmdCall ]
-			def sout = new StringBuilder(), serr = new StringBuilder()
-			def existStatus = execOSCommand(args, windowsArgs, -1, sout, serr)
+			printInfo("> Create docker image " +colorize(HIGHLITE_LEVEL,  dockerBuildName) + " (${dockerSourceMessage} dockerfile).")
+			logInfo("Use dockerfile [" +colorize(HIGHLITE_LEVEL,  dockerBuildName) + colorize(INFO_LEVEL, "]."))
 			
-			if (existStatus!=0) {
-				ext.validBuild=false
-				ext.errorMessagePrefix=""				
-				ext.validBuildMessage = "Docker installation is not ready"
-				if (sout!=null && !sout.toString().isEmpty()) {
-					ext.validBuildMessage = "${validBuildMessage}:\n" + sout.toString()
-				}
-				if (serr!=null && !serr.toString().isEmpty()) {
-					ext.validBuildMessage = "${validBuildMessage}:\n" + serr.toString()
-				}
-			} else {
-				if (sout!=null && !sout.toString().isEmpty()) {
-					logInfo(sout)
-				}
-				if (serr!=null && !serr.toString().isEmpty()) {
-					logInfo(serr)
-				}
+			def cmd="docker build -t ${dockerBuildName} ${dockerBuildPull} ${dockerBuildCompress} ${dockerBuildArgs} -f ${localDockerFile} $cbProjectRootDir"
+			def exitStatus = execDocker(cmd, "Could not build docker image:\n    " + cmd)
+			
+			if (deleteDockerfile) {
+				new File("$localDockerFile").delete()
+			}
+			if (deleteDockerIgnoreFile) {
+				new File("$dockerIgnoreFile").delete()
 			}
 		}
 	} 
-}
-
-dockerBuild.dependsOn build
-
-if (!project.getProperty('IS_NEW')) {
-	def buildAlwaysDockerImageEnv=System.getenv('CB_BUILD_ALWAYS_DOCKER_IMAGE')
-	def buildAlwaysDockerImageSwitchEnabled=((project.hasProperty("buildAlwaysDockerImage") && "true".toString().equalsIgnoreCase(project.getProperty("buildAlwaysDockerImage").toString()))
-												|| (buildAlwaysDockerImageEnv!=null && !buildAlwaysDockerImageEnv.toString().trim().isEmpty() && "true".equalsIgnoreCase(buildAlwaysDockerImageEnv.toString().trim())));
-
-	if (buildAlwaysDockerImageSwitchEnabled && checkDockerInstallation()) {
-		logInfo("Enable build always docker image.")
-		build.finalizedBy(dockerBuild)
-	}
 }
 
 
@@ -116,28 +152,78 @@ if (!project.getProperty('IS_NEW')) {
 task dockerRun {
 	group = 'Build'
 	description = 'Run a docker image.'
+    dependsOn dockerBuild 
 
-	if (!project.getProperty('IS_NEW') && checkDockerInstallation()) {
-		doLast {
+	doLast {
+		if (!project.getProperty('IS_NEW') && checkDockerInstallation()) {
 			def dockerBuildName="${rootProject.name}:${project.version}"
 			if( project.hasProperty("dockerName") && !project.getProperty("dockerName").toString().isEmpty() ) {
 				dockerBuildName="$dockerName"
 			}
 			
 			printInfo("> Run docker image " +colorize(HIGHLITE_LEVEL,  dockerBuildName) + ".")
-			def cmdCall="docker run $dockerBuildName --rm".toString()
-			logInfo("Execute: [" + colorize(HIGHLITE_LEVEL, cmdCall) + colorize(HIGHLITE_LEVEL, "]."))
-			def args = [ cmdCall ]
-			def windowsArgs = [ 'cmd', '/c', cmdCall ]
-			def sout = System.out, serr = System.err
-			
+			def cmd="docker run $dockerBuildName --rm".toString()
 			printLine()
-			def existStatus = execOSCommand(args, windowsArgs, -1, sout, serr)
-			sout.flush()
-			serr.flush()
-			
-			logInfo("Ended with status code: " +colorize(HIGHLITE_LEVEL, existStatus) + ".")
-			printLine(HIGHLITE_LEVEL, true, " exit " + existStatus + "")
+			def exitStatus = execDocker(cmd, "Could not run docker image:\n    " + cmd)
+			logInfo("Ended with status code: " +colorize(HIGHLITE_LEVEL, exitStatus) + colorize(INFO_LEVEL, "."))
+			printLine(HIGHLITE_LEVEL, true, " exit " + exitStatus + "")
+		}
+	} 
+}
+
+
+/***************************************************************************************
+ * docker build task
+ ***************************************************************************************/
+task dockerPush {
+	group = 'Build'
+	description = 'Pusha docker image.'
+    dependsOn dockerBuild 
+
+	doLast {
+		if (!project.getProperty('IS_NEW') && checkDockerInstallation()) {
+			if (!project.hasProperty('dockerRepositoryHost')) {
+				addError("Can't push docker images, please check the dockerRepositoryHost settings.")
+			} else {
+				def exitStatus=0
+				def loginFirst=((project.hasProperty('dockerRepositoryUser') && !project.getProperty('dockerRepositoryUser').toString().isEmpty())
+								 && (project.hasProperty('dockerRepositoryPassword') && !project.getProperty('dockerRepositoryPassword').toString().isEmpty()))
+				if (loginFirst) {
+					printInfo("> Login docker host: " +colorize(HIGHLITE_LEVEL,  dockerRepositoryHost) + ".")
+					def dockerRepositoryHost=project.getProperty('dockerRepositoryHost')
+					def cmd="docker login --username " + project.getProperty('dockerRepositoryUser') + " --password"
+					exitStatus = execDocker("$cmd " + project.getProperty('dockerRepositoryPassword') + " $dockerRepositoryHost", "Could not login into docker host:\n    " + cmd + " ... $dockerRepositoryHost")
+				} 
+				
+				if (exitStatus==0) {
+					def dockerBuildName="${rootProject.name}:${project.version}"
+					if( project.hasProperty("dockerName") && !project.getProperty("dockerName").toString().isEmpty() ) {
+						dockerBuildName="$dockerName"
+					}
+
+					def tagName="$dockerRepositoryHost/$dockerBuildName"
+					printInfo("> Tag docker image " + colorize(HIGHLITE_LEVEL, tagName) + ".")
+					def cmd="docker tag $dockerBuildName $tagName"
+					exitStatus = execDocker(cmd, "Could not tag image:\n    " + cmd)
+					
+					if (exitStatus==0) {
+						printInfo("> Push docker image " +colorize(HIGHLITE_LEVEL, tagName) + ".")
+						cmd="docker push $tagName"
+						exitStatus = execDocker(cmd, "Could not push image to docker host:\n    " + cmd)
+						
+						printInfo("> Remove project tag " +colorize(HIGHLITE_LEVEL, dockerBuildName) + ".")
+						cmd="docker image remove $dockerBuildName"
+						exitStatus = execDocker(cmd, "Could not remove project tag:\n    " + cmd)
+
+						printInfo("> Remove repository tag " +colorize(HIGHLITE_LEVEL, tagName) + ".")
+						cmd="docker image remove $tagName"
+						exitStatus = execDocker(cmd, "Could not remove repository tag:\n    " + cmd)						
+					}
+				}
+				
+				logInfo("Ended with status code: " +colorize(HIGHLITE_LEVEL, exitStatus) + colorize(INFO_LEVEL, "."))
+				printLine(HIGHLITE_LEVEL, true, " exit " + exitStatus + "")
+			}
 		}
 	} 
 }
@@ -147,13 +233,19 @@ task dockerRun {
  * project java validation
  ***************************************************************************************/
 projectValidation {
-	doLast {
-		//if (!project.getProperty('IS_NEW')) {
-			if (!new File("$dockerFile").exists()) {
-				if (!createFileFromTemplate("$dockerFile", getTemplateFile('Dockerfile.template'))) {
-					printInfo("> Create " + colorize(HIGHLITE_LEVEL, "$dockerFile") + " with default values.")
-				}
+	if (project.tasks.findByName('build')) {
+		dockerBuild.dependsOn build
+
+		if (!project.getProperty('IS_NEW')) {
+			def buildAlwaysDockerImageEnv=System.getenv('CB_BUILD_ALWAYS_DOCKER_IMAGE')
+			def buildAlwaysDockerImageSwitchEnabled=((project.hasProperty("buildAlwaysDockerImage") && "true".toString().equalsIgnoreCase(project.getProperty("buildAlwaysDockerImage").toString()))
+														|| (buildAlwaysDockerImageEnv!=null && !buildAlwaysDockerImageEnv.toString().trim().isEmpty() && "true".equalsIgnoreCase(buildAlwaysDockerImageEnv.toString().trim())));
+
+			if (buildAlwaysDockerImageSwitchEnabled && checkDockerInstallation()) {
+					logInfo("Enable build always docker image.")
+					build.finalizedBy(dockerBuild)
+					publish.finalizedBy(dockerPush)
 			}
-		//}
+		}
 	}
 }

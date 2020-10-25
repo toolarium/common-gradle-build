@@ -9,18 +9,52 @@
 /***************************************************************************************
  * Execute a command
  * sample: def stdout = new StringBuilder(), stderr = new StringBuilder()
+ *         execCommand("ping 127.0.0.1", 2000, stdout, stderr)
+ *      or
+ *         execCommand("ping 127.0.0.1")
+ ***************************************************************************************/
+ext.execCommand = { args, timeout=-1, sout=null, serr=null ->
+	def osArgs = args.split(" ")
+	def windowsArgs = [ 'cmd', '/c' ]
+	windowsArgs.addAll(args.split(" "))
+	return execOSCommand(osArgs, windowsArgs, timeout, sout, serr)
+}
+
+
+/***************************************************************************************
+ * Execute a command
+ * sample: def stdout = new StringBuilder(), stderr = new StringBuilder()
  *         execCommand(['ls', '$PWD'], 
  *                     ['cmd', '/c', '%CD%', 'dir'], 
  *                     2000,
  *					   stdout, stderr)
+ *      or
+ *         execCommand(['ls', '$PWD'], ['cmd', '/c', '%CD%', 'dir'], 2000) 
  ***************************************************************************************/
-ext.execOSCommand = { args, windowsArgs, timeout=10000, sout=System.out, serr=System.err ->
+ext.execCommands = { args, wargs, timeout=-1, sout=null, serr=null ->
+	def osArgs = args.split(" ")
+	def windowsArgs = [ 'cmd', '/c' ]
+	windowsArgs.addAll(wargs.split(" "))
+	return execOSCommand(osArgs, windowsArgs, timeout, sout, serr)
+}
+
+
+/***************************************************************************************
+ * Execute a command
+ * sample: def stdout = new StringBuilder(), stderr = new StringBuilder()
+ *         execCommand(['ls', '$PWD'], 
+ *                     ['cmd', '/c', '%CD%', 'dir'], 
+ *                     2000, stdout, stderr)
+ *      or
+ *         execCommand(['ls', '$PWD'], ['cmd', '/c', '%CD%', 'dir'], 2000) 
+ ***************************************************************************************/
+ext.execOSCommand = { args, windowsArgs, timeout=-1, sout=null, serr=null ->
 	def osArgs = args
     if (getOsName().startsWith("windows")) {
         osArgs = windowsArgs
     }
 
-	execRawCommand(osArgs, timeout, sout, serr)
+	return execRawCommand(osArgs, timeout, sout, serr)
 }
 
 
@@ -32,17 +66,64 @@ ext.execOSCommand = { args, windowsArgs, timeout=10000, sout=System.out, serr=Sy
  *         def sout = new StringBuilder(), serr = new StringBuilder()
  *         execCommand(args, 2000, sout, serr)
  *         println sout
+ *     or
+ *         execCommand(args, 2000)
  ***************************************************************************************/
-ext.execRawCommand = { args, timeout=10000, sout=System.out, serr=System.err ->
-	def proc = new ProcessBuilder(args)
-	Process process = proc.start()
-	process.consumeProcessOutput(sout, serr)
+ext.execRawCommand = { args, timeout=-1, sout=null, serr=null ->
 	
+	def deadline = -1;
 	if (timeout>0) {
-		process.waitForOrKill(timeout)
-	} else {
-		process.waitForProcessOutput()
+		deadline = System.currentTimeMillis() + timeout;
 	}
 	
-	return process.exitValue()
+	logInfo("Execute: [" + colorize(HIGHLITE_LEVEL, args) + "].")	
+	
+	def result;
+	def out = new StringBuffer()
+	def err = new StringBuffer()
+	def proc = new ProcessBuilder(args)
+	Process process = proc.start()
+	process.consumeProcessOutput(out, err)
+	while(true) {
+		try {
+			err.eachLine {line, count ->
+				logInfo("${line}")
+
+				if (serr!=null) {
+					serr.append("${line}\n")
+				}
+				err.setLength(0)
+			}
+			out.eachLine { line, count ->
+				logInfo("${line}")
+				
+				if (sout!=null) {
+					sout.append("${line}\n")
+				}
+				out.setLength(0)
+			}
+		
+			try {
+				Thread.sleep(500)
+			} catch(Exception e) {
+				e.printStackTrace()
+			}
+
+			if (deadline>0 && deadline<System.currentTimeMillis()) {
+				result=0
+				logInfo("Stop process (deadline reached $timeout): " + result)
+				break
+			}
+
+			if (!process.isAlive()) {
+				result=process.exitValue()
+				logInfo("Ended (" + process.isAlive() + "): " + result)
+				break
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace()
+		}
+	}	
+
+	return result
 }

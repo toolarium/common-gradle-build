@@ -120,13 +120,14 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 	if (new File("${theTemplatePath}${templateSubPath}", "${templateFilename}").exists()) {
 		if (new File(inputFilename).exists() && !overwrite) {
 			logDebug("File " + colorize(HIGHLITE_LEVEL, path) + colorize(INFO_LEVEL, " exist, don't overwrite."))
-			return
+			return false
 		}
 	
 		if (print) {		
-			printInfo("> Create " + colorize(HIGHLITE_LEVEL, "${filePath}${filename}") + " from template ${templateSubPath}${templateFilename}.")
+			printInfo("> Create " + colorize(HIGHLITE_LEVEL, "${filePath}${filename}") + " from template " + colorize(HIGHLITE_LEVEL, "${templateSubPath}${templateFilename}") + ".")
+			logInfo("Create " + colorize(HIGHLITE_LEVEL, "${filePath}${filename}") + colorize(INFO_LEVEL, " from template ") + colorize(HIGHLITE_LEVEL, "${templateSubPath}${templateFilename}") + colorize(INFO_LEVEL, " (") + colorize(HIGHLITE_LEVEL, "${theTemplatePath}") + colorize(INFO_LEVEL, ")."))
 		} else {
-			logInfo("Create " + colorize(HIGHLITE_LEVEL, "${filePath}${filename}") + colorize(INFO_LEVEL, " from template ${templateSubPath}${templateFilename} (${theTemplatePath})."))
+			logInfo("Create " + colorize(HIGHLITE_LEVEL, "${filePath}${filename}") + colorize(INFO_LEVEL, " from template ") + colorize(HIGHLITE_LEVEL, "${templateSubPath}${templateFilename}") + colorize(INFO_LEVEL, " (") + colorize(HIGHLITE_LEVEL, "${theTemplatePath}") + colorize(INFO_LEVEL, ")."))
 		}
 		
 		copy {
@@ -277,6 +278,9 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 			}
 			if (project.hasProperty('dockerDefaultJavaOptions')) {
 				filter { line -> line.replaceAll('@@dockerDefaultJavaOptions@@', "${project.ext.dockerDefaultJavaOptions}".toString()) }
+			}
+			if (project.hasProperty('dockerEnableAccessLog')) {
+				filter { line -> line.replaceAll('@@dockerEnableAccessLog@@', "${project.ext.dockerEnableAccessLog}".toString()) }
 			}
 		}
 		

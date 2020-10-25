@@ -1,23 +1,28 @@
 /*
  * defaults.gradle
- * 
- * In the defaults you can cpnfigure your default values. All entries below has 
+ *
+ * In the defaults you can cpnfigure your default values. All entries below has
  * been marked as comment and the value contains the default value. To overwrite
  * simple comment out and set your preferred value.
- * 
- * The method setCommonGradleProperty simplifies the setting. Addtitional it logs 
+ *
+ * The method setCommonGradleProperty simplifies the setting. Addtitional it logs
  * also the change.
  */
 
 
 /*
+   In the common-gradle-build\gradle\build-elements\base\defaults.gradle you can find 
+   more values, which can be overwritten if needed. The most relevant are listed here.
+   The template folder is optional.
+   
    structure of the repository:
       gradle
       gradle/defaults.gradle
       (gradle/template/) <- optional
+	
  */
 
- 
+
 /***************************************************************************************
  * gradle cache and home properties file
  ***************************************************************************************/
@@ -51,7 +56,7 @@ setCommonGradleProperty("licenseFile", "$commonGradleBuildHome/$licenseFilename"
 
 
 /***************************************************************************************
- * view init settings 
+ * view init settings
  ***************************************************************************************/
 //setCommonGradleProperty("initShowJava", true)
 //setCommonGradleProperty("initShowRuntime", false)
@@ -94,7 +99,7 @@ setCommonGradleProperty("licenseFile", "$commonGradleBuildHome/$licenseFilename"
 //setCommonGradleProperty("allowMavenCentralRepository", true)
 //setCommonGradleProperty("allowGoogleRepository", true)
 //setCommonGradleProperty("allowJCenterRepository", true)
-//setCommonGradleProperty("mavenPublishUrl", "https://your-publish-repository-url") 
+//setCommonGradleProperty("mavenPublishUrl", "https://your-publish-repository-url")
 //setCommonGradleProperty("mavenRepositoryUrl", "https://your-repository-url")
 //setCommonGradleProperty("allowMavenRepository", true)
 //setCommonGradleProperty("mavenSnapshotPublishUrl", "https://your-snapshot-publish-repository-url")
@@ -121,7 +126,7 @@ setCommonGradleProperty("licenseFile", "$commonGradleBuildHome/$licenseFilename"
 //setCommonGradleProperty("checkstyleHTMLReport", true)
 //setCommonGradleProperty("checkstyleConfigurationPath", "${configDirectory}/checkstyle")
 //setCommonGradleProperty("checkstyleConfiguration", "${checkstyleConfigurationPath}/checkstyle.xml")
-setCommonGradleProperty("referenceCheckstyleConfiguration", "true")
+setCommonGradleProperty("projectIndividualCheckstyleConfiguration", false)
 
 
 /***************************************************************************************
@@ -149,6 +154,19 @@ setCommonGradleProperty("referenceCheckstyleConfiguration", "true")
  * openapi plugin version
  ***************************************************************************************/
 //setCommonGradleProperty("openapiPluginVersion", '4.3.1')
+
+
+/***************************************************************************************
+ * define docker settings
+ ***************************************************************************************/
+//setCommonGradleProperty("projectIndividualDockerfie", true)
+//setCommonGradleProperty("createProjectIndividualDockerfie", true)
+
+
+/***************************************************************************************
+ * nuxt
+ ***************************************************************************************/
+//setCommonGradleProperty("forceStaticTarget", false)
 
 
 /***************************************************************************************

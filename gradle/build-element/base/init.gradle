@@ -67,7 +67,7 @@ init {
 	printLine(HIGHLITE_LEVEL, true)
 
 	printInfo("${header}")
-	printInfo("Version " + colorize(HIGHLITE_LEVEL, project.version) + ", ${BUILD_TIMESTAMP_SHORT} ${userInfo}")
+	printInfo("Version " + colorize(HIGHLITE_LEVEL, project.version) + ", ${BUILD_TIMESTAMP_SIMPLE} ${userInfo}")
 	printInfo("${javaInfo}${osInfo}")
 
 	if (initShowJava) {

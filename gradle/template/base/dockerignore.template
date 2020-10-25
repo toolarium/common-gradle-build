@@ -1,0 +1,45 @@
+# scm files
+.gradle/
+.git/
+.gitattributes
+.gitignore
+
+# conf folder
+conf/
+
+# gradle scripts
+gradle/*
+gradlew.*
+gradle.properties
+*.gradle
+
+# general files
+.editorconfig
+README.md
+
+# Ignore temp output directory
+test/
+
+# Ignore temp output directory
+tmp/
+temp/
+
+# mac / OSX files
+.DS_Store
+
+# IDE / Editor
+.idea
+*.ipr
+*.iml
+*.iws
+
+# NetBeans
+nb-configuration.xml
+
+# Visual Studio Code
+.vscode
+.factorypath
+
+# vi swap files
+*.swp
+*.swo

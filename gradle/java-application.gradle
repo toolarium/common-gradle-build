@@ -17,8 +17,29 @@ if (!project.hasProperty('commonGradleBuildUrl')) {
     ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
 }
 
+// default classifier name
+if (!project.hasProperty("shadowClassifier")) {
+	project.ext.set("shadowClassifier", "runner")
+}
+
+// set docker image standards
+if (!project.hasProperty("dockerImage")) {
+	project.ext.set("dockerImage", "adoptopenjdk/openjdk11:alpine-jre")
+}
+if (!project.hasProperty("dockerDefaultJavaOptions")) {
+	project.ext.set("dockerDefaultJavaOptions", "-Djava.security.egd=file:/dev/./urandom")
+}
+
+
 apply from: "${commonGradleBuildUrl}/java-library.gradle"
 apply plugin: 'application'
+
+if (!project.hasProperty("dockerDeploymentSourcePath")) {
+	//project.ext.set("dockerDeploymentSourcePath", 'build/libs/${project.name}-*-${shadowClassifier}.jar')
+	project.ext.set("dockerDeploymentSourcePath", "build/libs/*-runner.jar")
+}
+
+apply from: "${commonGradleBuildElementPath}/base/docker.gradle"
 
 
 /***************************************************************************************
@@ -47,6 +68,17 @@ if (project.tasks.findByName('shadowJar')) {
 		exclude "META-INF/*.RSA"
 		exclude "META-INF/LICENSE"
 		exclude "META-INF/VERSION"
+		
+		if( project.hasProperty('shadowClassifier') ) {
+			classifier = project.getProperty('shadowClassifier')
+		} else {
+			classifier = 'runner'
+		}
+		
+		doLast {
+			def filename = prepareFilename(shadowJar.archivePath.getPath())
+			printInfo("> Created package " + colorize(HIGHLITE_LEVEL, filename) + ".")
+		}
 	}
 }
 

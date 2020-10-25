@@ -12,7 +12,7 @@
 ext.initResourceBundle=true
 ext.commonGradleResourcebundleJsonSupport=true
 ext.commonGradleResourcebundleOutputPath='static/locales'
-
+ext.nuxtConfig="nuxt.config.js"
 
 if (!project.hasProperty('commonGradleBuildUrl')) {
     ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
@@ -22,11 +22,66 @@ if (!project.hasProperty('commonGradleBuildElementPath')) {
 	ext.commonGradleBuildElementPath="${commonGradleBuildUrl}/build-element"
 }
 
+def nuxtConfig="${project.rootDir}".replace('\\', '/')+"/$nuxtConfig"
+if (new File(nuxtConfig).exists()) {
+	new File(nuxtConfig).withReader('UTF-8') { reader ->
+		def line
+		while ((line = reader.readLine()) != null) { 
+			if (line.toString().length()>0) {
+				def idx = line.indexOf("//")
+				if (idx>=0) {
+					line = line.substring(0, idx)
+				}
+
+				idx = line.indexOf("target:");
+				if (idx>=0) {			
+					def val = line.substring(idx + 7).split(',')
+					if (val!=null && val.length>0 && val[0]!=null) {
+						project.ext.set("targetStatic", "static".equalsIgnoreCase(val[0].toString().replace("'", " ").trim()))
+					}
+				}
+			}
+		}
+	}	
+}	
+
+// set docker image standards
+if (project.hasProperty("targetStatic") && project.getProperty("targetStatic")) {
+	if (!project.hasProperty("dockerImage")) {
+		project.ext.set("dockerImage", "nginx:alpine")
+	}
+	if (!project.hasProperty("dockerDeploymentSourcePath")) {
+		project.ext.set("dockerDeploymentSourcePath", 'dist')
+	}
+	
+	// set to empty string to not generate dockerIgnoreFile (see base/docker.gradle)
+	project.ext.dockerIgnoreFile=""
+	//	ext.nodeBuildArguments = ['run', 'generate', '--loglevel', 'silly']
+	ext.nodeBuildArguments = ['run', 'generate', '--loglevel', 'silent']
+	
+} else {
+	if (!project.hasProperty("dockerImage")) {
+		project.ext.set("dockerImage", "node:alpine")
+	}
+	if (!project.hasProperty("dockerFileTemplateName")) {
+		project.ext.set("dockerFileTemplateName", 'Dockerfile-node.template')
+	}
+	if (!project.hasProperty("dockerDeploymentSourcePath")) {
+		project.ext.set("dockerDeploymentSourcePath", '.')
+	}
+}
+
 
 /***************************************************************************************
  * Dependencies
  ***************************************************************************************/
 apply from: "${commonGradleBuildElementPath}/nodejs.gradle"
+
+if (!project.hasProperty("targetStatic") || !project.getProperty("targetStatic")) {
+	if (project.hasProperty("forceStaticTarget") && project.getProperty("forceStaticTarget")) {
+		addError("Expected static target, please update the $nuxtConfig: target: 'static'")
+	}
+}	
 
 
 /***************************************************************************************
@@ -104,6 +159,62 @@ projectValidation {
 								<< "      " + colorize(HIGHLITE_LEVEL, "$startExecutable test") + "" << NELINE \
 								<< "" << NELINE \
 								<< "  For TypeScript users, see: " + colorize(HIGHLITE_LEVEL, "https://typescript.nuxtjs.org/cookbook/components/") + "" << NELINE)
-		} 
+		}
+	}
+}
+
+if (!project.getProperty('IS_NEW')) {
+	build() {
+		doFirst {
+			if (project.hasProperty("targetStatic") && project.getProperty("targetStatic")) {
+				printInfo("> Create " + colorize(HIGHLITE_LEVEL, "static") + " build.")
+			} else {
+				printInfo("> Create node " + colorize(HIGHLITE_LEVEL, "server") + " build.")
+			}
+		}
+		
+		doLast {
+			if (project.hasProperty("targetStatic") && project.getProperty("targetStatic")) {
+				copyFile("$rootDirectory/$versionFilename", "$rootDirectory/dist/$versionFilename")
+
+				if (!new File("$rootDirectory/dist/robots.txt").exists()) {
+					def destRobotsFile= "$rootDirectory/dist/robots.txt"
+					logInfo("Write file " + colorize(HIGHLITE_LEVEL, robotsFile) + colorize(INFO_LEVEL ,"..."))
+					if (!createFileFromTemplate(destRobotsFile, getTemplateFile('robots.template'))) {
+						printInfo("> Create " + colorize(HIGHLITE_LEVEL, "dist/robots.txt") + " with default values.")
+						new File(destRobotsFile).withWriter { w ->
+							w << "# robots.txt" << NELINE \
+							<< "" << NELINE \
+							<< "User-agent: *" << NELINE \
+							<< "Disallow: /locales/" << NELINE 
+						}
+					}
+				}
+				
+				if (new File("$rootDirectory/dist/locales/").exists()) {
+					def destRedirectIndexFile= "$rootDirectory/dist/locales/${redirectIndexFile}"
+					logInfo("Write file " + colorize(HIGHLITE_LEVEL, redirectIndexFile) + colorize(INFO_LEVEL ,"..."))
+					if (!createFileFromTemplate(destRedirectIndexFile, getTemplateFile('redirectIndexFile.template'))) {
+						printInfo("> Create " + colorize(HIGHLITE_LEVEL, "dist/locales/${redirectIndexFile}") + " with default values.")
+					
+						new File(destRedirectIndexFile).withWriter { w ->
+							w << "<!DOCTYPE html>" << NELINE \
+							<< "<html>" << NELINE \
+							<< "<head>" << NELINE \
+							<< "<meta name=\"robots\" content=\"noindex\" />" << NELINE \
+							<< "<link rel=\"shortcut icon\" href=\"../favicon.ico\" />" << NELINE \
+							<< "<meta http-equv=\"Refresh\" content=\"1; url=../index.html\">" << NELINE \
+							<< "</head>" << NELINE \
+							<< "<body>" << NELINE \
+							<< "<h3><a href=\"../index.html\" target=_top>Invalid access, please start at the main entrance point.</a></h3>" << NELINE \
+							<< "</body>" << NELINE \
+							<< "</html>" << NELINE
+						}
+					}
+				}
+			}
+			
+			delete "$rootDirectory/dist/README.md"
+		}
 	}
 }

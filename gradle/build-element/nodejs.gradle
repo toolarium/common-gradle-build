@@ -11,6 +11,9 @@
  ***************************************************************************************/
 ext.commonGradleResourcebundleJsonSupport=true
 
+if (!ext.has('nodeBuildArguments')) {
+	ext.nodeBuildArguments = ['run', 'build', '--loglevel', 'silent']
+}
 
 if (!project.hasProperty('commonGradleBuildUrl')) {
     ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
@@ -18,6 +21,15 @@ if (!project.hasProperty('commonGradleBuildUrl')) {
 
 if (!project.hasProperty('commonGradleBuildElementPath')) {
 	ext.commonGradleBuildElementPath="${commonGradleBuildUrl}/build-element"
+}
+
+// set docker image standards
+if (!project.hasProperty("dockerImage")) {
+	//project.ext.set("dockerImage", "node:alpine")
+	project.ext.set("dockerImage", "nginx:alpine")
+}
+if (!project.hasProperty("dockerDeploymentSourcePath")) {
+	project.ext.set("dockerDeploymentSourcePath", '.')
 }
 
 
@@ -98,27 +110,35 @@ if (!project.getProperty('IS_NEW')) {
 	}
 
 
-	defaultTasks /*'clean', */'build', 'createResourceBundle'
+	defaultTasks 'clean', 'createResourceBundle', 'build'
 
 
 	/***************************************************************************************
 	 * clean
 	 ***************************************************************************************/
-	task clean(type: NpmTask) {
+	//task clean(type: NpmTask) {
+	task clean() {
 		group = 'NPM tasks'
 		description = 'Clean'
-		args = ['run', 'clean']
+		doFirst {
+			delete "${rootDirectory}/dist/"
+			delete "${rootDirectory}/.nuxt"
+			delete "${rootDirectory}/logs/"
+			delete "${rootDirectory}/temp/"
+		}
 	}
 
 
 	/***************************************************************************************
 	 * build
 	 ***************************************************************************************/
-	task build(type: NpmTask) {
+	task build(type: NpmTask) {	
 		group = 'NPM tasks'
-		description = 'Excute npm build'
-		args = ['run', 'build']
+		description = 'Excute npm build'		
+		args = nodeBuildArguments
 	}
+	build.dependsOn npmInstall
+	npmInstall.args = ['--loglevel', 'silent']
 
 
 	/***************************************************************************************
@@ -186,3 +206,6 @@ ext.generatePackageJson = { outputPath = "${$rootDirectory}",
 		}
 	}
 }
+
+
+apply from: "${commonGradleBuildElementPath}/base/docker.gradle"
