@@ -46,7 +46,7 @@ test {
 		
 		doFirst {
 			if (initTesting) {
-				printLine()
+			//	printLine()
 			}
 		}
 	}

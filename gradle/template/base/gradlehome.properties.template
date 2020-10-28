@@ -18,3 +18,10 @@ signing.secretKeyRingFile =
  ***************************************************************************************/
 publishingUsername =
 publishingMail =
+
+
+/***************************************************************************************
+ * Define the docker repository credentials
+ ***************************************************************************************/
+dockerRepositoryUser =
+dockerRepositoryPassword = 

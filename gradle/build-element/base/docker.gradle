@@ -134,6 +134,13 @@ task dockerBuild {
 			
 			def cmd="docker build -t ${dockerBuildName} ${dockerBuildPull} ${dockerBuildCompress} ${dockerBuildArgs} -f ${localDockerFile} $cbProjectRootDir"
 			def exitStatus = execDocker(cmd, "Could not build docker image:\n    " + cmd)
+			if (exitStatus==0) {
+				if( project.hasProperty("dockerCleanupAfterBuild") && project.getProperty("dockerCleanupAfterBuild") ) {
+					printInfo("> Remove docker image " +colorize(HIGHLITE_LEVEL, dockerBuildName) + ".")
+					cmd="docker image remove $dockerBuildName"
+					exitStatus = execDocker(cmd, "Could not remove project tag:\n    " + cmd)
+				}
+			}
 			
 			if (deleteDockerfile) {
 				new File("$localDockerFile").delete()
@@ -211,13 +218,15 @@ task dockerPush {
 						cmd="docker push $tagName"
 						exitStatus = execDocker(cmd, "Could not push image to docker host:\n    " + cmd)
 						
-						printInfo("> Remove project tag " +colorize(HIGHLITE_LEVEL, dockerBuildName) + ".")
-						cmd="docker image remove $dockerBuildName"
-						exitStatus = execDocker(cmd, "Could not remove project tag:\n    " + cmd)
+						if( project.hasProperty("dockerCleanupAfterPublish") && project.getProperty("dockerCleanupAfterPublish") ) {
+							printInfo("> Remove local docker image " +colorize(HIGHLITE_LEVEL, dockerBuildName) + ".")
+							cmd="docker image remove $dockerBuildName"
+							exitStatus = execDocker(cmd, "Could not remove project tag:\n    " + cmd)
 
-						printInfo("> Remove repository tag " +colorize(HIGHLITE_LEVEL, tagName) + ".")
-						cmd="docker image remove $tagName"
-						exitStatus = execDocker(cmd, "Could not remove repository tag:\n    " + cmd)						
+							printInfo("> Remove local docker image " +colorize(HIGHLITE_LEVEL, tagName) + ".")
+							cmd="docker image remove $tagName"
+							exitStatus = execDocker(cmd, "Could not remove repository tag:\n    " + cmd)
+						}
 					}
 				}
 				

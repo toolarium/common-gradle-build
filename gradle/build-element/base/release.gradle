@@ -1,0 +1,309 @@
+/*
+ * release.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+ 
+
+
+/* Release process description:
+	1) clean, sets release settings and prepare release versioning -> releasePrepare
+	2) create release branch, update version file, merge to master / build, tag and delete release branch (see below) -> releaseVerification
+		# create git release branch
+		git checkout –b release/v1.0.0 master
+		update VERSION
+		git add VERSION
+		git commit
+				
+		# finalize release
+		git checkout master
+		git merge --no-ff release/v1.0.0
+		git tag [-s] –m „Release v1.0.0“ v1.0.0
+		
+		# delete release-branch 
+		git branch -d release/v1.0.0
+
+		# push
+		git push
+		git push --tags
+
+	3) publish release and prepare development version -> release
+		
+		# preapre version file for further development
+		update VERSION
+		git add VERSION
+		git commit
+		git push
+		
+ */
+
+
+/**
+ * Prepare the release version number
+ */ 
+ext.prepareReleaseVersion = {
+	// prepare version number
+	project.version = project.getProperty('majorVersionNumber') + "." + project.getProperty('minorVersionNumber') + "." + project.getProperty('revisionVersionNumber')
+	def qualifierVersionNumber = project.getProperty('qualifierVersionNumber')
+	if (qualifierVersionNumber !=null && !qualifierVersionNumber.isEmpty()) {
+		qualifierVersionNumber=qualifierVersionNumber.replace(SNAPSHOT_TAG_NAME, "")
+		if (qualifierVersionNumber !=null && !qualifierVersionNumber.isEmpty()) {
+			project.version = project.version + "-" +  qualifierVersionNumber
+		}
+		
+		setCommonGradleProperty("qualifierVersionNumber", "$qualifierVersionNumber")
+	}
+	logInfo("Prepared version number: " + project.version)
+	
+	return project.version;
+}
+
+
+/**
+ * Prepare snashot release version number
+ */ 
+ext.prepareSnapReleaseVersion = {
+	// prepare version number
+	project.version = project.getProperty('majorVersionNumber') + "." + project.getProperty('minorVersionNumber') + "." + project.getProperty('revisionVersionNumber')
+	def qualifierVersionNumber = project.getProperty('qualifierVersionNumber')
+	if (qualifierVersionNumber==null || qualifierVersionNumber.isEmpty() || (qualifierVersionNumber.toString().indexOf(SNAPSHOT_TAG_NAME)<0)) {
+		qualifierVersionNumber=SNAPSHOT_TAG_NAME
+		setCommonGradleProperty("qualifierVersionNumber", "$qualifierVersionNumber")
+		project.version = project.version + "-" +  qualifierVersionNumber
+	}
+	logInfo("Prepared version number: " + project.version)
+	
+	return project.version;
+}
+
+
+/**
+ * Validate release artefact
+ */ 
+ext.validateReleaseArtefact = {
+	def currentReleaseBaseDirectory;
+	if (!project.hasProperty("releaseBaseDirectory")) {
+		def userHomeDirectory = System.properties['user.home'].replace('\\', '/')
+		def commonGradleHomeDirectory = userHomeDirectory + "/.gradle"
+		currentReleaseBaseDirectory="$commonGradleHomeDirectory/common-gradle-build-releases"
+		setCommonGradleDefaultPropertyIfNull("releaseBaseDirectory", "$currentReleaseBaseDirectory")
+	} else {
+		currentReleaseBaseDirectory = project.getProperty("releaseBaseDirectory")
+	}
+	
+	def releaseInfoFile="$currentReleaseBaseDirectory/${rootProject.name}/" + project.version + ".txt"
+	if (new File(releaseInfoFile).exists()) {
+		def errorMessage="The release version " + project.version + " already exist for project ${rootProject.name}!"
+		addError("$errorMessage")
+		throw new GradleException(errorMessage)		
+	}
+}
+
+
+/**
+ * Validate release branch name
+ */ 
+ext.validateReleaseBranchName = {
+	def branchName = getGitBranchName()
+
+	if (project.hasProperty("commonGradleBuildReleaseBranchName") && !project.getProperty("commonGradleBuildReleaseBranchName").toString().isEmpty()) {
+		def expectedBranchName = project.getProperty("commonGradleBuildReleaseBranchName")
+		if (!expectedBranchName.toString().equals(branchName.toString())) {
+			def errorMessage="Current branch ${branchName} don't match to the expected branch $expectedBranchName!"
+			addError("$errorMessage")
+			throw new GradleException(errorMessage)		
+		}
+	}
+	
+	return branchName
+}
+
+
+/** 
+ * Update the local project
+ */
+ext.updateProject = {
+	def git = null
+	try {
+		git = openGit()
+	} catch (Exception e) {
+		def errorMessage="Could not open Repository!"
+		addError("$errorMessage")
+		throw new GradleException(errorMessage)		
+	}
+
+	// update local repository
+	logInfo("Update repository...")
+	git.pull(rebase: true)
+	closeGit(git)
+}
+
+
+/***************************************************************************************
+ * release prepare
+ ***************************************************************************************/
+task releasePrepare(dependsOn: ['clean']) {
+	group = 'Release'
+	description = 'Prepare release.'
+	
+	doFirst {
+		if (!isGitAvailable()) {
+			def errorMessage="Repository is not ready!"
+			addError("$errorMessage")
+			throw new GradleException(errorMessage)		
+		} else {
+			// updateProject
+		}
+
+		// prepare version number
+		if (project.hasProperty("commonGradleBuildSupportSnapshotHandling") && project.getProperty("commonGradleBuildSupportSnapshotHandling")) {
+			prepareReleaseVersion()
+		}
+
+		// validate the release artefact
+		if (project.hasProperty("commonGradleBuildValidateReleaseArtefact") && project.getProperty("commonGradleBuildValidateReleaseArtefact")) {
+			validateReleaseArtefact()
+		}
+
+		// mandatory release settings
+		setCommonGradleProperty("buildAlwaysDockerImage", true)
+		setCommonGradleProperty("dockerCleanupAfterBuild", false)
+		setCommonGradleProperty("dockerCleanupAfterPublish", true)
+
+		def releaseName="v" + project.version
+		setCommonGradleProperty("releaseName", releaseName)
+		printInfo("> Build release " + colorize(HIGHLITE_LEVEL, project.version) + ".")
+	}
+}
+releasePrepare.finalizedBy('build')
+
+
+/***************************************************************************************
+ * release snashot prepare
+ ***************************************************************************************/
+task releasePrepareSnapshot(dependsOn: ['clean']) {
+	group = 'Release'
+	description = 'Prepare snapshot release.'
+	
+	doFirst {
+		if (!isGitAvailable()) {
+			def errorMessage="Repository is not ready!"
+			addError("$errorMessage")
+			throw new GradleException(errorMessage)		
+		} else {
+			//updateProject
+		}
+
+		// validate the branch name
+		def branchName = validateReleaseBranchName()
+
+		// prepare version number
+		if (project.hasProperty("commonGradleBuildSupportSnapshotHandling") && project.getProperty("commonGradleBuildSupportSnapshotHandling")) {
+			prepareSnapReleaseVersion()		
+		}
+
+		// mandatory release settings
+		setCommonGradleProperty("buildAlwaysDockerImage", true)
+		setCommonGradleProperty("dockerCleanupAfterBuild", false)
+		setCommonGradleProperty("dockerCleanupAfterPublish", true)
+
+		def releaseName="v" + project.version
+		setCommonGradleProperty("releaseName", releaseName)
+		printInfo("> Build snapshot release " + colorize(HIGHLITE_LEVEL, project.version) + ".")
+	}
+}
+releasePrepareSnapshot.finalizedBy('build')
+
+
+/***************************************************************************************
+ * release verification
+ ***************************************************************************************/
+task releaseVerification(dependsOn: ['releasePrepare']) {
+	group = 'Release'
+	description = 'Release verification.'
+
+	doFirst {
+		// validate the branch name
+		def branchName = validateReleaseBranchName()
+			
+		setCommonGradleProperty("releaseBranchName", "release/$releaseName")
+		printInfo("> Prepare release branch, " + colorize(HIGHLITE_LEVEL, "$releaseBranchName") + ".")
+
+		/* create git release branch;
+			git checkout –b release/v1.0.0 master
+			update VERSION
+			git add VERSION
+			git commit
+		 */
+		def git = checkout("$releaseBranchName", true)
+		updateVersion()		
+		logInfo("Update version file " + colorize(HIGHLITE_LEVEL, "$versionFilename") + ".")
+		git.add(patterns: ["$versionFilename"])
+		git.commit(message: "Release $releaseName")
+
+		/* checkout branch to merge:
+			git checkout master
+			git merge --no-ff release/v1.0.0
+			git tag –m „Release v1.0.0“ v1.0.0
+		 */
+		printInfo("> Merge release branch " + colorize(HIGHLITE_LEVEL, "$releaseBranchName") + " into " + colorize(HIGHLITE_LEVEL, "$branchName") + ".")
+		git.checkout(branch: "$branchName")
+		git.merge(head: "$releaseBranchName", mode: "CREATE_COMMIT", message: "Merge $releaseBranchName into $branchName")
+		printInfo("> Set tag " + colorize(HIGHLITE_LEVEL, "$releaseName") + ".")
+		git.tag.add(name: "$releaseName", message: "Release $releaseName", force: true)
+		
+		printInfo("> Delete release branch " + colorize(HIGHLITE_LEVEL, "$releaseBranchName") + ".")
+		git.branch.remove(names: [ releaseBranchName ], force: true)
+		git.push()
+		git.push(tags: true, force: true)
+		/* delete release-branch 
+			git branch -d release/v1.0.0
+			git push
+			git push --tags
+		*/
+		
+		closeGit(git)	
+	}
+}	
+
+
+/***************************************************************************************
+ * release 
+ ***************************************************************************************/
+task releaseSnapshot(dependsOn: ['releasePrepareSnapshot']) {
+	group = 'Release'
+	description = 'Release the current version as snapshot.'
+
+	doFirst {
+		// e.g. release mail
+	}
+}
+releasePrepareSnapshot.finalizedBy('publish')
+
+
+/***************************************************************************************
+ * release 
+ ***************************************************************************************/
+task release(dependsOn: ['releaseVerification']) {
+	group = 'Release'
+	description = 'Release the current version.'
+
+	doFirst {
+		// update version file
+		if (project.hasProperty("commonGradleBuildSupportSnapshotHandling") && project.getProperty("commonGradleBuildSupportSnapshotHandling")) {
+			setCommonGradleProperty("qualifierVersionNumber", SNAPSHOT_TAG_NAME)
+		}				
+		
+		def git = openGit()
+		increaseRevisionVersion()		
+		printInfo("> Prepare development " + colorize(HIGHLITE_LEVEL, "${project.version}") + ".")
+		git.add(patterns: ["$versionFilename"])
+		git.commit(message: "Prepare development v" + project.version)
+		git.push()
+		closeGit(git)	
+		
+		// e.g. release mail
+	}
+}
+releaseVerification.finalizedBy('publish')

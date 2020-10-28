@@ -105,7 +105,7 @@ ext.closeGit = { git ->
 		try {			
 			git.close()
 		} catch (Exception e) {
-			printInfo("Could not close git: " + e.getMessage())
+			printInfo("> Could not close git: " + e.getMessage())
 		}
 	}
 }
@@ -122,7 +122,7 @@ ext.initGit = { bare = false ->
 		git = org.ajoberstar.grgit.Grgit.init(dir: projectDir, bare: bare)
 		logInfo("Initialized git.")
 	} catch (Exception e) {
-		printWarn("Could not initialize git: " + e.getMessage())
+		printWarn("> Could not initialize git: " + e.getMessage())
 	} finally {
 		closeGit(git)
 	}	
@@ -139,7 +139,7 @@ ext.getRemoteGit = { directory = projectDir ->
 			git = openGit()
 			return git.remote.list();
 		} catch (Exception e) {
-			printWarn("Could not get git remote url: " + e.getMessage())
+			printWarn("> Could not get git remote url: " + e.getMessage())
 		} finally {
 			closeGit(git)
 		}	
@@ -158,7 +158,7 @@ ext.addGit = { inputPatterns = ['./'] ->
 			logInfo("Add to git...")
 			git.add(patterns: inputPatterns)
 		} catch (Exception e) {
-			printWarn("Could not add files to git: " + e.getMessage())
+			printWarn("> Could not add files to git: " + e.getMessage())
 		} finally {
 			closeGit(git)
 		}	
@@ -169,15 +169,19 @@ ext.addGit = { inputPatterns = ['./'] ->
 /**
  * Commit git
  */
-ext.commitGit = { message = "First commit" ->
+ext.commitGit = { message = "First commit", doPush = false ->
 	def git = null	
 	if (isGitAvailable()) {
 		try {
 			git = openGit()
 			logInfo("Commit git...")
 			git.commit(message: message)
+			
+			if (doPush) {
+				git.push()
+			}
 		} catch (Exception e) {
-			printWarn("Could not add files to git: " + e.getMessage())
+			printWarn("> Could not add files to git: " + e.getMessage())
 		} finally {
 			closeGit(git)
 		}	
@@ -201,7 +205,7 @@ ext.getGitCommitHash = { ->
 				}
 			}
 		} catch (IOException e) {
-			printWarn("Could not read git commit hash: " + e.getMessage())
+			printWarn("> Could not read git commit hash: " + e.getMessage())
 		} finally {
 			closeGit(git)
 		}	
@@ -229,7 +233,7 @@ ext.getGitLastTagName = { ->
 				}
 			}
 		} catch (IOException e) {
-			printWarn("Could not read last tag name: " + e.getMessage())
+			printWarn("> Could not read last tag name: " + e.getMessage())
 		} finally {
 			closeGit(git)
 		}	
@@ -251,7 +255,7 @@ ext.getGitBranchName = { ->
 				return git.branch.current().name
 			}
 		} catch (IOException e) {
-			printWarn("Could not read git branch name: " + e.getMessage())
+			printWarn("> Could not read git branch name: " + e.getMessage())
 		} finally {
 			closeGit(git)
 		}	
@@ -264,17 +268,17 @@ ext.getGitBranchName = { ->
 /**
  * Set a git tag name
  */
-ext.setGitTagName = { tagName, message ->
+ext.setGitTagName = { tagName, message, force = false  ->
 	if (isGitAvailable()) {
 		def git = null
 		try {
 			git = openGit()
 			if (git!=null && git.tag!=null) {
 				git.tag.add(name: tagName, message: message, force: true)
-				git.push(tags: true)            
+				git.push(tags: true, force: force)            
 			}
 		} catch (IOException e) {
-			printWarn("Could not set git tag name: " + e.getMessage())
+			printWarn("> Could not set git tag name: " + e.getMessage())
 		} finally {
 			closeGit(git)
 		}	
@@ -283,27 +287,42 @@ ext.setGitTagName = { tagName, message ->
 
 
 /**
- * Set a git branch name
+ * Create a branch
  */
-def createBranch(String versionNumber, String branchName) {
-/*
-  try {
-		getGit()		
-		if (getGitIsAvailable()) {
-			ext.git.checkout(op -> {
-				op.setCreateBranch(true)
-				op.setBranch(branchName)
-			})
-			
-			ext.git.add(op -> op.setPatterns(new HashSet<>(Arrays.asList("VERSOIN", "VERSION"))))
-			ext.git.commit(op -> op.setMessage("Release branch for " + versionNumber))
-			ext.git.push()
+ext.checkout = { branchName, doCreateBranch=true ->
+	def git = null	
+	if (isGitAvailable()) {
+		try {
+			git = openGit()
+			git.pull()
+		} catch (Exception e) {
+			printWarn("> Could not checkout branch " + branchName + ": " + e.getMessage())
+		}	
+		
+		def existBranch = false
+		git.branch.list().each { 
+			if (!existBranch) {
+				existBranch = it.name.toString().equals(branchName.toString());
+			}
 		}
-	} catch (IOException e) {
+		
+		def create = doCreateBranch
+		if (existBranch) {
+			printInfo("> Branch " + colorize(HIGHLITE_LEVEL, "$branchName")   + " already exists, don't create!")
+			create = false
+		}
+		
+		try {
+			git.checkout {
+				branch = "$branchName"
+				createBranch = create
+			}
+		} catch (Exception e) {
+			printWarn("> Could not checkout branch " + branchName + ": " + e.getMessage())
+		}	
 	}
 	
-	return branchName;
-	*/
+	return git;
 }
 
 

@@ -34,6 +34,7 @@ setCommonGradleDefaultPropertyIfNull("commonGradleBuildCustomConfigName", "Custo
 setCommonGradleDefaultPropertyIfNull("commonGradleBuildCache", "$gradleHome/common-gradle-build")
 setCommonGradleDefaultPropertyIfNull("commonGradleBuildCacheLastCheckFile", "$commonGradleBuildCache/lastCheck.properties")
 setCommonGradleDefaultPropertyIfNull("commonGradleBuildCacheLastCheckTimeout", 1000 * 60 * 60 * 12) // one day
+setCommonGradleDefaultPropertyIfNull("mainTaskProtectExclusion", "tasks, help, wrapper, projectValidation, configJar")
 
 
 /***************************************************************************************
@@ -56,6 +57,12 @@ setCommonGradleDefaultPropertyIfNull("commonGradleTemplateScmPath", "${commonGra
 // common gradle conf directory
 setCommonGradleDefaultPropertyIfNull("commonGradleConfigPathName", "conf")
 setCommonGradleDefaultPropertyIfNull("commonGradleConfigPath", "${commonGradleBuildUrl}/${commonGradleConfigPathName}")
+
+// release properties
+//setCommonGradleDefaultPropertyIfNull("releaseBaseDirectory", "")
+setCommonGradleDefaultPropertyIfNull("commonGradleBuildValidateReleaseArtefact", true)
+setCommonGradleDefaultPropertyIfNull("commonGradleBuildSupportSnapshotHandling", true)
+setCommonGradleDefaultPropertyIfNull("commonGradleBuildReleaseBranchName", "master")
 
 
 /***************************************************************************************
@@ -431,7 +438,6 @@ setCommonGradleDefaultPropertyIfNull("dockerIgnoreFilename", ".dockerignore")
 setCommonGradleDefaultPropertyIfNull("dockerFile", "${srcDockerDirectory}/${dockerFilename}")
 setCommonGradleDefaultPropertyIfNull("dockerIgnoreFile", "${rootDirectory}/${dockerIgnoreFilename}")
 setCommonGradleDefaultPropertyIfNull("dockerName", "")
-setCommonGradleDefaultPropertyIfNull("dockerArgs", "")
 setCommonGradleDefaultPropertyIfNull("buildAlwaysDockerImage", false)
 setCommonGradleDefaultPropertyIfNull("dockerDefaultPort", "8080")
 setCommonGradleDefaultPropertyIfNull("dockerUID", "3000")
@@ -451,6 +457,8 @@ setCommonGradleDefaultPropertyIfNull("dockerBuildArgs", "") // "--build-arg "
 setCommonGradleDefaultPropertyIfNull("dockerRepositoryHost", "localhost")
 setCommonGradleDefaultPropertyIfNull("dockerRepositoryUser", "")
 setCommonGradleDefaultPropertyIfNull("dockerRepositoryPassword", "")
+setCommonGradleDefaultPropertyIfNull("dockerCleanupAfterBuild", false)
+setCommonGradleDefaultPropertyIfNull("dockerCleanupAfterPublish", true)
 
 if (!"$dockerIgnoreFile".toString().isEmpty()) {
 	addCommonGradlePropertyList("allowedMainFiles", "$dockerIgnoreFile")

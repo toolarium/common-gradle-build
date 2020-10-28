@@ -94,6 +94,15 @@ setCommonGradleProperty("licenseFile", "$commonGradleBuildHome/$licenseFilename"
 
 
 /***************************************************************************************
+ * release settings
+ ***************************************************************************************/
+//setCommonGradleProperty("releaseBaseDirectory", "")
+//setCommonGradleProperty("commonGradleBuildValidateReleaseArtefact", true)
+//setCommonGradleProperty("commonGradleBuildSupportSnapshotHandling", true)
+//setCommonGradleProperty("commonGradleBuildReleaseBranch", "master")
+
+
+/***************************************************************************************
  * repository settings
  ***************************************************************************************/
 //setCommonGradleProperty("allowMavenCentralRepository", true)
@@ -105,6 +114,10 @@ setCommonGradleProperty("licenseFile", "$commonGradleBuildHome/$licenseFilename"
 //setCommonGradleProperty("mavenSnapshotPublishUrl", "https://your-snapshot-publish-repository-url")
 //setCommonGradleProperty("mavenSnapshotRepositoryUrl", "https://your-snapshot-repository-url")
 //setCommonGradleProperty("allowMavenSnapshotRepository", true)
+
+
+// docker repository
+//setCommonGradleProperty("dockerRepositoryHost", "localhost")
 
 
 /***************************************************************************************

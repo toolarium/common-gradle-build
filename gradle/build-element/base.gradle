@@ -69,7 +69,7 @@ apply from: "${commonGradleBuildElementPath}/base/gradle.gradle"
 apply from: "${commonGradleBuildElementPath}/base/config.gradle"
 apply from: "${commonGradleBuildElementPath}/base/project-report.gradle"
 apply from: "${commonGradleBuildElementPath}/base/exec.gradle"
-apply from: "${commonGradleBuildElementPath}/release.gradle"
+apply from: "${commonGradleBuildElementPath}/base/release.gradle"
 apply from: "${commonGradleBuildElementPath}/scm/git.gradle"
 //apply from: "${commonGradleBuildElementPath}/scm/changelog.gradle"
 
@@ -89,7 +89,39 @@ if (!project.hasProperty('hasProjectValidationExecuted')) {
 
 tasks.matching { it != projectValidation }.all {
 	def hasAlreadyExecuted = project.hasProperty('hasProjectValidationExecuted') && project.getProperty('hasProjectValidationExecuted')
-	if (!hasAlreadyExecuted && it != help && it != tasks && it != configJar && it != wrapper && it !=projectValidation) {
+	def found = hasAlreadyExecuted
+	def taskNameString = it.toString()
+
+	if (!hasAlreadyExecuted) {
+		taskNameString = taskNameString.replace("task ':", "")
+		def idx = taskNameString.indexOf("'")	
+		if (idx>0) {
+			taskNameString = taskNameString.substring(0, idx)
+		}
+
+		def mainTaskProtectExclusion = [ "tasks", "help", "wrapper", "projectValidation", "configJar" ];
+		if (project.hasProperty("mainTaskProtectExclusion") && project.getProperty("mainTaskProtectExclusion")!=null) {
+			if (project.getProperty("mainTaskProtectExclusion").getClass().isArray()) {
+				mainTaskProtectExclusion = project.getProperty("mainTaskProtectExclusion")
+			} else {
+			mainTaskProtectExclusion
+				mainTaskProtectExclusion = project.getProperty("mainTaskProtectExclusion").toString().split(",")
+			}
+		}
+		
+		mainTaskProtectExclusion = mainTaskProtectExclusion.collect { it.trim() }	
+		found = mainTaskProtectExclusion.contains(taskNameString)
+		if (!found) {
+			for (i in 0..<mainTaskProtectExclusion.size()) {
+				if (taskNameString.toString().startsWith(mainTaskProtectExclusion[i])) {
+					found = true
+					break
+				}
+			}
+		}
+	}
+	
+	if (!hasAlreadyExecuted && !found && it != help && it != tasks && it != wrapper && it != projectValidation) {
 		logDebug("Add dependency to " + it)
 		it.dependsOn projectValidation
 	} else {
