@@ -29,7 +29,6 @@
 //setCommonGradleProperty("commonGradleBuildHomeGitUrl", "your-git-project-where-you-have-defined-your-defaults")
 //setCommonGradleProperty("commonGradleBuildHomeVersionFileUrl", "version-file-of-the-git-project-where-you-have-defined-your-defaults")
 //setCommonGradleProperty("commonGradleBuildCustomConfigName", "Custom Config")
-//setCommonGradleProperty("commonGradleBuildReleasePublish", true)
 
 
 /***************************************************************************************
@@ -106,6 +105,7 @@ setCommonGradleProperty("licenseFile", "$commonGradleBuildHome/$licenseFilename"
 /***************************************************************************************
  * repository settings
  ***************************************************************************************/
+//setCommonGradleProperty("commonGradleBuildReleasePublish", false)
 //setCommonGradleProperty("allowMavenCentralRepository", true)
 //setCommonGradleProperty("allowGoogleRepository", true)
 //setCommonGradleProperty("allowJCenterRepository", true)
