@@ -63,6 +63,7 @@ setCommonGradleDefaultPropertyIfNull("commonGradleConfigPath", "${commonGradleBu
 setCommonGradleDefaultPropertyIfNull("commonGradleBuildValidateReleaseArtefact", true)
 setCommonGradleDefaultPropertyIfNull("commonGradleBuildSupportSnapshotHandling", true)
 setCommonGradleDefaultPropertyIfNull("commonGradleBuildReleaseBranchName", "master")
+setCommonGradleDefaultPropertyIfNull("commonGradleBuildReleasePublish", false)
 
 
 /***************************************************************************************

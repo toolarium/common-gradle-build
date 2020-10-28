@@ -279,7 +279,10 @@ task releaseSnapshot(dependsOn: ['releasePrepareSnapshot']) {
 		// e.g. release mail
 	}
 }
-releasePrepareSnapshot.finalizedBy('publish')
+
+if (project.hasProperty("commonGradleBuildReleasePublish") && project.getProperty("commonGradleBuildReleasePublish")) {
+	releasePrepareSnapshot.finalizedBy('publish')
+}
 
 
 /***************************************************************************************
@@ -306,4 +309,7 @@ task release(dependsOn: ['releaseVerification']) {
 		// e.g. release mail
 	}
 }
-releaseVerification.finalizedBy('publish')
+
+if (project.hasProperty("commonGradleBuildReleasePublish") && project.getProperty("commonGradleBuildReleasePublish")) {
+	releaseVerification.finalizedBy('publish')
+}

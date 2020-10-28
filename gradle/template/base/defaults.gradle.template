@@ -29,6 +29,7 @@
 //setCommonGradleProperty("commonGradleBuildHomeGitUrl", "your-git-project-where-you-have-defined-your-defaults")
 //setCommonGradleProperty("commonGradleBuildHomeVersionFileUrl", "version-file-of-the-git-project-where-you-have-defined-your-defaults")
 //setCommonGradleProperty("commonGradleBuildCustomConfigName", "Custom Config")
+//setCommonGradleProperty("commonGradleBuildReleasePublish", true)
 
 
 /***************************************************************************************
