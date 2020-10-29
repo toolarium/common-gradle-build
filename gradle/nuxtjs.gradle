@@ -175,6 +175,7 @@ if (!project.getProperty('IS_NEW')) {
 		
 		doLast {
 			if (project.hasProperty("targetStatic") && project.getProperty("targetStatic")) {
+				addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/dist")
 				copyFile("$rootDirectory/$versionFilename", "$rootDirectory/dist/$versionFilename")
 
 				if (!new File("$rootDirectory/dist/robots.txt").exists()) {
