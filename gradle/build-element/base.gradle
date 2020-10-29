@@ -448,14 +448,14 @@ projectValidation {
 			}
 		}
 
+		if (isGitAvailable()) {
+			project.setProperty('scmVersionNumber', getGitCommitHash())
+		}
+
 		if (project.hasProperty('initShowScm') && project.getProperty('initShowScm')) {
 			if (isGitAvailable()) {
 				def branchName = getGitBranchName()
-				def commitHash = getGitCommitHash()
-				if (branchName!=null && !branchName.trim().isEmpty() && commitHash!=null && !commitHash.trim().isEmpty()) {
-					printInfo("> Git branch: " + colorize(HIGHLITE_LEVEL, branchName) + ", commit: " + colorize(HIGHLITE_LEVEL, commitHash))
-					project.ext.set(scmVersionNumber, commitHash)
-				}
+				printInfo("> Git branch: " + colorize(HIGHLITE_LEVEL, branchName) + ", commit: " + colorize(HIGHLITE_LEVEL, "$scmVersionNumber"))
 			}
 		}
 	}

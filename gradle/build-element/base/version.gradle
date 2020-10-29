@@ -70,7 +70,6 @@ ext.readVersion = { ->
 	}
 
 	setCommonGradleProperty('isSnapshotVersion', !project.getProperty('isReleaseVersion'))
-	setCommonGradleProperty('scmVersionNumber', '')
 	
 	if (doUpdate) {
 		updateVersion()
