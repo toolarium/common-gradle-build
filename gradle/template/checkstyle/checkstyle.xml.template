@@ -214,9 +214,17 @@
             <property name="allowSamelineMultipleAnnotations" value="true"/>
         </module>
         <module name="NonEmptyAtclauseDescription"/>
-        <!--<module name="InvalidJavadocPosition"/>-->
+		<!-- TODO
+		<module name="MissingJavadocType">
+			<property name="scope" value="private"/>
+		</module>
+		<module name="RequireEmptyLineBeforeBlockTagGroup"/>
+		<module name="InvalidJavadocPosition"/>
+		<module name="JavadocBlockTagLocation"/>
+		<module name="JavadocMissingWhitespaceAfterAsterisk"/>
+		-->
         <module name="JavadocTagContinuationIndentation"/>
-		<!--
+		<!-- TODO
         <module name="SummaryJavadoc">
             <property name="forbiddenSummaryFragments" value="^@return the *|^This method returns |^A [{]@code [a-zA-Z0-9]+[}]( is a )"/>
         </module>
