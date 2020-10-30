@@ -376,7 +376,7 @@ ext.getGithubRelease = {localDirectory, commonGradleBuildReleasesUrl, preRelease
 			}
 		} else {
 			remoteVersion = releaseName
-			logInfo("Version: " + colorize(HIGHLITE_LEVEL, remoteVersion) + colorize(INFO_LEVEL, " already exist in [") + colorize(HIGHLITE_LEVEL,localDirectoryRemoteVersion) + colorize(INFO_LEVEL, "]."))
+			logInfo("Version: " + colorize(HIGHLITE_LEVEL, remoteVersion) + colorize(INFO_LEVEL, " already exist in [") + colorize(HIGHLITE_LEVEL, "${localDirectory}/${remoteVersion}") + colorize(INFO_LEVEL, "]."))
 		}		
 		
 		writeLastCheck(remoteVersion, lastCheckFile)

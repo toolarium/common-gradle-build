@@ -163,8 +163,18 @@ gradle.buildFinished { buildResult ->
 	//def startupTime = java.lang.management.ManagementFactory.getRuntimeMXBean().getStartTime()
 	def cbStartupTimestamp=System.getenv('CB_START_TIMESTAMP')
 	if (cbStartupTimestamp!=null && !cbStartupTimestamp.isEmpty()) {
-		startupTime = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").parse(cbStartupTimestamp)
-		logInfo("Common build startup time " + cbStartupTimestamp)
+		try {
+			if (cbStartupTimestamp.endsWith('.')) {
+				cbStartupTimestamp=cbStartupTimestamp.toString().substring(0, cbStartupTimestamp.length() - 1)
+				startupTime = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(cbStartupTimestamp)
+			} else {
+				startupTime = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").parse(cbStartupTimestamp)
+			}
+			logInfo("Common build startup time " + cbStartupTimestamp)
+		} catch (Exception e) {
+			logError("ERROR: " + e.getMessage())
+			e.printStackTrace();
+		}
 	}
 	
 	def duration = ((((long)(new Date().getTime()/ 1000.0))*1000) - startupTime.getTime()) / 1000.0
