@@ -93,15 +93,14 @@ ext.projectInitialisation = { ->
         buildToolVersionStackMessage += ", Common Build ${cbVersion}"
     }
 
-	def cbCustomConfigVersion=""
-	if (project.ext.has('cbCustomConfigVersion')) {
-		cbCustomConfigVersion=project.ext.get('cbCustomConfigVersion')
-	} else {
+	def cbCustomConfigVersion=ext.cbCustomConfigVersion
+	if (cbCustomConfigVersion==null || cbCustomConfigVersion.trim().isEmpty()) {
 		def cbCustomConfig = System.env['CB_CUSTOM_CONFIG']
 		if (cbCustomConfig!=null && !cbCustomConfig.isEmpty()) {
 			def cbEnvCustomConfigVersion = System.env['CB_CUSTOM_CONFIG_VERSION']
 			if (cbEnvCustomConfigVersion!=null && !cbEnvCustomConfigVersion.isEmpty()) {
 				cbCustomConfigVersion=cbEnvCustomConfigVersion
+				ext.cbCustomConfigVersion=cbEnvCustomConfigVersion
 			}
 		}
 	}
