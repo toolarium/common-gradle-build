@@ -75,7 +75,7 @@ println("1.0===>parse...")
 				URL homeURL = new URL("$fileContent".toString().trim())
 				if (homeURL!=null) {					
 					homeSubPath = homeURL.getHost()
-println("1.1===>"+host)		
+println("1.1===>"+homeSubPath)		
 					
 					def port = "80";
 					if (homeURI.getPort()!=null) {
@@ -85,7 +85,7 @@ println("1.1===>"+host)
 					} else if ("https".equals(homeURL.getProtocol())) {
 						port = "443";
 					} 						
-					homeSubPath="@" + port;
+					homeSubPath="$homeSubPath@" + port;
 println("1.1===>"+port)		
 				}
 				else {
