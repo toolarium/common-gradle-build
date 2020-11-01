@@ -74,7 +74,7 @@ println("1===>"+fileContent)
 println("1.0===>parse...")
 				URL homeURL = new URL("$fileContent".toString().trim())
 				if (homeURL!=null) {					
-					homeSubPath host = homeURL.getHost()
+					homeSubPath = homeURL.getHost()
 println("1.1===>"+host)		
 					
 					def port = "80";
