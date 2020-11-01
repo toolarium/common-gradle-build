@@ -88,7 +88,7 @@ if (commonGradleBuildHomeBase == null || commonGradleBuildHomeBase.isEmpty()) {
 			
 			if (homeSubPath!=null && !homeSubPath.isEmpty()) {
 				commonGradleBuildHomeBase = "$homeDirectoryPath/$homeSubPath"
-println("3===>"+commonGradleBuildHomeBase)		
+println("3===>"+commonGradleBuildHomeBase)
 			}			
 		}
 	}
@@ -128,7 +128,7 @@ if (commonCustomConfigVersion!=null && !commonCustomConfigVersion.isEmpty()) {
 					commonGradleBuildHome=commonGradleBuildHomeBase + "/" + result.getName()
 				}
 			} else {
-				project.ext.set('cbCustomConfigVersion', lastCheckVersion)				
+				project.ext.set('cbCustomConfigVersion', lastCheckVersion)		
 				bootStraplogInfo("> Take common-gradle-build home version from ${commonGradleBuildHomeBase}/lastCheck.properties: ${lastCheckVersion}")
 				commonGradleBuildHome=commonGradleBuildHomeBase + "/" + lastCheckVersion
 			}
