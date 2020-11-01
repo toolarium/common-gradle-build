@@ -73,8 +73,6 @@ if (commonGradleBuildHomeBase == null || commonGradleBuildHomeBase.isEmpty()) {
 				URL homeURL = new URL("$fileContent".toString().trim())
 				if (homeURL!=null) {					
 					homeSubPath = homeURL.getHost()
-println("1.1===>"+homeSubPath)		
-					
 					def port = "80";
 					if (homeURL.getPort()!=null) {
 						port = "" + homeURL.getPort();
@@ -84,15 +82,11 @@ println("1.1===>"+homeSubPath)
 						port = "443";
 					} 						
 					homeSubPath="$homeSubPath@" + port;
-println("1.1===>"+homeSubPath)		
 				}
 				else {
-}				
 			} catch(Exception e) {
-			e.printStackTrace()
 			}
 			
-println("2===>"+homeSubPath)		
 			if (homeSubPath!=null && !homeSubPath.isEmpty()) {
 				commonGradleBuildHomeBase = "$homeDirectoryPath/$homeSubPath"
 println("3===>"+commonGradleBuildHomeBase)		
@@ -135,6 +129,7 @@ if (commonCustomConfigVersion!=null && !commonCustomConfigVersion.isEmpty()) {
 					commonGradleBuildHome=commonGradleBuildHomeBase + "/" + result.getName()
 				}
 			} else {
+				project.ext.set('cbCustomConfigVersion', lastCheckVersion)				
 				bootStraplogInfo("> Take common-gradle-build home version from ${commonGradleBuildHomeBase}/lastCheck.properties: ${lastCheckVersion}")
 				commonGradleBuildHome=commonGradleBuildHomeBase + "/" + lastCheckVersion
 			}

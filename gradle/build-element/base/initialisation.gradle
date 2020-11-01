@@ -91,19 +91,23 @@ ext.projectInitialisation = { ->
     def cbVersion = System.env['CB_VERSION']
     if (cbVersion!=null && !cbVersion.isEmpty()) {
         buildToolVersionStackMessage += ", Common Build ${cbVersion}"
+    }
 
+	def cbCustomConfigVersion=""
+	if (project.ext.has('cbCustomConfigVersion')) {
+		cbCustomConfigVersion=project.ext.get('cbCustomConfigVersion')
+	} else {
 		def cbCustomConfig = System.env['CB_CUSTOM_CONFIG']
 		if (cbCustomConfig!=null && !cbCustomConfig.isEmpty()) {
-			def cbCustomConfigVersion="n/a"
-	
 			def cbEnvCustomConfigVersion = System.env['CB_CUSTOM_CONFIG_VERSION']
 			if (cbEnvCustomConfigVersion!=null && !cbEnvCustomConfigVersion.isEmpty()) {
 				cbCustomConfigVersion=cbEnvCustomConfigVersion
 			}
-			
-			buildToolVersionStackMessage += ", ${commonGradleBuildCustomConfigName} ${cbCustomConfigVersion}"
 		}
-    }
+	}
+	if (cbCustomConfigVersion!=null && !cbCustomConfigVersion.isEmpty()) {
+		buildToolVersionStackMessage += ", ${commonGradleBuildCustomConfigName} ${cbCustomConfigVersion}"
+	}
 		
     project.ext.set('buildToolVersionStackMessage', buildToolVersionStackMessage)
 
