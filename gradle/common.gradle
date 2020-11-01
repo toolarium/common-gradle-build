@@ -88,6 +88,7 @@ println("1.1===>"+host)
 println("1.1===>"+port)		
 				}
 			} catch(Exception e) {
+			e.printStackTrace()
 			}
 			
 println("2===>"+homeSubPath)		
