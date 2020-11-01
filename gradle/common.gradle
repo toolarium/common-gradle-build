@@ -67,7 +67,6 @@ if (commonGradleBuildHomeBase == null || commonGradleBuildHomeBase.isEmpty()) {
 	def homeDirectoryPath="$userHomeDirectory/.common-build/conf"
 	if (new File("$homeDirectoryPath/.cb-custom-config").exists()) {
 		String fileContent = new File("$homeDirectoryPath/.cb-custom-config").getText('UTF-8')
-println("1===>["+fileContent+"]")		
 		if (fileContent!=null && !fileContent.isEmpty()) {			
 			def homeSubPath=""
 			try {
