@@ -74,7 +74,7 @@ if (commonGradleBuildHomeBase == null || commonGradleBuildHomeBase.isEmpty()) {
 				if (homeURL!=null) {					
 					homeSubPath = homeURL.getHost()
 					def port = "80";
-					if (homeURL.getPort()!=null) {
+					if (homeURL.getPort()!=null && homeURL.getPort()>0) {
 						port = "" + homeURL.getPort();
 					} else if ("http".equals(homeURL.getProtocol())) {
 						port = "80";
