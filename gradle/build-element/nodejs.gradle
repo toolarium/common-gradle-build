@@ -32,6 +32,13 @@ if (!project.hasProperty("dockerDeploymentSourcePath")) {
 	project.ext.set("dockerDeploymentSourcePath", '.')
 }
 
+// in case we have no group id but have a component id, we just take over the component id
+if (!project.hasProperty("projectGroupId") || "$projectGroupId".toString().trim().isEmpty() ) {
+	if (project.hasProperty("projectComponentId") && !"$projectComponentId".toString().trim().isEmpty() ) {
+		project.ext.set("projectGroupId", project.ext.get("projectComponentId"))
+	}
+}
+
 
 /***************************************************************************************
  * Set additional template path
