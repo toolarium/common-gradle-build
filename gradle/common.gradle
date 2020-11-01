@@ -62,13 +62,48 @@ if (commonGradleBuildCache == null || commonGradleBuildCache.isEmpty()) {
 project.ext.set('commonGradleBuildCache', commonGradleBuildCache)
 bootStraplogInfo("> Found common-gradle-build cache path: ${commonGradleBuildCache}")
 
+println("A===>")		
+
 def commonGradleBuildHomeBase = System.getenv('COMMON_GRADLE_BUILD_HOME') 
 if (commonGradleBuildHomeBase == null || commonGradleBuildHomeBase.isEmpty()) {
-	commonGradleBuildHomeBase = System.getProperty('COMMON_GRADLE_BUILD_HOME') 
+println("B===>")		
+	def homeDirectoryPath="$userHomeDirectory/.common-build/conf"
+	if (new File("$homeDirectoryPath/.cb-custom-config").exists()) {
+		String fileContent = new File("$homeDirectoryPath/.cb-custom-config").getText('UTF-8')
+println("1===>"+fileContent)		
+		if (fileContent!=null && !fileContent.isEmpty()) {			
+			def homeSubPath=""
+			try {
+				URL homeURL = new URL(fileContent)
+				if (homeURL!=null) {					
+					homeSubPath host = homeURL.getHost()
+					
+					def port;
+					if (homeURI.getPort()!=null) {
+						homeSubPath="@" + port;
+					} else if ("http".equals(homeURL.getProtocol())) {
+						homeSubPath="@80";
+					} else if ("https".equals(homeURL.getProtocol())) {
+						homeSubPath="@443";
+					} 						
+				}
+			} catch(Exception e) {
+			}
+			
+println("2===>"+homeSubPath)		
+			if (homeSubPath!=null && !homeSubPath.isEmpty()) {
+				commonGradleBuildHomeBase = "$homeDirectoryPath/$homeSubPath"
+println("3===>"+commonGradleBuildHomeBase)		
+			}			
+		}
+	}
+
 	if (commonGradleBuildHomeBase == null || commonGradleBuildHomeBase.isEmpty()) {
 		commonGradleBuildHomeBase = commonGradleHomeDirectory + "/common-gradle-build-home"
 	}
 } else {
+println("C===>")		
+
 	commonGradleBuildHomeBase = commonGradleBuildHomeBase.replace('\\', '/')
 }
 
