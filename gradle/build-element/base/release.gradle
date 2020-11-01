@@ -46,13 +46,15 @@ ext.prepareReleaseVersion = {
 	// prepare version number
 	project.version = project.getProperty('majorVersionNumber') + "." + project.getProperty('minorVersionNumber') + "." + project.getProperty('revisionVersionNumber')
 	def qualifierVersionNumber = project.getProperty('qualifierVersionNumber')
-	if (qualifierVersionNumber !=null && !qualifierVersionNumber.isEmpty()) {
+	if ((qualifierVersionNumber !=null && !qualifierVersionNumber.isEmpty()) || !project.ext.isReleaseVersion) {
 		qualifierVersionNumber=qualifierVersionNumber.replace(SNAPSHOT_TAG_NAME, "")
 		if (qualifierVersionNumber !=null && !qualifierVersionNumber.isEmpty()) {
 			project.version = project.version + "-" +  qualifierVersionNumber
 		}
-		
+
 		setCommonGradleProperty("qualifierVersionNumber", "$qualifierVersionNumber")
+		setCommonGradleProperty("isReleaseVersion", true)
+		setCommonGradleProperty('isSnapshotVersion', !project.getProperty('isReleaseVersion'))
 	}
 	logInfo("Prepared version number: " + project.version)
 	
@@ -67,10 +69,12 @@ ext.prepareSnapReleaseVersion = {
 	// prepare version number
 	project.version = project.getProperty('majorVersionNumber') + "." + project.getProperty('minorVersionNumber') + "." + project.getProperty('revisionVersionNumber')
 	def qualifierVersionNumber = project.getProperty('qualifierVersionNumber')
-	if (qualifierVersionNumber==null || qualifierVersionNumber.isEmpty() || (qualifierVersionNumber.toString().indexOf(SNAPSHOT_TAG_NAME)<0)) {
+	if (qualifierVersionNumber==null || qualifierVersionNumber.isEmpty() || qualifierVersionNumber.endsWith(SNAPSHOT_TAG_NAME)) {
 		qualifierVersionNumber=SNAPSHOT_TAG_NAME
 		setCommonGradleProperty("qualifierVersionNumber", "$qualifierVersionNumber")
 		project.version = project.version + "-" +  qualifierVersionNumber
+		setCommonGradleProperty("isReleaseVersion", false)
+		setCommonGradleProperty('isSnapshotVersion', !project.getProperty('isReleaseVersion'))
 	}
 	logInfo("Prepared version number: " + project.version)
 	
@@ -79,24 +83,139 @@ ext.prepareSnapReleaseVersion = {
 
 
 /**
- * Validate release artefact
+ * Get the release artefact info file
  */ 
-ext.validateReleaseArtefact = {
+ext.getReleaseArtefactInfoFile = { isSnapshotArtefact = false ->
+	if (project.hasProperty("releaseInfoFile")) {
+		return project.getProperty("releaseInfoFile")
+	}
+	
 	def currentReleaseBaseDirectory;
 	if (!project.hasProperty("releaseBaseDirectory")) {
 		def userHomeDirectory = System.properties['user.home'].replace('\\', '/')
 		def commonGradleHomeDirectory = userHomeDirectory + "/.gradle"
 		currentReleaseBaseDirectory="$commonGradleHomeDirectory/common-gradle-build-releases"
+		currentReleaseBaseDirectory="$currentReleaseBaseDirectory"
 		setCommonGradleDefaultPropertyIfNull("releaseBaseDirectory", "$currentReleaseBaseDirectory")
 	} else {
 		currentReleaseBaseDirectory = project.getProperty("releaseBaseDirectory")
 	}
+
+	def releaseInfoDirectoryBase = "$currentReleaseBaseDirectory"
+	if (project.hasProperty("releaseAddComponentIdIntoReleasePath")
+		&& project.getProperty("releaseAddComponentIdIntoReleasePath")
+		&& projectComponentId!=null
+		&& !projectComponentId.toString().trim().isEmpty()) {
+		releaseInfoDirectoryBase = "$releaseInfoDirectoryBase/$projectComponentId"	
+	}
+	releaseInfoDirectoryBase = "$releaseInfoDirectoryBase/${rootProject.name}"
 	
-	def releaseInfoFile="$currentReleaseBaseDirectory/${rootProject.name}/" + project.version + ".txt"
-	if (new File(releaseInfoFile).exists()) {
+	if (isSnapshotArtefact) {
+		setCommonGradleDefaultPropertyIfNull("releaseInfoDirectory", "$releaseInfoDirectoryBase/snapshot")
+	} else {
+		setCommonGradleDefaultPropertyIfNull("releaseInfoDirectory", "$releaseInfoDirectoryBase/" + project.version)
+	}
+	
+	setCommonGradleDefaultPropertyIfNull("releaseInfoFile", "$releaseInfoDirectory/build.txt")
+	return project.getProperty("releaseInfoFile")
+}
+
+
+/**
+ * Validate release artefact
+ */ 
+ext.validateReleaseArtefact = {
+	def releaseInfoFile=getReleaseArtefactInfoFile()
+	if (releaseInfoFile!=null && !releaseInfoFile.toString().trim().isEmpty() && new File(releaseInfoFile).exists()) {
 		def errorMessage="The release version " + project.version + " already exist for project ${rootProject.name}!"
 		addError("$errorMessage")
 		throw new GradleException(errorMessage)		
+	}
+}
+
+
+/**
+ * Update release artefact
+ */ 
+ext.updateReleaseArtefact = { isSnapshotArtefact = false ->
+	def releaseInfoFile=getReleaseArtefactInfoFile(isSnapshotArtefact)
+	if (releaseInfoFile==null || releaseInfoFile.toString().trim().isEmpty()) {
+		return
+	}
+
+	printInfo("> Copy build information.")	
+	def releaseInfoDirectory = project.getProperty("releaseInfoDirectory")
+	if (isSnapshotArtefact) {
+		delete releaseInfoDirectory
+	}
+	
+	if (!new File("$releaseInfoDirectory").exists()) {
+		new File("$releaseInfoDirectory").mkdirs()
+	}
+
+	logInfo("Write file " + colorize(HIGHLITE_LEVEL, releaseInfoFile) + colorize(INFO_LEVEL ,"..."))
+	if (!createFileFromTemplate(releaseInfoFile, getTemplateFile('releaseinfo.template'))) {
+		logInfo("> Create " + colorize(HIGHLITE_LEVEL, releaseInfoFile.replace("$releaseInfoDirectory", "")) + " with default values.")
+		new File(releaseInfoFile).withWriter { w ->
+			w << "Name            : " << rootProject.name << NELINE \
+			  << "Version         : " << project.version << NELINE \
+			  << "SCM-Version     : " << project.ext.scmVersionNumber << NELINE \
+			  << "Created-By      : " << project.ext.buildToolVersionStackMessage << NELINE \
+			  << "Built-By        : " << publishingUsername << NELINE \
+			  << "Build-Timestamp : " << BUILD_TIMESTAMP << NELINE \
+			  << "Build-JDK       : " << "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})" << NELINE \
+			  << "Build-OS        : " << "${System.properties['os.name']} (${System.properties['os.version']}), ${System.properties['os.arch']}" << NELINE \
+			  << "" << NELINE
+		}
+	}
+
+	if (project.hasProperty("copyReleaseArtefactInformation") && project.getProperty("copyReleaseArtefactInformation")) {
+		copy { from "$rootDirectory" include "build.gradle" into "${releaseInfoDirectory}" } 
+		copy { from "$rootDirectory" include "settings.gradle" into "${releaseInfoDirectory}" } 
+		copy { from "$rootDirectory" include "*.properties" into "${releaseInfoDirectory}" } 
+		copy { from "$rootDirectory" include "VERSION" into "${releaseInfoDirectory}" } 
+
+		if (new File("$rootDirectory/build/docs/javadoc").exists()) {
+			new File("${releaseInfoDirectory}/javadoc").mkdirs()
+			copy { from "$rootDirectory/build/docs/javadoc" include '**/*.*' into "${releaseInfoDirectory}/javadoc" } 
+		}
+
+		if (new File("$rootDirectory/build/reports/checkstyle").exists()) {
+			new File("${releaseInfoDirectory}/checkstyle").mkdirs()
+			copy { from "$rootDirectory/build/reports/checkstyle" include '**/*.*'into "${releaseInfoDirectory}/checkstyle" } 
+		}
+
+		if (new File("$rootDirectory/build/reports/testcoverage").exists()) {
+			new File("${releaseInfoDirectory}/testcoverage").mkdirs()
+			copy { from "$rootDirectory/build/reports/testcoverage" include '**/*.*' into "${releaseInfoDirectory}/testcoverage" } 
+		}
+
+		if (new File("$rootDirectory/build/reports/tests/test").exists()) {
+			new File("${releaseInfoDirectory}/tests/test").mkdirs()
+			copy { from "$rootDirectory/build/reports/tests/test" include '**/*.*' into "${releaseInfoDirectory}/tests" } 
+		}
+		
+		if (new File("$rootDirectory/tsconfig.json").exists()) {
+			copy { from "$rootDirectory" include "tsconfig.json" into "${releaseInfoDirectory}" } 
+		}
+		if (new File("$rootDirectory/package.json").exists()) {
+			copy { from "$rootDirectory" include "package.json" into "${releaseInfoDirectory}" } 
+		}
+		
+		def libFolder="$rootDirectory/build/lib"
+		if (new File(libFolder).exists()) {
+			def files = fileTree(libFolder).filter { it.isFile() }.files.name
+			new File("$releaseInfoDirectory/lib-files.txt").withWriter { w -> w << "$files".replace(", ", "\n").replace("[", "").replace("]", "") }
+		}
+		
+		def commonGradleConfigResourcebundlePath = project.getProperty("commonGradleConfigResourcebundlePath")
+		if (new File(commonGradleConfigResourcebundlePath).exists()) {
+			def releaseInfoResourceDirectory = "${releaseInfoDirectory}/resourcebundle"
+			new File(releaseInfoResourceDirectory).mkdirs()
+			copyFile(commonGradleConfigResourcebundlePath, releaseInfoResourceDirectory)
+			copy { from "${commonGradleResourcebundleOutputPath}" include "*.json" into "${releaseInfoResourceDirectory}" } 
+			copy { from "${commonGradleResourcebundleOutputPath}" include "*.properties" into "${releaseInfoResourceDirectory}" } 
+		}
 	}
 }
 
@@ -250,7 +369,13 @@ task releaseVerification(dependsOn: ['releasePrepare']) {
 		printInfo("> Merge release branch " + colorize(HIGHLITE_LEVEL, "$releaseBranchName") + " into " + colorize(HIGHLITE_LEVEL, "$branchName") + ".")
 		git.checkout(branch: "$branchName")
 		git.merge(head: "$releaseBranchName", mode: "CREATE_COMMIT", message: "Merge $releaseBranchName into $branchName")
-		printInfo("> Set tag " + colorize(HIGHLITE_LEVEL, "$releaseName") + ".")
+		
+		def commitHashId = git.head().id;
+		if (commitHashId!=null && commitHashId.length() > 9) {
+			commitHashId = commitHashId.substring(0, 9)
+		}
+		
+		printInfo("> Set tag " + colorize(HIGHLITE_LEVEL, "$releaseName") + " based on " + colorize(HIGHLITE_LEVEL, "$commitHashId") + ".")
 		git.tag.add(name: "$releaseName", message: "Release $releaseName", force: true)
 		
 		printInfo("> Delete release branch " + colorize(HIGHLITE_LEVEL, "$releaseBranchName") + ".")
@@ -263,7 +388,10 @@ task releaseVerification(dependsOn: ['releasePrepare']) {
 			git push --tags
 		*/
 		
-		closeGit(git)	
+		closeGit(git)
+		
+		// update hash
+		project.setProperty('scmVersionNumber', getGitCommitHash())
 	}
 }	
 
@@ -276,7 +404,7 @@ task releaseSnapshot(dependsOn: ['releasePrepareSnapshot']) {
 	description = 'Release the current version as snapshot.'
 
 	doFirst {
-		// e.g. release mail
+		updateReleaseArtefact(true)
 	}
 }
 
@@ -293,6 +421,8 @@ task release(dependsOn: ['releaseVerification']) {
 	description = 'Release the current version.'
 
 	doFirst {
+		updateReleaseArtefact()
+	
 		// update version file
 		if (project.hasProperty("commonGradleBuildSupportSnapshotHandling") && project.getProperty("commonGradleBuildSupportSnapshotHandling")) {
 			setCommonGradleProperty("qualifierVersionNumber", SNAPSHOT_TAG_NAME)
@@ -304,9 +434,10 @@ task release(dependsOn: ['releaseVerification']) {
 		git.add(patterns: ["$versionFilename"])
 		git.commit(message: "Prepare development v" + project.version)
 		git.push()
-		closeGit(git)	
 		
-		// e.g. release mail
+		closeGit(git)
+		
+		project.setProperty('scmVersionNumber', getGitCommitHash())
 	}
 }
 

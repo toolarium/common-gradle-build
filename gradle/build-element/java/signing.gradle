@@ -16,7 +16,8 @@ apply plugin: 'java'
 signing {
 	required {
 		// signing is required if this is a release version and the artifacts are to be published
-		!version.toString().endsWith('-SNAPSHOT') && tasks.withType(PublishToMavenRepository).find {
+		
+		!project.ext.isSnapshotVersion && tasks.withType(PublishToMavenRepository).find {
 			 gradle.taskGraph.hasTask it
 		}
 
