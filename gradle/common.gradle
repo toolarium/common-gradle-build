@@ -83,7 +83,6 @@ if (commonGradleBuildHomeBase == null || commonGradleBuildHomeBase.isEmpty()) {
 					} 						
 					homeSubPath="$homeSubPath@" + port;
 				}
-				else {
 			} catch(Exception e) {
 			}
 			
