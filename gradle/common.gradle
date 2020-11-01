@@ -67,29 +67,27 @@ if (commonGradleBuildHomeBase == null || commonGradleBuildHomeBase.isEmpty()) {
 	def homeDirectoryPath="$userHomeDirectory/.common-build/conf"
 	if (new File("$homeDirectoryPath/.cb-custom-config").exists()) {
 		String fileContent = new File("$homeDirectoryPath/.cb-custom-config").getText('UTF-8')
-println("1===>"+fileContent)		
+println("1===>["+fileContent+"]")		
 		if (fileContent!=null && !fileContent.isEmpty()) {			
 			def homeSubPath=""
 			try {
-println("1.0===>parse...")
 				URL homeURL = new URL("$fileContent".toString().trim())
 				if (homeURL!=null) {					
 					homeSubPath = homeURL.getHost()
 println("1.1===>"+homeSubPath)		
 					
 					def port = "80";
-					if (homeURI.getPort()!=null) {
-						port = "" + homeURI.getPort();
+					if (homeURL.getPort()!=null) {
+						port = "" + homeURL.getPort();
 					} else if ("http".equals(homeURL.getProtocol())) {
 						port = "80";
 					} else if ("https".equals(homeURL.getProtocol())) {
 						port = "443";
 					} 						
 					homeSubPath="$homeSubPath@" + port;
-println("1.1===>"+port)		
+println("1.1===>"+homeSubPath)		
 				}
 				else {
-println("unk")
 }				
 			} catch(Exception e) {
 			e.printStackTrace()
