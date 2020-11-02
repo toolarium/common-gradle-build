@@ -1,0 +1,64 @@
+/*
+ * vuejs.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+
+ 
+if (!project.hasProperty('commonGradleBuildUrl')) {
+    ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
+}
+
+if (!project.hasProperty('commonGradleBuildElementPath')) {
+	ext.commonGradleBuildElementPath="${commonGradleBuildUrl}/build-element"
+}
+
+
+/***************************************************************************************
+ * Dependencies
+ ***************************************************************************************/
+apply from: "${commonGradleBuildElementPath}/nodejs.gradle"
+
+
+/***************************************************************************************
+ * project validation
+ ***************************************************************************************/
+projectValidation {
+	doFirst {
+		if (project.getProperty('IS_NEW')) {
+			
+			if (project.getProperty('createSrcMainJavaDirectory')) {
+				printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcMainJavaDirectory) + ".")
+				
+				
+				new File("$rootDirectory/assets").mkdirs()
+				assets-README.template
+				new File("$rootDirectory/components").mkdirs()
+				Logo.vue.template
+			}
+
+					
+			generatePackageJson(rootDirectory, 
+								"package.json", 
+								false, 
+								'package-json-nuxt.template',
+								"{" + NELINE 
+							  + "  \"name\": \"${rootProject.name}\"," + NELINE 
+							  + "    \"scripts\": {" + NELINE 
+							  + "    \"dev\": \"nuxt\"," + NELINE
+							  + "    \"build\": \"nuxt build\"," + NELINE 
+							  + "    \"generate\": \"nuxt generate\"," + NELINE 
+							  + "    \"start\": \"nuxt start\"" + NELINE 
+							  + "  }" + NELINE 
+							  + "}" + NELINE)
+							  
+			registerEndMessage("" << NELINE \
+								<< "  To get started (equivalent to 'npm run dev'), got to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
+								<< "      " + colorize(HIGHLITE_LEVEL, "$startExecutable run") + "" << NELINE \
+								<< "" << NELINE \
+								<< "  To build (equivalent to 'npm run build'), got to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
+								<< "      " + colorize(HIGHLITE_LEVEL, "$startExecutable") + "" << NELINE)
+		} 
+	}
+}
