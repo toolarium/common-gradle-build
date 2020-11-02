@@ -105,7 +105,6 @@ def commonCustomConfigVersion = System.getenv('CB_CUSTOM_CONFIG_VERSION')
 if (commonCustomConfigVersion!=null && !commonCustomConfigVersion.isEmpty()) {
 	bootStraplogInfo("> Take common-gradle-build home version from environment variable CB_CUSTOM_CONFIG_VERSION: ${commonCustomConfigVersion}")
 	commonGradleBuildHome=commonGradleBuildHomeBase + "/" + commonCustomConfigVersion
-	ext.cbCustomConfigVersion="$commonCustomConfigVersion"
 } else if (commonGradleBuildHomeBase!=null && !commonGradleBuildHomeBase.isEmpty()) {
 	try {
 		if (new File(commonGradleBuildHomeBase).exists()) {
