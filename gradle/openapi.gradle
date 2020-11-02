@@ -274,6 +274,17 @@ if (!project.getProperty('IS_NEW')) {
 
 
 /***************************************************************************************
+ * Prepare meta-inf
+ ***************************************************************************************/
+createMeateInfFiles {
+	doLast {
+		// create empty beans.xml in META-INF
+		new File("$commonGradleResourcebundleOutputPath/META-INF/beans.xml").createNewFile()
+	}
+}
+
+
+/***************************************************************************************
  * project java validation
  ***************************************************************************************/
 projectValidation {

@@ -22,7 +22,7 @@ if (cbProjectRootDir.endsWith('/')) {
 	cbProjectRootDir = cbProjectRootDir.substring(0, cbProjectRootDir.length() -1)
 }
 
-if (!userDir.toString().equals(cbProjectRootDir.toString())) {
+if (!userDir.toString().equalsIgnoreCase(cbProjectRootDir.toString())) {
 	setCommonGradleProperty("rootDirectory", "$cbProjectRootDir")
 } else {
 	setCommonGradleProperty("rootDirectory", "$defaultRootDirectory")

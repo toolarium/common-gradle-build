@@ -92,6 +92,7 @@ setCommonGradleDefaultPropertyIfNull("includeLicenseFile", true)
 setCommonGradleDefaultPropertyIfNull("includeVersionFile", true)
 setCommonGradleDefaultPropertyIfNull("createChangelogFile", false)
 setCommonGradleDefaultPropertyIfNull("includeChangelogFile", false)
+setCommonGradleDefaultPropertyIfNull("includeGeneratedMetaInfFiles", true)
 
 // project config directory
 setCommonGradleDefaultPropertyIfNull("configDirectoryName", "conf")
@@ -313,7 +314,7 @@ setCommonGradleDefaultPropertyIfNull("openapiTests", true)
 setCommonGradleDefaultPropertyIfNull("openapiModelDocs", false)
 setCommonGradleDefaultPropertyIfNull("openapiModelTests", false)
 
-setCommonGradleDefaultPropertyIfNull("openapiDateLibrary", "java8")
+setCommonGradleDefaultPropertyIfNull("openapiDateLibrary", "legacy") // java8
 setCommonGradleDefaultPropertyIfNull("openapiInterfaceOnly", true)
 setCommonGradleDefaultPropertyIfNull("openapiUseJava8Features", true)
 setCommonGradleDefaultPropertyIfNull("openapiUseBeanValidation", false)

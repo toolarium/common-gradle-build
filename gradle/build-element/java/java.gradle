@@ -85,6 +85,10 @@ jar { jar ->
 		if (project.getProperty('includeChangelogFile')) {
 			from "${changelogFile}"
 		}
+		
+		if (project.getProperty('includeGeneratedMetaInfFiles') && project.hasProperty('commonGradleResourcebundleOutputPath') && !project.getProperty('commonGradleResourcebundleOutputPath').toString().trim().isEmpty()) {
+			from ("${commonGradleResourcebundleOutputPath}/META-INF") 
+		}
 	}
 
 	// define proper manifest
@@ -112,6 +116,21 @@ jar { jar ->
 		}
 	}
 }
+
+
+/***************************************************************************************
+ * Prepare META-INF data
+ ***************************************************************************************/
+task createMeateInfFiles() {
+	group = 'Build'
+	description = 'Prepares additional files for META-INF jar folder.'
+	onlyIf { return project.compileTimestamp != null }
+	
+	doFirst {
+		new File("$commonGradleResourcebundleOutputPath/META-INF").mkdirs()
+	}
+}
+jar.dependsOn(createMeateInfFiles)
 
 
 /***************************************************************************************
