@@ -306,127 +306,129 @@ projectValidation {
 			if (project.hasProperty('sampleInputSourceFileName') && !project.getProperty('sampleInputSourceFileName').toString().trim().isEmpty()) {
 				apiName = project.getProperty('sampleInputSourceFileName')
 			}
-			
+
 			setCommonGradleProperty("fileName", "${apiName}.yaml".toString())
-			if (!createFileFromTemplate("${srcMainApiSpecDirectory}/${fileName}", getTemplateFile(openapiTemplate, 'openapi'))) {
-				printInfo("> Create file " + colorize(HIGHLITE_LEVEL, "${srcMainApiSpecDirectory}/${fileName}") + " with default values.")
-				new File(srcMainApiSpecDirectory, "${fileName}").withWriter { w ->
-					w << "openapi: \"3.0.3\"" << NELINE \
-						<< "info:" << NELINE \
-						<< "  version: ${project.ext.majorVersionNumber}.${project.ext.minorVersionNumber}.${project.ext.revisionVersionNumber}" << NELINE \
-						<< "  title: Sample Petstore" << NELINE \
-						<< "  license:" << NELINE \
-						<< "    name: Copyright by ${licenseOrganisation}, all rights reserved." << NELINE \
-						<< "servers:" << NELINE \
-						<< "  - url: \"http://mypetstore.tech/v1\"" << NELINE \
-						<< "paths:" << NELINE \
-						<< "  /pets:" << NELINE \
-						<< "    get:" << NELINE \
-						<< "      summary: List all pets" << NELINE \
-						<< "      operationId: listPets" << NELINE \
-						<< "      tags:" << NELINE \
-						<< "        - pets" << NELINE \
-						<< "      parameters:" << NELINE \
-						<< "        - name: limit" << NELINE \
-						<< "          in: query" << NELINE \
-						<< "          description: Defines how many items to return at one time (max 50)" << NELINE \
-						<< "          required: false" << NELINE \
-						<< "          schema:" << NELINE \
-						<< "            type: integer" << NELINE \
-						<< "            format: int32" << NELINE \
-						<< "      responses:" << NELINE \
-						<< "        200:" << NELINE \
-						<< "          description: An array of pets (paged)" << NELINE \
-						<< "          headers:" << NELINE \
-						<< "            x-next:" << NELINE \
-						<< "              description: A link to the next page of responses" << NELINE \
-						<< "              schema:" << NELINE \
-						<< "                type: string" << NELINE \
-						<< "          content:" << NELINE \
-						<< "            application/json:" << NELINE \
-						<< "              schema:" << NELINE \
-						<< "                $ref: \"#/components/schemas/Pets\"" << NELINE \
-						<< "        default:" << NELINE \
-						<< "          description: Unexpected error" << NELINE \
-						<< "          content:" << NELINE \
-						<< "            application/json:" << NELINE \
-						<< "              schema:" << NELINE \
-						<< "                $ref: \"#/components/schemas/Error\"" << NELINE \
-						<< "    post:" << NELINE \
-						<< "      summary: Create a pet" << NELINE \
-						<< "      operationId: createPets" << NELINE \
-						<< "      tags:" << NELINE \
-						<< "        - pets" << NELINE \
-						<< "      responses:" << NELINE \
-						<< "        201:" << NELINE \
-						<< "          description: Created pet" << NELINE \
-						<< "        default:" << NELINE \
-						<< "          description: Unexpected error" << NELINE \
-						<< "          content:" << NELINE \
-						<< "            application/json:" << NELINE \
-						<< "              schema:" << NELINE \
-						<< "                $ref: \"#/components/schemas/Error\"" << NELINE \
-						<< "  /pets/{petId}:" << NELINE \
-						<< "    get:" << NELINE \
-						<< "      summary: Information for a pet" << NELINE \
-						<< "      operationId: getPetById" << NELINE \
-						<< "      tags:" << NELINE \
-						<< "        - pets" << NELINE \
-						<< "      parameters:" << NELINE \
-						<< "        - name: petId" << NELINE \
-						<< "          in: path" << NELINE \
-						<< "          required: true" << NELINE \
-						<< "          description: The id of the pet to retrieve" << NELINE \
-						<< "          schema:" << NELINE \
-						<< "            type: string" << NELINE \
-						<< "      responses:" << NELINE \
-						<< "        200:" << NELINE \
-						<< "          description: Expected response to a valid request" << NELINE \
-						<< "          content:" << NELINE \
-						<< "            application/json:" << NELINE \
-						<< "              schema:" << NELINE \
-						<< "                $ref: \"#/components/schemas/Pets\"" << NELINE \
-						<< "        default:" << NELINE \
-						<< "          description: Unexpected error" << NELINE \
-						<< "          content:" << NELINE \
-						<< "            application/json:" << NELINE \
-						<< "              schema:" << NELINE \
-						<< "                $ref: \"#/components/schemas/Error\"" << NELINE \
-						<< "components:" << NELINE \
-						<< "  schemas:" << NELINE \
-						<< "    Pet:" << NELINE \
-						<< "      required:" << NELINE \
-						<< "        - id" << NELINE \
-						<< "        - name" << NELINE \
-						<< "      properties:" << NELINE \
-						<< "        id:" << NELINE \
-						<< "          type: integer" << NELINE \
-						<< "          format: int64" << NELINE \
-						<< "        name:" << NELINE \
-						<< "          type: string" << NELINE \
-						<< "        tag:" << NELINE \
-						<< "          type: string" << NELINE \
-						<< "    Pets:" << NELINE \
-						<< "      type: array" << NELINE \
-						<< "      items:" << NELINE \
-						<< "        $ref: \"#/components/schemas/Pet\"" << NELINE \
-						<< "    Error:" << NELINE \
-						<< "      required:" << NELINE \
-						<< "        - code" << NELINE \
-						<< "        - message" << NELINE \
-						<< "      properties:" << NELINE \
-						<< "        code:" << NELINE \
-						<< "          type: integer" << NELINE \
-						<< "          format: int32" << NELINE \
-						<< "        message:" << NELINE \
-						<< "          type: string" << NELINE \
-						<< "" << NELINE
+			if (!new File("${srcMainApiSpecDirectory}/${fileName}").exists()) {
+				if (!createFileFromTemplate("${srcMainApiSpecDirectory}/${fileName}", getTemplateFile(openapiTemplate, 'openapi'))) {
+					printInfo("> Create file " + colorize(HIGHLITE_LEVEL, "${srcMainApiSpecDirectory}/${fileName}") + " with default values.")
+					new File(srcMainApiSpecDirectory, "${fileName}").withWriter { w ->
+						w << "openapi: \"3.0.3\"" << NELINE \
+							<< "info:" << NELINE \
+							<< "  version: ${project.ext.majorVersionNumber}.${project.ext.minorVersionNumber}.${project.ext.revisionVersionNumber}" << NELINE \
+							<< "  title: Sample Petstore" << NELINE \
+							<< "  license:" << NELINE \
+							<< "    name: Copyright by ${licenseOrganisation}, all rights reserved." << NELINE \
+							<< "servers:" << NELINE \
+							<< "  - url: \"http://mypetstore.tech/v1\"" << NELINE \
+							<< "paths:" << NELINE \
+							<< "  /pets:" << NELINE \
+							<< "    get:" << NELINE \
+							<< "      summary: List all pets" << NELINE \
+							<< "      operationId: listPets" << NELINE \
+							<< "      tags:" << NELINE \
+							<< "        - pets" << NELINE \
+							<< "      parameters:" << NELINE \
+							<< "        - name: limit" << NELINE \
+							<< "          in: query" << NELINE \
+							<< "          description: Defines how many items to return at one time (max 50)" << NELINE \
+							<< "          required: false" << NELINE \
+							<< "          schema:" << NELINE \
+							<< "            type: integer" << NELINE \
+							<< "            format: int32" << NELINE \
+							<< "      responses:" << NELINE \
+							<< "        200:" << NELINE \
+							<< "          description: An array of pets (paged)" << NELINE \
+							<< "          headers:" << NELINE \
+							<< "            x-next:" << NELINE \
+							<< "              description: A link to the next page of responses" << NELINE \
+							<< "              schema:" << NELINE \
+							<< "                type: string" << NELINE \
+							<< "          content:" << NELINE \
+							<< "            application/json:" << NELINE \
+							<< "              schema:" << NELINE \
+							<< "                $ref: \"#/components/schemas/Pets\"" << NELINE \
+							<< "        default:" << NELINE \
+							<< "          description: Unexpected error" << NELINE \
+							<< "          content:" << NELINE \
+							<< "            application/json:" << NELINE \
+							<< "              schema:" << NELINE \
+							<< "                $ref: \"#/components/schemas/Error\"" << NELINE \
+							<< "    post:" << NELINE \
+							<< "      summary: Create a pet" << NELINE \
+							<< "      operationId: createPets" << NELINE \
+							<< "      tags:" << NELINE \
+							<< "        - pets" << NELINE \
+							<< "      responses:" << NELINE \
+							<< "        201:" << NELINE \
+							<< "          description: Created pet" << NELINE \
+							<< "        default:" << NELINE \
+							<< "          description: Unexpected error" << NELINE \
+							<< "          content:" << NELINE \
+							<< "            application/json:" << NELINE \
+							<< "              schema:" << NELINE \
+							<< "                $ref: \"#/components/schemas/Error\"" << NELINE \
+							<< "  /pets/{petId}:" << NELINE \
+							<< "    get:" << NELINE \
+							<< "      summary: Information for a pet" << NELINE \
+							<< "      operationId: getPetById" << NELINE \
+							<< "      tags:" << NELINE \
+							<< "        - pets" << NELINE \
+							<< "      parameters:" << NELINE \
+							<< "        - name: petId" << NELINE \
+							<< "          in: path" << NELINE \
+							<< "          required: true" << NELINE \
+							<< "          description: The id of the pet to retrieve" << NELINE \
+							<< "          schema:" << NELINE \
+							<< "            type: string" << NELINE \
+							<< "      responses:" << NELINE \
+							<< "        200:" << NELINE \
+							<< "          description: Expected response to a valid request" << NELINE \
+							<< "          content:" << NELINE \
+							<< "            application/json:" << NELINE \
+							<< "              schema:" << NELINE \
+							<< "                $ref: \"#/components/schemas/Pets\"" << NELINE \
+							<< "        default:" << NELINE \
+							<< "          description: Unexpected error" << NELINE \
+							<< "          content:" << NELINE \
+							<< "            application/json:" << NELINE \
+							<< "              schema:" << NELINE \
+							<< "                $ref: \"#/components/schemas/Error\"" << NELINE \
+							<< "components:" << NELINE \
+							<< "  schemas:" << NELINE \
+							<< "    Pet:" << NELINE \
+							<< "      required:" << NELINE \
+							<< "        - id" << NELINE \
+							<< "        - name" << NELINE \
+							<< "      properties:" << NELINE \
+							<< "        id:" << NELINE \
+							<< "          type: integer" << NELINE \
+							<< "          format: int64" << NELINE \
+							<< "        name:" << NELINE \
+							<< "          type: string" << NELINE \
+							<< "        tag:" << NELINE \
+							<< "          type: string" << NELINE \
+							<< "    Pets:" << NELINE \
+							<< "      type: array" << NELINE \
+							<< "      items:" << NELINE \
+							<< "        $ref: \"#/components/schemas/Pet\"" << NELINE \
+							<< "    Error:" << NELINE \
+							<< "      required:" << NELINE \
+							<< "        - code" << NELINE \
+							<< "        - message" << NELINE \
+							<< "      properties:" << NELINE \
+							<< "        code:" << NELINE \
+							<< "          type: integer" << NELINE \
+							<< "          format: int32" << NELINE \
+							<< "        message:" << NELINE \
+							<< "          type: string" << NELINE \
+							<< "" << NELINE
+						}
 					}
-				}
 			
-			registerEndMessage("" << NELINE \
-								<< "  To get started (build & package jars, run tests), got to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
-								<< "      " + colorize(HIGHLITE_LEVEL, startExecutable) + "" << NELINE)
+				registerEndMessage("" << NELINE \
+									<< "  To get started (build & package jars, run tests), got to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
+									<< "      " + colorize(HIGHLITE_LEVEL, startExecutable) + "" << NELINE)
+			}
 		}
 	}
 }

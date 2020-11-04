@@ -11,31 +11,33 @@
  ***************************************************************************************/
 ext.readGradleWrapperVersion = { ->
 	def versionFile = 'gradle/wrapper/gradle-wrapper.properties'
-	logInfo("Read gradle wrapper version file " + colorize(HIGHLITE_LEVEL, versionFile))
 
-	def props = new Properties()	
-	file(versionFile).withInputStream { props.load(it) }	
-	String url = props.getProperty('distributionUrl').toString()
-	
-	if (url!=null) {
-		String[] list = url.split('/');
+	if (new File(versionFile).exists()) {
+		logInfo("Read gradle wrapper version file " + colorize(HIGHLITE_LEVEL, versionFile))
+		def props = new Properties()
+		file(versionFile).withInputStream { props.load(it) }
+		String url = props.getProperty('distributionUrl').toString()
 		
-		if (list!=null && list.length>0) {
-			def filename = list[list.length-1];			
-			if (filename != null) {
-				String[] filenameSplit = filename.split('-');
-				if (filenameSplit!=null && filenameSplit.length>1) {
-					return filenameSplit[1];
-				} else {
-					return filename;
+		if (url!=null) {
+			String[] list = url.split('/');
+			
+			if (list!=null && list.length>0) {
+				def filename = list[list.length-1];
+				if (filename != null) {
+					String[] filenameSplit = filename.split('-');
+					if (filenameSplit!=null && filenameSplit.length>1) {
+						return filenameSplit[1];
+					} else {
+						return filename;
+					}
 				}
 			}
+			
+			return url;
 		}
-		
-		return url;
 	}
 	
-	return "";
+	return gradle.gradleVersion;
 }
  
 
@@ -43,14 +45,18 @@ ext.readGradleWrapperVersion = { ->
  * Install gradle wrapper if not exists
  ***************************************************************************************/
 ext.gradleWrapperinstalled = false
+def hasWrapperFiles=(new File("gradle").exists() \
+						&& new File("gradle/wrapper").exists() \
+						&& new File("gradle/wrapper/gradle-wrapper.jar").exists() \
+						&& new File("gradle/wrapper/gradle-wrapper.properties").exists() \
+						&& new File("gradlew.").exists() \
+						&& new File("gradlew.bat").exists())
+def hasExpectedWrapperVersion="$gradleWrapperDefaultVersion".equals("$gradle.gradleVersion")
+
 wrapper {
-	onlyIf { installGradleWrapper && (!new File("gradle").exists() \
-		|| !new File("gradle/wrapper").exists() \
-		|| !new File("gradle/wrapper/gradle-wrapper.jar").exists() \
-		|| !new File("gradle/wrapper/gradle-wrapper.properties").exists() \
-		|| !new File("gradlew.").exists() \
-		|| !new File("gradlew.bat").exists()) }
-		
+	onlyIf { installGradleWrapper && (!hasExpectedWrapperVersion || !hasWrapperFiles) }
+	gradleVersion = "$gradleWrapperDefaultVersion"
+			
 	doLast {		
 		if (!gradleWrapperinstalled) {
 			gradleWrapperinstalled = true

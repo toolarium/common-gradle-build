@@ -170,7 +170,8 @@ ext.createEclipseFiles = { overwrite = false ->
 	
 	if (project.hasProperty('initCheckstyle') && project.getProperty('initCheckstyle')) {
 		def checkstyleFile = ".checkstyle"
-		if (project.hasProperty('runtimeCheckstyleConfigurationPath') && (overwrite || !new File("${rootDirectory}", "${checkstyleFile}").exists())) {
+		def checkstyleEclipseConfigurationOverwrite = project.hasProperty('checkstyleEclipseConfigurationOverwrite') && project.getProperty('checkstyleEclipseConfigurationOverwrite')
+		if (project.hasProperty('runtimeCheckstyleConfigurationPath') && (overwrite || checkstyleEclipseConfigurationOverwrite || !new File("${rootDirectory}", "${checkstyleFile}").exists())) {
 			logInfo("Write file " + colorize(HIGHLITE_LEVEL, rootDirectory + "/" + checkstyleFile) + colorize(INFO_LEVEL, "..."))
 			
 			def runtimeCheckstyleConfigurationPath = project.getProperty('runtimeCheckstyleConfigurationPath').replace('\\', '/')

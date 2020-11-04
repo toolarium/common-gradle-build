@@ -16,6 +16,7 @@ if ("windows" == getOsName()) {
 	setCommonGradleDefaultPropertyIfNull("userHomeDirectory", '~/')
 }
 
+setCommonGradleDefaultPropertyIfNull("gradleWrapperDefaultVersion", "6.7")
 setCommonGradleDefaultPropertyIfNull("gradleHome", "$userHomeDirectory/.gradle")
 setCommonGradleDefaultPropertyIfNull("gradleHomePropertiesFile", "$gradleHome/gradle.properties")
 setCommonGradleDefaultPropertyIfNull("defaultCommonGradleBuildUrl", "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/common.gradle")
@@ -270,6 +271,7 @@ setCommonGradleDefaultPropertyIfNull("checkstyleConfigurationPath", "${configDir
 setCommonGradleDefaultPropertyIfNull("checkstyleConfigurationFilename", "checkstyle.xml")
 setCommonGradleDefaultPropertyIfNull("checkstyleConfiguration", "${checkstyleConfigurationPath}/${checkstyleConfigurationFilename}")
 setCommonGradleDefaultPropertyIfNull("projectIndividualCheckstyleConfiguration", true)
+setCommonGradleDefaultPropertyIfNull("checkstyleEclipseConfigurationOverwrite", true)
 
 
 /***************************************************************************************
