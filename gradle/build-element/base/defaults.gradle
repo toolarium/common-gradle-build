@@ -305,7 +305,7 @@ setCommonGradleDefaultPropertyIfNull("nodePluginVersion", '2.2.4')
 setCommonGradleDefaultPropertyIfNull("srcMainApiSpecDirectoryName", "api-spec")
 setCommonGradleDefaultPropertyIfNull("srcMainApiSpecDirectory", "${srcMainDirectory}/${srcMainApiSpecDirectoryName}")
 //setCommonGradleDefaultPropertyIfNull("openapiPluginVersion", '4.3.1')
-setCommonGradleDefaultPropertyIfNull("openapiPluginVersion", '5.0.0-beta')
+setCommonGradleDefaultPropertyIfNull("openapiPluginVersion", '5.0.0-beta2')
 //setCommonGradleDefaultPropertyIfNull("openapiLibrary", 'okhttp-gson')
 //setCommonGradleDefaultPropertyIfNull("openapiGeneratorName", 'java')
 setCommonGradleDefaultPropertyIfNull("openapiGeneratorName", 'jaxrs-spec')
@@ -315,9 +315,9 @@ setCommonGradleDefaultPropertyIfNull("openapiDocs", true)
 setCommonGradleDefaultPropertyIfNull("openapiTests", true)
 setCommonGradleDefaultPropertyIfNull("openapiModelDocs", false)
 setCommonGradleDefaultPropertyIfNull("openapiModelTests", false)
-
 setCommonGradleDefaultPropertyIfNull("openapiDateLibrary", "legacy") // java8
 setCommonGradleDefaultPropertyIfNull("openapiInterfaceOnly", true)
+setCommonGradleDefaultPropertyIfNull("openapiReturnResponse", true)
 setCommonGradleDefaultPropertyIfNull("openapiUseJava8Features", true)
 setCommonGradleDefaultPropertyIfNull("openapiUseBeanValidation", false)
 setCommonGradleDefaultPropertyIfNull("openapiNullable", false)
@@ -326,6 +326,7 @@ setCommonGradleDefaultPropertyIfNull("openapiBigDecimalAsString", true)
 setCommonGradleDefaultPropertyIfNull("openapiBooleanGetterPrefix", "get")
 setCommonGradleDefaultPropertyIfNull("openapiHideGenerationTimestamp", true)
 setCommonGradleDefaultPropertyIfNull("openapiUseGzipFeature", true)
+setCommonGradleDefaultPropertyIfNull("openapiSerializableModel", true)
 
 
 /***************************************************************************************
@@ -469,6 +470,15 @@ setCommonGradleDefaultPropertyIfNull("dockerCleanupAfterPublish", true)
 if (!"$dockerIgnoreFile".toString().isEmpty()) {
 	addCommonGradlePropertyList("allowedMainFiles", "$dockerIgnoreFile")
 }
+
+
+/***************************************************************************************
+ * kubernetes
+ ***************************************************************************************/
+setCommonGradleDefaultPropertyIfNull("kubernetesLabelId", "$projectComponentId")
+setCommonGradleDefaultPropertyIfNull("kubernetesReplicas", "1")
+setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseJDBCUrl", "")
+setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseMaxConnections", "10")
 
 
 /***************************************************************************************

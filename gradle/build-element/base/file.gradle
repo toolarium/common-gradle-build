@@ -159,6 +159,7 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 			filter { line -> line.replaceAll('@@LINE@@', "${LINE}".toString()) }
 			filter { line -> line.replaceAll('@@STAR_LINE@@', "${STAR_LINE}".toString()) }			
 			filter { line -> line.replaceAll('@@COMMON_GRADLE_BUILD_URL@@', "${defaultCommonGradleBuildUrl}".toString()) }
+			filter { line -> line.replaceAll('@@BUILD_TOOL_VERSION_MESSAGE@@', "${project.ext.buildToolVersionStackMessage}".toString()) }
 			
 			filter { line -> line.replaceAll('@@sourceCompatibility@@', "${project.ext.sourceCompatibility}".toString()) }
 			filter { line -> line.replaceAll('@@targetCompatibility@@', "${project.ext.targetCompatibility}".toString()) }
@@ -245,6 +246,7 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 			// docker
 			if (project.hasProperty('dockerImage')) {
 				filter { line -> line.replaceAll('@@dockerImage@@', "${project.ext.dockerImage}".toString()) }
+				filter { line -> line.replaceAll('@@DOCKER_IMAGE@@', "${project.ext.dockerImage}".toString()) }
 			}
 			if (project.hasProperty('dockerUID')) {
 				filter { line -> line.replaceAll('@@dockerUID@@', "${project.ext.dockerUID}".toString()) }
@@ -254,6 +256,7 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 			}
 			if (project.hasProperty('dockerExposePort')) {
 				filter { line -> line.replaceAll('@@dockerExposePort@@', "${project.ext.dockerExposePort}".toString()) }
+				filter { line -> line.replaceAll('@@DOCKER_EXPOSE_PORT@@', "${project.ext.dockerExposePort}".toString()) }
 			}
 			if (project.hasProperty('dockerUser')) {
 				filter { line -> line.replaceAll('@@dockerUser@@', "${project.ext.dockerUser}".toString()) }
@@ -263,6 +266,7 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 			}
 			if (project.hasProperty('dockerTimezone')) {
 				filter { line -> line.replaceAll('@@dockerTimezone@@', "${project.ext.dockerTimezone}".toString()) }
+				filter { line -> line.replaceAll('@@DOCKER_TIMEZONE@@', "${project.ext.dockerTimezone}".toString()) }
 			}
 			if (project.hasProperty('dockerDeploymentSourcePath')) {
 				filter { line -> line.replaceAll('@@dockerDeploymentSourcePath@@', "${project.ext.dockerDeploymentSourcePath}".toString()) }
@@ -281,6 +285,15 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 			}
 			if (project.hasProperty('dockerEnableAccessLog')) {
 				filter { line -> line.replaceAll('@@dockerEnableAccessLog@@', "${project.ext.dockerEnableAccessLog}".toString()) }
+			}
+			if (project.hasProperty('kubernetesLabelId')) {
+				filter { line -> line.replaceAll('@@KUBERNETES_LABEL_ID@@', "${project.ext.kubernetesLabelId}".toString()) }
+			}
+			if (project.hasProperty('kubernetesReplicas')) {
+				filter { line -> line.replaceAll('@@KUBERNETES_REPLICAS@@', "${project.ext.kubernetesReplicas}".toString()) }
+			}
+			if (project.hasProperty('kubernetesDatabaseJDBCUrl')) {
+				filter { line -> line.replaceAll('@@KUBERNETES_DATABASE_JDBC_URL@@', "${project.ext.kubernetesDatabaseJDBCUrl}".toString()) }
 			}
 		}
 		

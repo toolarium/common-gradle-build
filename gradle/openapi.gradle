@@ -153,6 +153,8 @@ task openApiProcess {
 							+ "modelTests: " + colorize(HIGHLITE_LEVEL, "${openapiModelTests}".toString()) + "\n"
 							+ "               dateLibrary: " + colorize(HIGHLITE_LEVEL, "${openapiDateLibrary}".toString()) + ", "
 							+ "interfaceOnly: " + colorize(HIGHLITE_LEVEL, "${openapiInterfaceOnly}".toString()) + ", "
+							+ "returnResponse: " + colorize(HIGHLITE_LEVEL, "${openapiReturnResponse}".toString()) + ", "							
+							+ "serializableModel: " + colorize(HIGHLITE_LEVEL, "${openapiSerializableModel}".toString()) + ", "							
 							+ "java8: " + colorize(HIGHLITE_LEVEL, "${openapiUseJava8Features}".toString()) + "\n"
 							+ "               useBeanValidation: " + colorize(HIGHLITE_LEVEL, "${openapiUseBeanValidation}".toString()) + ", "	
 							+ "asyncNative: " + colorize(HIGHLITE_LEVEL, "${openapiAsyncNative}".toString()) + "\n"
@@ -205,8 +207,6 @@ task openApiProcess {
 							//templateDir = "$rootDir/src/main/resources/api/templates".toString()
 							version = "${project.version}".toString()
 
-							library = "${openapiLibrary}".toString()
-							//snapshotVersion = "${}"
 								
 							// modelFilesConstrainedTo = [
 							//	"Error"
@@ -218,6 +218,7 @@ task openApiProcess {
 								apiTests : "${openapiTests}".toString(),
 								modelDocs : "${openapiModelDocs}".toString(),
 								modelTests : "${openapiModelTests}".toString(),
+								library : "${openapiLibrary}".toString(),
 
 								artifactVersion : "${project.version}".toString(),
 								artifactDescription : "${project.ext.projectDescription}".toString(),
@@ -229,12 +230,14 @@ task openApiProcess {
 
 								dateLibrary : "${openapiDateLibrary}".toString(),
 								interfaceOnly : "${openapiInterfaceOnly}".toString(),
+								returnResponse : "${openapiReturnResponse}".toString(),
+								serializableModel : "${openapiSerializableModel}".toString(),
 								java8 : "${openapiUseJava8Features}".toString(),
 								useBeanValidation : "${openapiUseJava8Features}".toString(),
 								//useOptional: "true",
 								//useLombok: "true",
 								fullJavaUtil : 'true',
-								//useSwaggerAnnotations : 'false',
+								useSwaggerAnnotations : 'false',
 								disallowAdditionalPropertiesIfNotPresent : 'false',
 								openApiNullable : "${openapiNullable}".toString(),
 								asyncNative : "${openapiAsyncNative}".toString(),
