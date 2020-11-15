@@ -171,6 +171,12 @@ setCommonGradleProperty("projectIndividualCheckstyleConfiguration", false)
 
 
 /***************************************************************************************
+ * nuxt
+ ***************************************************************************************/
+//setCommonGradleProperty("forceStaticTarget", false)
+
+
+/***************************************************************************************
  * define docker settings
  ***************************************************************************************/
 //setCommonGradleProperty("projectIndividualDockerfie", true)
@@ -178,9 +184,33 @@ setCommonGradleProperty("projectIndividualCheckstyleConfiguration", false)
 
 
 /***************************************************************************************
- * nuxt
+ * define kubernetes settings 
  ***************************************************************************************/
-//setCommonGradleProperty("forceStaticTarget", false)
+//setCommonGradleProperty("kubernetesSupport", false)
+//setCommonGradleProperty("kubernetesApplicationHost", "${rootProject.name}.local")
+//setCommonGradleProperty("kubernetesReplicas", "2")
+//setCommonGradleProperty("kubernetesSupportIngressNginx", true)
+
+//setCommonGradleProperty("kubernetesSupportDatabase", true)
+//setCommonGradleProperty("kubernetesDatabaseType", "postgresql")
+//setCommonGradleProperty("kubernetesDatabaseHost", "database")
+//setCommonGradleProperty("kubernetesDatabasePort", "5432")
+//setCommonGradleProperty("kubernetesDatabaseName", "${projectGroupId}".toString().replace(".", "-"))
+//setCommonGradleProperty("kubernetesDatabaseMaxConnections", "10")
+//setCommonGradleProperty("kubernetesDatabaseUrl", "jdbc:${kubernetesDatabaseType}://${kubernetesDatabaseHost}:${kubernetesDatabasePort}/${kubernetesDatabaseName}")
+//setCommonGradleProperty("kubernetesDatabaseServiceName", "database")
+//setCommonGradleProperty("kubernetesDatabaseImage", "postgres:10.5")
+//setCommonGradleProperty("kubernetesDatabaseStorage", "100Mi")
+ 
+//setCommonGradleProperty("kubernetesSupportIdm", true)
+//setCommonGradleProperty("kubernetesIdmImageVersion", "11.0.2")
+//setCommonGradleProperty("kubernetesIdmFrontendUrl", "http://app-${projectGroupId}.local/auth")
+//setCommonGradleProperty("kubernetesIdmPort", "8080")
+//setCommonGradleProperty("kubernetesIdmDatabase", "${kubernetesDatabaseName}_idm")
+//setCommonGradleProperty("kubernetesIdmDatabaseHost", "${kubernetesDatabaseHost}")
+//setCommonGradleProperty("kubernetesIdmDatabasePort", "${kubernetesDatabasePort}")
+//setCommonGradleProperty("kubernetesIdmDatabaseVendor", "postgres")
+//setCommonGradleProperty("kubernetesIdmImage", "quay.io/keycloak/keycloak:${kubernetesIdmImageVersion}")
 
 
 /***************************************************************************************

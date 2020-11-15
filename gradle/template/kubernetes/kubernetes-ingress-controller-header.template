@@ -1,0 +1,17 @@
+#
+# Copyright by @@LICENSE_ORGANISATION@@, all rights reserved.
+# @@LICENSE@@
+#
+
+apiVersion: @@KUBERNETES_CONTROLLER_IMAGE@@
+kind: Ingress
+metadata:
+  labels:
+    app.@@KUBERNETES_LABEL_ID@@.ingress: @@PROJECT_NAME@@
+  name: @@PROJECT_NAME@@-ingress
+  namespace: @@KUBERNETES_NAMESPACE@@
+spec:
+  rules:
+  - host: @@KUBERNETES_APPLICATION_HOST@@
+    http:
+      paths:

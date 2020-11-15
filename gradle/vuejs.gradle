@@ -5,6 +5,17 @@
  * MIT License: https://mit-license.org
  */
 
+
+/***************************************************************************************
+ * ResourceBundle.xls support
+ ***************************************************************************************/
+ext.initResourceBundle=true
+ext.commonGradleResourcebundleJsonSupport=true
+ext.commonGradleResourcebundleOutputPath='public/locales'
+
+if (!project.hasProperty("dockerDeploymentSourcePath")) {
+	project.ext.set("dockerDeploymentSourcePath", 'dist')
+}
  
 if (!project.hasProperty('commonGradleBuildUrl')) {
     ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
@@ -20,6 +31,8 @@ if (!project.hasProperty('commonGradleBuildElementPath')) {
  ***************************************************************************************/
 apply from: "${commonGradleBuildElementPath}/nodejs.gradle"
 
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/babel.config.js")
+
 
 /***************************************************************************************
  * project validation
@@ -28,6 +41,7 @@ projectValidation {
 	doFirst {
 		if (project.getProperty('IS_NEW')) {
 			
+			/*
 			if (project.getProperty('createSrcMainJavaDirectory')) {
 				printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcMainJavaDirectory) + ".")
 				
@@ -37,8 +51,9 @@ projectValidation {
 				new File("$rootDirectory/components").mkdirs()
 				Logo.vue.template
 			}
+			*/
 
-					
+			/*
 			generatePackageJson(rootDirectory, 
 								"package.json", 
 								false, 
@@ -52,7 +67,20 @@ projectValidation {
 							  + "    \"start\": \"nuxt start\"" + NELINE 
 							  + "  }" + NELINE 
 							  + "}" + NELINE)
-							  
+			*/
+			
+			// use the defined files
+			new File(licenseFile).delete()
+			new File(readmeFile).delete()
+			createFileFromTemplate(readmeFile, getTemplateFile('README.template'))			
+			new File(editorConfigFile).delete()
+			createFileFromTemplate(editorConfigFile, getTemplateFile('editorconfig.template'))
+			
+			// generate git files if necessary
+			if (project.hasProperty('initScmForNewProjects') && project.getProperty('initScmForNewProjects')) {
+				createGitFiles(true)
+			}
+			
 			registerEndMessage("" << NELINE \
 								<< "  To get started (equivalent to 'npm run dev'), got to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
 								<< "      " + colorize(HIGHLITE_LEVEL, "$startExecutable run") + "" << NELINE \

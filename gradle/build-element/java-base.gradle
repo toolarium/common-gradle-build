@@ -7,10 +7,12 @@
 
 
 apply from: "${commonGradleBuildElementPath}/language-base.gradle"
+apply from: "${commonGradleBuildElementPath}/base/kubernetes.gradle"
 apply from: "${commonGradleBuildElementPath}/java/javadoc.gradle"
 apply from: "${commonGradleBuildElementPath}/java/java.gradle"
 apply from: "${commonGradleBuildElementPath}/java/test.gradle"
 apply from: "${commonGradleBuildElementPath}/java/repository.gradle"
+apply plugin: 'java'
 apply from: "${commonGradleBuildElementPath}/java/signing.gradle"
 apply from: "${commonGradleBuildElementPath}/java/publication.gradle"
 apply from: "${commonGradleBuildElementPath}/java/javaversion.gradle"
@@ -54,9 +56,25 @@ ext.createPackagePath = { basePath, packageName ->
  * artefacts
  ***************************************************************************************/
 artifacts {
-	archives jar
-	archives sourcesJar
-	archives javadocJar
+	if (project.hasProperty('createJar') && project.getProperty('createJar')) {
+		archives jar
+	}
+	
+	if (project.hasProperty('createSourceJar') && project.getProperty('createSourceJar')) {
+		archives sourcesJar
+	}
+	
+	if (project.hasProperty('createJavadocJar') && project.getProperty('createJavadocJar')) {
+		archives javadocJar
+	}
+	
+	if (project.hasProperty('kubernetesSupport') && project.getProperty('kubernetesSupport')) {
+		archives kubernetesJar
+	}
+
+	if (project.hasProperty('createCustomJar') && project.getProperty('createCustomJar')) {
+		archives customJar
+	}
 }
 
 

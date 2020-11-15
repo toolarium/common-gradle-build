@@ -1,0 +1,109 @@
+/*
+ * docker.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+
+
+ext.projectTypeTemplatePath='docker'
+if (!project.hasProperty('commonGradleBuildUrl')) {
+    ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
+}
+
+if (!project.hasProperty('commonGradleBuildElementPath')) {
+	ext.commonGradleBuildElementPath="${commonGradleBuildUrl}/build-element"
+}
+
+// in case we have no group id but have a component id, we just take over the component id
+if (!project.hasProperty("projectGroupId") || "$projectGroupId".toString().trim().isEmpty() ) {
+	if (project.hasProperty("projectComponentId") && !"$projectComponentId".toString().trim().isEmpty() ) {
+		project.ext.set("projectGroupId", project.ext.get("projectComponentId"))
+	}
+}
+/*
+if (!project.hasProperty("kubernetesSupport")) {
+	project.ext.set("kubernetesSupport", true)
+}*/
+if (!project.hasProperty("createJar")) {
+	project.ext.set("createJar", false)
+}
+if (!project.hasProperty("createSourceJar")) {
+	project.ext.set("createSourceJar", false)
+}
+if (!project.hasProperty("createJavadocJar")) {
+	project.ext.set("createJavadocJar", false)
+}
+if (!project.hasProperty("createApplicationConfigFile")) {
+	project.ext.set("createApplicationConfigFile", false)
+}
+if (!project.hasProperty("kubernetesProjectConfiguration")) {
+	project.ext.set("kubernetesProjectConfiguration", false)
+}
+if (!project.hasProperty("projectIndividualDockerfie")) {
+	project.ext.set("projectIndividualDockerfie", true)
+}
+if (!project.hasProperty("createProjectIndividualDockerfie")) {
+	project.ext.set("createProjectIndividualDockerfie", true)
+}
+if (!project.hasProperty("dockerDeploymentSourcePath")) {
+	project.ext.set("dockerDeploymentSourcePath", ".")
+}
+if (!project.hasProperty("dockerEntrypoint")) {
+	project.ext.set("dockerEntrypoint", "\"/bin/ash\"")
+}
+if (!project.hasProperty("dockerImage")) {
+	project.ext.set("dockerImage", "nginx:alpine")
+}
+
+project.ext.set("buildAlwaysDockerImage", true)
+
+
+/***************************************************************************************
+ * Dependencies
+ ***************************************************************************************/
+apply from: "${commonGradleBuildElementPath}/base.gradle"
+apply from: "${commonGradleBuildElementPath}/base/gradle.gradle"
+apply from: "${commonGradleBuildElementPath}/base/run.gradle"
+apply from: "${commonGradleBuildElementPath}/base/kubernetes.gradle"
+//apply from: "${commonGradleBuildElementPath}/java/repository.gradle"
+//apply from: "${commonGradleBuildElementPath}/java/signing.gradle"
+//apply from: "${commonGradleBuildElementPath}/java/publication.gradle"
+apply from: "${commonGradleBuildElementPath}/base/docker.gradle"
+
+
+defaultTasks 'clean', 'projectValidation', 'dockerBuild'
+
+
+/***************************************************************************************
+ * clean
+ ***************************************************************************************/
+task clean() {
+	doFirst {
+		delete "${rootDirectory}/build/"
+	}
+}
+
+
+/***************************************************************************************
+ * project validation
+ ***************************************************************************************/
+projectValidation {
+	doFirst {
+		if (project.getProperty('IS_NEW')) {
+			new File(srcDockerDirectory).mkdirs()
+			createFileFromTemplate("$dockerFile", getTemplateFile("$dockerFileTemplateName"))
+			createFileFromTemplate("$dockerIgnoreFile", getTemplateFile('dockerignore.template'))
+		
+			// generate git files if necessary
+			if (project.hasProperty('initScmForNewProjects') && project.getProperty('initScmForNewProjects')) {
+				createGitFiles(true)
+			}
+
+			registerEndMessage("" << NELINE \
+								<< "  To get started, got to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
+								<< "      " + colorize(HIGHLITE_LEVEL, "$startExecutable") + "" << NELINE \
+								<< "" << NELINE)
+		}
+	}
+}

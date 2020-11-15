@@ -12,6 +12,7 @@
 //setCommonGradleDefaultPropertyIfNull("dockerFileTemplateName", "Dockerfile-node.properties.template")
 setCommonGradleDefaultPropertyIfNull("dockerFileTemplateName", "Dockerfile.properties.template")
 setCommonGradleDefaultPropertyIfNull("IS_NEW_SRC_FOLDER", false)
+setCommonGradleDefaultPropertyIfNull("createApplicationConfigFile", false)
 
 ext.dockerInstallationValidated=false
 ext.dockerInstallationCommandAvailable=false
@@ -100,16 +101,7 @@ task dockerBuild {
 				}
 			} else {
 				dockerSourceMessage="global"
-				def tempBaseFolder=System.getenv('TMP')
-				if (tempBaseFolder == null) {
-					tempBaseFolder=System.getenv('TEMP')
-				}
-				if (tempBaseFolder == null) {
-					tempBaseFolder="$rootDirectory/temp"
-				}
-				tempBaseFolder = tempBaseFolder.replace('\\', '/')
-				localDockerFile="${tempBaseFolder}/${rootProject.name}-${project.version}-dockerfile"
-			
+				localDockerFile=getUniqueTempName("${rootProject.name}", "${project.version}-dockerfile", null)
 				createFileFromTemplate("$localDockerFile", getTemplateFile("$dockerFileTemplateName"), true, false)
 				deleteDockerfile=true
 
@@ -121,7 +113,7 @@ task dockerBuild {
 			
 			def dockerBuildName="${rootProject.name}:${project.version}"
 			logInfo("Use dockerfile [" +colorize(HIGHLITE_LEVEL,  dockerBuildName) + colorize(INFO_LEVEL, "]."))
-			if( project.hasProperty("dockerName") && !project.getProperty("dockerName").toString().isEmpty() ) {
+			if (project.hasProperty("dockerName") && !project.getProperty("dockerName").toString().isEmpty()) {
 				dockerBuildName="$dockerName"
 			}
 			

@@ -36,6 +36,9 @@ if (!project.hasProperty("dockerDefaultJavaOptions")) {
 if (!project.hasProperty("dockerDeploymentSourcePath")) {
 	project.ext.set("dockerDeploymentSourcePath", 'build/*-runner.jar')
 }
+if (!project.hasProperty("kubernetesSupport")) {
+	project.ext.set("kubernetesSupport", true)
+}
 
 
 /***************************************************************************************

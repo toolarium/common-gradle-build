@@ -46,18 +46,7 @@ ext.readRemoteVersion = { inputUrl, gitUrl=null ->
 		}
 	} catch (Exception e) {
 		if (gitUrl!=null) {
-			def tempBaseFolder=System.getenv('TMP')
-			if (tempBaseFolder == null) {
-				tempBaseFolder=System.getenv('TEMP')
-			}
-			if (tempBaseFolder == null) {
-				tempBaseFolder="$rootDirectory"
-			}
-	        tempBaseFolder = tempBaseFolder.replace('\\', '/')
-			
-			def randomNumber=Math.abs(new Random().nextInt() % 1000000) + 1
-			def tempName="cgb-" + randomNumber
-			def tempFolder="${tempBaseFolder}/${tempName}.tmp"
+			def tempFolder=getUniqueTempName("cgb", "update", null)			
 			logDebug("Create temp path " + colorize(HIGHLITE_LEVEL, tempFolder))			
 			logDebug("> Get remote version of " + colorize(HIGHLITE_LEVEL, gitUrl) + " into " + colorize(HIGHLITE_LEVEL, tempFolder) + ".")
 			gitClone(tempFolder, gitUrl)
@@ -150,7 +139,6 @@ ext.readLastVersion = { filename ->
  * Write last check
  ***************************************************************************************/
 ext.writeLastCheck = { versionNumber, filename, lastCheck = BUILD_TIMESTAMP ->
-
 	if (lastCheck==null) {
 		return 
 	}

@@ -1,0 +1,88 @@
+#
+# Copyright by @@LICENSE_ORGANISATION@@, all rights reserved.
+# @@LICENSE@@
+#
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.@@KUBERNETES_LABEL_ID@@/name: @@GROUP_ID@@-@@PROJECT_NAME@@
+    app.@@KUBERNETES_LABEL_ID@@/instance: @@PROJECT_NAME@@
+    app.@@KUBERNETES_LABEL_ID@@/version: "@@VERSION@@"
+    app.@@KUBERNETES_LABEL_ID@@/component: @@PROJECT_TYPE@@
+    app.@@KUBERNETES_LABEL_ID@@/part-of: @@COMPONENT_ID@@
+  annotations:
+    app.@@KUBERNETES_LABEL_ID@@/url-path: "@@KUBERNETES_URL_PATH@@"
+    app.@@KUBERNETES_LABEL_ID@@/description: "@@DESCRIPTION@@"
+    app.@@KUBERNETES_LABEL_ID@@/runtime-timezone: "@@DOCKER_TIMEZONE@@"
+    app.@@KUBERNETES_LABEL_ID@@/build-reference: "@@SCM_NUMBER@@"
+    app.@@KUBERNETES_LABEL_ID@@/build-timestamp: "@@BUILD_TIMESTAMP@@"
+    app.@@KUBERNETES_LABEL_ID@@/created-by: "@@BUILD_TOOL_VERSION_MESSAGE@@"
+  name: @@PROJECT_NAME@@
+  namespace: @@KUBERNETES_NAMESPACE@@
+spec:
+  replicas: @@KUBERNETES_REPLICAS@@
+  selector:
+    matchLabels:
+      app.@@KUBERNETES_LABEL_ID@@/instance: @@PROJECT_NAME@@
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app.@@KUBERNETES_LABEL_ID@@/instance: @@PROJECT_NAME@@
+    spec:
+      containers:
+      - image: @@KUBERNETES_DOCKER_IMAGE@@
+        name: @@PROJECT_NAME@@
+        ports:
+        - containerPort: @@DOCKER_EXPOSE_PORT@@
+        resources: {}
+        env:
+        - name: @@KUBERNETES_DATABASE_JDBC_URL_ENV_NAME@@
+          valueFrom:
+            configMapKeyRef:
+                name: @@KUBERNETES_APPLICATION_CONFIG_NAME@@
+                key: @@KUBERNETES_DATABASE_URL_KEY@@
+        - name: @@KUBERNETES_DATABASE_JDBC_MAXSIZE_ENV_NAME@@
+          valueFrom:
+            configMapKeyRef:
+                name: @@KUBERNETES_APPLICATION_CONFIG_NAME@@
+                key: @@KUBERNETES_DATABASE_MAXSIZE_KEY@@
+        - name: @@KUBERNETES_DATABASE_USERNAME_ENV_NAME@@
+          valueFrom: 
+            secretKeyRef:
+                name: @@KUBERNETES_DATABASE_SECRET_NAME@@
+                key: @@KUBERNETES_DATABASE_USERNAME_KEY@@
+        - name: @@KUBERNETES_DATABASE_PASSWORD_ENV_NAME@@
+          valueFrom: 
+            secretKeyRef:
+                name: @@KUBERNETES_DATABASE_SECRET_NAME@@
+                key: @@KUBERNETES_DATABASE_PASSWORD_KEY@@
+        - name: @@KUBERNETES_APPLICATION_OIDC_CLIENT_ID_ENV_NAME@@
+          valueFrom:
+            configMapKeyRef:
+                name: @@KUBERNETES_APPLICATION_SECRET_NAME@@
+                key: @@KUBERNETES_APPLICATION_OIDC_CLIENT_ID_KEY@@				
+        - name: @@KUBERNETES_APPLICATION_OIDC_PUBLICKEY_ID_ENV_NAME@@
+          valueFrom:
+            configMapKeyRef:
+                name: @@KUBERNETES_APPLICATION_SECRET_NAME@@
+                key: @@KUBERNETES_APPLICATION_OIDC_PUBLICKEY_KEY@@
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.@@KUBERNETES_LABEL_ID@@/instance: @@PROJECT_NAME@@
+  name: @@PROJECT_NAME@@
+  namespace: @@KUBERNETES_NAMESPACE@@
+spec:
+  type: NodePort
+  ports:
+  - name: "@@DOCKER_EXPOSE_PORT@@"
+    port: @@DOCKER_EXPOSE_PORT@@
+    targetPort: @@DOCKER_EXPOSE_PORT@@
+  selector:
+    app.@@KUBERNETES_LABEL_ID@@/instance: @@PROJECT_NAME@@

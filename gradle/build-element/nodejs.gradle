@@ -38,6 +38,19 @@ if (!project.hasProperty("projectGroupId") || "$projectGroupId".toString().trim(
 		project.ext.set("projectGroupId", project.ext.get("projectComponentId"))
 	}
 }
+if (!project.hasProperty("kubernetesSupport")) {
+	project.ext.set("kubernetesSupport", true)
+}
+
+if (!project.hasProperty("createJar")) {
+	project.ext.set("createJar", false)
+}
+if (!project.hasProperty("createSourceJar")) {
+	project.ext.set("createSourceJar", false)
+}
+if (!project.hasProperty("createJavadocJar")) {
+	project.ext.set("createJavadocJar", false)
+}
 
 
 /***************************************************************************************
@@ -52,7 +65,10 @@ ext.projectTypeTemplatePath='nodejs'
 apply from: "${commonGradleBuildElementPath}/base.gradle"
 apply from: "${commonGradleBuildElementPath}/base/gradle.gradle"
 apply from: "${commonGradleBuildElementPath}/base/run.gradle"
+apply from: "${commonGradleBuildElementPath}/base/kubernetes.gradle"
 apply from: "${commonGradleBuildElementPath}/java/repository.gradle"
+apply from: "${commonGradleBuildElementPath}/java/signing.gradle"
+apply from: "${commonGradleBuildElementPath}/java/publication.gradle"
 
 
 /***************************************************************************************
@@ -70,6 +86,16 @@ addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.prettierrc")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/jest.config.js")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/jsconfig.json")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/tsconfig.json")
+
+
+/***************************************************************************************
+ * artefacts
+ ***************************************************************************************/
+artifacts {
+	if (project.hasProperty('kubernetesSupport') && project.getProperty('kubernetesSupport')) {
+		archives kubernetesJar
+	}
+}
 
 
 /***************************************************************************************
@@ -124,10 +150,9 @@ if (!project.getProperty('IS_NEW')) {
 	 * clean
 	 ***************************************************************************************/
 	//task clean(type: NpmTask) {
-	task clean() {
-		group = 'NPM tasks'
-		description = 'Clean'
+	clean {
 		doFirst {
+			delete "${rootDirectory}/build/"
 			delete "${rootDirectory}/dist/"
 			delete "${rootDirectory}/.nuxt"
 			delete "${rootDirectory}/logs/"
@@ -137,15 +162,56 @@ if (!project.getProperty('IS_NEW')) {
 
 
 	/***************************************************************************************
+	 * Fund off
+	 ***************************************************************************************/
+	task npmFundMessage(type: NpmTask) {	
+		group = 'NPM tasks'
+		description = 'Switch fund message off'
+		args = ['config', 'set', 'fund', "$nodeFundMessage", '--global']
+		
+		doFirst {
+			if (project.getProperty('nodeFundMessage')) {
+				printInfo("> Enable npm fund message.")
+			} else {
+				printInfo("> Disable npm fund message.")
+			}
+		}
+	}
+
+
+	/***************************************************************************************
+	 * sets the npm registry
+	 ***************************************************************************************/
+	task npmRegistry(type: NpmTask) {	
+		group = 'NPM tasks'
+		description = 'Set npm registry'
+		args = ['config', 'set', 'registry', "$nodeRegistry"]
+				
+		doFirst {
+			printInfo("> Initialize npm registry to " + colorize(HIGHLITE_LEVEL, "$nodeRegistry") + ".")
+			new File("$nodeConfigInitFile").createNewFile()
+		}
+	}
+
+
+	/***************************************************************************************
 	 * build
 	 ***************************************************************************************/
-	task build(type: NpmTask) {	
+	task npmBuild(type: NpmTask) {	
 		group = 'NPM tasks'
 		description = 'Excute npm build'		
 		args = nodeBuildArguments
 	}
-	build.dependsOn npmInstall
+	build.finalizedBy npmBuild
+	npmBuild.dependsOn npmInstall
 	npmInstall.args = ['--loglevel', 'silent']
+
+	// if there was never an initialisation add dependencies
+	if (!new File("$nodeConfigInitFile").exists()) {
+		npmInstall.dependsOn npmRegistry
+		npmRegistry.dependsOn npmFundMessage
+	}
+
 
 
 	/***************************************************************************************

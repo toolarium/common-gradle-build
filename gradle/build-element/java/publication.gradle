@@ -18,9 +18,27 @@ publishing {
         mavenJava(MavenPublication) {
             artifactId = "${rootProject.name}"
 			groupId= "${projectGroupId}"
-            from components.java
-            artifact sourcesJar
-            artifact javadocJar
+
+			if (project.hasProperty('createJar') && project.getProperty('createJar')) {
+				from components.java
+			}
+			
+			if (project.hasProperty('createSourceJar') && project.getProperty('createSourceJar')) {
+				artifact sourcesJar
+			}
+			
+			if (project.hasProperty('createJavadocJar') && project.getProperty('createJavadocJar')) {
+				artifact javadocJar
+			}
+			
+			if (project.hasProperty('kubernetesSupport') && project.getProperty('kubernetesSupport')) {
+				artifact kubernetesJar
+			}
+
+			if (project.hasProperty('createCustomJar') && project.getProperty('createCustomJar')) {
+				artifact customJar
+			}
+			
             versionMapping {
                 usage('java-api') {
                     fromResolutionOf('runtimeClasspath')

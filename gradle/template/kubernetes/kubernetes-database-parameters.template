@@ -1,0 +1,74 @@
+#
+# Copyright by @@LICENSE_ORGANISATION@@, all rights reserved.
+# @@LICENSE@@
+#
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app.@@KUBERNETES_LABEL_ID@@.database: @@KUBERNETES_DATABASE_SERVICE_NAME@@
+  name: @@KUBERNETES_DATABASE_VOLUME_NAME@@
+  namespace: @@KUBERNETES_NAMESPACE@@
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: @@KUBERNETES_DATABASE_STORAGE@@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.@@KUBERNETES_LABEL_ID@@.database: @@KUBERNETES_DATABASE_SERVICE_NAME@@
+  name: @@KUBERNETES_DATABASE_SERVICE_NAME@@
+  namespace: @@KUBERNETES_NAMESPACE@@
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.@@KUBERNETES_LABEL_ID@@.database: @@KUBERNETES_DATABASE_SERVICE_NAME@@
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.@@KUBERNETES_LABEL_ID@@.database: @@KUBERNETES_DATABASE_SERVICE_NAME@@
+        tier: @@KUBERNETES_DATABASE_SERVICE_NAME@@        
+    spec:
+      containers:
+      - env:
+        - name: @@KUBERNETES_DATABASE_ENV_NAME@@
+          value: @@KUBERNETES_DATABASE_NAME@@
+        - name: @@KUBERNETES_DATABASE_ENV_USER_NAME@@
+          value: "@@KUBERNETES_DATABASE_USERNAME@@"
+        - name: @@KUBERNETES_DATABASE_ENV_PASSWORD_NAME@@
+          value: "@@KUBERNETES_DATABASE_PASSWORD@@"
+        image: @@KUBERNETES_DATABASE_IMAGE@@
+        imagePullPolicy: ""
+        name: @@KUBERNETES_DATABASE_SERVICE_NAME@@
+        resources: {}
+        volumeMounts:
+        - mountPath: @@KUBERNETES_DATABASE_MOUNT_PATH@@
+          name: @@KUBERNETES_DATABASE_VOLUME_NAME@@
+      restartPolicy: Always
+      volumes:
+      - name: @@KUBERNETES_DATABASE_VOLUME_NAME@@
+        persistentVolumeClaim:
+          claimName: @@KUBERNETES_DATABASE_VOLUME_NAME@@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: @@KUBERNETES_DATABASE_SERVICE_NAME@@
+  labels:
+    app.@@KUBERNETES_LABEL_ID@@.database: @@KUBERNETES_DATABASE_SERVICE_NAME@@
+  namespace: @@KUBERNETES_NAMESPACE@@
+spec:
+  ports:
+    - port: @@KUBERNETES_DATABASE_PORT@@
+  selector:
+    app.@@KUBERNETES_LABEL_ID@@.database: @@KUBERNETES_DATABASE_SERVICE_NAME@@
+    tier: @@KUBERNETES_DATABASE_SERVICE_NAME@@
+  clusterIP: None

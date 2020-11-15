@@ -1,0 +1,187 @@
+/*
+ * kubernetes.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+
+
+/***************************************************************************************
+ * Check if kubernetes installation is ready to use
+ ***************************************************************************************/
+setCommonGradleDefaultPropertyIfNull("kubernetesFileTemplateName", "kubernetes.yaml.template")
+
+ext.kubernetesInstallationValidated=false
+ext.kubernetesInstallationCommandAvailable=false
+ext.checkKubernetesInstallation = { ->
+	if (!kubernetesInstallationValidated) {
+		kubernetesInstallationValidated=true
+		def exitStatus = execCommand("kubectl version")
+		kubernetesInstallationCommandAvailable=(exitStatus==0)
+		
+		if (kubernetesInstallationCommandAvailable) {
+			logInfo("Kubernetes installation is available.")
+		} else {
+			setCommonGradleProperty("errorMessagePrefix", "")
+			addError("Missing kubernetes installation.")
+		}
+	}
+	
+	return kubernetesInstallationAvailable
+} 
+
+
+/***************************************************************************************
+ * Execute kubernetes command
+ ***************************************************************************************/
+ext.execKubernetes = { cmd, errorMessage ->
+	def sout = new StringBuilder(), serr = new StringBuilder()				
+	def exitStatus = execCommand(cmd, -1, sout, serr)
+	if (exitStatus>0) {
+		addError("$errorMessage")
+		if (sout!=null && !sout.toString().isEmpty()) {
+			addError(sout.toString())
+		}
+		if (serr!=null && !serr.toString().isEmpty()) {
+			addError(serr.toString())
+		}
+		
+		throw new GradleException(errorMessage)		
+	}
+	
+	return exitStatus
+}
+
+
+/***************************************************************************************
+ * Download and replace
+ ***************************************************************************************/
+ext.downloadAndReplace = { inputFileUrl, destFile, namespace -> 
+	def count = 0
+	try {
+		def namespaceTag = "namespace:"
+		def remoteFile = new File(new URL(inputFileUrl.toString()).toURI())
+		def resultFile = new File(destFile.toString())
+		resultFile.withWriter { writer ->
+			remoteFile.withReader{ reader ->
+				while (line = reader.readLine()) {
+					def exportLine = line;		
+
+					if (namespaceTag!=null && !namespaceTag.toString().trim().isEmpty()) {
+						int idx = exportLine.indexOf(namespaceTag)
+						if (idx>0) {
+							def i = idx + namespaceTag.length()
+							def rest = exportLine.substring(i + 1).trim()
+							exportLine = exportLine.substring(0, i)							
+							exportLine = "${exportLine} ${namespace}"
+							idx = rest.indexOf(" ")
+							if (idx>0) {
+								exportLine = "${exportLine}${rest.substring(idx)}" 
+							}
+							count++
+						}
+					}
+					
+					writer << "${exportLine}" << NELINE
+				}
+			}
+		}
+	} catch(Exception e) {
+	}
+	
+	return count
+}
+
+
+/***************************************************************************************
+ * Get kubernetes application configuration
+ ***************************************************************************************/
+task kubernetesApplicationConfig() {
+	group = 'Build'
+	description = 'Creates kubernetes application configuration'
+	onlyIf { return project.hasProperty("createApplicationConfigFile") && project.getProperty("createApplicationConfigFile") }
+	
+	doLast {
+		logInfo("Create kubernetes application / secret configuration.")
+		createFileFromTemplate("$kubernetesConfigurationPath/$kubernetesApplicationConfigFilename", getTemplateFile('kubernetes-application-config.template', 'kubernetes'))
+		createFileFromTemplate("$kubernetesConfigurationPath/$kubernetesApplicationSecretFilename", getTemplateFile('kubernetes-application-secret.template', 'kubernetes'))
+		createFileFromTemplate("$kubernetesConfigurationPath/$kubernetesDatabaseSecretFilename", getTemplateFile('kubernetes-database-secret.template', 'kubernetes'))
+	}
+}
+
+
+/***************************************************************************************
+ * Create kubernetes configuration 
+ ***************************************************************************************/
+task kubernetesConfiguration() {
+	group = 'Build'
+	description = 'Creates kubernetes configuration'
+	dependsOn kubernetesApplicationConfig
+	onlyIf { return project.hasProperty('kubernetesSupport') && project.getProperty('kubernetesSupport') }
+
+	if (project.hasProperty('kubernetesProjectConfiguration') && project.getProperty('kubernetesProjectConfiguration')) {
+		doLast {
+			setCommonGradleDefaultPropertyIfNull("kubernetesDockerImage", "${rootProject.name}:${project.version}")
+			new File("$kubernetesConfigurationPath").mkdirs()
+			
+			def kubernetesFilename="${rootProject.name}-kubernetes.yaml"
+			logInfo("Create kubernetes configuration " + colorize(HIGHLITE_LEVEL, kubernetesFilename) + ".")
+			createFileFromTemplate("$kubernetesConfigurationPath/$kubernetesFilename", getTemplateFile('kubernetes.yaml.template'))
+		}
+	}
+}
+
+
+/***************************************************************************************
+ * Build kubernetes jar file
+ ***************************************************************************************/
+task kubernetesJar(type: Jar, dependsOn: 'kubernetesConfiguration') { jar ->
+	group = 'Build'
+	description = 'Assembles the kubernetes configuration into a jar file'
+	onlyIf { return project.hasProperty('kubernetesSupport') && project.getProperty('kubernetesSupport') }
+
+	into "kubernetes", {
+		from "${kubernetesConfigurationPath}"
+	}
+
+	// include readme, license and version files
+	into 'META-INF', {
+		if (project.getProperty('includeReadmeFile')) {
+			from "${readmeFile}"
+		}
+
+		if (project.getProperty('includeLicenseFile')) {
+			from "${licenseFile}"
+		}
+
+		if (project.getProperty('includeVersionFile')) {
+			from "${versionFile}"
+		}
+
+		if (project.getProperty('includeChangelogFile')) {
+			from "${changelogFile}"
+		}
+	}
+
+	archiveClassifier = 'kubernetes'
+
+	// define proper manifest
+	manifest {
+		attributes 	'Specification-Title'   : rootProject.name,
+					'Specification-Version' : project.version,
+					'Implementation-Title'  : rootProject.name,
+					'Implementation-Version': project.version + project.ext.scmVersionNumber,
+					'Created-By'		   	: project.ext.buildToolVersionStackMessage,
+					'Built-By'			   	: publishingUsername,
+					'Build-Timestamp'	   	: BUILD_TIMESTAMP,
+					'Build-OS'			   	: "${System.properties['os.name']} (${System.properties['os.version']}), ${System.properties['os.arch']}"
+	}
+
+	doLast {
+		if (project.hasProperty('showCreatedArtefacts') && project.getProperty('showCreatedArtefacts')) {
+			// jar.archiveFileName
+			def filename = prepareFilename(jar.archivePath.getPath())
+			printInfo("> Created package " + colorize(HIGHLITE_LEVEL, filename) + ".")
+		}
+	}
+}

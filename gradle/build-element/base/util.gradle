@@ -7,6 +7,30 @@
 
 
 /** 
+ * Encode base64
+ */
+ext.encodeBase64 = { data, propertyCheckName = "" ->
+	if (!project.hasProperty(propertyCheckName) || project.getProperty(propertyCheckName)) {
+		return data.bytes.encodeBase64().toString()
+	}
+	
+	return data
+}
+
+
+/** 
+ * Decode base64
+ */
+ext.decodeBase64 = { encodedData, propertyCheckName = "" ->
+	if (!project.hasProperty(propertyCheckName) || project.getProperty(propertyCheckName)) {
+		return new String(encodedData.decodeBase64())
+	}
+	
+	return encodedData
+}
+
+
+/** 
  * Add an error
  */
 ext.addError = { message ->

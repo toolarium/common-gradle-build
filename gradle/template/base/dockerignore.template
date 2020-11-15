@@ -3,12 +3,15 @@
 .git/
 .gitattributes
 .gitignore
+.dockerignore
 
 # conf folder
 conf/
 
 # gradle scripts
 gradle/*
+gradle
+gradlew
 gradlew.*
 gradle.properties
 *.gradle
@@ -23,6 +26,9 @@ test/
 # Ignore temp output directory
 tmp/
 temp/
+
+# Ignore source directory
+src/
 
 # mac / OSX files
 .DS_Store

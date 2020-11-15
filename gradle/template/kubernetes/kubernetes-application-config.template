@@ -1,0 +1,23 @@
+#
+# Copyright by @@LICENSE_ORGANISATION@@, all rights reserved.
+# @@LICENSE@@
+#
+
+# prevent to have the namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: @@KUBERNETES_NAMESPACE@@
+  
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app.@@KUBERNETES_LABEL_ID@@.configmap: @@KUBERNETES_APPLICATION_CONFIG_NAME@@	
+  name: @@KUBERNETES_APPLICATION_CONFIG_NAME@@
+  namespace: @@KUBERNETES_NAMESPACE@@
+data:
+  @@KUBERNETES_DATABASE_URL_KEY@@: @@KUBERNETES_DATABASE_URL@@
+  @@KUBERNETES_DATABASE_MAXSIZE_KEY@@: "@@KUBERNETES_DATABASE_MAXSIZE_VALUE@@"

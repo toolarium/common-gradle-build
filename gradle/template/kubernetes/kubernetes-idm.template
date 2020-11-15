@@ -1,0 +1,100 @@
+#
+# Copyright by @@LICENSE_ORGANISATION@@, all rights reserved.
+# @@LICENSE@@
+#
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.@@KUBERNETES_LABEL_ID@@.idm/name: @@KUBERNETES_IDM_SERVICE_NAME@@
+    app.@@KUBERNETES_LABEL_ID@@.idm/instance: @@KUBERNETES_IDM_SERVICE_NAME@@
+    app.@@KUBERNETES_LABEL_ID@@.idm/version: "@@KUBERNETES_IDM_VERSION@@"
+    app.@@KUBERNETES_LABEL_ID@@.idm/part-of: @@COMPONENT_ID@@
+  annotations:
+    app.@@KUBERNETES_LABEL_ID@@.idm/url-path: "@@KUBERNETES_IDM_URL@@"
+  name: @@KUBERNETES_IDM_SERVICE_NAME@@
+  namespace: @@KUBERNETES_NAMESPACE@@
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.@@KUBERNETES_LABEL_ID@@.idm: @@KUBERNETES_IDM_SERVICE_NAME@@
+  template:
+    metadata:
+      labels:
+        app.@@KUBERNETES_LABEL_ID@@.idm: @@KUBERNETES_IDM_SERVICE_NAME@@
+    spec:
+      containers:
+      - image: @@KUBERNETES_IDM_IMAGE@@
+        imagePullPolicy: ""
+        name: @@KUBERNETES_IDM_SERVICE_NAME@@
+        resources: {}
+        env:
+        - name: @@KUBERNETES_IDM_USER_FILE_ENV_NAME@@
+          value: /etc/secret/@@KUBERNETES_IDM_ADMIN_USERNAME_KEY@@
+        - name: @@KUBERNETES_IDM_PASSWORD_FILE_ENV_NAME@@
+          value: /etc/secret/@@KUBERNETES_IDM_ADMIN_PASSWORD_KEY@@
+        - name: @@KUBERNETES_IDM_DATABASE_VENDOR_ENV_NAME@@
+          valueFrom:
+            configMapKeyRef:
+                name: @@KUBERNETES_IDM_CONFIG_NAME@@
+                key: @@KUBERNETES_IDM_DATABASE_VENNDOR_KEY@@
+        - name: @@KUBERNETES_IDM_DATABASE_HOST_ENV_NAME@@
+          valueFrom:
+            configMapKeyRef:
+                name: @@KUBERNETES_IDM_CONFIG_NAME@@
+                key: @@KUBERNETES_IDM_DATABASE_HOST_KEY@@
+        - name: @@KUBERNETES_IDM_DATABASE_PORT_ENV_NAME@@
+          valueFrom:
+            configMapKeyRef:
+                name: @@KUBERNETES_IDM_CONFIG_NAME@@
+                key: @@KUBERNETES_IDM_DATABASE_PORT_KEY@@
+        - name: @@KUBERNETES_IDM_DATABASE_ENV_NAME@@
+          valueFrom:
+            configMapKeyRef:
+                name: @@KUBERNETES_IDM_CONFIG_NAME@@
+                key: @@KUBERNETES_IDM_DATABASE_KEY@@
+        - name: @@KUBERNETES_IDM_DATABASE_USER_FILE_ENV_NAME@@
+          value: /etc/secret/@@KUBERNETES_IDM_DATABASE_USERNAME_KEY@@
+        - name: @@KUBERNETES_IDM_DATABASE_PASSWORD_FILE_ENV_NAME@@
+          value: /etc/secret/@@KUBERNETES_IDM_DATABASE_PASSWORD_KEY@@
+        - name: @@KUBERNETES_IDM_LOG_LEVEL_ENV_NAME@@
+          valueFrom:
+            configMapKeyRef:
+                name: @@KUBERNETES_IDM_CONFIG_NAME@@
+                key: @@KUBERNETES_IDM_LOG_LEVEL_KEY@@
+        - name: @@KUBERNETES_IDM_ADDRESS_FORWARING_ENV_NAME@@
+          valueFrom:
+            configMapKeyRef:
+                name: @@KUBERNETES_IDM_CONFIG_NAME@@
+                key: @@KUBERNETES_IDM_ADDRESS_FORWARDING_KEY@@
+        - name: @@KUBERNETES_IDM_FRONTEND_URL_ENV_NAME@@
+          valueFrom:
+            configMapKeyRef:
+                name: @@KUBERNETES_IDM_CONFIG_NAME@@
+                key: @@KUBERNETES_IDM_FRONTEND_URL_KEY@@
+        volumeMounts:
+        - mountPath: /etc/secret
+          name: idm-credentials
+          readOnly: true        
+      restartPolicy: Always
+      volumes:
+        - name: idm-credentials
+          secret:
+            secretName: @@KUBERNETES_IDM_SECRET_NAME@@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: @@KUBERNETES_IDM_SERVICE_NAME@@
+  labels:
+    app.@@KUBERNETES_LABEL_ID@@.idm: @@KUBERNETES_IDM_SERVICE_NAME@@
+  namespace: @@KUBERNETES_NAMESPACE@@
+spec:
+  type: NodePort
+  ports:
+    - name: "@@KUBERNETES_IDM_PORT@@"
+      port: @@KUBERNETES_IDM_PORT@@
+  selector:
+    app.@@KUBERNETES_LABEL_ID@@.idm: @@KUBERNETES_IDM_SERVICE_NAME@@

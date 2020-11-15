@@ -1,0 +1,80 @@
+#
+# Copyright by @@LICENSE_ORGANISATION@@, all rights reserved.
+# @@LICENSE@@
+#
+
+apiVersion: apps/v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app.@@KUBERNETES_LABEL_ID@@.database: @@KUBERNETES_DATABASE_SERVICE_NAME@@
+  name: @@KUBERNETES_DATABASE_VOLUME_NAME@@
+  namespace: @@KUBERNETES_NAMESPACE@@
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: @@KUBERNETES_DATABASE_STORAGE@@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.@@KUBERNETES_LABEL_ID@@.database: @@KUBERNETES_DATABASE_SERVICE_NAME@@
+  name: @@KUBERNETES_DATABASE_SERVICE_NAME@@
+  namespace: @@KUBERNETES_NAMESPACE@@
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.@@KUBERNETES_LABEL_ID@@.database: @@KUBERNETES_DATABASE_SERVICE_NAME@@
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.@@KUBERNETES_LABEL_ID@@.database: @@KUBERNETES_DATABASE_SERVICE_NAME@@
+        tier: @@KUBERNETES_DATABASE_SERVICE_NAME@@        
+    spec:
+      containers:
+      - image: @@KUBERNETES_DATABASE_IMAGE@@
+        imagePullPolicy: ""
+        name: @@KUBERNETES_DATABASE_SERVICE_NAME@@
+        resources: {}
+        env:
+        - name: @@KUBERNETES_DATABASE_ENV_NAME@@
+          value: @@KUBERNETES_DATABASE_NAME@@  
+        - name: @@KUBERNETES_DATABASE_USER_FILE_ENV_NAME@@
+          value: /etc/secret/@@KUBERNETES_DATABASE_USERNAME_KEY@@
+        - name: @@KUBERNETES_DATABASE_PASSWORD_FILE_ENV_NAME@@
+          value: /etc/secret/@@KUBERNETES_DATABASE_PASSWORD_KEY@@
+        volumeMounts:
+        - mountPath: @@KUBERNETES_DATABASE_MOUNT_PATH@@
+          name: @@KUBERNETES_DATABASE_VOLUME_NAME@@
+        - mountPath: /etc/secret
+          name: database-credentials
+          readOnly: true		  
+      restartPolicy: Always
+      volumes:
+        - name: @@KUBERNETES_DATABASE_VOLUME_NAME@@
+          persistentVolumeClaim:
+            claimName: @@KUBERNETES_DATABASE_VOLUME_NAME@@
+        - name: database-credentials
+          secret:
+            secretName: @@KUBERNETES_DATABASE_SECRET_NAME@@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: @@KUBERNETES_DATABASE_SERVICE_NAME@@
+  labels:
+    app.@@KUBERNETES_LABEL_ID@@.database: @@KUBERNETES_DATABASE_SERVICE_NAME@@
+  namespace: @@KUBERNETES_NAMESPACE@@
+spec:
+  ports:
+    - port: @@KUBERNETES_DATABASE_PORT@@
+  selector:
+    app.@@KUBERNETES_LABEL_ID@@.database: @@KUBERNETES_DATABASE_SERVICE_NAME@@
+    tier: @@KUBERNETES_DATABASE_SERVICE_NAME@@
+  clusterIP: None

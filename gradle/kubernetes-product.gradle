@@ -1,0 +1,325 @@
+/*
+ * kubernetes-product.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+
+
+ext.projectTypeTemplatePath='kubernetes'
+if (!project.hasProperty('commonGradleBuildUrl')) {
+    ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
+}
+
+if (!project.hasProperty('commonGradleBuildElementPath')) {
+	ext.commonGradleBuildElementPath="${commonGradleBuildUrl}/build-element"
+}
+
+// in case we have no group id but have a component id, we just take over the component id
+if (!project.hasProperty("projectGroupId") || "$projectGroupId".toString().trim().isEmpty() ) {
+	if (project.hasProperty("projectComponentId") && !"$projectComponentId".toString().trim().isEmpty() ) {
+		project.ext.set("projectGroupId", project.ext.get("projectComponentId"))
+	}
+}
+if (!project.hasProperty("kubernetesSupport")) {
+	project.ext.set("kubernetesSupport", true)
+}
+if (!project.hasProperty("createJar")) {
+	project.ext.set("createJar", false)
+}
+if (!project.hasProperty("createSourceJar")) {
+	project.ext.set("createSourceJar", false)
+}
+if (!project.hasProperty("createJavadocJar")) {
+	project.ext.set("createJavadocJar", false)
+}
+if (!project.hasProperty("createApplicationConfigFile")) {
+	project.ext.set("createApplicationConfigFile", true)
+}
+project.ext.set("kubernetesProjectConfiguration", false)
+
+
+/***************************************************************************************
+ * Dependencies
+ ***************************************************************************************/
+apply from: "${commonGradleBuildElementPath}/base.gradle"
+apply from: "${commonGradleBuildElementPath}/base/gradle.gradle"
+apply from: "${commonGradleBuildElementPath}/base/run.gradle"
+apply from: "${commonGradleBuildElementPath}/base/kubernetes.gradle"
+apply from: "${commonGradleBuildElementPath}/java/repository.gradle"
+apply from: "${commonGradleBuildElementPath}/java/signing.gradle"
+apply from: "${commonGradleBuildElementPath}/java/publication.gradle"
+apply from: "${commonGradleBuildElementPath}/base/docker.gradle"
+
+
+/***************************************************************************************
+ * artefacts
+ ***************************************************************************************/
+artifacts {
+	archives kubernetesJar
+}
+
+
+/****************************************************************************************
+ * Defines a kubernetes artefact
+ ****************************************************************************************/
+configurations {
+    kubernetes
+}
+
+
+/***************************************************************************************
+ * Get kubernetes ingress
+ ***************************************************************************************/
+task kubernetesIngress() {
+	group = 'Build'
+	description = 'Creates kubernetes ingress configuration'
+	dependsOn kubernetesApplicationConfig
+	onlyIf { return project.hasProperty('kubernetesSupportIngressNginx') && project.getProperty('kubernetesSupportIngressNginx') }
+	
+	doFirst {
+		printInfo("> Created kubernetes ingress configuration " + colorize(HIGHLITE_LEVEL, kubernetesIngresControlFilename) + ".")
+
+		def hasOnlineConnection = project.hasProperty('HAS_ONLINE_CONNECTION') && project.getProperty('HAS_ONLINE_CONNECTION')
+		if (hasOnlineConnection && project.hasProperty('kubernetesDownloadIngressNginxVersion') && project.getProperty('kubernetesDownloadIngressNginxVersion') && project.hasProperty('kubernetesIngressUrl')) {
+			def count = downloadAndReplace("$kubernetesIngressUrl", "$kubernetesIngresControlFilename", "$kubernetesNamespace")			
+		} else {
+			createFileFromTemplate("$kubernetesIngresControlFilename", getTemplateFile('kubernetes-ingess-nginx.template'), true, false)
+		}
+	}
+}
+
+
+/***************************************************************************************
+ * Get kubernetes idm
+ ***************************************************************************************/
+task kubernetesIdm() {
+	group = 'Build'
+	description = 'Creates kubernetes idm configuration'
+	dependsOn kubernetesApplicationConfig
+	onlyIf { return project.hasProperty('kubernetesSupportIdm') && project.getProperty('kubernetesSupportIdm') }
+	
+	doFirst {
+		def idmFile = "$kubernetesConfigurationServicesPath/${kubernetesConfigurationPathname}/${rootProject.name}-kubernetes-idm.yaml"
+		printInfo("> Created kubernetes idm configuration " + colorize(HIGHLITE_LEVEL, idmFile) + ".")
+		createFileFromTemplate("$idmFile", getTemplateFile('kubernetes-idm.template'), true, false)
+		createFileFromTemplate("$kubernetesConfigurationPath/config/${rootProject.name}-idm-config-kubernetes-idm.yaml", getTemplateFile('kubernetes-idm-config.template'))
+		createFileFromTemplate("$kubernetesConfigurationPath/config/${rootProject.name}-idm-secret-kubernetes.yaml", getTemplateFile('kubernetes-idm-secret.template'))
+	}
+}
+
+
+/***************************************************************************************
+ * Get kubernetes database 
+ ***************************************************************************************/
+task kubernetesDatabase() {
+	group = 'Build'
+	description = 'Creates kubernetes database configuration'
+	onlyIf { return project.hasProperty('kubernetesSupportDatabase') && project.getProperty('kubernetesSupportDatabase') }
+	
+	doFirst {
+		def databaseFile = "$kubernetesConfigurationPath/sample/${rootProject.name}-kubernetes-database.yaml"
+		printInfo("> Created kubernetes database configuration " + colorize(HIGHLITE_LEVEL, databaseFile) + ".")
+		createFileFromTemplate("$databaseFile", getTemplateFile('kubernetes-database.template'), true, false)
+	}
+}
+
+
+/****************************************************************************************
+ * Extract kubernetes artefacts
+ ****************************************************************************************/
+task extractKubernetes(type: Copy) {
+	group = 'Build'
+	description = 'Extract kubernetes jar file dependencoes'
+    dependsOn configurations.kubernetes
+
+    from { // use of closure defers evaluation until execution time
+        configurations.kubernetes.collect { zipTree(it).matching {include "${kubernetesConfigurationPathname}/**"} }
+    }
+
+    into "$kubernetesConfigurationServicesPath"
+}
+
+
+/****************************************************************************************
+ * Extract kubernetes artefacts
+ ****************************************************************************************/
+task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extractKubernetes', 'kubernetesDatabase']) {
+	group = 'Build'
+	description = 'Concat kubernetes dependencoes'	
+
+	doLast {			
+		new File("$gradleBuildDirectory/$kubernetesConfigurationPathname/").mkdirs()
+
+		def kubernetesServicesFilename = "$kubernetesConfigurationElementsPath/${rootProject.name}-services-kubernetes.yaml"
+		createFileFromTemplate(kubernetesServicesFilename, getTemplateFile('kubernetes-ingress-controller-header.template'))
+
+		def fileContent = new File("$gradleBuildDirectory/$kubernetesConfigurationPathname/${rootProject.name}-kubernetes.yaml")
+		def header = true
+		def line
+		def controllerContent = ""
+		new File(kubernetesServicesFilename).withReader {
+			while ((line = it.readLine()) != null) {				
+				def hasComment = line.startsWith("#") || line.toString().trim().isEmpty()
+				if (header && hasComment) {
+					fileContent.append(line + NELINE)
+				} else {
+					header = false		
+					controllerContent += line + NELINE
+				}
+			}
+		}
+		
+		// combone ingress
+		if (project.hasProperty('kubernetesIngresControlFilename') && !project.getProperty('kubernetesIngresControlFilename').toString().trim().isEmpty()) {
+			header = true
+			new File(kubernetesIngresControlFilename).withReader {
+				while ((line = it.readLine()) != null) {				
+					if (!header || !line.startsWith("#") || line.toString().trim().isEmpty()) {
+						fileContent.append(line + NELINE)
+						header = false		
+					}
+				}
+			}
+			fileContent.append("---" + NELINE)
+		}
+
+		// combone idm
+		/*
+		if (project.hasProperty('kubernetesSupportIdm') && project.getProperty('kubernetesSupportIdm')) {
+			new File("$kubernetesConfigurationElementsPath/${rootProject.name}-kubernetes-idm.yaml").withReader {
+				while ((line = it.readLine()) != null) {				
+					if (!header || !line.startsWith("#") || line.toString().trim().isEmpty()) {
+						fileContent.append(line + NELINE)
+						header = false		
+					}
+				}
+			}
+			fileContent.append("---" + NELINE)
+		}
+		*/
+		
+		def countFiles = 0
+		def map=[:]
+		new File("$kubernetesConfigurationServicesPath/${kubernetesConfigurationPathname}").eachFileRecurse (groovy.io.FileType.FILES) { file ->
+			printInfo("> Add kubernetes dependency " + colorize(HIGHLITE_LEVEL, file.getName()) + "...")
+
+			def serviceName = ""
+			def servicePort = 0
+			def servicePath = ""
+			try {			
+				file.withReader {
+					if (countFiles>0) {
+						fileContent.append("---" + NELINE)
+					}
+				
+					def mainSection = ""
+					def kind = ""
+					def annotationIndex = 0
+					header = true
+					fileContent.append("# Source: " + file.getName() + NELINE)
+					while ((line = it.readLine()) != null) {				
+						def ignoreLine = line.startsWith("#") || line.toString().trim().isEmpty()					
+						if (header && ignoreLine) {
+						} else {
+							header = false							
+							fileContent.append(line + NELINE)
+							
+							if (!line.matches("^\\s+.*")) {
+								def sectionSplit = line.split(':')
+								if (sectionSplit!=null && sectionSplit.length>0) {
+									mainSection = sectionSplit[0]
+									
+									if (mainSection.equalsIgnoreCase("kind") && sectionSplit.length>1) {
+										kind=sectionSplit[1].trim()
+									}
+								}
+							}
+							
+							// search service path
+							if (mainSection.equalsIgnoreCase("metadata")) {
+								if (!line.startsWith("metadata") && line.trim().startsWith("name:")) {
+									def nameSplit = line.split(":")
+									if ("Service".equalsIgnoreCase(kind) && nameSplit!=null && nameSplit.length>1) {
+										serviceName = nameSplit[1].trim()
+										logInfo("Found service name " + colorize(HIGHLITE_LEVEL, serviceName) + "." )
+									}
+								}
+								else if (annotationIndex<=0) {
+									annotationIndex = line.indexOf("annotations:");
+								} else if (annotationIndex > 0 && line.length() > annotationIndex && line.substring(annotationIndex).matches("^\\s+.*")) {
+									def pathIndex = line.indexOf(kubernetesPathAnnotationName)
+									if (pathIndex>0) {
+										def pathExpression = line.substring(pathIndex + kubernetesPathAnnotationName.length()).replace('"', ' ').trim()
+										if (pathExpression!=null && !pathExpression.trim().isEmpty()) {
+											servicePath = pathExpression
+											logInfo("Found service path " + colorize(HIGHLITE_LEVEL, pathExpression) + ".")
+										}
+									}
+								} else {
+									annotationIndex = 0
+								}
+							} else if (mainSection.equalsIgnoreCase("spec") && !line.startsWith("spec") && line.trim().startsWith("port:")) {
+								def portSplit = line.split(":")
+								if ("Service".equalsIgnoreCase(kind) && portSplit!=null && portSplit.length>1) {
+									servicePort = portSplit[1].trim()
+									logInfo("Found service port " + colorize(HIGHLITE_LEVEL, servicePort) + ".")
+								}
+							} else {
+								annotationIndex = 0
+							}
+						}
+					}
+					
+					countFiles++
+					
+					if (serviceName!=null && !serviceName.trim().isEmpty() && servicePort!=null && !servicePort.trim().isEmpty() && servicePath!=null && !servicePath.trim().isEmpty()) {
+						printInfo("  -> Found service " + colorize(HIGHLITE_LEVEL, serviceName + ":" + servicePort) +  " -> " + colorize(HIGHLITE_LEVEL, servicePath) + ".")
+						controllerContent +=  "      - path: $servicePath" + NELINE
+						controllerContent += "        backend:" + NELINE
+						controllerContent += "          serviceName: $serviceName" + NELINE
+						controllerContent += "          servicePort: $servicePort" + NELINE
+					}
+				}	
+			} catch (Exception e) {
+				printWarn("Could not add artefact depdendency " + file.getName() + ": " + e.getMessage())
+				throw e
+			}			
+		}	
+
+		fileContent.append("---" + NELINE)
+		fileContent.append("# Source " + new File(kubernetesServicesFilename).getName() + NELINE)
+		fileContent.append(controllerContent)
+	}
+}
+
+
+//build.dependsOn kubernetesIngress
+//build.dependsOn kubernetesDatabase
+//build.dependsOn kubernetesIdm
+build.dependsOn kubernetesConcat
+//kubernetesConcat.dependsOn kubernetesIngress
+kubernetesConcat.finalizedBy kubernetesConfiguration
+kubernetesJar.dependsOn kubernetesConcat
+
+defaultTasks 'clean', 'projectValidation', 'build'
+
+
+/***************************************************************************************
+ * project validation
+ ***************************************************************************************/
+projectValidation {
+	doFirst {
+		if (project.getProperty('IS_NEW')) {
+			// generate git files if necessary
+			if (project.hasProperty('initScmForNewProjects') && project.getProperty('initScmForNewProjects')) {
+				createGitFiles(true)
+			}
+
+			registerEndMessage("" << NELINE \
+								<< "  To get started, got to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
+								<< "      " + colorize(HIGHLITE_LEVEL, "$startExecutable") + "" << NELINE \
+								<< "" << NELINE)
+		}
+	}
+}
