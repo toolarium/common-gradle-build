@@ -49,22 +49,29 @@ ext.readRemoteVersion = { inputUrl, gitUrl=null ->
 			def tempFolder=getUniqueTempName("cgb", "update", null)			
 			logDebug("Create temp path " + colorize(HIGHLITE_LEVEL, tempFolder))			
 			logDebug("> Get remote version of " + colorize(HIGHLITE_LEVEL, gitUrl) + " into " + colorize(HIGHLITE_LEVEL, tempFolder) + ".")
-			gitClone(tempFolder, gitUrl)
-				
-			def tempVersion="${tempName}-VERSION"
-			logDebug("Filter VERSION file " + colorize(HIGHLITE_LEVEL, tempVersion))
-			copy { from "${tempFolder}" include "VERSION" into "${tempBaseFolder}" rename { String fileName -> fileName.replace("VERSION", tempVersion) } }
-			logDebug("Delete folder " + colorize(HIGHLITE_LEVEL, tempFolder))
-			delete tempFolder
-			logDebug("Read temp VERSION file " + colorize(HIGHLITE_LEVEL, "$tempBaseFolder/$tempVersion"))
-			remoteVersion=readRemoteVersion("file:/$tempBaseFolder/$tempVersion")
-			logDebug("Delete file " + colorize(HIGHLITE_LEVEL, "$tempBaseFolder/$tempVersion"))
-			delete "$tempBaseFolder/$tempVersion"
-			logDebug("Read remote version: ${remoteVersion}")
-		}
-		
-		if (remoteVersion==null) {
-			printWarn("Could not read remote version [" + colorize(HIGHLITE_LEVEL, url) + colorize(WARN_LEVEL, "]: " +e.getMessage())) 
+			if (gitClone(tempFolder, gitUrl)) {
+				if (new File("${tempFolder}/VERSION").exists()) {
+					def tempVersion=getUniqueTempName("cgb", "VERSION", null)			
+					logDebug("Filter VERSION file " + colorize(HIGHLITE_LEVEL, tempVersion))
+					copyFile("${tempFolder}/VERSION", "$tempVersion", true)
+					logDebug("Delete folder " + colorize(HIGHLITE_LEVEL, tempFolder))
+					delete tempFolder
+					logDebug("Read temp VERSION file " + colorize(HIGHLITE_LEVEL, "$tempVersion"))
+					remoteVersion=readRemoteVersion("file:/$tempVersion")
+					logDebug("Delete file " + colorize(HIGHLITE_LEVEL, "$tempVersion"))
+					delete "$tempVersion"
+					logDebug("Read remote version: ${remoteVersion}")
+				}
+
+				if (remoteVersion==null) {
+					printWarn("Could not read remote version [" + colorize(HIGHLITE_LEVEL, url) + colorize(WARN_LEVEL, "]: " +e.getMessage())) 
+				}
+			} else {
+				def cbHome = System.env['CB_HOME']
+				if ((cbHome!=null && !cbHome.isEmpty())) {
+					printWarn("Please run cb to update your environment!") 
+				}
+			}
 		}
 	}
 	

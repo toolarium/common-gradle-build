@@ -395,8 +395,19 @@ ext.gitClone = { inputCloneDir, inputCloneUrl, overwrite = true ->
 			result = true
 		}
 	} catch (Exception e) {
-		printWarn("Could not checkout [" + colorize(HIGHLITE_LEVEL, cloneUrl) + colorize(WARN_LEVEL, "] into [") + colorize(HIGHLITE_LEVEL, cloneDir) + colorize(WARN_LEVEL, "]: " + e.getMessage()))
-		//e.printStackTrace()
+		logInfo("Could not checkout [" + colorize(HIGHLITE_LEVEL, cloneUrl) + colorize(WARN_LEVEL, "] into [") + colorize(HIGHLITE_LEVEL, cloneDir) + colorize(WARN_LEVEL, "]: " + e.getMessage()))
+	
+		def msg = e.getMessage();
+		if (msg!=null) {
+			if (msg.indexOf("Authentication is required")>=0) {
+				printWarn("Could not checkout [" + colorize(HIGHLITE_LEVEL, cloneUrl) + colorize(WARN_LEVEL, "] (authentication is needed!)"))
+			} else {
+				printWarn("Could not checkout [" + colorize(HIGHLITE_LEVEL, cloneUrl) + colorize(WARN_LEVEL, "]: " + e.getMessage()))
+			}
+		} else {
+			printWarn("Could not checkout [" + colorize(HIGHLITE_LEVEL, cloneUrl) + colorize(WARN_LEVEL, "]: " + e.getMessage()))
+			//e.printStackTrace()
+		}
 	} finally {
 		closeGit(git)
 	}	

@@ -293,12 +293,7 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 	}
 }
 
-
-//build.dependsOn kubernetesIngress
-//build.dependsOn kubernetesDatabase
-//build.dependsOn kubernetesIdm
 build.dependsOn kubernetesConcat
-//kubernetesConcat.dependsOn kubernetesIngress
 kubernetesConcat.finalizedBy kubernetesConfiguration
 kubernetesJar.dependsOn kubernetesConcat
 
