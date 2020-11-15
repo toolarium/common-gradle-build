@@ -504,8 +504,8 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 			if (project.hasProperty('kubernetesIdmLogLevelKey')) {
 				filter { line -> line.replaceAll('@@KUBERNETES_IDM_LOG_LEVEL_KEY@@', "${project.ext.kubernetesIdmLogLevelKey}".toString()) }
 			}			
-			if (project.hasProperty('kubernetesIdmAddressForwaringKey')) {
-				filter { line -> line.replaceAll('@@KUBERNETES_IDM_ADDRESS_FORWARDING_KEY@@', "${project.ext.kubernetesIdmAddressForwaringKey}".toString()) }
+			if (project.hasProperty('kubernetesIdmAddressForwardingKey')) {
+				filter { line -> line.replaceAll('@@KUBERNETES_IDM_ADDRESS_FORWARDING_KEY@@', "${project.ext.kubernetesIdmAddressForwardingKey}".toString()) }
 			}			
 			if (project.hasProperty('kubernetesIdmConfigName')) {
 				filter { line -> line.replaceAll('@@KUBERNETES_IDM_CONFIG_NAME@@', "${project.ext.kubernetesIdmConfigName}".toString()) }
@@ -528,8 +528,8 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 			if (project.hasProperty('kubernetesIdmLogLevel')) {
 				filter { line -> line.replaceAll('@@KUBERNETES_IDM_LOG_LEVEL@@', "${project.ext.kubernetesIdmLogLevel}".toString()) }
 			}			
-			if (project.hasProperty('kubernetesIdmAddressForwaring')) {
-				filter { line -> line.replaceAll('@@KUBERNETES_IDM_ADDRESS_FORWARDING@@', "${project.ext.kubernetesIdmAddressForwaring}".toString()) }
+			if (project.hasProperty('kubernetesIdmAddressForwarding')) {
+				filter { line -> line.replaceAll('@@KUBERNETES_IDM_ADDRESS_FORWARDING@@', "${project.ext.kubernetesIdmAddressForwarding}".toString()) }
 			}			
 			if (project.hasProperty('kubernetesIdmPort')) {
 				filter { line -> line.replaceAll('@@KUBERNETES_IDM_PORT@@', "${project.ext.kubernetesIdmPort}".toString()) }
@@ -600,8 +600,8 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 			if (project.hasProperty('kubernetesIdmLogLevelEnvName')) {
 				filter { line -> line.replaceAll('@@KUBERNETES_IDM_LOG_LEVEL_ENV_NAME@@', "${kubernetesIdmLogLevelEnvName}") }
 			}
-			if (project.hasProperty('kubernetesIdmAddressForwaringEnvName')) {
-				filter { line -> line.replaceAll('@@KUBERNETES_IDM_ADDRESS_FORWARING_ENV_NAME@@', "${kubernetesIdmAddressForwaringEnvName}") }
+			if (project.hasProperty('kubernetesIdmAddressForwardingEnvName')) {
+				filter { line -> line.replaceAll('@@KUBERNETES_IDM_ADDRESS_FORWARING_ENV_NAME@@', "${kubernetesIdmAddressForwardingEnvName}") }
 			}
 			if (project.hasProperty('kubernetesIdmFrontendUrlEnvName')) {
 				filter { line -> line.replaceAll('@@KUBERNETES_IDM_FRONTEND_URL_ENV_NAME@@', "${kubernetesIdmFrontendUrlEnvName}") }

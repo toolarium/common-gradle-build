@@ -189,7 +189,11 @@ setCommonGradleProperty("projectIndividualCheckstyleConfiguration", false)
 //setCommonGradleProperty("kubernetesSupport", false)
 //setCommonGradleProperty("kubernetesApplicationHost", "${rootProject.name}.local")
 //setCommonGradleProperty("kubernetesReplicas", "2")
+//setCommonGradleProperty("kubernetesUrlPath", "/api/${rootProject.name}")
 //setCommonGradleProperty("kubernetesSupportIngressNginx", true)
+//setCommonGradleProperty("kubernetesControllerImage", "networking.k8s.io/v1beta1")
+//setCommonGradleProperty("kubernetesApplicationOIDCClientId", "services")
+//setCommonGradleProperty("kubernetesApplicationOIDCPublicKey", "")
 
 //setCommonGradleProperty("kubernetesSupportDatabase", true)
 //setCommonGradleProperty("kubernetesDatabaseType", "postgresql")
@@ -211,6 +215,8 @@ setCommonGradleProperty("projectIndividualCheckstyleConfiguration", false)
 //setCommonGradleProperty("kubernetesIdmDatabasePort", "${kubernetesDatabasePort}")
 //setCommonGradleProperty("kubernetesIdmDatabaseVendor", "postgres")
 //setCommonGradleProperty("kubernetesIdmImage", "quay.io/keycloak/keycloak:${kubernetesIdmImageVersion}")
+//setCommonGradleProperty("kubernetesIdmLogLevel", "INFO")
+//setCommonGradleProperty("kubernetesIdmAddressForwarding", "true")
 
 
 /***************************************************************************************
