@@ -61,12 +61,12 @@ spec:
                 key: @@KUBERNETES_DATABASE_PASSWORD_KEY@@
         - name: @@KUBERNETES_APPLICATION_OIDC_CLIENT_ID_ENV_NAME@@
           valueFrom:
-            configMapKeyRef:
+            secretKeyRef:
                 name: @@KUBERNETES_APPLICATION_SECRET_NAME@@
                 key: @@KUBERNETES_APPLICATION_OIDC_CLIENT_ID_KEY@@				
         - name: @@KUBERNETES_APPLICATION_OIDC_PUBLICKEY_ID_ENV_NAME@@
           valueFrom:
-            configMapKeyRef:
+            secretKeyRef:
                 name: @@KUBERNETES_APPLICATION_SECRET_NAME@@
                 key: @@KUBERNETES_APPLICATION_OIDC_PUBLICKEY_KEY@@
       restartPolicy: Always
