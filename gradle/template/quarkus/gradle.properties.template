@@ -6,6 +6,9 @@ projectComponentId       = @@COMPONENT_ID@@
 projectDescription       = @@DESCRIPTION@@
 projectUrl               = @@URL@@
 
+# define base url of the service
+kubernetesUrlPath        = /api/@@PROJECT_NAME@@
+
 # tool information
 # checkstyleToolVersion    = @@checkstyleToolVersion@@
 # testDependencyVersion    = @@testDependencyVersion@@

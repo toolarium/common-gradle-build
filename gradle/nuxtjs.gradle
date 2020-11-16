@@ -79,7 +79,17 @@ apply from: "${commonGradleBuildElementPath}/nodejs.gradle"
 
 if (!project.hasProperty("targetStatic") || !project.getProperty("targetStatic")) {
 	if (project.hasProperty("forceStaticTarget") && project.getProperty("forceStaticTarget")) {
-		addError("Expected static target, please update the $nuxtConfig: target: 'static'")
+	
+		if (project.getProperty('IS_NEW')) {
+			if (new File(nuxtConfig).exists()) {
+				def f = new File(nuxtConfig)
+				def lines = f.readLines()
+				lines = lines.plus(1, "  target: 'static'," + NELINE)
+				f.text = lines.join(NELINE)
+			}		
+		} else {
+			addError("Expected static target, please update the $nuxtConfig: target: 'static'")
+		}
 	}
 }	
 
