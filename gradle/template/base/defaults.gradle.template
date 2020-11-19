@@ -105,7 +105,7 @@ setCommonGradleProperty("licenseFile", "$commonGradleBuildHome/$licenseFilename"
 /***************************************************************************************
  * repository settings
  ***************************************************************************************/
-//setCommonGradleProperty("commonGradleBuildReleasePublish", false)
+//setCommonGradleProperty("commonGradleBuildReleasePublish", true)
 //setCommonGradleProperty("allowMavenCentralRepository", true)
 //setCommonGradleProperty("allowGoogleRepository", true)
 //setCommonGradleProperty("allowJCenterRepository", true)
