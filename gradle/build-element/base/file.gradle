@@ -633,7 +633,7 @@ ext.copyFile = { fileToCopy, fileDest, overwrite = false ->
 	String srcFilename = getFilename(fileToCopy);
 	String srcFilePath = getFilePath(fileToCopy);
 	if (srcFilePath==null || !new File(srcFilePath).exists() || !new File("${srcFilePath}/${srcFilename}").exists()) {
-		printWarn("> Could not find file " + colorize(HIGHLITE_LEVEL, fileToCopy) + colorize(INFO_LEVEL, "."))
+		printWarn("Could not find file " + colorize(HIGHLITE_LEVEL, fileToCopy) + colorize(INFO_LEVEL, "."))
 		return false
 	}
 
@@ -642,7 +642,7 @@ ext.copyFile = { fileToCopy, fileDest, overwrite = false ->
 	if (destFilePath!=null && !new File(destFilePath).exists()) {
 		logInfo("Create " + colorize(HIGHLITE_LEVEL, destFilePath) + colorize(INFO_LEVEL, "."))
 		if (!new File(destFilePath).mkdirs()) {
-			printWarn("> Could not create path " + colorize(HIGHLITE_LEVEL, destFilePath) + ".")
+			printWarn("Could not create path " + colorize(HIGHLITE_LEVEL, destFilePath) + ".")
 			return false
 		}
 	}

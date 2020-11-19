@@ -122,7 +122,7 @@ ext.initGit = { bare = false ->
 		git = org.ajoberstar.grgit.Grgit.init(dir: projectDir, bare: bare)
 		logInfo("Initialized git.")
 	} catch (Exception e) {
-		printWarn("> Could not initialize git: " + e.getMessage())
+		printWarn("Could not initialize git: " + e.getMessage())
 	} finally {
 		closeGit(git)
 	}	
@@ -139,7 +139,7 @@ ext.getRemoteGit = { directory = projectDir ->
 			git = openGit()
 			return git.remote.list();
 		} catch (Exception e) {
-			printWarn("> Could not get git remote url: " + e.getMessage())
+			printWarn("Could not get git remote url: " + e.getMessage())
 		} finally {
 			closeGit(git)
 		}	
@@ -158,7 +158,7 @@ ext.addGit = { inputPatterns = ['./'] ->
 			logInfo("Add to git...")
 			git.add(patterns: inputPatterns)
 		} catch (Exception e) {
-			printWarn("> Could not add files to git: " + e.getMessage())
+			printWarn("Could not add files to git: " + e.getMessage())
 		} finally {
 			closeGit(git)
 		}	
@@ -181,7 +181,7 @@ ext.commitGit = { message = "First commit", doPush = false ->
 				git.push()
 			}
 		} catch (Exception e) {
-			printWarn("> Could not add files to git: " + e.getMessage())
+			printWarn("Could not add files to git: " + e.getMessage())
 		} finally {
 			closeGit(git)
 		}	
@@ -205,7 +205,7 @@ ext.getGitCommitHash = { ->
 				}
 			}
 		} catch (IOException e) {
-			printWarn("> Could not read git commit hash: " + e.getMessage())
+			printWarn("Could not read git commit hash: " + e.getMessage())
 		} finally {
 			closeGit(git)
 		}	
@@ -233,7 +233,7 @@ ext.getGitLastTagName = { ->
 				}
 			}
 		} catch (IOException e) {
-			printWarn("> Could not read last tag name: " + e.getMessage())
+			printWarn("Could not read last tag name: " + e.getMessage())
 		} finally {
 			closeGit(git)
 		}	
@@ -255,7 +255,7 @@ ext.getGitBranchName = { ->
 				return git.branch.current().name
 			}
 		} catch (IOException e) {
-			printWarn("> Could not read git branch name: " + e.getMessage())
+			printWarn("Could not read git branch name: " + e.getMessage())
 		} finally {
 			closeGit(git)
 		}	
@@ -278,7 +278,7 @@ ext.setGitTagName = { tagName, message, force = false  ->
 				git.push(tags: true, force: force)            
 			}
 		} catch (IOException e) {
-			printWarn("> Could not set git tag name: " + e.getMessage())
+			printWarn("Could not set git tag name: " + e.getMessage())
 		} finally {
 			closeGit(git)
 		}	
@@ -296,7 +296,7 @@ ext.checkout = { branchName, doCreateBranch=true ->
 			git = openGit()
 			git.pull()
 		} catch (Exception e) {
-			printWarn("> Could not checkout branch " + branchName + ": " + e.getMessage())
+			printWarn("Could not checkout branch " + branchName + ": " + e.getMessage())
 		}	
 		
 		def existBranch = false
@@ -318,7 +318,7 @@ ext.checkout = { branchName, doCreateBranch=true ->
 				createBranch = create
 			}
 		} catch (Exception e) {
-			printWarn("> Could not checkout branch " + branchName + ": " + e.getMessage())
+			printWarn("Could not checkout branch " + branchName + ": " + e.getMessage())
 		}	
 	}
 	

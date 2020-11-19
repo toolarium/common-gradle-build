@@ -155,7 +155,7 @@ ext.createJavaSourcePath = { ->
 			setCommonGradleProperty('createSrcMainResourcesDirectory', !new File(srcMainResourcesDirectory).exists())
 			setCommonGradleProperty('createSrcTestResourcesDirectory', !new File(srcTestResourcesDirectory).exists())
 
-			if (project.getProperty('createSrcMainJavaDirectory')) {
+			if (project.hasProperty('srcMainJavaDirectory') && !new File(srcMainJavaDirectory).exists()) {
 				printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcMainJavaDirectory) + ".")
 				if (new File(srcMainJavaDirectory ).mkdirs()
 					|| new File(srcMainJavaDirectory + '/' + projectRootPackageName.replace('.', '/')).mkdirs()) {
@@ -163,12 +163,12 @@ ext.createJavaSourcePath = { ->
 				}
 			}
 
-			if (project.getProperty('createSrcMainResourcesDirectory')) {
+			if (project.hasProperty('srcMainResourcesDirectory') && !new File(srcMainResourcesDirectory).exists()) {
 				printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcMainResourcesDirectory) + ".")
 				new File(srcMainResourcesDirectory).mkdir()
 			}
 
-			if (project.getProperty('createSrcTestJavaDirectory')) {
+			if (project.hasProperty('srcTestJavaDirectory') && !new File(srcTestJavaDirectory).exists()) {
 				printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcTestJavaDirectory) + ".")
 				if (new File(srcTestJavaDirectory).mkdirs()
 					|| new File(srcTestJavaDirectory + '/' + projectRootPackageName.replace('.', '/')).mkdirs()) {
@@ -176,7 +176,7 @@ ext.createJavaSourcePath = { ->
 				}
 			}
 
-			if (project.getProperty('createSrcTestResourcesDirectory')) {
+			if (project.hasProperty('srcTestResourcesDirectory') && !new File(srcTestResourcesDirectory).exists()) {
 				printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcTestResourcesDirectory) + ".")
 				new File(srcTestResourcesDirectory).mkdir()
 			}

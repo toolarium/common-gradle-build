@@ -397,6 +397,28 @@ task releaseVerification(dependsOn: ['releasePrepare']) {
 
 
 /***************************************************************************************
+ * publishRelease 
+ ***************************************************************************************/
+task publishRelease() {
+	group = 'Release'
+	description = 'Publish release.'
+
+	doLast {
+		if (project.hasProperty("commonGradleBuildReleasePublish") && project.getProperty("commonGradleBuildReleasePublish")) {
+			def deployUrl = project.getProperty('mavenPublishUrl')
+			if (project.ext.isSnapshotVersion) {
+				deployUrl = project.getProperty('mavenSnapshotPublishUrl')
+			}
+			printInfo("> Publish release version " + colorize(HIGHLITE_LEVEL, "${project.version}") + " to " + colorize(HIGHLITE_LEVEL, deployUrl) + ".")
+		}
+	}
+}
+if (project.hasProperty("commonGradleBuildReleasePublish") && project.getProperty("commonGradleBuildReleasePublish")) {
+	publishRelease.finalizedBy('publish')
+}
+
+
+/***************************************************************************************
  * release 
  ***************************************************************************************/
 task releaseSnapshot(dependsOn: ['releasePrepareSnapshot']) {
@@ -407,10 +429,7 @@ task releaseSnapshot(dependsOn: ['releasePrepareSnapshot']) {
 		updateReleaseArtefact(true)
 	}
 }
-
-if (project.hasProperty("commonGradleBuildReleasePublish") && project.getProperty("commonGradleBuildReleasePublish")) {
-	releasePrepareSnapshot.finalizedBy('publish')
-}
+releaseSnapshot.finalizedBy('publishRelease')
 
 
 /***************************************************************************************
@@ -440,7 +459,4 @@ task release(dependsOn: ['releaseVerification']) {
 		project.setProperty('scmVersionNumber', getGitCommitHash())
 	}
 }
-
-if (project.hasProperty("commonGradleBuildReleasePublish") && project.getProperty("commonGradleBuildReleasePublish")) {
-	releaseVerification.finalizedBy('publish')
-}
+releaseVerification.finalizedBy('publishRelease')
