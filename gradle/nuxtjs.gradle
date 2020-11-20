@@ -119,6 +119,13 @@ projectValidation {
 	}
 
 	doFirst {
+		if (project.hasProperty('generateTypescriptVersionFile') && project.getProperty('generateTypescriptVersionFile')) {
+			new File(getFilePath( typescriptVersionFile)).mkdirs()
+			new File("${typescriptVersionFile}").withWriter { writer ->
+				writer << "export default \"${project.version}\";" << NELINE
+			}
+		}
+	
 		if (project.getProperty('IS_NEW')) {
 			// use the defined files
 			new File(licenseFile).delete()

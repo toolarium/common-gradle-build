@@ -141,7 +141,8 @@ setCommonGradleDefaultPropertyIfNull("srcTestResourcesDirectory", "${srcTestDire
 setCommonGradleDefaultPropertyIfNull("supportMultipleResourceFolder", true)
 
 // software generation settings
-setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBaseBuildSources", "$gradleBuildDirectory/generated/sources")
+setCommonGradleDefaultPropertyIfNull("generatedCommonGradleSubfolderName", "generated")
+setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBaseBuildSources", "$gradleBuildDirectory/${generatedCommonGradleSubfolderName}/sources")
 setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBuildSources", "$generatedCommonGradleBaseBuildSources/common-gradle-build")
 
 // package files
@@ -206,6 +207,8 @@ setCommonGradleDefaultPropertyIfNull("compileJavaHome", "")
 /***************************************************************************************
  * repository settings
  ***************************************************************************************/
+setCommonGradleDefaultPropertyIfNull("commonGradleCacheDynamicDuration", 10*60)
+setCommonGradleDefaultPropertyIfNull("commonGradleCacheChangingModulesDuration", 0)
 setCommonGradleDefaultPropertyIfNull("allowMavenCentralRepository", true)
 setCommonGradleDefaultPropertyIfNull("allowGoogleRepository", true)
 setCommonGradleDefaultPropertyIfNull("allowJCenterRepository", true)
@@ -612,6 +615,8 @@ setCommonGradleDefaultPropertyIfNull("kubernetesIdmFrontendUrlEnvName", "KEYCLOA
  * nuxt
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("forceStaticTarget", false)
+setCommonGradleDefaultPropertyIfNull("generateTypescriptVersionFile", true)
+setCommonGradleDefaultPropertyIfNull("typescriptVersionFile", "${srcDirectory}/${generatedCommonGradleSubfolderName}/version.ts")
 
 
 /***************************************************************************************

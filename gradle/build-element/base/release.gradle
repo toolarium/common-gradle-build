@@ -262,17 +262,38 @@ ext.updateProject = {
 /***************************************************************************************
  * release prepare
  ***************************************************************************************/
-task releasePrepare(dependsOn: ['clean']) {
+task checkReleaseCredentials(dependsOn: ['clean']) {
+	group = 'Release'
+	description = 'Check release credentials.'
+	
+	doFirst {
+		def grgitUser = System.env['GRGIT_USER']
+		if (grgitUser==null || grgitUser.isEmpty()) {
+			def errorMessage = "Missing GRGIT_USER environment variable!"
+			throw new GradleException(errorMessage)		
+		}
+		grgitUser = null
+		def grgitPass = System.env['GRGIT_PASS']
+		if (grgitPass==null || grgitPass.isEmpty()) {
+			def errorMessage = "Missing GRGIT_PASS environment variable!"
+			throw new GradleException(errorMessage)		
+		}
+		grgitPass = null
+	}
+}
+
+/***************************************************************************************
+ * release prepare
+ ***************************************************************************************/
+task releasePrepare(dependsOn: ['checkReleaseCredentials']) {
 	group = 'Release'
 	description = 'Prepare release.'
-	
+
 	doFirst {
 		if (!isGitAvailable()) {
 			def errorMessage="Repository is not ready!"
 			addError("$errorMessage")
 			throw new GradleException(errorMessage)		
-		} else {
-			// updateProject
 		}
 
 		// prepare version number
