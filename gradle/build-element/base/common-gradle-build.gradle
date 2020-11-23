@@ -37,12 +37,18 @@ ext.readRemoteVersion = { inputUrl, gitUrl=null ->
 		def minorNumber = props.getProperty("minor.number")
 		def revisionNumber = props.getProperty("revision.number")
 		def qualifier = props.getProperty("qualifier")
+		def patch = props.getProperty("patch")
 		
-		remoteVersion = majorNumber + "." + minorNumber;	
-		if (revisionNumber!=null) {
-			remoteVersion += "." + revisionNumber
-		} else if (qualifier!=null) { 
-			remoteVersion += "." + qualifier
+		if (majorNumber!=null && !majorNumber.toString().isEmpty() && minorNumber!=null && !minorNumber.toString().isEmpty() ) {
+			remoteVersion = majorNumber + "." + minorNumber;	
+			
+			if (revisionNumber!=null) {
+				remoteVersion += "." + revisionNumber
+			} else if (qualifier!=null) { 
+				remoteVersion += "." + qualifier
+			} else if (patch!=null) { 
+				remoteVersion += "." + patch
+			}
 		}
 	} catch (Exception e) {
 		if (gitUrl!=null) {
