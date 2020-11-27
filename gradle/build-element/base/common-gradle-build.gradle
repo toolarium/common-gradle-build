@@ -323,7 +323,7 @@ ext.cloneGitProject = {localDirectory, gitUrl, remoteVersionFileUrl, lastCheckTi
 			writeLastCheck(remoteVersion, lastCheckFile)
 		}			
 	} else {
-		logInfo("Don't check it's inside time range (" + colorize(HIGHLITE_LEVEL, timeout) + colorize(INFO_LEVEL, "), next check: ") + colorize(HIGHLITE_LEVEL, lastCheck))
+		logInfo("Don't check it's inside time range (" + colorize(HIGHLITE_LEVEL, timeout) + colorize(INFO_LEVEL, "), last check: ") + colorize(HIGHLITE_LEVEL, lastCheck))
 	}	
 	
 	return result
@@ -374,6 +374,8 @@ ext.getGithubRelease = {localDirectory, commonGradleBuildReleasesUrl, preRelease
 				} else {
 					logInfo("Remote version: " + colorize(HIGHLITE_LEVEL, remoteVersion) + colorize(INFO_LEVEL, " already exist in [") + colorize(HIGHLITE_LEVEL,localDirectoryRemoteVersion) + colorize(INFO_LEVEL, "]."))
 				}
+			} else 
+				printWarn("Could not read remote version [" + colorize(HIGHLITE_LEVEL, commonGradleBuildReleasesUrl) + colorize(WARN_LEVEL, "]!")) 
 			}
 		} else {
 			remoteVersion = releaseName
@@ -382,6 +384,6 @@ ext.getGithubRelease = {localDirectory, commonGradleBuildReleasesUrl, preRelease
 		
 		writeLastCheck(remoteVersion, lastCheckFile)
 	} else {
-		logInfo("Don't check it's inside time range (" + colorize(HIGHLITE_LEVEL, timeout) + colorize(INFO_LEVEL, "), next check: ") + colorize(HIGHLITE_LEVEL, lastCheck))
+		logInfo("Don't check it's inside time range (" + colorize(HIGHLITE_LEVEL, timeout) + colorize(INFO_LEVEL, "), last check: ") + colorize(HIGHLITE_LEVEL, lastCheck))
 	}	
 }

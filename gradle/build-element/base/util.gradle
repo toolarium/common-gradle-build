@@ -264,11 +264,27 @@ ext.isUnlimitedJurisdiction = { ->
  * Check if remote resource is available
  */
 ext.isServerAvailable = { serverAddress='www.google.com', timeout=1500 ->
+
+	Socket socket = null;
 	try {
 		if (!gradle.startParameter.isOffline()) {
-			return java.net.InetAddress.getByName(serverAddress).isReachable(timeout)
+			if (java.net.InetAddress.getByName(serverAddress).isReachable(timeout)) {
+				return true;
+			}
+		
+			SocketAddress socketAddress = new InetSocketAddress(serverAddress, 80);
+			socket = new Socket();
+			socket.connect(socketAddress, timeout);
+			return true
 		} 
 	} catch( Exception e ) {
+	} finally {
+		if (socket!=null) {
+			try {
+				socket.close();
+			} catch( Exception ex ) {
+			}
+		}
 	}
 
 	return false;
