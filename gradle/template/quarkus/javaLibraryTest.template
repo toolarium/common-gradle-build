@@ -17,6 +17,8 @@ import org.junit.jupiter.api.Test;
 
 /**
  * @@className@@.
+ *
+ * <p>! This is just a sample please remove it. !</p>
  */
 @QuarkusTest
 public class @@className@@ {

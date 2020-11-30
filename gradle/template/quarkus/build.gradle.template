@@ -17,11 +17,27 @@ apply from: "@@COMMON_GRADLE_BUILD_URL@@"
 dependencies {
     // see https://docs.gradle.org/current/userguide/java_library_plugin.html
 
+    // logging
+    implementation 'org.slf4j:slf4j-api:@@commonGradleSlf4jApiVersion@@'
+
+    // utilities    
+    //implementation "net.sf.jptools:jptools:@@commonGradleJptoolsVersion@@"
+    //implementation "net.sf.jptools:jptools:@@commonGradleJptoolsVersion@@:slf4j-redirect"
+
+    // resteasy
+    implementation 'io.quarkus:quarkus-resteasy-jackson'
+
+    // orm
+    //implementation 'io.quarkus:quarkus-hibernate-orm'
+
+    // database driver
+    //implementation 'io.quarkus:quarkus-jdbc-postgresql'
+
+    // testing
     testImplementation 'io.quarkus:quarkus-junit5'
     testImplementation 'io.rest-assured:rest-assured'
 
-    implementation 'io.quarkus:quarkus-hibernate-orm'
-    implementation 'io.quarkus:quarkus-resteasy'
-	
-    // e.g.: implementation 'net.sf.jptools:jptools:1.7.2'
+    // testing memory db
+    //testImplementation 'io.quarkus:quarkus-jdbc-h2'
+    //testImplementation 'io.quarkus:quarkus-test-h2'
 }

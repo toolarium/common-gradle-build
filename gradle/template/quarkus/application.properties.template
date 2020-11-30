@@ -1,2 +1,46 @@
-# Configuration file
-# key = value
+#
+#  @@fileName@@
+#  
+#  Copyright by @@LICENSE_ORGANISATION@@, all rights reserved.             
+#  @@LICENSE@@  
+#
+
+# general logging 
+quarkus.banner.enabled = false
+quarkus.log.level = WARN
+quarkus.hibernate-orm.log.sql = true
+quarkus.log.category."@@PARENT_PACKAGE@@".level = INFO
+quarkus.log.console.format=%d{yyyy-MM-dd HH:mm:ss,SSS} - %.1p - [%H|%i|%t{id}] - %-80c{79} - %-15.15X{logInformation} | %m%n
+#quarkus.log.console.format=%d{yyyy-MM-dd HH:mm:ss,SSS} - %.1p - [%-20H{20}|%-6i{6}|%-6t{id}] - %-80c{79} - %-15.15X{logInformation} | %m%n
+
+# oidc configuration
+#%prod.quarkus.oidc.client-id=${@@KUBERNETES_APPLICATION_OIDC_CLIENT_ID_ENV_NAME@@}
+#%prod.quarkus.oidc.public-key=${@@KUBERNETES_APPLICATION_OIDC_PUBLICKEY_ID_ENV_NAME@@}
+
+# production configuration: never allow database generation on production!
+%prod.quarkus.hibernate-orm.database.generation = none
+%prod.quarkus.hibernate-orm.sql-load-script = no-file
+%prod.quarkus.datasource.db-kind = @@kubernetesDatabaseType@@
+%prod.quarkus.datasource.username = ${@@KUBERNETES_DATABASE_USERNAME_ENV_NAME@@}
+%prod.quarkus.datasource.password = ${@@KUBERNETES_DATABASE_PASSWORD_ENV_NAME@@}
+%prod.quarkus.datasource.jdbc.url = ${@@KUBERNETES_DATABASE_JDBC_URL_ENV_NAME@@}
+%prod.quarkus.datasource.jdbc.max-size = ${@@KUBERNETES_DATABASE_JDBC_MAXSIZE_ENV_NAME@@:@@KUBERNETES_DATABASE_MAXSIZE_VALUE@@}
+
+# test configuration: drop and create the database in memory database, log debug -> cb test
+%test.quarkus.hibernate-orm.database.generation = drop-and-create
+%test.quarkus.hibernate-orm.sql-load-script = import-dev.sql
+%test.quarkus.datasource.db-kind = h2
+%test.quarkus.datasource.username = username-default
+%test.quarkus.datasource.password =
+%test.quarkus.datasource.jdbc.url = jdbc:h2:mem:@@PROJECT_NAME@@
+
+# dev configration: update database, log debug -> cb run
+%dev.quarkus.log.console.color = true
+%dev.quarkus.log.console.format=%d{yyyy-MM-dd HH:mm:ss,SSS} - %.1p - [%H|%i|%t{id}] - %-50c{49} | %m%n
+%dev.quarkus.log.category."mya.rootpackage.name".level = DEBUG
+%dev.quarkus.hibernate-orm.database.generation = update
+%dev.quarkus.hibernate-orm.sql-load-script = no-file
+%dev.quarkus.datasource.db-kind = @@kubernetesDatabaseType@@
+#%dev.quarkus.datasource.username = postgres
+#%dev.quarkus.datasource.password = admin
+#%dev.quarkus.datasource.jdbc.url = jdbc:postgresql://localhost:5432/@@PROJECT_NAME@@

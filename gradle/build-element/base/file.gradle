@@ -187,6 +187,11 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 			filter { line -> line.replaceAll('@@PROJECT_TYPE@@', "${project.ext.projectType}".toString()) }
 			filter { line -> line.replaceAll('@@GROUP_ID@@', "${project.ext.projectGroupId}".toString()) }
 			filter { line -> line.replaceAll('@@COMPONENT_ID@@', "${project.ext.projectComponentId}".toString()) }
+			
+			if (project.hasProperty('projectParentPackageName')) {			
+				filter { line -> line.replaceAll('@@PARENT_PACKAGE@@', "${project.ext.projectParentPackageName}".toString()) }
+			}
+			
 			filter { line -> line.replaceAll('@@PACKAGE@@', "${project.ext.projectRootPackageName}".toString()) }
 			filter { line -> line.replaceAll('@@DESCRIPTION@@', "${project.ext.projectDescription}".toString()) }
 			filter { line -> line.replaceAll('@@URL@@', "${project.ext.projectUrl}".toString()) }
@@ -219,7 +224,7 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 			if (project.hasProperty('srcMainDirectory')) {
 				filter { line -> line.replaceAll('@@SRC_MAIN@@', "${project.ext.srcMainDirectory}".toString()) }
 			}
-			
+					
 			// test source
 			if (project.hasProperty('srcTestDirectoryName')) {			
 				filter { line -> line.replaceAll('@@TEST@@', "${srcTestDirectoryName}".toString()) }
@@ -249,6 +254,29 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 				filter { line -> line.replaceAll('@@checkstyleToolVersion@@', "${project.ext.checkstyleToolVersion}".toString()) }
 			} else {
 				filter { line -> line.replaceAll('@@checkstyleToolVersion@@', "${project.ext.checkstyleToolDefaultVersion}".toString()) }
+			}
+	
+			// libs
+			if (project.hasProperty('commonGradleSlf4jApiVersion')) {
+				filter { line -> line.replaceAll('@@commonGradleSlf4jApiVersion@@', "${project.ext.commonGradleSlf4jApiVersion}".toString()) }
+			}
+			if (project.hasProperty('commonGradleLogbackVersion')) {
+				filter { line -> line.replaceAll('@@commonGradleLogbackVersion@@', "${project.ext.commonGradleLogbackVersion}".toString()) }
+			}
+			if (project.hasProperty('commonGradleJptoolsVersion')) {
+				filter { line -> line.replaceAll('@@commonGradleJptoolsVersion@@', "${project.ext.commonGradleJptoolsVersion}".toString()) }
+			}
+			if (project.hasProperty('commonGradleJavaxValidtionVersion')) {
+				filter { line -> line.replaceAll('@@commonGradleJavaxValidtionVersion@@', "${project.ext.commonGradleJavaxValidtionVersion}".toString()) }
+			}
+			if (project.hasProperty('commonGradleJavaxWsRSApiVersion')) {
+				filter { line -> line.replaceAll('@@commonGradleJavaxWsRSApiVersion@@', "${project.ext.commonGradleJavaxWsRSApiVersion}".toString()) }
+			}
+			if (project.hasProperty('commonGradleJacksonAnnotationVersion')) {
+				filter { line -> line.replaceAll('@@commonGradleJacksonAnnotationVersion@@', "${project.ext.commonGradleJacksonAnnotationVersion}".toString()) }
+			}
+			if (project.hasProperty('commonGradleJavaxAnnotationVersion')) {
+				filter { line -> line.replaceAll('@@commonGradleJavaxAnnotationVersion@@', "${project.ext.commonGradleJavaxAnnotationVersion}".toString()) }
 			}
 	
 			if (project.hasProperty('testDependencyVersion')) {

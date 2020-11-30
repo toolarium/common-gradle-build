@@ -76,6 +76,21 @@ ext.projectInitialisation = { ->
 	def onlineCheckConnectionUrlTimeout = project.getProperty('onlineCheckConnectionUrlTimeout')
 	setCommonGradleProperty('HAS_ONLINE_CONNECTION', isServerAvailable(onlineCheckConnectionUrl, onlineCheckConnectionUrlTimeout))
 
+	if (project.hasProperty('projectRootPackageName') && !project.hasProperty('projectParentPackageName')) {
+		def projectParentPackageName = "${projectRootPackageName}".toString()
+
+		def numberOfElements = project.getProperty('projectParentPackageElements')
+		def rootPackaNameSplit = projectParentPackageName.toString().split('\\.')
+
+		if (rootPackaNameSplit!=null && numberOfElements>0 && rootPackaNameSplit.length>0) {
+			projectParentPackageName = rootPackaNameSplit[0]
+			for (int i = 1; (i<=numberOfElements && i<rootPackaNameSplit.length); i++) {
+				projectParentPackageName = projectParentPackageName + "." + rootPackaNameSplit[i];
+			}
+		}
+		setCommonGradleProperty('projectParentPackageName', projectParentPackageName)
+	}
+
 	// read and set common gradle build version
 	def versionUrl = commonGradleBuildUrl;
 	while (versionUrl.endsWith('/')) {
@@ -403,6 +418,18 @@ ext.projectInitialisation = { ->
 	}
 
 	setCommonGradleProperty('IS_VALID_PROJECT', true)
+}
+
+
+/** 
+ * Check if it is online or not
+ */
+ext.isOnline = { ->	
+	if (!gradle.startParameter.isOffline()) {
+		return project.hasProperty('HAS_ONLINE_CONNECTION') && project.getProperty('HAS_ONLINE_CONNECTION')
+	}
+	
+	return false
 }
 
 

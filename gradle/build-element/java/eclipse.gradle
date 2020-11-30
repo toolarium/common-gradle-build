@@ -181,8 +181,8 @@ ext.createEclipseFiles = { overwrite = false ->
 			}
 			
 			def eclipseCheckstyleTemplate = 'eclipse-checkstyle.template'	
-			if (!createFileFromTemplate(rootDirectory + "/" + checkstyleFile, getTemplateFile(eclipseCheckstyleTemplate, 'eclipse'))) {
-				printInfo("> Create " + colorize(HIGHLITE_LEVEL, checkstyleFile) + " with default values.")
+			if (!createFileFromTemplate(rootDirectory + "/" + checkstyleFile, getTemplateFile(eclipseCheckstyleTemplate, 'eclipse'), true, false)) {
+				logInfo("Create " + colorize(HIGHLITE_LEVEL, checkstyleFile) + " with default values.")
 				new File(rootDirectory, checkstyleFile).withWriter { w ->
 					w << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << NELINE \
 						<< "" << NELINE \

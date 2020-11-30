@@ -54,6 +54,30 @@ ext.execKubernetes = { cmd, errorMessage ->
 
 
 /***************************************************************************************
+ * Replace namespace
+ ***************************************************************************************/
+ext.replaceNamespace = { line, namespace -> 
+	def preparedLine = line;		
+	def namespaceTag = "namespace:"
+	if (namespace!=null && !namespace.toString().trim().isEmpty()) {
+		int idx = preparedLine.indexOf(namespaceTag)
+		if (idx>0) {
+			def i = idx + namespaceTag.length()
+			def rest = preparedLine.substring(i + 1).trim()
+			preparedLine = preparedLine.substring(0, i)							
+			preparedLine = "${preparedLine} ${namespace}"
+			idx = rest.indexOf(" ")
+			if (idx>0) {
+				preparedLine = "${preparedLine}${rest.substring(idx)}" 
+			}
+		}
+	}
+	
+	return preparedLine
+}
+
+
+/***************************************************************************************
  * Download and replace
  ***************************************************************************************/
 ext.downloadAndReplace = { inputFileUrl, destFile, namespace -> 
@@ -65,23 +89,11 @@ ext.downloadAndReplace = { inputFileUrl, destFile, namespace ->
 		resultFile.withWriter { writer ->
 			remoteFile.withReader{ reader ->
 				while (line = reader.readLine()) {
-					def exportLine = line;		
-
-					if (namespaceTag!=null && !namespaceTag.toString().trim().isEmpty()) {
-						int idx = exportLine.indexOf(namespaceTag)
-						if (idx>0) {
-							def i = idx + namespaceTag.length()
-							def rest = exportLine.substring(i + 1).trim()
-							exportLine = exportLine.substring(0, i)							
-							exportLine = "${exportLine} ${namespace}"
-							idx = rest.indexOf(" ")
-							if (idx>0) {
-								exportLine = "${exportLine}${rest.substring(idx)}" 
-							}
-							count++
-						}
-					}
+					def exportLine = replaceNamespace(line, namespace)
 					
+					if (!exportLine.equals(line)) {
+						count++
+					}
 					writer << "${exportLine}" << NELINE
 				}
 			}
@@ -131,6 +143,43 @@ task kubernetesConfiguration() {
 	}
 }
 
+/***************************************************************************************
+ * Prepare project specific kubernetes artefacts
+ ***************************************************************************************/
+if (new File(srcKubernetesDirectory).exists()) {
+	task projectKubernetesArtefacts() {
+		group = 'Build'
+		description = 'Add project kubernetes configuration'
+		
+		doLast {
+			if (new File(srcKubernetesDirectory).exists()) {
+				new File("$kubernetesConfigurationElementsPath").mkdirs()
+				
+				def fileContent = new File("$kubernetesConfigurationPath/$kubernetesFilename")
+				new File(srcKubernetesDirectory).eachFileRecurse (groovy.io.FileType.FILES) { file ->
+					printInfo("> Add kubernetes dependency " + colorize(HIGHLITE_LEVEL, file.getName()) + "...")
+					def kubernetesServicesFilename = "$kubernetesConfigurationElementsPath/${rootProject.name}-services-kubernetes.yaml"
+					copyFromTemplate(kubernetesServicesFilename, file, true, true);
+					
+					new File(kubernetesServicesFilename).withReader {
+						fileContent.append("---" + NELINE)
+						def header = true
+						fileContent.append("# Source: " + file.getName() + NELINE)
+						while ((line = it.readLine()) != null) {				
+							def ignoreLine = line.startsWith("#") || line.toString().trim().isEmpty()					
+							if (header && ignoreLine) {
+							} else {
+								header = false							
+								fileContent.append(line + NELINE)
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	kubernetesConfiguration.finalizedBy(projectKubernetesArtefacts)
+}
 
 /***************************************************************************************
  * Build kubernetes jar file

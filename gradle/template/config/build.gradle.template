@@ -4,10 +4,6 @@
  * Copyright by @@LICENSE_ORGANISATION@@, all rights reserved.
  * @@LICENSE@@
  */
-plugins {
-    id "com.github.node-gradle.node" version "${nodePluginVersion}"
-}
-
 apply from: "@@COMMON_GRADLE_BUILD_URL@@"
 
 

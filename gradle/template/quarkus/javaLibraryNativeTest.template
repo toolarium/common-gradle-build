@@ -12,6 +12,8 @@ import io.quarkus.test.junit.NativeImageTest;
 
 /**
  * Native@@className@@.
+ *
+ * <p>! This is just a sample please remove it. !</p>
  */
 @NativeImageTest
 public class Native@@className@@ extends @@className@@ {

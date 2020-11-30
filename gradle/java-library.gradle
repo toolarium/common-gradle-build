@@ -34,6 +34,11 @@ setCommonGradleDefaultPropertyIfNull("srcTestJavaDirectory", "${srcTestDirectory
  * project java validation
  ***************************************************************************************/
 projectValidation {
+	if (project.getProperty('IS_NEW')) {
+		bootStraplogLifecycle("  > Just create project structure, skip build.")
+		gradle.startParameter.excludedTaskNames += "build"
+	}
+
 	doFirst {
 		createJavaSourcePath()
 
@@ -117,6 +122,11 @@ projectValidation {
 						<< "}" << NELINE \
 						<< "" << NELINE
 				}
+			}
+
+			if (project.hasProperty('createLogbackConfig') && project.getProperty('createLogbackConfig')) {
+				setCommonGradleProperty("fileName", "logback.xml")
+				createFileFromTemplate("${logbackConfigPath}/${fileName}", getTemplateFile('logback.template', 'java'))
 			}
 			
 			registerEndMessage("" << NELINE \

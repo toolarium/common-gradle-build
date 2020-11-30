@@ -6,12 +6,19 @@
  */
 
 package @@packageName@@;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
  
  
 /**
  * @@className@@.
+ *
+ * <p>! This is just a sample please remove it. !</p>
  */
 public class @@className@@ {
+    private static final Logger LOG = LoggerFactory.getLogger(@@className@@.class);
+
 
     /**
      * Library method.
@@ -19,9 +26,13 @@ public class @@className@@ {
      * @return returns the result
      */
     public boolean someLibraryMethod() {
+        LOG.debug("Debug log message.");
+        LOG.info("Info log message.");
+        LOG.warn("Warn log message.");
+        LOG.error("Error log message.");
         return true;
     }
-    
+   
     
     /**
      * The main class
@@ -30,6 +41,6 @@ public class @@className@@ {
      */
     public static void main(String[] args) {
         // the application
-		Version.main(new String[]{});
+        Version.main(new String[]{});
     }
 }

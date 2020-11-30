@@ -53,6 +53,7 @@ project.ext.set("useJUnit", false)
 apply from: "${commonGradleBuildUrl}/java-library.gradle"
 apply from: "${commonGradleBuildElementPath}/base/run.gradle"
 apply from: "${commonGradleBuildElementPath}/base/docker.gradle"
+setCommonGradleProperty("createLogbackConfig", false)
 
 
 /***************************************************************************************
@@ -88,14 +89,16 @@ test {
  ***************************************************************************************/
 projectValidation {
 	if (project.getProperty('IS_NEW')) {
-		bootStraplogLifecycle("  > Just create project structure, skip build.")
 		gradle.startParameter.excludedTaskNames += "build"
 	}
 
 	doLast {
 		if (project.getProperty('IS_NEW')) {
 			new File(srcMainResourcesDirectory).mkdirs()
-			createFileFromTemplate("${srcMainResourcesDirectory}/application.properties", getTemplateFile("application.properties.template")) 
+			
+			setCommonGradleProperty("fileName", "application.properties")
+			createFileFromTemplate("${srcMainResourcesDirectory}/${fileName}", getTemplateFile("application.properties.template")) 
+			
 			def quarkusResourcePath = srcMainResourcesDirectory + "/META-INF/resources"
 			new File(quarkusResourcePath).mkdirs()
 			createFileFromTemplate("${quarkusResourcePath}/index.html", getTemplateFile("index.html.template")) 

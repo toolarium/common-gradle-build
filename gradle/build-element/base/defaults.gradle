@@ -118,14 +118,6 @@ setCommonGradleDefaultPropertyIfNull("includeDocsDirectoryInSource", false)
 setCommonGradleDefaultPropertyIfNull("docsDirectoryName", "docs")
 setCommonGradleDefaultPropertyIfNull("docsDirectory", "$rootDirectory/$docsDirectoryName")
 
-// logs directory
-setCommonGradleDefaultPropertyIfNull("logsDirectoryName", "logs")
-setCommonGradleDefaultPropertyIfNull("logsDirectory", "$rootDirectory/$logsDirectoryName")
-
-// temp directory
-setCommonGradleDefaultPropertyIfNull("tempDirectoryName", "temp")
-setCommonGradleDefaultPropertyIfNull("tempDirectory", "$rootDirectory/$tempDirectoryName")
-
 // src directories
 setCommonGradleDefaultPropertyIfNull("srcMainDirectoryName", "main")
 setCommonGradleDefaultPropertyIfNull("srcTestDirectoryName", "test")
@@ -144,6 +136,17 @@ setCommonGradleDefaultPropertyIfNull("supportMultipleResourceFolder", true)
 setCommonGradleDefaultPropertyIfNull("generatedCommonGradleSubfolderName", "generated")
 setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBaseBuildSources", "$gradleBuildDirectory/${generatedCommonGradleSubfolderName}/sources")
 setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBuildSources", "$generatedCommonGradleBaseBuildSources/common-gradle-build")
+
+// logs directory
+setCommonGradleDefaultPropertyIfNull("logsDirectoryName", "logs")
+setCommonGradleDefaultPropertyIfNull("logsDirectory", "$rootDirectory/$logsDirectoryName")
+setCommonGradleDefaultPropertyIfNull("createLogbackConfig", true)
+setCommonGradleDefaultPropertyIfNull("logbackConfigPath", "${srcTestResourcesDirectory}")
+
+// temp directory
+setCommonGradleDefaultPropertyIfNull("tempDirectoryName", "temp")
+setCommonGradleDefaultPropertyIfNull("tempDirectory", "$rootDirectory/$tempDirectoryName")
+
 
 // package files
 setCommonGradleDefaultPropertyIfNull("robotsFile", "robots.txt")
@@ -250,6 +253,7 @@ if (!project.hasProperty('mavenPassword')) {
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("initTesting", true)
 setCommonGradleDefaultPropertyIfNull("useJUnit", true)
+setCommonGradleDefaultPropertyIfNull("showStandardStreams", false)
 
 if (initTesting) {
 	if (useJUnit) {
@@ -361,6 +365,7 @@ setCommonGradleDefaultPropertyIfNull("projectComponentIdRegularExpressionPattern
 setCommonGradleDefaultPropertyIfNull("projectComponentIdIsPartOfProjectName", true)
 setCommonGradleDefaultPropertyIfNull("projectComponentIdSeparator", "-")
 setCommonGradleDefaultPropertyIfNull("projectRootPackageNamePrefix", "")
+setCommonGradleDefaultPropertyIfNull("projectParentPackageElements", 1)
 setCommonGradleDefaultPropertyIfNull("validateRootFiles", true)
 setCommonGradleDefaultPropertyIfNull("validateRootDirectories", false)
 setCommonGradleDefaultPropertyIfNull("validateProjectNameAndFolder", false)
@@ -489,6 +494,8 @@ if (!"$dockerIgnoreFile".toString().isEmpty()) {
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("kubernetesSupport", false)
 setCommonGradleDefaultPropertyIfNull("kubernetesReplicas", "2")
+setCommonGradleDefaultPropertyIfNull("srcKubernetesDirectoryName", "docker")
+setCommonGradleDefaultPropertyIfNull("srcKubernetesDirectory", "${srcMainDirectory}/${srcKubernetesDirectoryName}")
 
 if (project.hasProperty('projectGroupId') && !project.getProperty('projectGroupId').trim().isEmpty()) {
 	setCommonGradleDefaultPropertyIfNull("kubernetesLabelId", project.getProperty('projectGroupId'))
@@ -524,10 +531,10 @@ setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseUsernameEnvName", "DATAB
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabasePasswordEnvName", "DATABASE_PASSWORD")
 
 // application configuration
-setCommonGradleDefaultPropertyIfNull("kubernetesApplicationConfigName", "${kubernetesNamespace}-application-config")
-setCommonGradleDefaultPropertyIfNull("kubernetesApplicationConfigFilename", "config/${kubernetesApplicationConfigName}-kubernetes.yaml")
-setCommonGradleDefaultPropertyIfNull("kubernetesApplicationSecretName", "${kubernetesNamespace}-application-secret")
-setCommonGradleDefaultPropertyIfNull("kubernetesApplicationSecretFilename", "config/${kubernetesApplicationSecretName}-kubernetes.yaml")
+setCommonGradleDefaultPropertyIfNull("kubernetesApplicationConfigName", "application-config")
+setCommonGradleDefaultPropertyIfNull("kubernetesApplicationConfigFilename", "config/${rootProject.name}-${kubernetesApplicationConfigName}-kubernetes.yaml")
+setCommonGradleDefaultPropertyIfNull("kubernetesApplicationSecretName", "application-secret")
+setCommonGradleDefaultPropertyIfNull("kubernetesApplicationSecretFilename", "config/${rootProject.name}-${kubernetesApplicationSecretName}-kubernetes.yaml")
 setCommonGradleDefaultPropertyIfNull("kubernetesApplicationOIDCClientIdEnvName", "OIDC_CLIENT_ID")
 setCommonGradleDefaultPropertyIfNull("kubernetesApplicationOIDCClientIdKey", "oidc.client-id")
 setCommonGradleDefaultPropertyIfNull("kubernetesApplicationOIDCPublicKeyEnvName", "OIDC_PUBLIC_KEY")
@@ -537,8 +544,8 @@ setCommonGradleDefaultPropertyIfNull("kubernetesApplicationOIDCPublicKey", "")
 
 // database secret name
 setCommonGradleDefaultPropertyIfNull("kubernetesSupportDatabase", true)
-setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseSecretName", "${kubernetesNamespace}-database-secret")
-setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseSecretFilename", "config/${kubernetesDatabaseSecretName}-kubernetes.yaml")
+setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseSecretName", "database-secret")
+setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseSecretFilename", "config/${rootProject.name}-${kubernetesDatabaseSecretName}-kubernetes.yaml")
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseUsernameKey", "username")
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabasePasswordKey", "password") 
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseUsername", "serviceUser") // user in sample
@@ -572,12 +579,12 @@ setCommonGradleDefaultPropertyIfNull("kubernetesIdmImageVersion", "11.0.2")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmUrlPath", "/auth")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmFrontendUrl", "http://${rootProject.name}.local${kubernetesIdmUrlPath}")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmPort", "8080")
-setCommonGradleDefaultPropertyIfNull("kubernetesIdmDatabase", "${kubernetesDatabaseName}_idm")
+setCommonGradleDefaultPropertyIfNull("kubernetesIdmDatabase", "${kubernetesDatabaseName}")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmDatabaseHost", "${kubernetesDatabaseHost}")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmDatabasePort", "${kubernetesDatabasePort}")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmDatabaseVendor", "postgres")
-setCommonGradleDefaultPropertyIfNull("kubernetesIdmDatabaseUsername", "idmUser") // user in sample
-setCommonGradleDefaultPropertyIfNull("kubernetesIdmDatabasePassword", "pleaseCh@nge1t") // user in sample
+setCommonGradleDefaultPropertyIfNull("kubernetesIdmDatabaseUsername", "${kubernetesDatabaseUsername}") // user in sample
+setCommonGradleDefaultPropertyIfNull("kubernetesIdmDatabasePassword", "${kubernetesDatabasePassword}") // user in sample
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmAdminUsername", "admin") // user in sample
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmAdminPassword", "pleaseCh@nge1t") // user in sample
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmImage", "quay.io/keycloak/keycloak:${kubernetesIdmImageVersion}")
@@ -637,3 +644,15 @@ setCommonGradleDefaultPropertyIfNull("commonGradleConfigResourcebundleMaxMemory"
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("commonGradleJptoolsModelGeneratorVersion", "1.7.2")
 setCommonGradleDefaultPropertyIfNull("commonGradleJexcelapiModelGeneratorVersion", "2.6.12")
+
+
+/***************************************************************************************
+ * library version used in templates
+ ***************************************************************************************/
+setCommonGradleDefaultPropertyIfNull("commonGradleSlf4jApiVersion", "1.7.30")
+setCommonGradleDefaultPropertyIfNull("commonGradleLogbackVersion", "1.2.3")
+setCommonGradleDefaultPropertyIfNull("commonGradleJptoolsVersion", "1.7.5")
+setCommonGradleDefaultPropertyIfNull("commonGradleJavaxValidtionVersion", "2.0.1.Final")
+setCommonGradleDefaultPropertyIfNull("commonGradleJavaxWsRSApiVersion", "2.1.1")
+setCommonGradleDefaultPropertyIfNull("commonGradleJacksonAnnotationVersion", "2.11.2")
+setCommonGradleDefaultPropertyIfNull("commonGradleJavaxAnnotationVersion", "1.3.2")

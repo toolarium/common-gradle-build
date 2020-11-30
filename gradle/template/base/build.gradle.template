@@ -12,5 +12,12 @@ apply from: "@@COMMON_GRADLE_BUILD_URL@@"
  @@STAR_LINE@@/
 dependencies {
     // see https://docs.gradle.org/current/userguide/java_library_plugin.html
-    // e.g.: implementation 'net.sf.jptools:jptools:1.7.2'
+
+    // utilities
+    //implementation "net.sf.jptools:jptools:@@commonGradleJptoolsVersion@@"
+    //implementation "net.sf.jptools:jptools:@@commonGradleJptoolsVersion@@:slf4j-redirect"
+
+    // logging
+    implementation 'org.slf4j:slf4j-api:@@commonGradleSlf4jApiVersion@@'
+    testRuntimeOnly 'ch.qos.logback:logback-classic:@@commonGradleLogbackVersion@@'
 }

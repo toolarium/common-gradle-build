@@ -4,17 +4,7 @@
  * Copyright by @@LICENSE_ORGANISATION@@, all rights reserved.
  * @@LICENSE@@
  */
-plugins {
-  id 'com.github.johnrengelman.shadow' version '6.0.0'
-}
-
 apply from: "@@COMMON_GRADLE_BUILD_URL@@"
-
-
-/***************************************************************************************
- * define the main class name
- ***************************************************************************************/
-mainClassName = "@@applicationName@@"
 
 
 /@@STAR_LINE@@
@@ -29,5 +19,5 @@ dependencies {
 
     // logging
     implementation 'org.slf4j:slf4j-api:@@commonGradleSlf4jApiVersion@@'
-    implementation 'ch.qos.logback:logback-classic:@@commonGradleLogbackVersion@@'
+    testRuntimeOnly 'ch.qos.logback:logback-classic:@@commonGradleLogbackVersion@@'
 }

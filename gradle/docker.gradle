@@ -92,6 +92,8 @@ projectValidation {
 	doFirst {
 		if (project.getProperty('IS_NEW')) {
 			new File(srcDockerDirectory).mkdirs()
+			new File(srcKubernetesDirectory).mkdirs()
+			
 			createFileFromTemplate("$dockerFile", getTemplateFile("$dockerFileTemplateName"))
 			createFileFromTemplate("$dockerIgnoreFile", getTemplateFile('dockerignore.template'))
 		

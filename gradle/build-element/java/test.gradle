@@ -24,6 +24,7 @@ test {
 		testLogging {
 			//events("passed", "skipped", "failed")
 			events("failed")
+			showStandardStreams = project.getProperty('showStandardStreams')
 			showStackTraces = true
 			minGranularity = 3
 			exceptionFormat = TestExceptionFormat.FULL

@@ -150,6 +150,7 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 
 	doLast {			
 		new File("$gradleBuildDirectory/$kubernetesConfigurationPathname/").mkdirs()
+		new File("$kubernetesConfigurationElementsPath").mkdirs()
 
 		def kubernetesServicesFilename = "$kubernetesConfigurationElementsPath/${rootProject.name}-services-kubernetes.yaml"
 		createFileFromTemplate(kubernetesServicesFilename, getTemplateFile('kubernetes-ingress-controller-header.template'))
@@ -222,7 +223,8 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 						def ignoreLine = line.startsWith("#") || line.toString().trim().isEmpty()					
 						if (header && ignoreLine) {
 						} else {
-							header = false							
+							header = false			
+							line = replaceNamespace(line, "${kubernetesNamespace}")
 							fileContent.append(line + NELINE)
 							
 							if (!line.matches("^\\s+.*")) {
@@ -306,6 +308,8 @@ defaultTasks 'clean', 'projectValidation', 'build'
 projectValidation {
 	doFirst {
 		if (project.getProperty('IS_NEW')) {
+			new File(srcKubernetesDirectory).mkdirs()
+			
 			// generate git files if necessary
 			if (project.hasProperty('initScmForNewProjects') && project.getProperty('initScmForNewProjects')) {
 				createGitFiles(true)
