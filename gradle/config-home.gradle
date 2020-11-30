@@ -5,7 +5,8 @@
  * MIT License: https://mit-license.org
  */
 
- 
+ext.installGradleWrapper = false
+ext.initScmForNewProjects = false
 if (!project.hasProperty('commonGradleBuildUrl')) {
     ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
 }
@@ -76,6 +77,23 @@ projectValidation {
 			def gradleScmTemplatePath = "${gradleTemplatePath}/scm"
 			new File(gradleScmTemplatePath).mkdirs()
 			copy { from "${commonGradleTemplateScmPath}" include "*.template" into "${gradleScmTemplatePath}" }
+
+			def gradleCheckstyleTemplatePath = "${confPath}/checkstyle"
+			new File(gradleCheckstyleTemplatePath).mkdirs()
+			//copyFile( "${commonGradleTemplateCheckstylePath}/checkstyle-file-header.txt.template", "${gradleCheckstyleTemplatePath}/checkstyle-file-header.txt")
+			//copyFile( "${commonGradleTemplateCheckstylePath}/checkstyle-suppressions.xml.template", "${gradleCheckstyleTemplatePath}/checkstyle-suppressions.xml")
+			//copyFile( "${commonGradleTemplateCheckstylePath}/checkstyle.xml.template", "${gradleCheckstyleTemplatePath}/checkstyle.xml")
+
+			//delete "$gradleDirectory"
+			delete "$editorConfigFile"
+			delete "$settingsGradleFile"			
+			delete "$rootDirectory/README.md"
+			delete "$gradlePropertiesFile"
+			delete "$buildGradleFile"
+			
+			registerEndMessage("" << NELINE \
+								<< "  To get started, got to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
+								<< "      " + colorize(HIGHLITE_LEVEL, "$startExecutable") + "" << NELINE )
 		} 
 	}
 }

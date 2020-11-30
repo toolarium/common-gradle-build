@@ -1,0 +1,17 @@
+/*
+ * build.gradle
+ *
+ * Copyright by @@LICENSE_ORGANISATION@@, all rights reserved.
+ * @@LICENSE@@
+ */
+apply from: "@@COMMON_GRADLE_BUILD_URL@@"
+
+
+/@@STAR_LINE@@
+ * Define project dependencies
+ @@STAR_LINE@@/
+dependencies {
+    // see https://docs.gradle.org/current/userguide/java_library_plugin.html
+
+    // e.g.: implementation 'net.sf.jptools:jptools:@@commonGradleJptoolsVersion@@'
+}

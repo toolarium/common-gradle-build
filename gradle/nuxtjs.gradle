@@ -119,13 +119,6 @@ projectValidation {
 	}
 
 	doFirst {
-		if (project.hasProperty('generateTypescriptVersionFile') && project.getProperty('generateTypescriptVersionFile')) {
-			new File(getFilePath( typescriptVersionFile)).mkdirs()
-			new File("${typescriptVersionFile}").withWriter { writer ->
-				writer << "export default \"${project.version}\";" << NELINE
-			}
-		}
-	
 		if (project.getProperty('IS_NEW')) {
 			// use the defined files
 			new File(licenseFile).delete()
@@ -150,6 +143,14 @@ projectValidation {
 								<< "      " + colorize(HIGHLITE_LEVEL, "$startExecutable test") + "" << NELINE \
 								<< "" << NELINE \
 								<< "  For TypeScript users, see: " + colorize(HIGHLITE_LEVEL, "https://typescript.nuxtjs.org/cookbook/components/") + "" << NELINE)
+		} else {
+			if (project.hasProperty('generateTypescriptVersionFile') && project.getProperty('generateTypescriptVersionFile')) {
+				new File("$srcDirectory").mkdirs()
+				new File(getFilePath(typescriptVersionFile)).mkdirs()
+				new File("${typescriptVersionFile}").withWriter { writer ->
+					writer << "export default \"${project.version}\";" << NELINE
+				}
+			}
 		}
 	}
 }
