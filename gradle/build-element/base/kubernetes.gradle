@@ -116,7 +116,11 @@ task kubernetesApplicationConfig() {
 	doLast {
 		logInfo("Create kubernetes application / secret configuration.")
 		createFileFromTemplate("$kubernetesConfigurationPath/$kubernetesApplicationConfigFilename", getTemplateFile('kubernetes-application-config.template', 'kubernetes'))
-		createFileFromTemplate("$kubernetesConfigurationPath/$kubernetesApplicationSecretFilename", getTemplateFile('kubernetes-application-secret.template', 'kubernetes'))
+		
+		if (project.hasProperty('kubernetesApplicationOIDCPublicKey') && !project.getProperty('kubernetesApplicationOIDCPublicKey').toString().isEmpty()) {
+			createFileFromTemplate("$kubernetesConfigurationPath/$kubernetesApplicationSecretFilename", getTemplateFile('kubernetes-application-secret.template', 'kubernetes'))
+		}
+		
 		createFileFromTemplate("$kubernetesConfigurationPath/$kubernetesDatabaseSecretFilename", getTemplateFile('kubernetes-database-secret.template', 'kubernetes'))
 	}
 }
