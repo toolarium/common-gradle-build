@@ -66,22 +66,40 @@ apply from: "${commonGradleBuildElementPath}/base.gradle"
 apply from: "${commonGradleBuildElementPath}/base/gradle.gradle"
 apply from: "${commonGradleBuildElementPath}/base/run.gradle"
 apply from: "${commonGradleBuildElementPath}/base/kubernetes.gradle"
-//apply from: "${commonGradleBuildElementPath}/java/repository.gradle"
-//apply from: "${commonGradleBuildElementPath}/java/signing.gradle"
-//apply from: "${commonGradleBuildElementPath}/java/publication.gradle"
+
+if (new File("${srcKubernetesDirectory}").exists()) {
+	project.ext.set("kubernetesSupport", true)
+	
+	apply from: "${commonGradleBuildElementPath}/java/repository.gradle"
+	apply from: "${commonGradleBuildElementPath}/java/signing.gradle"
+	apply from: "${commonGradleBuildElementPath}/java/publication.gradle"
+
+	/***************************************************************************************
+	 * artefacts
+	 ***************************************************************************************/
+	artifacts {
+		archives kubernetesJar
+	}
+	
+} else {
+	/***************************************************************************************
+	 * clean
+	 ***************************************************************************************/
+	task clean() {
+		doFirst {
+			delete "${rootDirectory}/build/"
+		}
+	}	
+}
+
 apply from: "${commonGradleBuildElementPath}/base/docker.gradle"
 
-
-defaultTasks 'clean', 'projectValidation', 'dockerBuild'
-
-
-/***************************************************************************************
- * clean
- ***************************************************************************************/
-task clean() {
-	doFirst {
-		delete "${rootDirectory}/build/"
-	}
+if (new File("${srcKubernetesDirectory}").exists()) {
+	defaultTasks 'clean', 'projectValidation', 'build'
+	build.finalizedBy(dockerBuild)
+	publish.finalizedBy(dockerPush)
+} else {
+	defaultTasks 'clean', 'projectValidation', 'dockerBuild'
 }
 
 

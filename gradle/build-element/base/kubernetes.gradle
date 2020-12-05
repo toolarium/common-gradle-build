@@ -152,30 +152,54 @@ if (new File(srcKubernetesDirectory).exists()) {
 		description = 'Add project kubernetes configuration'
 		
 		doLast {
-			if (new File(srcKubernetesDirectory).exists()) {
-				new File("$kubernetesConfigurationElementsPath").mkdirs()
+			new File("$gradleBuildDirectory").mkdirs()
+			new File("$kubernetesConfigurationPath").mkdirs()
+			new File("$kubernetesConfigurationElementsPath").mkdirs()
+
+			// workaround: manipulate the template path to use the same search / replace functionality
+			def backupTemplatePath = project.getProperty('commonGradleTemplatePath')
+			setCommonGradleProperty('commonGradleTemplatePath', "$srcKubernetesDirectory")
+
+			def kubernetesFilename="${rootProject.name}-kubernetes.yaml"
+			def fileContent = new File("$kubernetesConfigurationPath/$kubernetesFilename")
+			def isNewFile = false
+			if (!fileContent.exists()) {
+				isNewFile = true
+				fileContent.createNewFile() 
+			}
+			
+			new File(srcKubernetesDirectory).eachFileRecurse (groovy.io.FileType.FILES) { file ->
+				def kubernetesServicesFilename = "$kubernetesConfigurationElementsPath/${rootProject.name}-kubernetes.yaml"
+				if (file.getName().toString().endsWith(".template")) {
+					printInfo("> Prepare kubernetes template " + colorize(HIGHLITE_LEVEL, file.getName()) + "...")
+					createFileFromTemplate("$kubernetesServicesFilename", "" + file.getName(), true, false)
+				} else {
+					printInfo("> Copy kubernetes file " + colorize(HIGHLITE_LEVEL, file.getName()) + "...")
+					copyFile("${file}", "$kubernetesServicesFilename")
+				}
 				
-				def fileContent = new File("$kubernetesConfigurationPath/$kubernetesFilename")
-				new File(srcKubernetesDirectory).eachFileRecurse (groovy.io.FileType.FILES) { file ->
-					printInfo("> Add kubernetes dependency " + colorize(HIGHLITE_LEVEL, file.getName()) + "...")
-					def kubernetesServicesFilename = "$kubernetesConfigurationElementsPath/${rootProject.name}-services-kubernetes.yaml"
-					copyFromTemplate(kubernetesServicesFilename, file, true, true);
-					
-					new File(kubernetesServicesFilename).withReader {
+				new File(kubernetesServicesFilename).withReader {
+					def header = true
+					if (!isNewFile) {
 						fileContent.append("---" + NELINE)
-						def header = true
 						fileContent.append("# Source: " + file.getName() + NELINE)
-						while ((line = it.readLine()) != null) {				
-							def ignoreLine = line.startsWith("#") || line.toString().trim().isEmpty()					
-							if (header && ignoreLine) {
-							} else {
-								header = false							
-								fileContent.append(line + NELINE)
-							}
+					} else {
+						header = false
+					}
+					
+					def line
+					while ((line = it.readLine()) != null) {
+						def ignoreLine = line.startsWith("#") || line.toString().trim().isEmpty()
+						if (header && ignoreLine) {
+						} else {
+							header = false
+							fileContent.append(line + NELINE)
 						}
 					}
 				}
 			}
+			
+			setCommonGradleProperty('commonGradleTemplatePath', backupTemplatePath)
 		}
 	}
 	kubernetesConfiguration.finalizedBy(projectKubernetesArtefacts)

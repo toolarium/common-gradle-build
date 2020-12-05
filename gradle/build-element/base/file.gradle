@@ -58,11 +58,11 @@ ext.getUniqueTempName = { prefix="cgb", appendix="", extension=".tmp" ->
  * Get filename only
  */
 ext.getFilename = { inputFilename ->
-	if (inputFilename==null || inputFilename.isEmpty()) {
+	if (inputFilename==null || inputFilename.toString().isEmpty()) {
 		return ""
 	}
 	
-	String name = inputFilename.replace('\\', '/')
+	String name = inputFilename.toString().replace('\\', '/')
 	return name.substring(name.lastIndexOf("/") + 1, name.length());	
 }
 
