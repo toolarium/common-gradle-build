@@ -35,7 +35,7 @@ spec:
     metadata:
       labels:
         app.@@KUBERNETES_LABEL_ID@@.database: @@KUBERNETES_DATABASE_SERVICE_NAME@@
-        tier: @@KUBERNETES_DATABASE_SERVICE_NAME@@        
+        tier: @@KUBERNETES_DATABASE_SERVICE_NAME@@
     spec:
       containers:
       - image: @@KUBERNETES_DATABASE_IMAGE@@
@@ -54,7 +54,7 @@ spec:
           name: @@KUBERNETES_DATABASE_VOLUME_NAME@@
         - mountPath: /etc/secret
           name: database-credentials
-          readOnly: true		  
+          readOnly: true
       restartPolicy: Always
       volumes:
         - name: @@KUBERNETES_DATABASE_VOLUME_NAME@@

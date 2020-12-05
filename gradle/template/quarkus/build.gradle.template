@@ -27,6 +27,10 @@ dependencies {
     // resteasy
     implementation 'io.quarkus:quarkus-resteasy-jackson'
 
+    // security
+    //implementation 'io.quarkus:quarkus-oidc'
+    //testImplementation 'io.quarkus:quarkus-test-security'
+
     // orm
     //implementation 'io.quarkus:quarkus-hibernate-orm'
 

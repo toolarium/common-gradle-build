@@ -50,25 +50,37 @@ spec:
                 name: @@KUBERNETES_APPLICATION_CONFIG_NAME@@
                 key: @@KUBERNETES_DATABASE_MAXSIZE_KEY@@
         - name: @@KUBERNETES_DATABASE_USERNAME_ENV_NAME@@
-          valueFrom: 
+          valueFrom:
             secretKeyRef:
                 name: @@KUBERNETES_DATABASE_SECRET_NAME@@
                 key: @@KUBERNETES_DATABASE_USERNAME_KEY@@
         - name: @@KUBERNETES_DATABASE_PASSWORD_ENV_NAME@@
-          valueFrom: 
+          valueFrom:
             secretKeyRef:
                 name: @@KUBERNETES_DATABASE_SECRET_NAME@@
                 key: @@KUBERNETES_DATABASE_PASSWORD_KEY@@
         - name: @@KUBERNETES_APPLICATION_OIDC_CLIENT_ID_ENV_NAME@@
           valueFrom:
-            secretKeyRef:
+            configMapKeyRef:
                 name: @@KUBERNETES_APPLICATION_SECRET_NAME@@
-                key: @@KUBERNETES_APPLICATION_OIDC_CLIENT_ID_KEY@@				
-        - name: @@KUBERNETES_APPLICATION_OIDC_PUBLICKEY_ID_ENV_NAME@@
+                key: @@KUBERNETES_APPLICATION_OIDC_CLIENT_ID_KEY@@
+        - name: @@KUBERNETES_APPLICATION_OIDC_AUTH_SERVER_URL_NAME@@
           valueFrom:
-            secretKeyRef:
+            configMapKeyRef:
                 name: @@KUBERNETES_APPLICATION_SECRET_NAME@@
-                key: @@KUBERNETES_APPLICATION_OIDC_PUBLICKEY_KEY@@
+                key: @@KUBERNETES_APPLICATION_OIDC_AUTH_SERVER_URL_KEY@@
+# either OIDC_PUBLIC_KEY or OIDC_AUTH_SERVER_URL
+#        - name: @@KUBERNETES_APPLICATION_OIDC_PUBLICKEY_ID_ENV_NAME@@
+#          valueFrom:
+#            secretKeyRef:
+#                name: @@KUBERNETES_APPLICATION_SECRET_NAME@@
+#                key: @@KUBERNETES_APPLICATION_OIDC_PUBLICKEY_KEY@@
+# optional OIDC_TOKEN_ISSUER -> then you have also to define in applicatin.properties
+#        - name: @@KUBERNETES_APPLICATION_OIDC_TOKEN_ISSUER_NAME@@
+#          valueFrom:
+#            configMapKeyRef:
+#                name: @@KUBERNETES_APPLICATION_SECRET_NAME@@
+#                key: @@KUBERNETES_APPLICATION_OIDC_TOKEN_ISSUER_KEY@@
       restartPolicy: Always
 ---
 apiVersion: v1

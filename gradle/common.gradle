@@ -109,7 +109,7 @@ if (commonCustomConfigVersion!=null && !commonCustomConfigVersion.isEmpty()) {
 	try {
 		if (new File(commonGradleBuildHomeBase).exists()) {
 			def lastCheckVersion = readLastCheckVersion("${commonGradleBuildHomeBase}/lastCheck.properties")
-			if (lastCheckVersion==null) {			
+			if (lastCheckVersion==null) {
 				def result = null
 				File[] files = new File(commonGradleBuildHomeBase).listFiles(); // select newest directory
 				if (files != null && files.length > 0) {

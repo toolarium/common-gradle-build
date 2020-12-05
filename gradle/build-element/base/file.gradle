@@ -366,7 +366,7 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 				filter { line -> line.replaceAll('@@dockerEntrypoint@@', "${project.ext.dockerEntrypoint}".toString()) }
 			}
 			
-			// kubernetes			
+			// kubernetes
 			if (project.hasProperty('kubernetesLabelId')) {
 				filter { line -> line.replaceAll('@@KUBERNETES_LABEL_ID@@', "${project.ext.kubernetesLabelId}".toString()) }
 			}
@@ -409,12 +409,29 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 				filter { line -> line.replaceAll('@@KUBERNETES_APPLICATION_OIDC_PUBLICKEY_KEY@@', "${project.ext.kubernetesApplicationOIDCPublicKeyKey}".toString()) }
 			}
 			if (project.hasProperty('kubernetesApplicationOIDCClientId')) {
-				filter { line -> line.replaceAll('@@KUBERNETES_APPLICATION_OIDC_CLIENT_ID@@', encodeBase64("${project.ext.kubernetesApplicationOIDCClientId}", "${project.ext.kubernetesUsernamePasswordBase64Encode}").toString()) }
+				filter { line -> line.replaceAll('@@KUBERNETES_APPLICATION_OIDC_CLIENT_ID@@', "${project.ext.kubernetesApplicationOIDCClientId}") }
 			}
 			if (project.hasProperty('kubernetesApplicationOIDCPublicKey')) {
 				filter { line -> line.replaceAll('@@KUBERNETES_APPLICATION_OIDC_PUBLICKEY@@', "${project.ext.kubernetesApplicationOIDCPublicKey}".toString()) }
 			}
-
+			if (project.hasProperty('kubernetesApplicationOIDCAuthServerUrlName')) {
+				filter { line -> line.replaceAll('@@KUBERNETES_APPLICATION_OIDC_AUTH_SERVER_URL_NAME@@', "${project.ext.kubernetesApplicationOIDCAuthServerUrlName}".toString()) }
+			}
+			if (project.hasProperty('kubernetesApplicationOIDCAuthServerUrlKey')) {
+				filter { line -> line.replaceAll('@@KUBERNETES_APPLICATION_OIDC_AUTH_SERVER_URL_KEY@@', "${project.ext.kubernetesApplicationOIDCAuthServerUrlKey}".toString()) }
+			}
+			if (project.hasProperty('kubernetesApplicationOIDCAuthServerUrl')) {
+				filter { line -> line.replaceAll('@@KUBERNETES_APPLICATION_OIDC_AUTH_SERVER_URL@@', "${project.ext.kubernetesApplicationOIDCAuthServerUrl}") }
+			}
+			if (project.hasProperty('kubernetesApplicationOIDCTokenIssuerName')) {
+				filter { line -> line.replaceAll('@@KUBERNETES_APPLICATION_OIDC_TOKEN_ISSUER_NAME@@', "${project.ext.kubernetesApplicationOIDCTokenIssuerName}".toString()) }
+			}
+			if (project.hasProperty('kubernetesApplicationOIDCTokenIssuerKey')) {
+				filter { line -> line.replaceAll('@@KUBERNETES_APPLICATION_OIDC_TOKEN_ISSUER_KEY@@', "${project.ext.kubernetesApplicationOIDCTokenIssuerKey}".toString()) }
+			}
+			if (project.hasProperty('kubernetesApplicationOIDCTokenIssuer')) {
+				filter { line -> line.replaceAll('@@KUBERNETES_APPLICATION_OIDC_TOKEN_ISSUER@@', "${project.ext.kubernetesApplicationOIDCTokenIssuer}") }
+			}
 			// kubernetes application config
 			if (project.hasProperty('kubernetesApplicationConfigName')) {
 				filter { line -> line.replaceAll('@@KUBERNETES_APPLICATION_CONFIG_NAME@@', "${project.ext.kubernetesApplicationConfigName}".toString()) }

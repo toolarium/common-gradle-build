@@ -494,7 +494,7 @@ if (!"$dockerIgnoreFile".toString().isEmpty()) {
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("kubernetesSupport", false)
 setCommonGradleDefaultPropertyIfNull("kubernetesReplicas", "2")
-setCommonGradleDefaultPropertyIfNull("srcKubernetesDirectoryName", "docker")
+setCommonGradleDefaultPropertyIfNull("srcKubernetesDirectoryName", "kubernetes")
 setCommonGradleDefaultPropertyIfNull("srcKubernetesDirectory", "${srcMainDirectory}/${srcKubernetesDirectoryName}")
 
 if (project.hasProperty('projectGroupId') && !project.getProperty('projectGroupId').trim().isEmpty()) {
@@ -541,6 +541,12 @@ setCommonGradleDefaultPropertyIfNull("kubernetesApplicationOIDCPublicKeyEnvName"
 setCommonGradleDefaultPropertyIfNull("kubernetesApplicationOIDCPublicKeyKey", "oidc.public-key")
 setCommonGradleDefaultPropertyIfNull("kubernetesApplicationOIDCClientId", "services")
 setCommonGradleDefaultPropertyIfNull("kubernetesApplicationOIDCPublicKey", "")
+setCommonGradleDefaultPropertyIfNull("kubernetesApplicationOIDCAuthServerUrlName", "OIDC_AUTH_SERVER_URL")
+setCommonGradleDefaultPropertyIfNull("kubernetesApplicationOIDCAuthServerUrlKey", "oidc.auth-server-url")
+setCommonGradleDefaultPropertyIfNull("kubernetesApplicationOIDCAuthServerUrl", "http://keycloak:8080/auth/realms")
+setCommonGradleDefaultPropertyIfNull("kubernetesApplicationOIDCTokenIssuerName", "OIDC_TOKEN_ISSUER")
+setCommonGradleDefaultPropertyIfNull("kubernetesApplicationOIDCTokenIssuerKey", "oidc.token-issuer")
+setCommonGradleDefaultPropertyIfNull("kubernetesApplicationOIDCTokenIssuer", "http://${kubernetesApplicationHost}/auth/realms")
 
 // database secret name
 setCommonGradleDefaultPropertyIfNull("kubernetesSupportDatabase", true)

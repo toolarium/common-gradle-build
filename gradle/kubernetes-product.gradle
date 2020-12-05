@@ -220,7 +220,7 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 					header = true
 					fileContent.append("# Source: " + file.getName() + NELINE)
 					while ((line = it.readLine()) != null) {				
-						def ignoreLine = line.startsWith("#") || line.toString().trim().isEmpty()					
+						def ignoreLine = line.startsWith("#") || line.toString().trim().isEmpty()
 						if (header && ignoreLine) {
 						} else {
 							header = false			

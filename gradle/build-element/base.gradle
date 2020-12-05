@@ -300,6 +300,31 @@ gradle.taskGraph.whenReady { taskGraph ->
 
 
 /***************************************************************************************
+ * check update common gradle build
+ ***************************************************************************************/
+task checkUpdateCommonGradleBuild() {
+	group = 'Build'
+	description = 'Check for common gradle build update.'
+
+	delete "${commonGradleBuildCache}/lastCheck.properties"
+
+	// check common gradle build cache
+	try {
+		downloadCommonGradleBuildCache()
+	} catch (Exception e) {
+		printWarn("Could not download common gradle build to cache: " + e.getMessage())
+	}
+
+	// check common gradle build home
+	try {
+		downloadCommonGradleBuildHome()
+	} catch (Exception e) {
+		printWarn("Could not download common gradle build home: " + e.getMessage())
+	}
+}
+
+
+/***************************************************************************************
  * project validation
  ***************************************************************************************/
 projectValidation {

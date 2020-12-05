@@ -77,7 +77,7 @@ spec:
         volumeMounts:
         - mountPath: /etc/secret
           name: idm-credentials
-          readOnly: true        
+          readOnly: true
       restartPolicy: Always
       volumes:
         - name: idm-credentials
