@@ -362,6 +362,7 @@ releasePrepareSnapshot.finalizedBy('build')
 task releaseVerification(dependsOn: ['releasePrepare']) {
 	group = 'Release'
 	description = 'Release verification.'
+	onlyIf { return project.hasProperty('validBuild') && project.getProperty('validBuild') }
 
 	doFirst {
 		// validate the branch name
@@ -423,6 +424,7 @@ task releaseVerification(dependsOn: ['releasePrepare']) {
 task publishRelease() {
 	group = 'Release'
 	description = 'Publish release.'
+	onlyIf { return project.hasProperty('validBuild') && project.getProperty('validBuild') }
 
 	doLast {
 		if (project.hasProperty("commonGradleBuildReleasePublish") && project.getProperty("commonGradleBuildReleasePublish")) {
@@ -442,42 +444,43 @@ if (project.hasProperty("commonGradleBuildReleasePublish") && project.getPropert
 /***************************************************************************************
  * release 
  ***************************************************************************************/
-task releaseSnapshot(dependsOn: ['releasePrepareSnapshot']) {
-	group = 'Release'
-	description = 'Release the current version as snapshot.'
+// setCommonGradleProperty('isSnapshotVersion', !project.getProperty('isReleaseVersion'))
+if (project.hasProperty('isSnapshotVersion') && project.getProperty('isSnapshotVersion')) {
+	task release(dependsOn: ['releasePrepareSnapshot']) {
+		group = 'Release'
+		description = 'Release the current version as snapshot.'
+		onlyIf { return project.hasProperty('validBuild') && project.getProperty('validBuild') }
 
-	doFirst {
-		updateReleaseArtefact(true)
+		doFirst {
+			updateReleaseArtefact(true)
+		}
 	}
-}
-releaseSnapshot.finalizedBy('publishRelease')
+	release.finalizedBy('publishRelease')
+} else { 
+	task release(dependsOn: ['releaseVerification']) {
+		group = 'Release'
+		description = 'Release the current version.'
+		onlyIf { return project.hasProperty('validBuild') && project.getProperty('validBuild') }
 
-
-/***************************************************************************************
- * release 
- ***************************************************************************************/
-task release(dependsOn: ['releaseVerification']) {
-	group = 'Release'
-	description = 'Release the current version.'
-
-	doFirst {
-		updateReleaseArtefact()
-	
-		// update version file
-		if (project.hasProperty("commonGradleBuildSupportSnapshotHandling") && project.getProperty("commonGradleBuildSupportSnapshotHandling")) {
-			setCommonGradleProperty("qualifierVersionNumber", SNAPSHOT_TAG_NAME)
-		}				
+		doFirst {
+			updateReleaseArtefact()
 		
-		def git = openGit()
-		increaseRevisionVersion()		
-		printInfo("> Prepare development " + colorize(HIGHLITE_LEVEL, "${project.version}") + ".")
-		git.add(patterns: ["$versionFilename"])
-		git.commit(message: "Prepare development v" + project.version)
-		git.push()
-		
-		closeGit(git)
-		
-		project.setProperty('scmVersionNumber', getGitCommitHash())
+			// update version file
+			if (project.hasProperty("commonGradleBuildSupportSnapshotHandling") && project.getProperty("commonGradleBuildSupportSnapshotHandling")) {
+				setCommonGradleProperty("qualifierVersionNumber", SNAPSHOT_TAG_NAME)
+			}				
+			
+			def git = openGit()
+			increaseRevisionVersion()		
+			printInfo("> Prepare development " + colorize(HIGHLITE_LEVEL, "${project.version}") + ".")
+			git.add(patterns: ["$versionFilename"])
+			git.commit(message: "Prepare development v" + project.version)
+			git.push()
+			
+			closeGit(git)
+			
+			project.setProperty('scmVersionNumber', getGitCommitHash())
+		}
 	}
+	releaseVerification.finalizedBy('publishRelease')
 }
-releaseVerification.finalizedBy('publishRelease')
