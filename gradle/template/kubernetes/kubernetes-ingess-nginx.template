@@ -442,7 +442,7 @@ webhooks:
           - UPDATE
         resources:
           - ingresses
-    failurePolicy: Fail
+    failurePolicy: Ignore
     sideEffects: None
     admissionReviewVersions:
       - v1
