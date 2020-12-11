@@ -567,7 +567,7 @@ setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseImage", "postgres:latest
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseName", "${kubernetesNamespace}")
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseStorage", "100Mi")
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseVolumeName", "${kubernetesDatabaseServiceName}-data")
-setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseMountPath", "/var/lib/${kubernetesDatabaseType}/data")
+setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseMountPath", "/var/lib/postgresql/data")
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseEnvName", "POSTGRES_DB")
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseEnvUserName", "POSTGRES_USER")
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseEnvPasswordName", "POSTGRES_PASSWORD")
