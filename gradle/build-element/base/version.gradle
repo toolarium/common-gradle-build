@@ -54,6 +54,10 @@ ext.readVersion = { ->
 			doUpdate = true
 		}
 	}	
+
+	if (project.hasProperty('isReleaseVersion') && "true".equalsIgnoreCase("" + project.getProperty('isReleaseVersion')) && project.getProperty('qualifierVersionNumber').endsWith(SNAPSHOT_TAG_NAME)) {
+		qualifierVersionNumber=qualifierVersionNumber.replace(SNAPSHOT_TAG_NAME, "")
+	}
 	
 	project.version = project.getProperty('majorVersionNumber') + "." + project.getProperty('minorVersionNumber') + "." + project.getProperty('revisionVersionNumber')
 	def qualifierVersionNumber = project.getProperty('qualifierVersionNumber')
