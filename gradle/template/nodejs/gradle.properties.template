@@ -6,6 +6,9 @@ projectComponentId       = @@COMPONENT_ID@@
 projectDescription       = @@DESCRIPTION@@
 projectUrl               = @@URL@@
 
+# define whether docker build should be in a specific sub path / url
+#dockerSubPathAccess      =
+
 # tool information
 nodePluginVersion        = @@NODE_PLUGIN_VERSION@@
 

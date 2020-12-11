@@ -113,7 +113,7 @@ publishing {
 			deployUrl = project.getProperty('mavenSnapshotPublishUrl')
 		}
 		
-		if (deployUrl.endsWith('/')) {
+		if (!deployUrl.endsWith('/')) {
 			deployUrl += '/'
 		}		
 		
