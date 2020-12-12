@@ -84,7 +84,7 @@ if (project.hasProperty('initCheckstyle') && project.getProperty('initCheckstyle
 		checkstyleTest {
 			source = project.getProperty('srcTestDirectory')
 		}
-	} else {
+	} else if (!project.getProperty('IS_NEW')) {
 		printWarn("Could not load checkstyle configuration (${runtimeCheckstyleConfigurationPath})!")
 	}
 }
