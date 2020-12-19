@@ -183,7 +183,7 @@ task dockerBuild {
 				if (sout!=null && !sout.toString().isEmpty()) {
 					message = "${message}" + sout.toString()
 				}
-				printWarn(message)
+				logInfo(message)
 			} else {
 				def file = new File(dockerImageListFilename)
 				try {			
