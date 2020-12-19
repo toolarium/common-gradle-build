@@ -189,7 +189,7 @@ if (!project.getProperty('IS_NEW')) {
 				
 		doFirst {
 			printInfo("> Initialize npm registry to " + colorize(HIGHLITE_LEVEL, "$nodeRegistry") + ".")
-			new File("$nodeConfigInitFile").createNewFile()
+			new File("$nodeConfigInitFile").write("$nodeRegistry")
 		}
 	}
 
