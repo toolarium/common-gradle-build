@@ -1,0 +1,23 @@
+# base information
+projectType              = @@PROJECT_TYPE@@
+projectRootPackageName   = @@PACKAGE@@
+projectGroupId           = @@GROUP_ID@@
+projectComponentId       = @@COMPONENT_ID@@
+projectDescription       = @@DESCRIPTION@@
+projectUrl               = @@URL@@
+
+# docker UID/GID can be overwritten
+# dockerUID                = @@dockerUID@@
+# dockerGID                = @@dockerGID@@
+
+# tool information
+# checkstyleToolVersion    = @@checkstyleToolVersion@@
+# testDependencyVersion    = @@testDependencyVersion@@
+# sourceCompatibility      = @@sourceCompatibility@@
+# targetCompatibility      = @@targetCompatibility@@
+
+# jvm information
+org.gradle.jvmargs       = @@GRADLE_JVM_ARG@@
+org.gradle.logging.level = @@GRADLE_LOG_LEVEL@@
+org.gradle.console       = @@GRADLE_CONSOLE@@
+org.gradle.warning.mode  = @@GRADLE_WARNING_MODE@@
