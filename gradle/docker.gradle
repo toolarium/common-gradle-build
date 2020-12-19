@@ -113,7 +113,7 @@ projectValidation {
 			new File(srcDockerDirectory).mkdirs()
 			new File(srcKubernetesDirectory).mkdirs()
 			
-			createFileFromTemplate("$dockerFile", getTemplateFile("$dockerFileTemplateName"))
+			createFileFromTemplate("$dockerFileTemplate", getTemplateFile("$dockerFileTemplateName"), true, true, false /* keep template*/)
 			createFileFromTemplate("$dockerIgnoreFile", getTemplateFile('dockerignore.template'))
 		
 			// generate git files if necessary

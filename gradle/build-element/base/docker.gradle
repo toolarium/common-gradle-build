@@ -77,54 +77,82 @@ task dockerBuild {
 	doLast {
 		if (!project.getProperty('IS_NEW') && checkDockerInstallation()) {
 			def dockerSourceMessage="project"
-			def deleteDockerfile=false
 			def deleteDockerIgnoreFile=false
-			def localDockerFile="$dockerFile"
-			def localFileExist=new File("$localDockerFile").exists()
-			def localDockerfileIgnoreExist = new File("$dockerIgnoreFile").exists()
+			def localDockerFileExist=new File("$dockerFile").exists()
+			def localDockerTemplateFileExist=new File("$dockerFileTemplate").exists()
+			def localFileExist=(localDockerFileExist || localDockerTemplateFileExist)
 			def supportProjectDockerfile=project.hasProperty("projectIndividualDockerfie") && project.getProperty("projectIndividualDockerfie")
 			def createProjectDockerfile=project.hasProperty("createProjectIndividualDockerfie") && project.getProperty("createProjectIndividualDockerfie")
+			def tempDockerFile=getUniqueTempName("${rootProject.name}", "${project.version}-dockerfile", null)
 
-			if (supportProjectDockerfile && createProjectDockerfile) {
+			if (supportProjectDockerfile && createProjectDockerfile) {			
 				if (!localFileExist) {
-					// create local file
-					createFileFromTemplate("$localDockerFile", getTemplateFile("$dockerFileTemplateName"))
+					// create local file in project 
+					createFileFromTemplate("$dockerFileTemplate", getTemplateFile("$dockerFileTemplateName"), true, true, false /* keep template*/)
+					
 					if (project.hasProperty('dockerIgnoreFilename') && !project.getProperty('dockerIgnoreFilename').toString().isEmpty()) {
 						createFileFromTemplate("$dockerIgnoreFile", getTemplateFile('dockerignore.template'))
 					}
+					
+					// create from local file
+					localDockerTemplateFileExist = createFileFromTemplate("$tempDockerFile", "$dockerFileTemplate")
+					localFileExist=(localDockerFileExist || localDockerTemplateFileExist)
 				}
-				// use local file
+
+				if (localDockerFileExist) {
+					// create from local file
+					printInfo("> Prepare dockerfile from " +colorize(HIGHLITE_LEVEL,  dockerFile) + " (new).")
+					dockerSourceMessage="project"
+					copyFile("$dockerFile", "$tempDockerFile")
+				} else {
+					printInfo("> Prepare dockerfile from template " +colorize(HIGHLITE_LEVEL,  dockerFileTemplate) + " (new).")
+					dockerSourceMessage="project template"
+					// create from local file
+					createFileFromTemplatePath(tempDockerFile, getFilePath(dockerFileTemplate), "", getFilename(dockerFileTemplate), true, false)
+				}
 			} else if (supportProjectDockerfile && localFileExist) {
-				// use local file
-				if (!localDockerfileIgnoreExist && !"$dockerIgnoreFile".toString().isEmpty()) {
-					deleteDockerIgnoreFile=createFileFromTemplate("$dockerIgnoreFile", getTemplateFile('dockerignore.template'))
+				if (localDockerFileExist) {
+					// create from local file
+					printInfo("> Prepare dockerfile from " +colorize(HIGHLITE_LEVEL,  dockerFile) + ".")
+					dockerSourceMessage="project"
+					copyFile("$dockerFile", "$tempDockerFile")
+				} else {
+					printInfo("> Prepare dockerfile from template " +colorize(HIGHLITE_LEVEL,  dockerFileTemplate) + ".")
+					dockerSourceMessage="project template"
+					createFileFromTemplatePath(tempDockerFile, getFilePath(dockerFileTemplate), "", getFilename(dockerFileTemplate), true, false)
+				}
+
+				if (!new File("$dockerIgnoreFile").exists() && !"$dockerIgnoreFile".toString().isEmpty()) {
+					printInfo("> Create temporary " +colorize(HIGHLITE_LEVEL,  dockerIgnoreFile) + ".")
+					deleteDockerIgnoreFile=true
+					createFileFromTemplate("$dockerIgnoreFile", getTemplateFile('dockerignore.template'), false, false)
 				}
 			} else {
+				printInfo("> Prepare dockerfile from template " +colorize(HIGHLITE_LEVEL, "/" + getTemplateFile("$dockerFileTemplateName")) + ".")
 				dockerSourceMessage="global"
-				localDockerFile=getUniqueTempName("${rootProject.name}", "${project.version}-dockerfile", null)
-				createFileFromTemplate("$localDockerFile", getTemplateFile("$dockerFileTemplateName"), true, false)
-				deleteDockerfile=true
+				createFileFromTemplate("$tempDockerFile", getTemplateFile("$dockerFileTemplateName"), true, false)
 
-				if (!"$dockerIgnoreFile".toString().isEmpty()) {
+				if (!new File("$dockerIgnoreFile").exists() && !"$dockerIgnoreFile".toString().isEmpty()) {
+					printInfo("> Create temporary " +colorize(HIGHLITE_LEVEL,  dockerIgnoreFile) + ".")
 					deleteDockerIgnoreFile=true
-					createFileFromTemplate("$dockerIgnoreFile", getTemplateFile('dockerignore.template'))				
+					createFileFromTemplate("$dockerIgnoreFile", getTemplateFile('dockerignore.template'), false, false)
 				}
 			}
 			
 			def dockerBuildName="${rootProject.name}:${project.version}"
-			logInfo("Use dockerfile [" +colorize(HIGHLITE_LEVEL,  dockerBuildName) + colorize(INFO_LEVEL, "]."))
+			logInfo("Use dockerfile [" +colorize(HIGHLITE_LEVEL, tempDockerFile) + colorize(INFO_LEVEL, "]."))
 			if (project.hasProperty("dockerName") && !project.getProperty("dockerName").toString().isEmpty()) {
 				dockerBuildName="$dockerName"
 			}
 			
-			if (localDockerFile.startsWith("./")) {
-				localDockerFile = cbProjectRootDir + "/" + localDockerFile.substring(2)
+			if (tempDockerFile.startsWith("./")) {
+				tempDockerFile = cbProjectRootDir + "/" + tempDockerFile.substring(2)
 			}
 				
-			printInfo("> Create docker image " +colorize(HIGHLITE_LEVEL,  dockerBuildName) + " (${dockerSourceMessage} dockerfile).")
+			printInfo("> Create docker image " + colorize(HIGHLITE_LEVEL,  dockerBuildName) + " (${dockerSourceMessage} dockerfile).")
 			logInfo("Use dockerfile [" +colorize(HIGHLITE_LEVEL,  dockerBuildName) + colorize(INFO_LEVEL, "]."))
 			
-			def cmd="docker build -t ${dockerBuildName} ${dockerBuildPull} ${dockerBuildCompress} ${dockerBuildArgs} -f ${localDockerFile} $cbProjectRootDir"
+			def cmd="docker build -t ${dockerBuildName} ${dockerBuildPull} ${dockerBuildCompress} ${dockerBuildArgs} -f ${tempDockerFile} $cbProjectRootDir"
 			def exitStatus = execDocker(cmd, "Could not build docker image:\n    " + cmd)
 			if (exitStatus==0) {
 				if( project.hasProperty("dockerCleanupAfterBuild") && project.getProperty("dockerCleanupAfterBuild") ) {
@@ -134,11 +162,122 @@ task dockerBuild {
 				}
 			}
 			
-			if (deleteDockerfile) {
-				new File("$localDockerFile").delete()
-			}
+			new File("$tempDockerFile").delete()
 			if (deleteDockerIgnoreFile) {
+				logInfo("Remove dockerignore " +colorize(HIGHLITE_LEVEL, dockerIgnoreFile) + ".")
 				new File("$dockerIgnoreFile").delete()
+			}
+
+			def dockerRemoveImageIdList = []
+			def dockerImageListFilename = getUniqueTempName("${rootProject.name}", "${project.version}-images", null)
+			cmd="docker image ls ${rootProject.name} > ${dockerImageListFilename}"
+			def sout = new StringBuilder()
+			exitStatus = execCommand(cmd, -1, sout, sout)
+			if (exitStatus>0) {
+				def message = "> Could not read docker images:\n    " + colorize(HIGHLITE_LEVEL, cmd) + ":"
+				if (sout!=null && !sout.toString().isEmpty()) {
+					message = "${message}" + sout.toString()
+				}
+				printWarn(message)
+			} else {
+				def file = new File(dockerImageListFilename)
+				try {			
+					file.withReader {
+						def tagIndex, imageIndex, createdIndex, sizeIndex
+						def line = it.readLine()
+						line = line.replace("IMAGE ID", "IMAGE_ID")
+						
+						def lineSplit = line.split(/\s+/)
+						for (int i = 0; i<lineSplit.length; i++) {
+							if (lineSplit[i]!=null && !lineSplit[i].toString().isEmpty()) {
+								if ("TAG".equals(lineSplit[i])) {
+									tagIndex = i
+								} else if ("IMAGE_ID".equals(lineSplit[i])) {
+									imageIndex = i
+								} else if ("CREATED".equals(lineSplit[i])) {
+									createdIndex = i
+								} else if ("SIZE".equals(lineSplit[i])) {
+									sizeIndex = i
+								}									
+							}
+						}
+
+						while ((line = it.readLine()) != null) {				
+							def sizeIdx = sizeIndex
+							if (line.indexOf("About")>=0) {
+								line = line.replace("About", "")
+								sizeIdx++
+							}
+							
+							lineSplit = line.split(/\s+/)
+							sizeIdx = lineSplit.length -1
+
+							def duration = 1
+							try {
+								duration = Integer.valueOf(lineSplit[createdIndex])
+							} catch(Exception e ) {
+								sizeIdx++
+							}
+
+							if (lineSplit[createdIndex+1].toString().startsWith("minute")) {
+								duration = duration * 60
+							} else if (lineSplit[createdIndex+1].toString().startsWith("hour")) {
+								duration = duration * 60 * 60
+							} else if (lineSplit[createdIndex+1].toString().startsWith("day")) {
+								duration = duration * 60 * 60 * 24 
+							} else if (lineSplit[createdIndex+1].toString().startsWith("week")) {
+								duration = duration * 60 * 60 * 24 * 7
+							} else if (lineSplit[createdIndex+1].toString().startsWith("month")) {
+								duration = duration * 60 * 60 * 24 * 30
+							} else if (lineSplit[createdIndex+1].toString().startsWith("year")) {
+								duration = duration * 60 * 60 * 24 * 365
+							}
+							
+							if ("${project.version}".toString().equals(lineSplit[tagIndex])) {
+								printInfo("> Docker images id " + colorize(HIGHLITE_LEVEL, lineSplit[imageIndex]) + ": " + colorize(HIGHLITE_LEVEL, lineSplit[sizeIdx]))
+							} else {
+								logInfo("Found different tag " + colorize(HIGHLITE_LEVEL, lineSplit[tagIndex]) 
+										+ colorize(INFO_LEVEL,", docker images id ") + colorize(HIGHLITE_LEVEL, lineSplit[imageIndex]) + colorize(INFO_LEVEL, ": ") 
+										+ colorize(HIGHLITE_LEVEL, lineSplit[sizeIdx]) + colorize(INFO_LEVEL, " (age ") + colorize(HIGHLITE_LEVEL, duration) + colorize(INFO_LEVEL, "s)"))
+										
+								if (!dockerRemoveImageIdList.contains(lineSplit[imageIndex])) {
+									dockerRemoveImageIdList.add(lineSplit[imageIndex])
+								}
+							}
+						}
+					}	
+				} catch (Exception e) {
+					printWarn("Could not add artefact depdendency " + file.getName() + ": " + e.getMessage())
+					throw e
+				}
+				
+				file.delete()
+			}
+
+			if (project.hasProperty("dockerRemoveDanglingImages") && project.getProperty("dockerRemoveDanglingImages")) {
+				printInfo("> Remove all dangling images...")
+				cmd="docker image prune -f"
+				execDocker(cmd, "Could not build docker image:\n    " + cmd)
+			}
+			
+			if (project.hasProperty("dockerRemovePreviousVersionImages") && project.getProperty("dockerRemovePreviousVersionImages")) {
+				def dockerMaxNumberOfImages = project.getProperty('dockerMaxNumberOfImages')
+				def diff = dockerRemoveImageIdList.size() - dockerMaxNumberOfImages + 1
+				if (diff>0) {
+					def previousImageId = ""
+					printInfo("> Remove $diff previous docker image(s) - max $dockerMaxNumberOfImages versions:")
+					for (int i = 0; i<diff; i++) {
+						def imageId = dockerRemoveImageIdList.removeLast()
+						cmd="docker rmi -f $imageId"
+						sout = new StringBuilder()
+						exitStatus = execCommand(cmd, -1, sout, sout)
+						if (exitStatus>0) {
+							printInfo("  - Could not remove docker image " + colorize(HIGHLITE_LEVEL, imageId) + "!")
+						} else {
+							printInfo("  - Delete docker image " + colorize(HIGHLITE_LEVEL, imageId) + ".")
+						}
+					}
+				}
 			}
 		}
 	} 
@@ -181,17 +320,34 @@ task dockerPush {
 
 	doLast {
 		if (!project.getProperty('IS_NEW') && checkDockerInstallation()) {
-			if (!project.hasProperty('dockerRepositoryHost')) {
-				addError("Can't push docker images, please check the dockerRepositoryHost settings.")
+			def dockerDeployRepositoryHost = ""
+			def dockerTagPrefix = ""
+			if (project.ext.isSnapshotVersion) {
+				dockerDeployRepositoryHost=project.getProperty('dockerSnapshotRepositoryHost')
+				dockerTagPrefix=project.getProperty('dockerSnapshotTagPrefix')
+				
+				if ("${dockerDeployRepositoryHost}".toString().isEmpty()) {
+					logInfo("Can't push docker image because of empty repository setting dockerSnapshotRepositoryHost.")
+				} 
+			} else {
+				dockerDeployRepositoryHost=project.getProperty('dockerRepositoryHost')
+				dockerTagPrefix=project.getProperty('dockerTagPrefix')
+				
+				if ("${dockerDeployRepositoryHost}".toString().isEmpty()) {
+					logInfo("Can't push docker image because of empty repository setting dockerRepositoryHost.")
+				} 
+			}
+			
+			if ("${dockerDeployRepositoryHost}".toString().isEmpty()) {
+				printInfo("> Ignore dockerPush (no host defined to where to push).")
 			} else {
 				def exitStatus=0
 				def loginFirst=((project.hasProperty('dockerRepositoryUser') && !project.getProperty('dockerRepositoryUser').toString().isEmpty())
 								 && (project.hasProperty('dockerRepositoryPassword') && !project.getProperty('dockerRepositoryPassword').toString().isEmpty()))
 				if (loginFirst) {
-					printInfo("> Login docker host: " +colorize(HIGHLITE_LEVEL,  dockerRepositoryHost) + ".")
-					def dockerRepositoryHost=project.getProperty('dockerRepositoryHost')
+					printInfo("> Login docker host: " +colorize(HIGHLITE_LEVEL,  dockerDeployRepositoryHost) + ".")
 					def cmd="docker login --username " + project.getProperty('dockerRepositoryUser') + " --password"
-					exitStatus = execDocker("$cmd " + project.getProperty('dockerRepositoryPassword') + " $dockerRepositoryHost", "Could not login into docker host:\n    " + cmd + " ... $dockerRepositoryHost")
+					exitStatus = execDocker("$cmd " + project.getProperty('dockerRepositoryPassword') + " $dockerDeployRepositoryHost", "Could not login into docker host:\n    " + cmd + " ... $dockerDeployRepositoryHost")
 				} 
 				
 				if (exitStatus==0) {
@@ -200,7 +356,12 @@ task dockerPush {
 						dockerBuildName="$dockerName"
 					}
 
-					def tagName="$dockerRepositoryHost/$dockerBuildName"
+					def tagName="$dockerTagPrefix".toString().trim()
+					if (!tagName.toString().trim().isEmpty()) {
+						tagName = "${tagName}/"
+					}
+					tagName = "${tagName}/$dockerBuildName"
+					
 					printInfo("> Tag docker image " + colorize(HIGHLITE_LEVEL, tagName) + ".")
 					def cmd="docker tag $dockerBuildName $tagName"
 					exitStatus = execDocker(cmd, "Could not tag image:\n    " + cmd)

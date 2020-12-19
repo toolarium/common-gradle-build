@@ -118,7 +118,10 @@ setCommonGradleProperty("licenseFile", "$commonGradleBuildHome/$licenseFilename"
 
 
 // docker repository
-//setCommonGradleProperty("dockerRepositoryHost", "localhost")
+//setCommonGradleProperty("dockerRepositoryHost", "https://hub.docker.com")
+//setCommonGradleProperty("dockerTagPrefix", "hub.docker.com")
+//setCommonGradleProperty("dockerSnapshotRepositoryHost", "")
+//setCommonGradleProperty("dockerSnapshotTagPrefix", "")
 
 
 /***************************************************************************************
