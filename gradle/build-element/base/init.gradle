@@ -27,8 +27,13 @@ init {
 		}
 		
 		def printDescription = projectDescription
-		if (printDescription.length() > length)
-			printDescription = printDescription.substring(0, length - 5) + "..."
+		if (printDescription.length() > length) {
+			if (length > 5) {
+				printDescription = printDescription.substring(0, length - 5) + "..."
+			} else {
+				printDescription = "..."
+			}
+		}
 
 		header += ": " + printDescription
 	}
