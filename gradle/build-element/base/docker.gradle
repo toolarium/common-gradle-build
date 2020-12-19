@@ -152,7 +152,12 @@ task dockerBuild {
 			printInfo("> Create docker image " + colorize(HIGHLITE_LEVEL,  dockerBuildName) + " (${dockerSourceMessage} dockerfile).")
 			logInfo("Use dockerfile [" +colorize(HIGHLITE_LEVEL,  dockerBuildName) + colorize(INFO_LEVEL, "]."))
 			
-			def cmd="docker build -t ${dockerBuildName} ${dockerBuildPull} ${dockerBuildCompress} ${dockerBuildArgs} -f ${tempDockerFile} $cbProjectRootDir"
+			def cmd="docker build -t ${dockerBuildName} ${dockerBuildPull} ${dockerBuildCompress}"
+			if (!"${dockerBuildArgs}".toString().trim().isEmpty()) {
+				cmd="$cmd ${dockerBuildArgs}"
+			}
+			cmd="$cmd -f ${tempDockerFile} $cbProjectRootDir"
+			
 			def exitStatus = execDocker(cmd, "Could not build docker image:\n    " + cmd)
 			if (exitStatus==0) {
 				if( project.hasProperty("dockerCleanupAfterBuild") && project.getProperty("dockerCleanupAfterBuild") ) {
@@ -174,7 +179,7 @@ task dockerBuild {
 			def sout = new StringBuilder()
 			exitStatus = execCommand(cmd, -1, sout, sout)
 			if (exitStatus>0) {
-				def message = "> Could not read docker images:\n    " + colorize(HIGHLITE_LEVEL, cmd) + ":"
+				def message = "Could not read docker images:\n    " + colorize(HIGHLITE_LEVEL, cmd) + ":"
 				if (sout!=null && !sout.toString().isEmpty()) {
 					message = "${message}" + sout.toString()
 				}
@@ -360,7 +365,7 @@ task dockerPush {
 					if (!tagName.toString().trim().isEmpty()) {
 						tagName = "${tagName}/"
 					}
-					tagName = "${tagName}/$dockerBuildName"
+					tagName = "${tagName}$dockerBuildName"
 					
 					printInfo("> Tag docker image " + colorize(HIGHLITE_LEVEL, tagName) + ".")
 					def cmd="docker tag $dockerBuildName $tagName"
