@@ -154,7 +154,25 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 		logDebug("Could not found template file [${theTemplatePath}/${inputTemplateFilename}].")
 		return false
 	}
-	
+
+	return createFileFromTemplatePath( inputFilename, theTemplatePath, templateSubPath, templateFilename, overwrite, print, replacePlaceHolders)
+}
+
+
+/** 
+ * Create file from template path
+ */
+ext.createFileFromTemplatePath = { inputFilename, theTemplatePath, templateSubPath, templateFilename, overwrite = true, print = true, replacePlaceHolders = true ->
+	if (inputFilename==null || inputFilename.isEmpty()) {
+		logDebug("Empty input filename.")
+		return false
+	}
+
+	if (templateFilename==null || templateFilename.isEmpty()) {
+		logDebug("Empty template filename.")
+		return false
+	}
+
 	String filename = getFilename(inputFilename);
 	String filePath = getFilePath(inputFilename);
 	if (filePath!=null && new File(filePath).exists()) {
@@ -661,7 +679,7 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 		
 		return true
 	} else {
-		logDebug("Template file ${theTemplatePath}/${inputTemplateFilename} don't exist.")
+		logDebug("Template file ${theTemplatePath}${templateSubPath}${templateFilename} don't exist.")
 		return false
 	}
 }
