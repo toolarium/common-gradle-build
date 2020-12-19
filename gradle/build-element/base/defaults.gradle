@@ -65,7 +65,7 @@ setCommonGradleDefaultPropertyIfNull("copyReleaseArtefactInformation", true)
 setCommonGradleDefaultPropertyIfNull("releaseAddComponentIdIntoReleasePath", true)
 setCommonGradleDefaultPropertyIfNull("commonGradleBuildValidateReleaseArtefact", true)
 setCommonGradleDefaultPropertyIfNull("commonGradleBuildSupportSnapshotHandling", true)
-setCommonGradleDefaultPropertyIfNull("commonGradleBuildReleaseBranchName", "master")
+setCommonGradleDefaultPropertyIfNull("commonGradleBuildReleaseBranchName", "")
 setCommonGradleDefaultPropertyIfNull("commonGradleBuildReleasePublish", true)
 
 
