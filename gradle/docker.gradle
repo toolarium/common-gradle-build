@@ -69,7 +69,19 @@ apply from: "${commonGradleBuildElementPath}/base/kubernetes.gradle"
 
 if (new File("${srcKubernetesDirectory}").exists()) {
 	project.ext.set("kubernetesSupport", true)
-	setCommonGradleProperty("kubernetesDockerImage", "${rootProject.name}:${project.version}")
+
+	// add docker prefix tag
+	def dockerTagPrefix = ""
+	if (project.ext.isSnapshotVersion) {
+		dockerTagPrefix = project.getProperty('dockerSnapshotTagPrefix')
+	} else {
+		dockerTagPrefix = project.getProperty('dockerTagPrefix')
+	}
+	dockerTagPrefix = "$dockerTagPrefix".toString().trim()
+	if (!dockerTagPrefix.toString().isEmpty()) {
+		dockerTagPrefix = "${dockerTagPrefix}/"
+	}
+	setCommonGradleProperty("kubernetesDockerImage", "${dockerTagPrefix}${rootProject.name}:${project.version}")
 
 	apply from: "${commonGradleBuildElementPath}/java/repository.gradle"
 	apply from: "${commonGradleBuildElementPath}/java/signing.gradle"

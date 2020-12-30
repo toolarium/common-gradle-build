@@ -137,7 +137,18 @@ task kubernetesConfiguration() {
 
 	if (project.hasProperty('kubernetesProjectConfiguration') && project.getProperty('kubernetesProjectConfiguration')) {
 		doLast {
-			setCommonGradleDefaultPropertyIfNull("kubernetesDockerImage", "${rootProject.name}:${project.version}")
+			// add docker prefix tag
+			def dockerTagPrefix = ""
+			if (project.ext.isSnapshotVersion) {
+				dockerTagPrefix = project.getProperty('dockerSnapshotTagPrefix')
+			} else {
+				dockerTagPrefix = project.getProperty('dockerTagPrefix')
+			}
+			dockerTagPrefix = "$dockerTagPrefix".toString().trim()
+			if (!dockerTagPrefix.toString().isEmpty()) {
+				dockerTagPrefix = "${dockerTagPrefix}/"
+			}
+			setCommonGradleDefaultPropertyIfNull("kubernetesDockerImage", "${dockerTagPrefix}${rootProject.name}:${project.version}")
 			new File("$kubernetesConfigurationPath").mkdirs()
 			
 			def kubernetesFilename="${rootProject.name}-kubernetes.yaml"
