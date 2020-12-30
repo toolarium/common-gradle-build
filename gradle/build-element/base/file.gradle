@@ -83,7 +83,7 @@ ext.getFilePath = { inputFilename ->
 /** 
  * Count lines in a file
  */
-ext.countLines = { inputFilename ->
+ext.countLines = { inputFilename, lineFilter = null ->
     def lines = 0;
 	if (inputFilename==null || "${inputFilename}".isEmpty()) {
 		return lines;
@@ -105,7 +105,15 @@ ext.countLines = { inputFilename ->
     try {
         while (bufferedReader.ready()) {
             String line = bufferedReader.readLine();
-			lines++
+			
+			if (lineFilter!=null && !lineFilter.toString().trim().isEmpty()) {
+				if (line.indexOf(lineFilter.toString())>=0) {
+					lines++
+				}
+			} else {
+				lines++
+			}
+			
             totalRead += line.length() + 1; // we add +1 byte for the newline char.
             // println("Progress ===> " + ((totalRead / fileSize) * 100) + " %");
         }
