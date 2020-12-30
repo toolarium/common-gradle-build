@@ -49,7 +49,6 @@ apply from: "${commonGradleBuildElementPath}/base/kubernetes.gradle"
 apply from: "${commonGradleBuildElementPath}/java/repository.gradle"
 apply from: "${commonGradleBuildElementPath}/java/signing.gradle"
 apply from: "${commonGradleBuildElementPath}/java/publication.gradle"
-apply from: "${commonGradleBuildElementPath}/base/docker.gradle"
 
 
 /***************************************************************************************
@@ -65,6 +64,9 @@ artifacts {
  ****************************************************************************************/
 configurations {
     kubernetes
+}
+configurations.kubernetes {
+    transitive = false
 }
 
 
@@ -292,6 +294,36 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 		fileContent.append("---" + NELINE)
 		fileContent.append("# Source " + new File(kubernetesServicesFilename).getName() + NELINE)
 		fileContent.append(controllerContent)
+
+		// create file which contains all image references
+		def imageList = []
+		def imageListContent = new File("$gradleBuildDirectory/$kubernetesConfigurationPathname/${rootProject.name}-docker-reference.txt")
+		printInfo("> Create docker image reference " + colorize(HIGHLITE_LEVEL, imageListContent.getName()) + "...")
+		fileContent.withReader {
+			while ((line = it.readLine()) != null) {
+				def pos = line.indexOf("#")
+				if (pos==0) {
+					line = ""
+				} else if (pos>0) {
+					line = line.substring(pos)
+				}
+				
+				if (!line.trim().isEmpty()) {
+					pos = line.indexOf("image:")
+					if (pos>=0) {
+						line = line.substring(6 + pos).trim()
+						
+						if (!imageList.contains(line)) {
+							imageList.add(line)
+							imageListContent.append(line + NELINE)
+							logInfo("  -> Add docker image reference " + colorize(HIGHLITE_LEVEL, line) + ".")
+						} else {
+							logInfo("  -> Ignore duplicate docker image reference " + colorize(HIGHLITE_LEVEL, line) + ".")
+						}
+					}
+				}
+			}
+		}
 	}
 }
 
