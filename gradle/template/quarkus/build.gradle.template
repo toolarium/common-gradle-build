@@ -36,6 +36,9 @@ dependencies {
 
     // database driver
     //implementation 'io.quarkus:quarkus-jdbc-postgresql'
+	
+	// liquibase support
+    //implementation 'io.quarkus:quarkus-liquibase'
 
     // testing
     testImplementation 'io.quarkus:quarkus-junit5'

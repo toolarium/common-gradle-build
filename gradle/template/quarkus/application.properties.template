@@ -6,18 +6,18 @@
 #
 
 # general logging 
-quarkus.http.root-path=/
+quarkus.http.root-path = /
 quarkus.banner.enabled = false
 quarkus.log.level = WARN
 #quarkus.hibernate-orm.log.sql = true
 quarkus.log.category."@@PARENT_PACKAGE@@".level = INFO
-quarkus.log.console.format=%d{yyyy-MM-dd HH:mm:ss,SSS} - %.1p - [%H|%i|%t{id}] - %-80c{79} - %-15.15X{logInformation} | %m%n
-#quarkus.log.console.format=%d{yyyy-MM-dd HH:mm:ss,SSS} - %.1p - [%-20H{20}|%-6i{6}|%-6t{id}] - %-80c{79} - %-15.15X{logInformation} | %m%n
+quarkus.log.console.format =%d{yyyy-MM-dd HH:mm:ss,SSS} - %.1p - [%H|%i|%t{id}] - %-80c{79} - %-15.15X{logInformation} | %m%n
+#quarkus.log.console.format =%d{yyyy-MM-dd HH:mm:ss,SSS} - %.1p - [%-20H{20}|%-6i{6}|%-6t{id}] - %-80c{79} - %-15.15X{logInformation} | %m%n
 
 # security configuration
-#%prod.quarkus.oidc.client-id=${@@KUBERNETES_APPLICATION_OIDC_CLIENT_ID_ENV_NAME@@}
-#%prod.quarkus.oidc.public-key=${@@KUBERNETES_APPLICATION_OIDC_PUBLICKEY_ID_ENV_NAME@@}
-#%prod.quarkus.oidc.auth-server-url=${@@KUBERNETES_APPLICATION_OIDC_AUTH_SERVER_URL_NAME@@}
+#%prod.quarkus.oidc.client-id = ${@@KUBERNETES_APPLICATION_OIDC_CLIENT_ID_ENV_NAME@@}
+#%prod.quarkus.oidc.public-key = ${@@KUBERNETES_APPLICATION_OIDC_PUBLICKEY_ID_ENV_NAME@@}
+#%prod.quarkus.oidc.auth-server-url = ${@@KUBERNETES_APPLICATION_OIDC_AUTH_SERVER_URL_NAME@@}
 
 # production configuration: never allow database generation on production!
 %prod.quarkus.hibernate-orm.database.generation = none
@@ -29,10 +29,10 @@ quarkus.log.console.format=%d{yyyy-MM-dd HH:mm:ss,SSS} - %.1p - [%H|%i|%t{id}] -
 %prod.quarkus.datasource.jdbc.max-size = ${@@KUBERNETES_DATABASE_JDBC_MAXSIZE_ENV_NAME@@:@@KUBERNETES_DATABASE_MAXSIZE_VALUE@@}
 
 # test configuration: drop and create the database in memory database, log debug -> cb test
-%test.quarkus.log.category."@@PACKAGE@@".level=DEBUG
-%test.quarkus.log.file.enable=true
-%test.quarkus.log.file.format=%d{yyyy-MM-dd HH:mm:ss,SSS} - %.1p - [%H|%i|%t{id}] - %-80c{79} - %-15.15X{logInformation} | %m%n
-%test.quarkus.log.file.path=build/@@PROJECT_NAME@@.log
+%test.quarkus.log.category."@@PACKAGE@@".level = DEBUG
+%test.quarkus.log.file.enable = true
+%test.quarkus.log.file.format =%d{yyyy-MM-dd HH:mm:ss,SSS} - %.1p - [%H|%i|%t{id}] - %-80c{79} - %-15.15X{logInformation} | %m%n
+%test.quarkus.log.file.path = build/@@PROJECT_NAME@@.log
 %test.quarkus.hibernate-orm.database.generation = drop-and-create
 %test.quarkus.hibernate-orm.sql-load-script = import-dev.sql
 %test.quarkus.datasource.db-kind = h2
@@ -41,13 +41,14 @@ quarkus.log.console.format=%d{yyyy-MM-dd HH:mm:ss,SSS} - %.1p - [%H|%i|%t{id}] -
 %test.quarkus.datasource.jdbc.url = jdbc:h2:mem:@@PROJECT_NAME@@
 
 # dev configration: update database, log debug -> cb run
-%dev.quarkus.log.category."@@PACKAGE@@".level=DEBUG
+%dev.quarkus.log.category."@@PACKAGE@@".level = DEBUG
 %dev.quarkus.log.console.color = true
-%dev.quarkus.log.console.format=%d{yyyy-MM-dd HH:mm:ss,SSS} - %.1p - [%H|%i|%t{id}] - %-50c{49} | %m%n
-%dev.quarkus.log.file.enable=true
-%dev.quarkus.log.file.format=%d{yyyy-MM-dd HH:mm:ss,SSS} - %.1p - [%H|%i|%t{id}] - %-80c{79} - %-15.15X{logInformation} | %m%n
+%dev.quarkus.log.console.format =%d{yyyy-MM-dd HH:mm:ss,SSS} - %.1p - [%H|%i|%t{id}] - %-50c{49} | %m%n
+%dev.quarkus.log.file.enable = true
+%dev.quarkus.log.file.format =%d{yyyy-MM-dd HH:mm:ss,SSS} - %.1p - [%H|%i|%t{id}] - %-80c{79} - %-15.15X{logInformation} | %m%n
 %dev.quarkus.log.file.path=../../../@@PROJECT_NAME@@.log
-#%dev.quarkus.hibernate-orm.database.generation = update
+#%dev.quarkus.hibernate-orm.database.generation = update # or none
+#%dev.quarkus.liquibase.migrate-at-start = true
 #%dev.quarkus.hibernate-orm.sql-load-script = no-file
 #%dev.quarkus.datasource.db-kind = @@kubernetesDatabaseType@@
 #%dev.quarkus.datasource.username = postgres
