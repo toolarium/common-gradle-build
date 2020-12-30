@@ -69,6 +69,18 @@ if (!project.getProperty('IS_NEW')) {
 
 
 /***************************************************************************************
+ * Add quarkus repository
+ ***************************************************************************************/
+if (project.hasProperty("quarkusRepository") && !project.getProperty("quarkusRepository").toString().trim().isEmpty()) {
+	repositories {
+		maven {
+			url "$quarkusRepository"
+		}
+	}
+}
+
+
+/***************************************************************************************
  * Defines the dependencies
  ***************************************************************************************/
 dependencies {

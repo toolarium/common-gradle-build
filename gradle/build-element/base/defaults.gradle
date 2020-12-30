@@ -304,6 +304,7 @@ setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", '1.8.1.Final')
 setCommonGradleDefaultPropertyIfNull("quarkusPlatformArtifactId", 'quarkus-universe-bom')
 setCommonGradleDefaultPropertyIfNull("quarkusPlatformGroupId", 'io.quarkus')
 setCommonGradleDefaultPropertyIfNull("quarkusPlatformVersion", "${quarkusPluginVersion}")
+setCommonGradleDefaultPropertyIfNull("quarkusRepository", "https://repository.jboss.org/maven2/")
 
 
 /***************************************************************************************
