@@ -11,6 +11,7 @@
  ***************************************************************************************/
 ext.projectTypeTemplatePath='java-application'
 ext.className='MyApplication'
+ext.commonGradleResourcebundleOutputPath='build/resources/main'
 
 
 if (!project.hasProperty('commonGradleBuildUrl')) {

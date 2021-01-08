@@ -86,6 +86,8 @@ addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.prettierrc")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/jest.config.js")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/jsconfig.json")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/tsconfig.json")
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/yarn.lock")
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/manifest.json")
 
 
 /***************************************************************************************
@@ -142,8 +144,8 @@ if (!project.getProperty('IS_NEW')) {
 		//useGradleProxySettings = true
 	}
 
-
-	defaultTasks 'clean', 'createResourceBundle', 'build'
+	defaultTasks 'clean', 'build'
+	build.dependsOn('createResourceBundle')
 
 
 	/***************************************************************************************
@@ -259,7 +261,8 @@ if (!project.getProperty('IS_NEW')) {
 		args = ['run', 'lint']
 	}
 } else {
-	defaultTasks 'projectValidation', 'createResourceBundle'
+	defaultTasks 'projectValidation'
+	projectValidation.finalizedBy('createResourceBundle')
 }
 
 

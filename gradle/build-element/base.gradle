@@ -6,7 +6,7 @@
  */
 // doc: https://www.oreilly.com/library/view/gradle-beyond-the/9781449373801/ch01.html
 // see http://sorcersoft.org/project/site/gradle/userguide/userguide.html
-
+// sample http://svnsis.ethz.ch/repos/cisd/jhdf5/tags/release/14.12.x/14.12.6/jhdf5/build.gradle
 
 if (!project.hasProperty('commonGradleBuildUrl')) {
     ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'

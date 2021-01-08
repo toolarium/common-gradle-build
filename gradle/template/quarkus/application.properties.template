@@ -34,6 +34,7 @@ quarkus.log.console.format =%d{yyyy-MM-dd HH:mm:ss,SSS} - %.1p - [%H|%i|%t{id}] 
 %test.quarkus.log.file.format =%d{yyyy-MM-dd HH:mm:ss,SSS} - %.1p - [%H|%i|%t{id}] - %-80c{79} - %-15.15X{logInformation} | %m%n
 %test.quarkus.log.file.path = build/@@PROJECT_NAME@@.log
 %test.quarkus.hibernate-orm.database.generation = drop-and-create
+%test.quarkus.liquibase.migrate-at-start = false
 %test.quarkus.hibernate-orm.sql-load-script = import-dev.sql
 %test.quarkus.datasource.db-kind = h2
 %test.quarkus.datasource.username = username-default

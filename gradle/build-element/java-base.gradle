@@ -20,7 +20,8 @@ apply from: "${commonGradleBuildElementPath}/java/checkstyle.gradle"
 apply from: "${commonGradleBuildElementPath}/java/testcoverage.gradle"
 apply from: "${commonGradleBuildElementPath}/java/eclipse.gradle"
 
-defaultTasks 'clean', 'createResourceBundle', 'build'
+defaultTasks 'clean', 'build'
+jar.dependsOn(createResourceBundle)
 
 
 /***************************************************************************************

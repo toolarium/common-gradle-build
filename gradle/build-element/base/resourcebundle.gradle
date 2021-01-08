@@ -44,7 +44,7 @@ ext.generateResourceBundle = { inputFile = "${commonGradleConfigResourcebundlePa
 		return
 	}
 	
-	logInfo("Create resource bundle [" + colorize(HIGHLITE_LEVEL, inputFile) + colorize(INFO_LEVEL, "] into [") + colorize(HIGHLITE_LEVEL, outputPath) + colorize(INFO_LEVEL, "]."))
+	printInfo("> Create resource bundle " + colorize(HIGHLITE_LEVEL, inputFile) + " into " + colorize(HIGHLITE_LEVEL, outputPath) + ".")
 	ant.java(taskname: "ResourceBundle",
 			classname: "jptools.util.application.GenericApplicationStarter",
 			fork: "true", newenvironment: "true", failonerror: "true",
