@@ -14,7 +14,7 @@ ext.getCommonGradleBuildTempPath = { subPath=null ->
 	if (!tempBaseFolder.toString().endsWith("/")) {
 		tempBaseFolder="${tempBaseFolder}/"
 	}
-	tempBaseFolder="${tempBaseFolder}cgb"
+	tempBaseFolder="${tempBaseFolder}cgb-" + System.properties['user.name']
 	
 	if (subPath!=null && !subPath.toString().trim().isEmpty()) {
 		tempBaseFolder="${tempBaseFolder}/${subPath}"
@@ -739,4 +739,61 @@ ext.copyFile = { fileToCopy, fileDest, overwrite = false ->
 	}
 
 	return false
+}
+
+
+/** 
+ * Read properties file: gradle.properties, application.properties
+ */
+ext.readPropertiesFile = { inputFile ->
+	def properties = new Properties()
+	if (inputFile!=null && !"${inputFile}".isEmpty()) {
+		File file = new File(inputFile);
+		if (file.exists() && file.canRead()) {
+			file(versionFile).withInputStream { properties.load(it) }
+		}
+	}
+	
+	return properties
+}
+
+
+/** 
+ * Read the gradle properties file
+ */
+ext.readGradlePropertiesFile = { 
+	return readPropertiesFile(gradlePropertiesFile)
+}
+
+
+/** 
+ * Read application properties file
+ */
+ext.readApplicationPropertiesFile = { inputFile, filterProd = true ->
+	Properties properties = readPropertiesFile("${srcMainResourcesDirectory}/application.properties")
+	Properties result = properties
+	
+	if (filterProd) {
+		result = new Properties()
+		
+		Enumeration e = properties.propertyNames();
+		while(e.hasMoreElements()) {
+			String key = (String)e.nextElement();
+			
+			if (filterProd) {
+				if (!key.startsWith("%dev.") && !key.startsWith("%test.")) {
+					String newKey = key;
+					if (newKey.startsWith("%prod.")) {
+						newKey = key.substring(6)
+					}
+					
+					result.setProperty(newKey, properties.getProperty(key))
+				}
+			} else {
+					result.setProperty(newKey, properties.getProperty(key))
+			}
+		}	
+	}
+	
+	return result
 }
