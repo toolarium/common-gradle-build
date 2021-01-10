@@ -748,10 +748,13 @@ ext.copyFile = { fileToCopy, fileDest, overwrite = false ->
 ext.readPropertiesFile = { inputFile ->
 	def properties = new Properties()
 	if (inputFile!=null && !"${inputFile}".isEmpty()) {
+		logInfo("Read properties file " + colorize(HIGHLITE_LEVEL, inputFile) + colorize(INFO_LEVEL, "."))
 		File file = new File(inputFile);
 		if (file.exists() && file.canRead()) {
-			file(versionFile).withInputStream { properties.load(it) }
+			file.withInputStream { properties.load(it) }
 		}
+	} else {
+		logInfo("Could not read properties file.")
 	}
 	
 	return properties
@@ -769,12 +772,13 @@ ext.readGradlePropertiesFile = {
 /** 
  * Read application properties file
  */
-ext.readApplicationPropertiesFile = { inputFile, filterProd = true ->
-	Properties properties = readPropertiesFile("${srcMainResourcesDirectory}/application.properties")
+ext.readApplicationPropertiesFile = { inputFile = "${srcMainResourcesDirectory}/application.properties", filterProd = true ->
+	Properties properties = readPropertiesFile(inputFile)
 	Properties result = properties
 	
 	if (filterProd) {
 		result = new Properties()
+		logInfo("Filter prod properties in file " + colorize(HIGHLITE_LEVEL, inputFile) + colorize(INFO_LEVEL, "."))
 		
 		Enumeration e = properties.propertyNames();
 		while(e.hasMoreElements()) {
