@@ -4,6 +4,37 @@
 #
 
 apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    app.@@KUBERNETES_LABEL_ID@@.secret: database-secret
+  name: database-admin-secret
+  namespace: @@KUBERNETES_NAMESPACE@@
+type: Opaque
+data:
+# contains base64 encoded values
+  username: YWRtaW51c2Vy
+  password: cGxlYXNlQ2hAbmdlMXQ=
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app.@@KUBERNETES_LABEL_ID@@.configmap: application-config
+  name: database-init
+  namespace: @@KUBERNETES_NAMESPACE@@
+data:
+  init-db.sh: |
+    #!/bin/bash
+    set -e
+    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$@@KUBERNETES_DATABASE_ENV_NAME@@" <<-EOSQL
+      CREATE USER $APP_USER_NAME WITH PASSWORD '$APP_USER_PASSWORD';
+      CREATE SCHEMA IF NOT EXISTS AUTHORIZATION $APP_USER_NAME;
+      CREATE USER $IDM_USER_NAME WITH PASSWORD '$IDM_USER_PASSWORD';
+      CREATE SCHEMA IF NOT EXISTS AUTHORIZATION $IDM_USER_NAME;
+    EOSQL
+---
+apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   labels:
@@ -49,12 +80,40 @@ spec:
           value: /etc/secret/@@KUBERNETES_DATABASE_USERNAME_KEY@@
         - name: @@KUBERNETES_DATABASE_PASSWORD_FILE_ENV_NAME@@
           value: /etc/secret/@@KUBERNETES_DATABASE_PASSWORD_KEY@@
+        - name: APP_USER_NAME
+          valueFrom:
+            secretKeyRef:
+                name: @@KUBERNETES_DATABASE_SECRET_NAME@@
+                key: @@KUBERNETES_DATABASE_USERNAME_KEY@@
+        - name: APP_USER_PASSWORD
+          valueFrom:
+            secretKeyRef:
+                name: @@KUBERNETES_DATABASE_SECRET_NAME@@
+                key: @@KUBERNETES_DATABASE_PASSWORD_KEY@@
+        - name: IDM_USER_NAME
+          valueFrom:
+            secretKeyRef:
+                name: @@KUBERNETES_IDM_SECRET_NAME@@
+                key: @@KUBERNETES_IDM_DATABASE_USERNAME_KEY@@
+        - name: IDM_USER_PASSWORD
+          valueFrom:
+            secretKeyRef:
+                name: @@KUBERNETES_IDM_SECRET_NAME@@
+                key: @@KUBERNETES_IDM_DATABASE_PASSWORD_KEY@@
+        - name: IDM_SCHEMA
+          valueFrom:
+            configMapKeyRef:
+                name: @@KUBERNETES_IDM_CONFIG_NAME@@
+                key: @@KUBERNETES_IDM_DATABASESCHEMA_KEY@@
         volumeMounts:
         - mountPath: @@KUBERNETES_DATABASE_MOUNT_PATH@@
           name: @@KUBERNETES_DATABASE_VOLUME_NAME@@
         - mountPath: /etc/secret
           name: database-credentials
           readOnly: true
+        - name: database-init
+          mountPath: /docker-entrypoint-initdb.d
+          readOnly: true			
       restartPolicy: Always
       volumes:
         - name: @@KUBERNETES_DATABASE_VOLUME_NAME@@
@@ -62,7 +121,11 @@ spec:
             claimName: @@KUBERNETES_DATABASE_VOLUME_NAME@@
         - name: database-credentials
           secret:
-            secretName: @@KUBERNETES_DATABASE_SECRET_NAME@@
+            secretName: database-admin-secret
+        - name: database-init
+          configMap:
+            name: database-init
+            defaultMode: 0755			
 ---
 apiVersion: v1
 kind: Service

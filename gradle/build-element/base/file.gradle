@@ -561,6 +561,9 @@ ext.createFileFromTemplatePath = { inputFilename, theTemplatePath, templateSubPa
 				if (project.hasProperty('kubernetesIdmDatabaseKey')) {
 					filter { line -> line.replaceAll('@@KUBERNETES_IDM_DATABASE_KEY@@', "${project.ext.kubernetesIdmDatabaseKey}".toString()) }
 				}			
+				if (project.hasProperty('kubernetesIdmDatabaseSchemaKey')) {
+					filter { line -> line.replaceAll('@@KUBERNETES_IDM_DATABASESCHEMA_KEY@@', "${project.ext.kubernetesIdmDatabaseSchemaKey}".toString()) }
+				}			
 				if (project.hasProperty('kubernetesIdmDatabaseHostKey')) {
 					filter { line -> line.replaceAll('@@KUBERNETES_IDM_DATABASE_HOST_KEY@@', "${project.ext.kubernetesIdmDatabaseHostKey}".toString()) }
 				}			
@@ -588,6 +591,9 @@ ext.createFileFromTemplatePath = { inputFilename, theTemplatePath, templateSubPa
 				}					
 				if (project.hasProperty('kubernetesIdmDatabase')) {
 					filter { line -> line.replaceAll('@@KUBERNETES_IDM_DATABASE@@', "${project.ext.kubernetesIdmDatabase}".toString()) }
+				}			
+				if (project.hasProperty('kubernetesIdmDatabaseSchema')) {
+					filter { line -> line.replaceAll('@@KUBERNETES_IDM_DATABASESCHEMA@@', "${project.ext.kubernetesIdmDatabaseSchema}".toString()) }
 				}			
 				if (project.hasProperty('kubernetesIdmDatabaseHost')) {
 					filter { line -> line.replaceAll('@@KUBERNETES_IDM_DATABASE_HOST@@', "${project.ext.kubernetesIdmDatabaseHost}".toString()) }
@@ -647,7 +653,7 @@ ext.createFileFromTemplatePath = { inputFilename, theTemplatePath, templateSubPa
 				}			
 				if (project.hasProperty('kubernetesIdmAdminPassword')) {
 					filter { line -> line.replaceAll('@@KUBERNETES_IDM_ADMIN_PASSWORD@@', encodeBase64("${project.ext.kubernetesIdmAdminPassword}", "${project.ext.kubernetesUsernamePasswordBase64Encode}").toString()) }
-				}			
+				}
 
 				if (project.hasProperty('kubernetesIdmUserFileEnvName')) {
 					filter { line -> line.replaceAll('@@KUBERNETES_IDM_USER_FILE_ENV_NAME@@', "${kubernetesIdmUserFileEnvName}") }
@@ -666,6 +672,9 @@ ext.createFileFromTemplatePath = { inputFilename, theTemplatePath, templateSubPa
 				}
 				if (project.hasProperty('kubernetesIdmDatabaseEnvName')) {
 					filter { line -> line.replaceAll('@@KUBERNETES_IDM_DATABASE_ENV_NAME@@', "${kubernetesIdmDatabaseEnvName}") }
+				}
+				if (project.hasProperty('kubernetesIdmDatabaseSchemaEnvName')) {
+					filter { line -> line.replaceAll('@@KUBERNETES_IDM_DATABASESCHEMA_ENV_NAME@@', "${kubernetesIdmDatabaseSchemaEnvName}") }
 				}
 				if (project.hasProperty('kubernetesIdmDatabaseUserFileEnvName')) {
 					filter { line -> line.replaceAll('@@KUBERNETES_IDM_DATABASE_USER_FILE_ENV_NAME@@', "${kubernetesIdmDatabaseUserFileEnvName}") }

@@ -55,6 +55,11 @@ spec:
             configMapKeyRef:
                 name: @@KUBERNETES_IDM_CONFIG_NAME@@
                 key: @@KUBERNETES_IDM_DATABASE_KEY@@
+        - name: @@KUBERNETES_IDM_DATABASESCHEMA_ENV_NAME@@
+          valueFrom:
+            configMapKeyRef:
+                name: @@KUBERNETES_IDM_CONFIG_NAME@@
+                key: @@KUBERNETES_IDM_DATABASESCHEMA_KEY@@
         - name: @@KUBERNETES_IDM_DATABASE_USER_FILE_ENV_NAME@@
           value: /etc/secret/@@KUBERNETES_IDM_DATABASE_USERNAME_KEY@@
         - name: @@KUBERNETES_IDM_DATABASE_PASSWORD_FILE_ENV_NAME@@
