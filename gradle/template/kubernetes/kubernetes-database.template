@@ -25,8 +25,8 @@ metadata:
   namespace: @@KUBERNETES_NAMESPACE@@
 data:
   init-db.sh: |
-  #!/bin/bash
-  @@KUBERNETES_DATABASE_INITIALIZATION_STRING@@
+    #!/bin/bash
+    @@KUBERNETES_DATABASE_INITIALIZATION_STRING@@
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
