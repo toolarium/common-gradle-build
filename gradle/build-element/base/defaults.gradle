@@ -584,12 +584,12 @@ setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseEnvPasswordName", "POSTG
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseUserFileEnvName", "POSTGRES_USER_FILE")
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabasePasswordFileEnvName", "POSTGRES_PASSWORD_FILE")
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseIntitializationString", "set -e" + NELINE \
-																			  + "	psql -v ON_ERROR_STOP=1 --username \$POSTGRES_USER --dbname \$POSTGRES_DB <<-EOSQL" + NELINE \
-																			  + "		CREATE USER \$APP_USER_NAME WITH PASSWORD '\$APP_USER_PASSWORD';" + NELINE \
-																			  + "		CREATE SCHEMA IF NOT EXISTS AUTHORIZATION \$APP_USER_NAME;" + NELINE \
-																			  + "		CREATE USER \$IDM_USER_NAME WITH PASSWORD '\$IDM_USER_PASSWORD';" + NELINE \
-																			  + "		CREATE SCHEMA IF NOT EXISTS \$IDM_SCHEMA AUTHORIZATION \$IDM_USER_NAME;" + NELINE \
-																			  + "	EOSQL")
+																			  + "    psql -v ON_ERROR_STOP=1 --username \$POSTGRES_USER --dbname \$POSTGRES_DB <<-EOSQL" + NELINE \
+																			  + "        CREATE USER \$APP_USER_NAME WITH PASSWORD '\$APP_USER_PASSWORD';" + NELINE \
+																			  + "        CREATE SCHEMA IF NOT EXISTS AUTHORIZATION \$APP_USER_NAME;" + NELINE \
+																			  + "        CREATE USER \$IDM_USER_NAME WITH PASSWORD '\$IDM_USER_PASSWORD';" + NELINE \
+																			  + "        CREATE SCHEMA IF NOT EXISTS \$IDM_SCHEMA AUTHORIZATION \$IDM_USER_NAME;" + NELINE \
+																			  + "    EOSQL")
 
 // application properties
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseType", "postgresql")
