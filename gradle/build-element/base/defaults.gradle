@@ -563,8 +563,11 @@ setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseSecretName", "database-s
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseSecretFilename", "config/${rootProject.name}-${kubernetesDatabaseSecretName}-kubernetes.yaml")
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseUsernameKey", "username")
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabasePasswordKey", "password") 
-setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseUsername", "service-user")   // service database user
+setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseUsername", "appuser")    // service database user
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabasePassword", "pleaseCh@nge1t") // service database password
+setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseAdminSecretName", "database-admin-secret")
+setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseAdminUsername", "dbadmin") // admin database user
+setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseAdminPassword", "${kubernetesDatabasePassword}") // service database password
 
 // database 
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseServiceName", "database")
@@ -580,6 +583,13 @@ setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseEnvUserName", "POSTGRES_
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseEnvPasswordName", "POSTGRES_PASSWORD")
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseUserFileEnvName", "POSTGRES_USER_FILE")
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabasePasswordFileEnvName", "POSTGRES_PASSWORD_FILE")
+setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseIntitializationString", "set -e" + NELINE \
+																			  + "	psql -v ON_ERROR_STOP=1 --username \$POSTGRES_USER --dbname \$POSTGRES_DB <<-EOSQL" + NELINE \
+																			  + "		CREATE USER \$APP_USER_NAME WITH PASSWORD '\$APP_USER_PASSWORD';" + NELINE \
+																			  + "		CREATE SCHEMA IF NOT EXISTS AUTHORIZATION \$APP_USER_NAME;" + NELINE \
+																			  + "		CREATE USER \$IDM_USER_NAME WITH PASSWORD '\$IDM_USER_PASSWORD';" + NELINE \
+																			  + "		CREATE SCHEMA IF NOT EXISTS AUTHORIZATION \$IDM_USER_NAME;" + NELINE \
+																			  + "	EOSQL")
 
 // application properties
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseType", "postgresql")
@@ -600,7 +610,7 @@ setCommonGradleDefaultPropertyIfNull("kubernetesIdmDatabaseSchema", "${kubernete
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmDatabaseHost", "${kubernetesDatabaseHost}")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmDatabasePort", "${kubernetesDatabasePort}")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmDatabaseVendor", "postgres")
-setCommonGradleDefaultPropertyIfNull("kubernetesIdmDatabaseUsername", "${kubernetesIdmServiceName}")   // idm username
+setCommonGradleDefaultPropertyIfNull("kubernetesIdmDatabaseUsername", "idmuser")   // idm username
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmDatabasePassword", "${kubernetesDatabasePassword}") // idm password
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmAdminUsername", "admin") // user in sample
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmAdminPassword", "pleaseCh@nge1t") // user in sample

@@ -172,6 +172,7 @@ ext.createFileFromTemplate = { inputFilename, inputTemplateFilename, overwrite =
 /** 
  * Create file from template path
  */
+import java.util.regex.Matcher;
 ext.createFileFromTemplatePath = { inputFilename, theTemplatePath, templateSubPath, templateFilename, overwrite = true, print = true, replacePlaceHolders = true ->
 	if (inputFilename==null || inputFilename.isEmpty()) {
 		logDebug("Empty input filename.")
@@ -493,6 +494,9 @@ ext.createFileFromTemplatePath = { inputFilename, theTemplatePath, templateSubPa
 				if (project.hasProperty('kubernetesDatabaseSecretName')) {
 					filter { line -> line.replaceAll('@@KUBERNETES_DATABASE_SECRET_NAME@@', "${project.ext.kubernetesDatabaseSecretName}".toString()) }
 				}
+				if (project.hasProperty('kubernetesDatabaseAdminSecretName')) {
+					filter { line -> line.replaceAll('@@KUBERNETES_DATABASE_ADMIN_SECRET_NAME@@', "${project.ext.kubernetesDatabaseAdminSecretName}".toString()) }
+				}
 				if (project.hasProperty('kubernetesDatabaseUsernameKey')) {
 					filter { line -> line.replaceAll('@@KUBERNETES_DATABASE_USERNAME_KEY@@', "${project.ext.kubernetesDatabaseUsernameKey}".toString()) }
 				}
@@ -509,6 +513,12 @@ ext.createFileFromTemplatePath = { inputFilename, theTemplatePath, templateSubPa
 				if (project.hasProperty('kubernetesDatabaseName')) {
 					filter { line -> line.replaceAll('@@KUBERNETES_DATABASE_NAME@@', "${project.ext.kubernetesDatabaseName}".toString()) }
 				}
+				if (project.hasProperty('kubernetesDatabaseAdminUsername')) {
+					filter { line -> line.replaceAll('@@KUBERNETES_DATABASE_ADMIN_USERNAME@@', encodeBase64("${project.ext.kubernetesDatabaseAdminUsername}", "${project.ext.kubernetesUsernamePasswordBase64Encode}").toString()) }
+				}			
+				if (project.hasProperty('kubernetesDatabaseAdminPassword')) {
+					filter { line -> line.replaceAll('@@KUBERNETES_DATABASE_ADMIN_PASSWORD@@', encodeBase64("${project.ext.kubernetesDatabaseAdminPassword}", "${project.ext.kubernetesUsernamePasswordBase64Encode}").toString()) }
+				}
 						
 				if (project.hasProperty('kubernetesDatabasePort')) {
 					filter { line -> line.replaceAll('@@KUBERNETES_DATABASE_PORT@@', "${project.ext.kubernetesDatabasePort}".toString()) }
@@ -524,6 +534,9 @@ ext.createFileFromTemplatePath = { inputFilename, theTemplatePath, templateSubPa
 				}
 				if (project.hasProperty('kubernetesDatabaseEnvName')) {
 					filter { line -> line.replaceAll('@@KUBERNETES_DATABASE_ENV_NAME@@', "${project.ext.kubernetesDatabaseEnvName}".toString()) }
+				}
+				if (project.hasProperty('kubernetesDatabaseIntitializationString')) {
+					filter { line -> line.replaceAll('@@KUBERNETES_DATABASE_INITIALIZATION_STRING@@', Matcher.quoteReplacement("${project.ext.kubernetesDatabaseIntitializationString}".toString())) }
 				}
 				if (project.hasProperty('kubernetesDatabaseEnvUserName')) {
 					filter { line -> line.replaceAll('@@KUBERNETES_DATABASE_ENV_USER_NAME@@', "${project.ext.kubernetesDatabaseEnvUserName}".toString()) }
