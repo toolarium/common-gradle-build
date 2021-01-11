@@ -588,7 +588,7 @@ setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseIntitializationString", 
 																			  + "		CREATE USER \$APP_USER_NAME WITH PASSWORD '\$APP_USER_PASSWORD';" + NELINE \
 																			  + "		CREATE SCHEMA IF NOT EXISTS AUTHORIZATION \$APP_USER_NAME;" + NELINE \
 																			  + "		CREATE USER \$IDM_USER_NAME WITH PASSWORD '\$IDM_USER_PASSWORD';" + NELINE \
-																			  + "		CREATE SCHEMA IF NOT EXISTS AUTHORIZATION \$IDM_USER_NAME;" + NELINE \
+																			  + "		CREATE SCHEMA IF NOT EXISTS \$IDM_SCHEMA AUTHORIZATION \$IDM_USER_NAME;" + NELINE \
 																			  + "	EOSQL")
 
 // application properties
