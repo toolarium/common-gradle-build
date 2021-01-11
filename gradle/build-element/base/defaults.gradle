@@ -563,8 +563,8 @@ setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseSecretName", "database-s
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseSecretFilename", "config/${rootProject.name}-${kubernetesDatabaseSecretName}-kubernetes.yaml")
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseUsernameKey", "username")
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabasePasswordKey", "password") 
-setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseUsername", "serviceUser") // user in sample
-setCommonGradleDefaultPropertyIfNull("kubernetesDatabasePassword", "pleaseCh@nge1t") // user in sample
+setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseUsername", "service-user")   // service database user
+setCommonGradleDefaultPropertyIfNull("kubernetesDatabasePassword", "pleaseCh@nge1t") // service database password
 
 // database 
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseServiceName", "database")
@@ -600,8 +600,8 @@ setCommonGradleDefaultPropertyIfNull("kubernetesIdmDatabaseSchema", "${kubernete
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmDatabaseHost", "${kubernetesDatabaseHost}")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmDatabasePort", "${kubernetesDatabasePort}")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmDatabaseVendor", "postgres")
-setCommonGradleDefaultPropertyIfNull("kubernetesIdmDatabaseUsername", "${kubernetesDatabaseUsername}") // user in sample
-setCommonGradleDefaultPropertyIfNull("kubernetesIdmDatabasePassword", "${kubernetesDatabasePassword}") // user in sample
+setCommonGradleDefaultPropertyIfNull("kubernetesIdmDatabaseUsername", "${kubernetesIdmServiceName}")   // idm username
+setCommonGradleDefaultPropertyIfNull("kubernetesIdmDatabasePassword", "${kubernetesDatabasePassword}") // idm password
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmAdminUsername", "admin") // user in sample
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmAdminPassword", "pleaseCh@nge1t") // user in sample
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmImage", "quay.io/keycloak/keycloak:${kubernetesIdmImageVersion}")

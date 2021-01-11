@@ -14,7 +14,9 @@ ext.getCommonGradleBuildTempPath = { subPath=null ->
 	if (!tempBaseFolder.toString().endsWith("/")) {
 		tempBaseFolder="${tempBaseFolder}/"
 	}
-	tempBaseFolder="${tempBaseFolder}cgb-" + System.properties['user.name']
+	
+	def localUsername = ("" + System.properties['user.name']).toString().replace(' ', '_')
+	tempBaseFolder="${tempBaseFolder}cgb-" + localUsername
 	
 	if (subPath!=null && !subPath.toString().trim().isEmpty()) {
 		tempBaseFolder="${tempBaseFolder}/${subPath}"
