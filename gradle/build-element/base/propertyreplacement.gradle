@@ -9,6 +9,7 @@
 /** 
  * Search and replace by properties
  */
+import java.util.regex.Matcher;
 ext.searchReplaceByProperties = { inputLine, replacePlaceHolders = true ->
 	def line = inputLine
 

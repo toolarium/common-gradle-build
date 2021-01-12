@@ -86,7 +86,7 @@ task kubernetesIngress() {
 		if (hasOnlineConnection && project.hasProperty('kubernetesDownloadIngressNginxVersion') && project.getProperty('kubernetesDownloadIngressNginxVersion') && project.hasProperty('kubernetesIngressUrl')) {
 			def count = downloadAndReplace("$kubernetesIngressUrl", "$kubernetesIngresControlFilename", "$kubernetesNamespace")			
 		} else {
-			createFileFromTemplate("$kubernetesIngresControlFilename", getTemplateFile('kubernetes-ingess-nginx.template'), true, false)
+			createFileFromTemplate("$kubernetesIngresControlFilename", getTemplateFile('kubernetes-ingess-nginx.template'), true /*overwrite*/, false /*print*/)
 		}
 	}
 }
@@ -105,8 +105,8 @@ task kubernetesIdm() {
 		def idmFile = "$kubernetesConfigurationServicesPath/${kubernetesConfigurationPathname}/${rootProject.name}-kubernetes-idm.yaml"
 		printInfo("> Created kubernetes idm configuration " + colorize(HIGHLITE_LEVEL, idmFile) + ".")
 		createFileFromTemplate("$idmFile", getTemplateFile('kubernetes-idm.template'), true, false)
-		createFileFromTemplate("$kubernetesConfigurationPath/config/${rootProject.name}-idm-config-kubernetes-idm.yaml", getTemplateFile('kubernetes-idm-config.template'))
-		createFileFromTemplate("$kubernetesConfigurationPath/config/${rootProject.name}-idm-secret-kubernetes.yaml", getTemplateFile('kubernetes-idm-secret.template'))
+		createFileFromTemplate("$kubernetesConfigurationPath/config/${rootProject.name}-idm-config-kubernetes-idm.yaml", getTemplateFile('kubernetes-idm-config.template'), true /*overwrite*/, true /*print*/, true /*replace*/, NELINE /*only nl*/)
+		createFileFromTemplate("$kubernetesConfigurationPath/config/${rootProject.name}-idm-secret-kubernetes.yaml", getTemplateFile('kubernetes-idm-secret.template'), true /*overwrite*/, true /*print*/, true /*replace*/, NELINE /*only nl*/)
 	}
 }
 
@@ -122,7 +122,7 @@ task kubernetesDatabase() {
 	doFirst {
 		def databaseFile = "$kubernetesConfigurationPath/sample/${rootProject.name}-kubernetes-database.yaml"
 		printInfo("> Created kubernetes database configuration " + colorize(HIGHLITE_LEVEL, databaseFile) + ".")
-		createFileFromTemplate("$databaseFile", getTemplateFile('kubernetes-database.template'), true, false)
+		createFileFromTemplate("$databaseFile", getTemplateFile('kubernetes-database.template'), true /*overwrite*/, false /*print*/, true /*replace*/, NELINE /*only nl*/)
 	}
 }
 
