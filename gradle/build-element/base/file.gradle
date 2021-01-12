@@ -223,6 +223,9 @@ ext.createFileFromTemplatePath = { inputFilename, theTemplatePath, templateSubPa
 		
 		File inputFile = new File("${theTemplatePath}${templateSubPath}/${templateFilename}")
 		File outputFile = new File("${filePath}/${filename}")
+		if (overwrite && outputFile.exists()) {
+			outputFile.delete()
+		}
 
 		try {			
 			inputFile.withReader {
