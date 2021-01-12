@@ -53,6 +53,42 @@ ext.createPackagePath = { basePath, packageName ->
 }
 
 
+/****************************************************************************************
+ * Defines the api configuration
+ *
+ * https://docs.gradle.org/current/userguide/declaring_dependencies.html
+ * https://docs.gradle.org/current/userguide/declaring_dependencies.html
+ * https://docs.gradle.org/current/userguide/java_plugin.html#tab:configurations
+ * https://reflectoring.io/maven-scopes-gradle-configurations/
+ * https://github.com/gradle/gradle/issues/1118
+ * https://github.com/xvik/gradle-pom-plugin
+ ****************************************************************************************/
+configurations {
+    //api
+	implementation.extendsFrom api
+ }
+
+// modify the scope of api depdenency: workaround
+publishing.publications.all {
+    pom.withXml {
+        asNode().dependencies.'*'.findAll() {
+            it.scope.text() == 'runtime' && project.configurations.api.allDependencies.find { dep ->
+                dep.name == it.artifactId.text()
+            }
+        }.each { it.scope*.value = 'compile'}
+    }
+}
+
+task printDependencies() {
+	doFirst {
+		configurations.api.getAllDependencies().each { dep -> 
+			logInfo("API dependency: "+dep.group + ", " + dep.name + ", " + dep.version)
+		}
+	}
+}
+clean.finalizedBy('printDependencies')
+
+
 /***************************************************************************************
  * artefacts
  ***************************************************************************************/
