@@ -30,6 +30,10 @@ test {
 			exceptionFormat = TestExceptionFormat.FULL
 			//stackTraceFilters(org.gradle.api.tasks.testing.logging.TestStackTraceFilter.ENTRY_POINT)
 			
+			// set heap size for the test JVM(s)
+			minHeapSize = "$testMinHeapSize"
+			maxHeapSize = "$testMaxHeapSize"
+ 
 			// set options for log level DEBUG
 			debug {
 				events "started", "skipped", "failed"

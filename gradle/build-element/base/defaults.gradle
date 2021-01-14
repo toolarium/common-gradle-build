@@ -254,6 +254,8 @@ if (!project.hasProperty('mavenPassword')) {
 setCommonGradleDefaultPropertyIfNull("initTesting", true)
 setCommonGradleDefaultPropertyIfNull("useJUnit", true)
 setCommonGradleDefaultPropertyIfNull("showStandardStreams", false)
+setCommonGradleDefaultPropertyIfNull("testMinHeapSize", "128m")
+setCommonGradleDefaultPropertyIfNull("testMaxHeapSize", "512m")
 
 if (initTesting) {
 	if (useJUnit) {
@@ -663,6 +665,11 @@ setCommonGradleDefaultPropertyIfNull("commonGradleConfigResourcebundleName", "Re
 setCommonGradleDefaultPropertyIfNull("commonGradleConfigResourcebundlePath", "${configDirectory}/${commonGradleConfigResourcebundleName}")
 setCommonGradleDefaultPropertyIfNull("commonGradleResourcebundleOutputPath", "${generatedCommonGradleBuildSources}/resources/main")
 setCommonGradleDefaultPropertyIfNull("commonGradleResourcebundleOutputNamePrefix", "resourcebundle")
+
+setCommonGradleDefaultPropertyIfNull("referenceSheetName", "")
+setCommonGradleDefaultPropertyIfNull("referenceSheetHasNoSubFolder", "false")
+
+
 setCommonGradleDefaultPropertyIfNull("commonGradleResourcebundleJsonSupport", false)
 setCommonGradleDefaultPropertyIfNull("commonGradleConfigResourcebundleMaxMemory", "512m")
 

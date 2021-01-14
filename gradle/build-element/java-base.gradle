@@ -62,6 +62,7 @@ ext.createPackagePath = { basePath, packageName ->
  * https://reflectoring.io/maven-scopes-gradle-configurations/
  * https://github.com/gradle/gradle/issues/1118
  * https://github.com/xvik/gradle-pom-plugin
+ * https://github.com/JakeWharton/u2020/blob/master/build.gradle
  ****************************************************************************************/
 configurations {
     //api
