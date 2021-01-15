@@ -95,6 +95,9 @@ if (new File("${srcKubernetesDirectory}").exists()) {
 	}
 	
 } else {
+	apply from: "${commonGradleBuildElementPath}/java/supported-repositories.gradle"
+
+
 	/***************************************************************************************
 	 * clean
 	 ***************************************************************************************/
@@ -104,18 +107,27 @@ if (new File("${srcKubernetesDirectory}").exists()) {
 		}
 	}	
 
+
 	/***************************************************************************************
 	 * publish
 	 ***************************************************************************************/
 	task publish() {
 	}	
 
-	
+
 	/***************************************************************************************
 	 * build
 	 ***************************************************************************************/
 	task build() {
     }
+
+
+	/****************************************************************************************
+	 * Defines a implementation artefact
+	 ****************************************************************************************/
+	configurations {
+		implementation
+	}
 }
 
 apply from: "${commonGradleBuildElementPath}/base/docker.gradle"
@@ -127,6 +139,22 @@ if (new File("${srcKubernetesDirectory}").exists()) {
 } else {
 	defaultTasks 'clean', 'projectValidation', 'dockerBuild'
 }
+
+
+/****************************************************************************************
+ * Copy artefacts
+ ****************************************************************************************/
+task copyLibs(type: Copy) {
+	group = 'Build'
+	description = 'Copy livs dependencies'
+
+    from { // use of closure defers evaluation until execution time
+        configurations.implementation
+    }
+
+    into "$gradleBuildDirectory/libs"
+}
+dockerBuild.dependsOn copyLibs
 
 
 /***************************************************************************************
