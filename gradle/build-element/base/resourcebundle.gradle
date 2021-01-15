@@ -72,6 +72,17 @@ ext.generateResourceBundle = { inputFile = "${commonGradleConfigResourcebundlePa
 				arg(value: "-validate")
 				arg(value: "true")
 	}
+	
+	if (project.hasProperty("referenceSheetName") && project.getProperty("referenceSheetName")!=null && !project.getProperty("referenceSheetName").toString().isEmpty()) {
+				arg(value: "-referenceSheetName")
+				arg(value: "${referenceSheetName}")	
+	}
+
+	if (project.hasProperty("referenceSheetHasNoSubFolder") && project.getProperty("referenceSheetHasNoSubFolder")!=null && !project.getProperty("referenceSheetHasNoSubFolder").toString().isEmpty()) {
+				arg(value: "-referenceSheetHasNoSubFolder")
+				arg(value: "${referenceSheetHasNoSubFolder}")	
+	}
+	
 				arg(value: "-i")
 				arg(value: "${inputFile}")
 				arg(value: "-modelVersion")

@@ -162,6 +162,13 @@ setCommonGradleProperty("projectIndividualCheckstyleConfiguration", false)
 
 
 /***************************************************************************************
+ * resource bundle
+ ***************************************************************************************/
+//setCommonGradleProperty("referenceSheetName", "")
+//setCommonGradleProperty("referenceSheetHasNoSubFolder", "false")
+
+
+/***************************************************************************************
  * node plugin version
  ***************************************************************************************/
 //setCommonGradleProperty("nodePluginVersion", '2.2.4')
