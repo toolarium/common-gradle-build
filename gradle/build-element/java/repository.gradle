@@ -7,48 +7,4 @@
 
  
 apply plugin: 'maven-publish'
-
-
-/***************************************************************************************
- * Defines supported repositories
- ***************************************************************************************/
-repositories {
-	if (project.hasProperty('allowMavenCentralRepository') && project.getProperty('allowMavenCentralRepository')) {
-		logInfo("Allow maven central repository")
-		mavenCentral()
-	}
-	
-	if (project.hasProperty('allowGoogleRepository') && project.getProperty('allowGoogleRepository')) {
-		logInfo("Allow google repository")
-		google()
-	}
-
-	if (project.hasProperty('allowJCenterRepository') && project.getProperty('allowJCenterRepository')) {
-		logInfo("Allow jcenter repository")
-		jcenter()
-	}
-
-	if (project.hasProperty('allowMavenSnapshotRepository') && project.getProperty('allowMavenSnapshotRepository') && project.hasProperty('mavenSnapshotRepositoryUrl')) {
-		def mavenSnapshotRepositoryUrl = project.getProperty('mavenSnapshotRepositoryUrl')
-		if (mavenSnapshotRepositoryUrl!=null && !mavenSnapshotRepositoryUrl.isEmpty()) {	
-			logInfo("Allow maven snapshot repository " + colorize(HIGHLITE_LEVEL, mavenSnapshotRepositoryUrl))
-			maven { url mavenSnapshotRepositoryUrl }
-		}
-	}
-
-	if (project.hasProperty('allowMavenStagingRepository') && project.getProperty('allowMavenStagingRepository') && project.hasProperty('mavenStagingRepositoryUrl')) {
-		def mavenStagingRepositoryUrl = project.getProperty('mavenStagingRepositoryUrl')
-		if (mavenStagingRepositoryUrl!=null && !mavenStagingRepositoryUrl.isEmpty()) {	
-			logInfo("Allow maven staging repository " + colorize(HIGHLITE_LEVEL, mavenStagingRepositoryUrl))
-			maven { url mavenStagingRepositoryUrl }
-		}
-	}
-
-	if (project.hasProperty('allowMavenRepository') && project.getProperty('allowMavenRepository') && project.hasProperty('mavenRepositoryUrl')) {
-		def mavenRepositoryUrl = project.getProperty('mavenRepositoryUrl')
-		if (mavenRepositoryUrl!=null && !mavenRepositoryUrl.isEmpty()) {	
-			logInfo("Allow maven repository " + colorize(HIGHLITE_LEVEL, mavenRepositoryUrl))
-			maven { url mavenRepositoryUrl }
-		}
-	}
-}
+apply from: "${commonGradleBuildElementPath}/java/supported-repositories.gradle"
