@@ -1,7 +1,7 @@
 /*
  * defaults.gradle
  *
- * In the defaults you can cpnfigure your default values. All entries below has
+ * In the defaults you can configure your default values. All entries below has
  * been marked as comment and the value contains the default value. To overwrite
  * simple comment out and set your preferred value.
  *

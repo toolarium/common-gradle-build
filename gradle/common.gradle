@@ -258,3 +258,27 @@ if (project.hasProperty('projectType')) {
 if (includeFile!=null && !includeFile.isEmpty()) {
 	apply from: "$includeFile"
 }
+
+
+/***************************************************************************************
+ * In case there is a custom.gradle in the common gradle build home 
+ ***************************************************************************************/
+if (project.hasProperty('commonGradleBuildHome')) {
+	def commonGradleBuildHome = project.getProperty('commonGradleBuildHome')
+	if (commonGradleBuildHome!=null && !"${commonGradleBuildHome}".isEmpty()) {
+		def commonGradleBuildHomeCustomFile = "${commonGradleBuildHome}/gradle/custom.gradle"
+
+		// apply from home
+		if (new File(commonGradleBuildHomeCustomFile).exists()) {
+			bootStraplogLifecycle("> Found custom in common-gradle-build home path, apply.")
+			def userDefined = "[${commonGradleBuildHomeCustomFile}]"
+			
+			if (LINE.length()>userDefined.length()) {
+				userDefined += LINE.substring(userDefined.length())
+			}
+			logInfo(userDefined)
+			apply from: "${commonGradleBuildHomeCustomFile}"
+			logInfo(userDefined)
+		}
+	}
+}

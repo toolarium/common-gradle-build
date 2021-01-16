@@ -37,6 +37,7 @@ projectValidation {
 
 			new File(gradlePath).mkdirs()
 			copyFile("${commonGradleTemplateBasePath}/defaults.gradle.template", "${gradlePath}/defaults.gradle")
+			copyFile("${commonGradleTemplateBasePath}/custom.gradle.template", "${gradlePath}/custom.gradle")
 
 			def confPath = "$rootDirectory/conf"
 			new File(confPath).mkdirs()

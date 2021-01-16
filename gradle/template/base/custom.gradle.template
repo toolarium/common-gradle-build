@@ -1,0 +1,16 @@
+/*
+ * custom.gradle
+ *
+ * In the custom you can extend the build process with own common tasks.
+ * The custom.gradle will be called (apply) at the end of the specific
+ * common-gradle-build project type.
+ *
+ * The custom.gradle can consider the corresponding type with the help 
+ * of the variable projectType.
+ *
+ */
+
+
+/***************************************************************************************
+ * Define own tasks or extend
+ ***************************************************************************************/
