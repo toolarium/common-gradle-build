@@ -264,7 +264,6 @@ if (includeFile!=null && !includeFile.isEmpty()) {
  * In case there is a custom.gradle in the common gradle build home 
  ***************************************************************************************/
 if (project.hasProperty('commonGradleBuildHome')) {
-	def commonGradleBuildHome = project.getProperty('commonGradleBuildHome')
 	if (commonGradleBuildHome!=null && !"${commonGradleBuildHome}".isEmpty()) {
 		def commonGradleBuildHomeCustomFile = "${commonGradleBuildHome}/gradle/custom.gradle"
 
