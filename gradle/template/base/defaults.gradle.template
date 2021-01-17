@@ -90,6 +90,7 @@ setCommonGradleProperty("licenseFile", "$commonGradleBuildHome/$licenseFilename"
 //setCommonGradleProperty("sourceCompatibility", JavaVersion.VERSION_1_8)
 //setCommonGradleProperty("targetCompatibility", JavaVersion.VERSION_1_8)
 //setCommonGradleProperty("fileEncoding", "UTF-8")
+//setCommonGradleProperty("excelFileEncoding", "Cp1252")
 //setCommonGradleProperty("compileJavaHome", "")
 
 
@@ -116,12 +117,14 @@ setCommonGradleProperty("licenseFile", "$commonGradleBuildHome/$licenseFilename"
 //setCommonGradleProperty("mavenSnapshotRepositoryUrl", "https://your-snapshot-repository-url")
 //setCommonGradleProperty("allowMavenSnapshotRepository", true)
 
-
 // docker repository
 //setCommonGradleProperty("dockerRepositoryHost", "https://hub.docker.com")
 //setCommonGradleProperty("dockerTagPrefix", "hub.docker.com")
 //setCommonGradleProperty("dockerSnapshotRepositoryHost", "")
 //setCommonGradleProperty("dockerSnapshotTagPrefix", "")
+
+// npm repository
+//setCommonGradleProperty("nodeRegistry", "https://registry.npmjs.org/")
 
 
 /***************************************************************************************
@@ -156,16 +159,16 @@ setCommonGradleProperty("projectIndividualCheckstyleConfiguration", false)
 
 
 /***************************************************************************************
- * quarkus plugin version
- ***************************************************************************************/
-//setCommonGradleProperty("quarkusPluginVersion", '1.8.1.Final')
-
-
-/***************************************************************************************
  * resource bundle
  ***************************************************************************************/
 //setCommonGradleProperty("referenceSheetName", "")
 //setCommonGradleProperty("referenceSheetHasNoSubFolder", "false")
+
+
+/***************************************************************************************
+ * quarkus plugin version
+ ***************************************************************************************/
+//setCommonGradleProperty("quarkusPluginVersion", '1.10.5.Final')
 
 
 /***************************************************************************************
