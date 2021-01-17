@@ -314,6 +314,11 @@ task releasePrepare(dependsOn: ['checkReleaseCredentials']) {
 		def releaseName="v" + project.version
 		setCommonGradleProperty("releaseName", releaseName)
 		printInfo("> Build release " + colorize(HIGHLITE_LEVEL, project.version) + ".")
+		
+		if (project.hasProperty("commonGradleBuildVersionFileChanged") && project.getProperty("commonGradleBuildVersionFileChanged")) {
+			printInfo("> Update version file " + colorize(HIGHLITE_LEVEL, "${versionFile}") + ".")
+			updateVersion()
+		}
 	}
 }
 releasePrepare.finalizedBy('build')
@@ -351,6 +356,11 @@ task releasePrepareSnapshot(dependsOn: ['clean']) {
 		def releaseName="v" + project.version
 		setCommonGradleProperty("releaseName", releaseName)
 		printInfo("> Build snapshot release " + colorize(HIGHLITE_LEVEL, project.version) + ".")
+		
+		if (project.hasProperty("commonGradleBuildVersionFileChanged") && project.getProperty("commonGradleBuildVersionFileChanged")) {
+			printInfo("> Update version file " + colorize(HIGHLITE_LEVEL, "${versionFile}") + ".")
+			updateVersion()
+		}
 	}
 }
 releasePrepareSnapshot.finalizedBy('build')

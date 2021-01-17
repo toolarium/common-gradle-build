@@ -58,6 +58,7 @@ ext.readVersion = { ->
 	if (project.hasProperty('isReleaseVersion')) {
 		if ("true".equalsIgnoreCase("" + project.getProperty('isReleaseVersion')) && project.getProperty('qualifierVersionNumber').endsWith(SNAPSHOT_TAG_NAME)) {
 			qualifierVersionNumber=qualifierVersionNumber.replace(SNAPSHOT_TAG_NAME, "")
+			doUpdate = true
 		}
 		
 		if ("false".equalsIgnoreCase("" + project.getProperty('isReleaseVersion')) && !project.getProperty('qualifierVersionNumber').endsWith(SNAPSHOT_TAG_NAME)) {
@@ -66,6 +67,7 @@ ext.readVersion = { ->
 			} else {
 				qualifierVersionNumber="${qualifierVersionNumber}-${SNAPSHOT_TAG_NAME}"
 			}
+			doUpdate = true
 		}
 	}
 
@@ -88,6 +90,8 @@ ext.readVersion = { ->
 	if (doUpdate) {
 		updateVersion()
 	}	
+	
+	return doUpdate
 }
 
 

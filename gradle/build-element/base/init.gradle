@@ -66,9 +66,8 @@ init {
 
 		def osInfo = "${System.properties['os.name']} (${System.properties['os.arch']}) on ${hostname}"
 
-	// read the version
-	readVersion()
-
+	def commonGradleBuildVersionFileChanged = readVersion()
+	setCommonGradleProperty("commonGradleBuildVersionFileChanged", commonGradleBuildVersionFileChanged)
 	printLine(HIGHLITE_LEVEL, true)
 
 	printInfo("${header}")
