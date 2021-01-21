@@ -35,7 +35,7 @@ ext.checkKubernetesInstallation = { ->
  * Execute kubernetes command
  ***************************************************************************************/
 ext.execKubernetes = { cmd, errorMessage ->
-	def sout = new StringBuilder(), serr = new StringBuilder()				
+	def sout = new StringBuilder(), serr = new StringBuilder()
 	def exitStatus = execCommand(cmd, -1, sout, serr)
 	if (exitStatus>0) {
 		addError("$errorMessage")
@@ -46,7 +46,7 @@ ext.execKubernetes = { cmd, errorMessage ->
 			addError(serr.toString())
 		}
 		
-		throw new GradleException(errorMessage)		
+		throw new GradleException(errorMessage)	
 	}
 	
 	return exitStatus
@@ -57,14 +57,14 @@ ext.execKubernetes = { cmd, errorMessage ->
  * Replace namespace
  ***************************************************************************************/
 ext.replaceNamespace = { line, namespace -> 
-	def preparedLine = line;		
+	def preparedLine = line;
 	def namespaceTag = "namespace:"
 	if (namespace!=null && !namespace.toString().trim().isEmpty()) {
 		int idx = preparedLine.indexOf(namespaceTag)
 		if (idx>0) {
 			def i = idx + namespaceTag.length()
 			def rest = preparedLine.substring(i + 1).trim()
-			preparedLine = preparedLine.substring(0, i)							
+			preparedLine = preparedLine.substring(0, i)	
 			preparedLine = "${preparedLine} ${namespace}"
 			idx = rest.indexOf(" ")
 			if (idx>0) {
@@ -151,9 +151,16 @@ task kubernetesConfiguration() {
 			setCommonGradleDefaultPropertyIfNull("kubernetesDockerImage", "${dockerTagPrefix}${rootProject.name}:${project.version}")
 			new File("$kubernetesConfigurationPath").mkdirs()
 			
-			def kubernetesFilename="${rootProject.name}-kubernetes.yaml"
-			logInfo("Create kubernetes configuration " + colorize(HIGHLITE_LEVEL, kubernetesFilename) + ".")
-			createFileFromTemplate("$kubernetesConfigurationPath/$kubernetesFilename", getTemplateFile('kubernetes.yaml.template'))
+			def count = 0
+			if (new File("${srcKubernetesDirectory}").exists()) {
+			    count = new File("${srcKubernetesDirectory}").listFiles().findAll { it.name ==~ /.*s\.yaml.*$/ }.size()
+			}
+			
+			if (count==0) {
+				def kubernetesFilename="${rootProject.name}-kubernetes.yaml"
+				logInfo("Create kubernetes configuration " + colorize(HIGHLITE_LEVEL, kubernetesFilename) + ".")
+				createFileFromTemplate("$kubernetesConfigurationPath/$kubernetesFilename", getTemplateFile('kubernetes.yaml.template'))
+			}
 		}
 	}
 }
@@ -183,7 +190,7 @@ if (new File(srcKubernetesDirectory).exists()) {
 				isNewFile = true
 				fileContent.createNewFile() 
 			}
-			
+
 			new File(srcKubernetesDirectory).eachFileRecurse (groovy.io.FileType.FILES) { file ->
 				def kubernetesServicesFilename = "$kubernetesConfigurationElementsPath/${rootProject.name}-kubernetes.yaml"
 				if (file.getName().toString().endsWith(".template")) {
