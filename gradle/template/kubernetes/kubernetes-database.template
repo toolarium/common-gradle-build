@@ -107,7 +107,7 @@ spec:
           readOnly: true
         - name: database-init
           mountPath: /docker-entrypoint-initdb.d
-          readOnly: true			
+          readOnly: true
       restartPolicy: Always
       volumes:
         - name: @@KUBERNETES_DATABASE_VOLUME_NAME@@
@@ -119,7 +119,7 @@ spec:
         - name: database-init
           configMap:
             name: database-init
-            defaultMode: 0755			
+            defaultMode: 0755
 ---
 apiVersion: v1
 kind: Service

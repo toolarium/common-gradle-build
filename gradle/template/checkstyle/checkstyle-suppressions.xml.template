@@ -10,7 +10,7 @@
 
     <!-- generated files and folders -->
     <suppress files="[/\\]build[/\\]generated[/\\]sources[/\\]common-gradle-build[/\\]" checks=".*"/>
-	
+
     <!-- image files -->
     <suppress files=".+\.(?:png|gif|jpg|jpeg)$" checks=".*"/>
 

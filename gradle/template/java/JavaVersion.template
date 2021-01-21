@@ -14,7 +14,7 @@ public class Version {
     public static final String COMPONENT_ID         = "@@COMPONENT_ID@@";
     
     /** The project type */
-    public static final String PROJECT_TYPE         = "@@PROJECT_TYPE@@";    
+    public static final String PROJECT_TYPE         = "@@PROJECT_TYPE@@";
     
     /** The package */
     public static final String PACKAGE              = "@@PACKAGE@@";

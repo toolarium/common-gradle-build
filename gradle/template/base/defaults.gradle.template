@@ -19,7 +19,7 @@
       gradle
       gradle/defaults.gradle
       (gradle/template/) <- optional
-	
+  
  */
 
 
@@ -90,7 +90,6 @@ setCommonGradleProperty("licenseFile", "$commonGradleBuildHome/$licenseFilename"
 //setCommonGradleProperty("sourceCompatibility", JavaVersion.VERSION_1_8)
 //setCommonGradleProperty("targetCompatibility", JavaVersion.VERSION_1_8)
 //setCommonGradleProperty("fileEncoding", "UTF-8")
-//setCommonGradleProperty("excelFileEncoding", "Cp1252")
 //setCommonGradleProperty("compileJavaHome", "")
 
 
@@ -161,6 +160,7 @@ setCommonGradleProperty("projectIndividualCheckstyleConfiguration", false)
 /***************************************************************************************
  * resource bundle
  ***************************************************************************************/
+//setCommonGradleProperty("excelFileEncoding", "Cp1252")
 //setCommonGradleProperty("referenceSheetName", "")
 //setCommonGradleProperty("referenceSheetHasNoSubFolder", "false")
 

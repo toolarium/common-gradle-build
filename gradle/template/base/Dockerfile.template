@@ -27,22 +27,22 @@ ARG DEFAULT_JAVA_OPTIONS="@@dockerDefaultJavaOptions@@"
 LABEL vendor="@@LICENSE_ORGANISATION@@" \
     group-id="@@GROUP_ID@@" \
     component-id="@@COMPONENT_ID@@" \
-	description="@@DESCRIPTION@@" \
-	url="@@URL@@" \
-	license="@@LICENSE@@" \
-	version="@@VERSION@@" \
-	is-release-version="@@IS_RELEASE_VERSION@@" \
-	build-timestamp="@@BUILD_TIMESTAMP_SHORT@@"
+    description="@@DESCRIPTION@@" \
+    url="@@URL@@" \
+    license="@@LICENSE@@" \
+    version="@@VERSION@@" \
+    is-release-version="@@IS_RELEASE_VERSION@@" \
+    build-timestamp="@@BUILD_TIMESTAMP_SHORT@@"
 
 # set user and group
 RUN addgroup -g ${UID} ${RUNTIMEGROUP} \
-	&& adduser -D ${RUNTIMEUSER} -G ${RUNTIMEGROUP} -u ${GID}
+    && adduser -D ${RUNTIMEUSER} -G ${RUNTIMEGROUP} -u ${GID}
 
 # set timezone
 RUN apk --no-cache add --update \
-	&& apk --no-cache add tzdata \
-	&& cp "/usr/share/zoneinfo/${TIMEZONE}" /etc/localtime \
-	&& echo "${TIMEZONE}" > /etc/timezone
+    && apk --no-cache add tzdata \
+    && cp "/usr/share/zoneinfo/${TIMEZONE}" /etc/localtime \
+    && echo "${TIMEZONE}" > /etc/timezone
 
 # create path and set permissions for user
 RUN mkdir -p ${DEPLOYMENT_PATH} \
@@ -57,7 +57,7 @@ ENV LANG='${DEFAULT_LOCALE}.${DEFAULT_ENCODING}' LANGUAGE='${DEFAULT_LOCALE}:${D
 
 # define JAVA_OPTIONS; with can be used to display the heap size: -XshowSettings:vm
 ENV JAVA_OPTIONS="${DEFAULT_JAVA_OPTIONS}"
-ENV EXPOSE_PORT="${EXPOSE_PORT}"					
+ENV EXPOSE_PORT="${EXPOSE_PORT}"
 
 # expose port
 EXPOSE ${EXPOSE_PORT}

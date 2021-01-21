@@ -3,49 +3,49 @@
 <!--    Checkstyle-Configuration: @@LICENSE_ORGANISATION@@ checkstyle    Description: none-->
 <!DOCTYPE module PUBLIC "-//Puppy Crawl//DTD Check Configuration 1.2//EN" "http://www.puppycrawl.com/dtds/configuration_1_2.dtd">
 <module name="Checker">
-	<!-- property name="localeLanguage" value="en"/> -->
+     <!-- property name="localeLanguage" value="en"/> -->
     <property name="charset" value="UTF-8"/>
-	<property name="severity" value="warning"/>
-	<property name="fileExtensions" value="java, properties, xml"/>
+     <property name="severity" value="warning"/>
+     <property name="fileExtensions" value="java, properties, xml"/>
 
-	<!-- Excludes all 'module-info.java' files              -->
+     <!-- Excludes all 'module-info.java' files              -->
     <!-- See https://checkstyle.org/config_filefilters.html -->
     <module name="BeforeExecutionExclusionFileFilter">
         <property name="fileNamePattern" value="module\-info\.java$"/>
     </module>
 
-	<!-- Checks for whitespace                               -->
+     <!-- Checks for whitespace                               -->
     <!-- See http://checkstyle.sf.net/config_whitespace.html -->
     <module name="FileTabCharacter">
         <property name="eachLine" value="true"/>
     </module>
 
-	<!-- @@PROJECT_NAME@@ allows 250 line length -->
-	<module name="LineLength">
+     <!-- @@PROJECT_NAME@@ allows 250 line length -->
+     <module name="LineLength">
         <property name="fileExtensions" value="java"/>
         <property name="max" value="250"/>
         <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://"/>
     </module>
 
-	<!-- suppressions -->
-	<module name="SuppressionFilter">
-		<property name="file" value="${samedir}/checkstyle-suppressions.xml"/>
-	</module>
+     <!-- suppressions -->
+     <module name="SuppressionFilter">
+          <property name="file" value="${samedir}/checkstyle-suppressions.xml"/>
+     </module>
 
-	<module name="TreeWalker">
-		<!-- suppress by comment -->
-		<module name="SuppressWithNearbyCommentFilter">
-			<property name="commentFormat" value="CHECKSTYLE IGNORE THIS LINE"/>
-			<property name="checkFormat" value=".*"/>
-			<property name="influenceFormat" value="0"/>
-		</module>
-		<module name="SuppressionCommentFilter">
-			<property name="offCommentFormat" value="CHECKSTYLE OFF\: ([\w\|]+)"/>
-			<property name="onCommentFormat" value="CHECKSTYLE ON\: ([\w\|]+)"/>
-			<property name="checkFormat" value="$1"/>
-		</module>
-		<!--<module name="FileContentsHolder"/>-->
-		<module name="OuterTypeFilename"/>
+     <module name="TreeWalker">
+          <!-- suppress by comment -->
+          <module name="SuppressWithNearbyCommentFilter">
+               <property name="commentFormat" value="CHECKSTYLE IGNORE THIS LINE"/>
+               <property name="checkFormat" value=".*"/>
+               <property name="influenceFormat" value="0"/>
+          </module>
+          <module name="SuppressionCommentFilter">
+               <property name="offCommentFormat" value="CHECKSTYLE OFF\: ([\w\|]+)"/>
+               <property name="onCommentFormat" value="CHECKSTYLE ON\: ([\w\|]+)"/>
+               <property name="checkFormat" value="$1"/>
+          </module>
+          <!--<module name="FileContentsHolder"/>-->
+          <module name="OuterTypeFilename"/>
         <module name="IllegalTokenText">
             <property name="tokens" value="STRING_LITERAL, CHAR_LITERAL"/>
             <property name="format" value="\\u00(09|0(a|A)|0(c|C)|0(d|D)|29|27|5(C|c))|\\(0(10|11|12|14|15|42|47)|134)"/>
@@ -58,7 +58,7 @@
         </module>
         <module name="AvoidStarImport"/>
         <module name="OneTopLevelClass"/>
-	        <module name="NoLineWrap"/>
+             <module name="NoLineWrap"/>
         <module name="EmptyBlock">
             <property name="option" value="TEXT"/>
             <property name="tokens"
@@ -138,12 +138,12 @@
             <property name="format" value="^[a-z]([a-z0-9][a-zA-Z0-9]*)?$"/>
             <!-- <message key="name.invalidPattern" value="Parameter name ''{0}'' must match pattern ''{1}''."/> -->
         </module>
-		<!--
+          <!--
         <module name="LambdaParameterName">
             <property name="format" value="^[a-z]([a-z0-9][a-zA-Z0-9]*)?$"/>
             <message key="name.invalidPattern" value="Lambda parameter name ''{0}'' must match pattern ''{1}''."/>
         </module>
-		-->
+          -->
         <module name="CatchParameterName">
             <property name="format" value="^[a-z]([a-z0-9][a-zA-Z0-9]*)?$"/>
             <!-- <message key="name.invalidPattern" value="Catch parameter name ''{0}'' must match pattern ''{1}''."/> -->
@@ -167,12 +167,12 @@
         </module>
         <module name="NoFinalizer"/>
         <module name="GenericWhitespace">
-		    <!--
+              <!--
             <message key="ws.followed" value="GenericWhitespace ''{0}'' is followed by whitespace."/>
             <message key="ws.preceded" value="GenericWhitespace ''{0}'' is preceded with whitespace."/>
             <message key="ws.illegalFollow" value="GenericWhitespace ''{0}'' should followed by whitespace."/>
             <message key="ws.notPreceded" value="GenericWhitespace ''{0}'' is not preceded with whitespace."/>
-			-->
+               -->
         </module>
         <module name="Indentation">
             <property name="basicOffset" value="4"/>
@@ -214,21 +214,21 @@
             <property name="allowSamelineMultipleAnnotations" value="true"/>
         </module>
         <module name="NonEmptyAtclauseDescription"/>
-		<!-- TODO
-		<module name="MissingJavadocType">
-			<property name="scope" value="private"/>
-		</module>
-		<module name="RequireEmptyLineBeforeBlockTagGroup"/>
-		<module name="InvalidJavadocPosition"/>
-		<module name="JavadocBlockTagLocation"/>
-		<module name="JavadocMissingWhitespaceAfterAsterisk"/>
-		-->
+          <!-- TODO
+          <module name="MissingJavadocType">
+               <property name="scope" value="private"/>
+          </module>
+          <module name="RequireEmptyLineBeforeBlockTagGroup"/>
+          <module name="InvalidJavadocPosition"/>
+          <module name="JavadocBlockTagLocation"/>
+          <module name="JavadocMissingWhitespaceAfterAsterisk"/>
+          -->
         <module name="JavadocTagContinuationIndentation"/>
-		<!-- TODO
+          <!-- TODO
         <module name="SummaryJavadoc">
             <property name="forbiddenSummaryFragments" value="^@return the *|^This method returns |^A [{]@code [a-zA-Z0-9]+[}]( is a )"/>
         </module>
-		-->
+          -->
         <module name="JavadocParagraph"/>
         <module name="AtclauseOrder">
             <property name="tagOrder" value="@param, @return, @throws, @deprecated"/>
@@ -236,18 +236,18 @@
         </module>
         <module name="JavadocMethod">
             <property name="scope" value="private"/>
-			<property name="validateThrows" value="true"/>
+               <property name="validateThrows" value="true"/>
             <property name="allowMissingParamTags" value="false"/>
             <!--<property name="allowMissingThrowsTags" value="true"/>-->
             <property name="allowMissingReturnTag" value="false"/>
             <!--<property name="allowedAnnotations" value="Override, Test"/>-->
             <!--<property name="allowThrowsTagsForSubclasses" value="true"/>-->
-		</module>
-		<module name="MissingJavadocMethod">
-			<property name="scope" value="private"/>
-			<property name="minLineCount" value="-1"/>
-			<!--<property name="allowedAnnotations" value="Override, Test"/>-->
-		</module>
+          </module>
+          <module name="MissingJavadocMethod">
+               <property name="scope" value="private"/>
+               <property name="minLineCount" value="-1"/>
+               <!--<property name="allowedAnnotations" value="Override, Test"/>-->
+          </module>
         <module name="MethodName">
             <property name="format" value="^[a-z][a-z0-9][a-zA-Z0-9_]*$"/>
             <!--<message key="name.invalidPattern" value="Method name ''{0}'' must match pattern ''{1}''."/>-->
@@ -260,106 +260,106 @@
         </module>
         <module name="CommentsIndentation"/>
 
-		<!-- @@PROJECT_NAME@@ add on -->
-		<module name="RegexpSinglelineJava">
-			<property name="format" value="System\.(out|err)\."/>
-			<property name="message" value="@@PROJECT_NAME@@: Please use the logger instead of writing data to standard out or error."/>
-		</module>
-		<module name="RegexpSinglelineJava">
-			<property name="format" value="System\.(exit|gc)"/>
-			<property name="message" value="@@PROJECT_NAME@@: This operation is not allowed."/>
-		</module>
-		<module name="RegexpSinglelineJava">
-			<property name="format" value="\.(printStackTrace)"/>
-			<property name="message" value="@@PROJECT_NAME@@: This operation is not allowed."/>
-		</module>
-		<module name="JavadocType">
-			<property name="severity" value="ignore"/>
-		</module>
-		<module name="JavadocVariable">
-			<property name="severity" value="ignore"/>
-		</module>
-		<module name="JavadocStyle">
-			<property name="severity" value="ignore"/>
-			<property name="checkFirstSentence" value="false"/>
-		</module>
-		<module name="ConstantName">
-			<property name="format" value="^([A-Z][A-Z0-9]*(_[A-Z0-9]+))|(log)*$"/>
-		</module>
-		<module name="LocalFinalVariableName"/>
-		<module name="StaticVariableName"/>
-		<module name="IllegalImport">
-			<property name="illegalPkgs" value="sun"/>
-		</module>
-		<module name="IllegalThrows">
-			<property name="illegalClassNames" value="java.lang.Throwable, java.lang.RuntimeException"/>
-		</module>
-		<module name="RedundantImport"/>
-		<module name="UnusedImports"/>
-		<module name="MethodLength">
-			<property name="max" value="150"/>
-		</module>
-		<module name="ParameterNumber">
-			<property name="max" value="10"/>
-		</module>
-		<module name="EmptyForIteratorPad"/>
-		<module name="NoWhitespaceAfter"/>
-		<module name="NoWhitespaceBefore"/>
-		<module name="TypecastParenPad"/>
-		<module name="RedundantModifier"/>
-		<module name="AvoidNestedBlocks"/>
-		<module name="EmptyBlock">
-			<property name="option" value="text"/>
-		</module>
-		<module name="AvoidInlineConditionals"/>
-		<module name="EmptyStatement"/>
-		<module name="EqualsHashCode"/>
-		<module name="IllegalInstantiation"/>
-		<module name="InnerAssignment"/>
-		<!-- <module name="MagicNumber"/> -->
-		<module name="SimplifyBooleanExpression"/>
-		<module name="SimplifyBooleanReturn"/>
-		<module name="FinalClass"/>
-		<module name="HideUtilityClassConstructor"/>
-		<module name="InterfaceIsType">
-			<property name="severity" value="ignore"/>
-		</module>
-		<module name="VisibilityModifier"/>
-		<module name="FinalParameters">
-			<property name="severity" value="ignore"/>
-		</module>
-		<module name="AbstractClassName">
-			<property name="ignoreModifier" value="true"/>
-		</module>
-		<module name="CovariantEquals"/>
-		<module name="DefaultComesLast"/>
-		<module name="ModifiedControlVariable"/>
-		<module name="MultipleStringLiterals">
-			<property name="allowedDuplicates" value="5"/>
-			<property name="ignoreStringsRegexp" value="^(&quot;&quot;|&quot;unchecked&quot;)$"/>
-		</module>
-		<module name="NestedIfDepth">
-			<property name="max" value="4"/>
-		</module>
-		<module name="NestedTryDepth">
-			<property name="max" value="4"/>
-		</module>
-		<module name="PackageDeclaration"/>
-		<module name="ParameterAssignment"/>
-		<module name="StringLiteralEquality"/>
-		<module name="SuperFinalize"/>
+          <!-- @@PROJECT_NAME@@ add on -->
+          <module name="RegexpSinglelineJava">
+               <property name="format" value="System\.(out|err)\."/>
+               <property name="message" value="@@PROJECT_NAME@@: Please use the logger instead of writing data to standard out or error."/>
+          </module>
+          <module name="RegexpSinglelineJava">
+               <property name="format" value="System\.(exit|gc)"/>
+               <property name="message" value="@@PROJECT_NAME@@: This operation is not allowed."/>
+          </module>
+          <module name="RegexpSinglelineJava">
+               <property name="format" value="\.(printStackTrace)"/>
+               <property name="message" value="@@PROJECT_NAME@@: This operation is not allowed."/>
+          </module>
+          <module name="JavadocType">
+               <property name="severity" value="ignore"/>
+          </module>
+          <module name="JavadocVariable">
+               <property name="severity" value="ignore"/>
+          </module>
+          <module name="JavadocStyle">
+               <property name="severity" value="ignore"/>
+               <property name="checkFirstSentence" value="false"/>
+          </module>
+          <module name="ConstantName">
+               <property name="format" value="^([A-Z][A-Z0-9]*(_[A-Z0-9]+))|(log)*$"/>
+          </module>
+          <module name="LocalFinalVariableName"/>
+          <module name="StaticVariableName"/>
+          <module name="IllegalImport">
+               <property name="illegalPkgs" value="sun"/>
+          </module>
+          <module name="IllegalThrows">
+               <property name="illegalClassNames" value="java.lang.Throwable, java.lang.RuntimeException"/>
+          </module>
+          <module name="RedundantImport"/>
+          <module name="UnusedImports"/>
+          <module name="MethodLength">
+               <property name="max" value="150"/>
+          </module>
+          <module name="ParameterNumber">
+               <property name="max" value="10"/>
+          </module>
+          <module name="EmptyForIteratorPad"/>
+          <module name="NoWhitespaceAfter"/>
+          <module name="NoWhitespaceBefore"/>
+          <module name="TypecastParenPad"/>
+          <module name="RedundantModifier"/>
+          <module name="AvoidNestedBlocks"/>
+          <module name="EmptyBlock">
+               <property name="option" value="text"/>
+          </module>
+          <module name="AvoidInlineConditionals"/>
+          <module name="EmptyStatement"/>
+          <module name="EqualsHashCode"/>
+          <module name="IllegalInstantiation"/>
+          <module name="InnerAssignment"/>
+          <!-- <module name="MagicNumber"/> -->
+          <module name="SimplifyBooleanExpression"/>
+          <module name="SimplifyBooleanReturn"/>
+          <module name="FinalClass"/>
+          <module name="HideUtilityClassConstructor"/>
+          <module name="InterfaceIsType">
+               <property name="severity" value="ignore"/>
+          </module>
+          <module name="VisibilityModifier"/>
+          <module name="FinalParameters">
+               <property name="severity" value="ignore"/>
+          </module>
+          <module name="AbstractClassName">
+               <property name="ignoreModifier" value="true"/>
+          </module>
+          <module name="CovariantEquals"/>
+          <module name="DefaultComesLast"/>
+          <module name="ModifiedControlVariable"/>
+          <module name="MultipleStringLiterals">
+               <property name="allowedDuplicates" value="5"/>
+               <property name="ignoreStringsRegexp" value="^(&quot;&quot;|&quot;unchecked&quot;)$"/>
+          </module>
+          <module name="NestedIfDepth">
+               <property name="max" value="4"/>
+          </module>
+          <module name="NestedTryDepth">
+               <property name="max" value="4"/>
+          </module>
+          <module name="PackageDeclaration"/>
+          <module name="ParameterAssignment"/>
+          <module name="StringLiteralEquality"/>
+          <module name="SuperFinalize"/>
         <module name="DeclarationOrder"/>
-		<!-- @@PROJECT_NAME@@ add on -->
-	</module>
+          <!-- @@PROJECT_NAME@@ add on -->
+     </module>
 
-	<module name="PackageHtml">
-		<property name="severity" value="ignore"/>
-	</module>
-	<module name="Translation"/>
-	<module name="FileLength">
-		<property name="max" value="3000"/>
-	</module>
-	<module name="RegexpHeader">
-		<property name="headerFile" value="${samedir}/checkstyle-file-header.txt"/>
-	</module>
+     <module name="PackageHtml">
+          <property name="severity" value="ignore"/>
+     </module>
+     <module name="Translation"/>
+     <module name="FileLength">
+          <property name="max" value="3000"/>
+     </module>
+     <module name="RegexpHeader">
+          <property name="headerFile" value="${samedir}/checkstyle-file-header.txt"/>
+     </module>
 </module>
