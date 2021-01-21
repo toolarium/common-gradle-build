@@ -48,19 +48,23 @@ ext.checkDockerInstallation = { ->
 /***************************************************************************************
  * Execute docker command
  ***************************************************************************************/
-ext.execDocker = { cmd, errorMessage ->
+ext.execDocker = { cmd, errorMessage, failOnError = true ->
 	def sout = new StringBuilder(), serr = new StringBuilder()				
 	def exitStatus = execCommand(cmd, -1, sout, serr)
 	if (exitStatus>0) {
-		addError("$errorMessage")
-		if (sout!=null && !sout.toString().isEmpty()) {
-			addError(sout.toString())
+		if (failOnError) {
+			addError("$errorMessage")
+			if (sout!=null && !sout.toString().isEmpty()) {
+				addError(sout.toString())
+			}
+			if (serr!=null && !serr.toString().isEmpty()) {
+				addError(serr.toString())
+			}
+			
+			throw new GradleException(errorMessage)		
+		} else {
+			printWarn("> $errorMessage")
 		}
-		if (serr!=null && !serr.toString().isEmpty()) {
-			addError(serr.toString())
-		}
-		
-		throw new GradleException(errorMessage)		
 	}
 	
 	return exitStatus
@@ -163,7 +167,7 @@ task dockerBuild {
 				if( project.hasProperty("dockerCleanupAfterBuild") && project.getProperty("dockerCleanupAfterBuild") ) {
 					printInfo("> Remove docker image " +colorize(HIGHLITE_LEVEL, dockerBuildName) + ".")
 					cmd="docker image remove $dockerBuildName"
-					exitStatus = execDocker(cmd, "Could not remove project tag:\n    " + cmd)
+					exitStatus = execDocker(cmd, "Could not remove project tag:\n    " + cmd, false)
 				}
 			}
 			
@@ -262,7 +266,7 @@ task dockerBuild {
 			if (project.hasProperty("dockerRemoveDanglingImages") && project.getProperty("dockerRemoveDanglingImages")) {
 				printInfo("> Remove all dangling images...")
 				cmd="docker image prune -f"
-				execDocker(cmd, "Could not build docker image:\n    " + cmd)
+				execDocker(cmd, "Could not build docker image:\n    " + cmd, false)
 			}
 			
 			if (project.hasProperty("dockerRemovePreviousVersionImages") && project.getProperty("dockerRemovePreviousVersionImages")) {
@@ -379,11 +383,11 @@ task dockerPush {
 						if( project.hasProperty("dockerCleanupAfterPublish") && project.getProperty("dockerCleanupAfterPublish") ) {
 							printInfo("> Remove local docker image " +colorize(HIGHLITE_LEVEL, dockerBuildName) + ".")
 							cmd="docker image remove $dockerBuildName"
-							exitStatus = execDocker(cmd, "Could not remove project tag:\n    " + cmd)
+							exitStatus = execDocker(cmd, "Could not remove project tag:\n    " + cmd, false)
 
 							printInfo("> Remove local docker image " +colorize(HIGHLITE_LEVEL, tagName) + ".")
 							cmd="docker image remove $tagName"
-							exitStatus = execDocker(cmd, "Could not remove repository tag:\n    " + cmd)
+							exitStatus = execDocker(cmd, "Could not remove repository tag:\n    " + cmd, false)
 						}
 					}
 				}
