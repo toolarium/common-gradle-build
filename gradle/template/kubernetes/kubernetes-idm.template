@@ -97,7 +97,7 @@ metadata:
     app.@@KUBERNETES_LABEL_ID@@.idm: @@KUBERNETES_IDM_SERVICE_NAME@@
   namespace: @@KUBERNETES_NAMESPACE@@
 spec:
-  type: NodePort
+  type: ClusterIP
   ports:
     - name: "@@KUBERNETES_IDM_PORT@@"
       port: @@KUBERNETES_IDM_PORT@@

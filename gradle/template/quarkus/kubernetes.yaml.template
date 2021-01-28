@@ -91,7 +91,7 @@ metadata:
   name: @@PROJECT_NAME@@
   namespace: @@KUBERNETES_NAMESPACE@@
 spec:
-  type: NodePort
+  type: ClusterIP
   ports:
   - name: "@@DOCKER_EXPOSE_PORT@@"
     port: @@DOCKER_EXPOSE_PORT@@
