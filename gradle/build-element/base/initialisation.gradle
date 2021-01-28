@@ -102,9 +102,20 @@ ext.projectInitialisation = { ->
 		project.ext.set('commonGradleBuildVersion', usedVersion)
 	}
 
-    def buildToolVersionStackMessage = "Gradle ${gradle.gradleVersion}, Common Gradle Build ${commonGradleBuildVersion}"
+    def buildToolVersionStackMessageFormatted = "Gradle " + colorize(HIGHLITE_LEVEL, "${gradle.gradleVersion}")
+    def buildToolVersionStackMessage = "Gradle ${gradle.gradleVersion}"
+
+	if (project.hasProperty('initShowGroovy') && project.getProperty('initShowGroovy')) {
+		buildToolVersionStackMessageFormatted += ", Groovy " + colorize(HIGHLITE_LEVEL, GroovySystem.getVersion())
+		buildToolVersionStackMessage += ", Groovy " + GroovySystem.getVersion()
+	}
+	
+    buildToolVersionStackMessageFormatted += ", Common Gradle Build " + colorize(HIGHLITE_LEVEL, "${commonGradleBuildVersion}")
+    buildToolVersionStackMessage += ", Common Gradle Build ${commonGradleBuildVersion}"
+
     def cbVersion = System.env['CB_VERSION']
     if (cbVersion!=null && !cbVersion.isEmpty()) {
+		buildToolVersionStackMessageFormatted += ", Common Build " + colorize(HIGHLITE_LEVEL, "${cbVersion}")
         buildToolVersionStackMessage += ", Common Build ${cbVersion}"
     }
 
@@ -119,10 +130,13 @@ ext.projectInitialisation = { ->
 			}
 		}
 	}
+	
 	if (cbCustomConfigVersion!=null && !cbCustomConfigVersion.isEmpty()) {
+		buildToolVersionStackMessageFormatted += ", ${commonGradleBuildCustomConfigName} " + colorize(HIGHLITE_LEVEL, "${cbCustomConfigVersion}")
 		buildToolVersionStackMessage += ", ${commonGradleBuildCustomConfigName} ${cbCustomConfigVersion}"
 	}
-		
+	
+    project.ext.set('buildToolVersionStackMessageFormatted', buildToolVersionStackMessageFormatted)
     project.ext.set('buildToolVersionStackMessage', buildToolVersionStackMessage)
 
 	// guess start executable

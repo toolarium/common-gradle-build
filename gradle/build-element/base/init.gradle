@@ -64,7 +64,7 @@ init {
 		javaInfo = "Java " + colorize(HIGHLITE_LEVEL, System.properties['java.version']) + "${isUnlimitedJurisdictionMsg}, target " + colorize(HIGHLITE_LEVEL, targetCompatibility) + " (${vendorName}-${System.properties['java.vm.version']}), "
 	}
 
-		def osInfo = "${System.properties['os.name']} (${System.properties['os.arch']}) on ${hostname}"
+	def osInfo = "${System.properties['os.name']} (${System.properties['os.arch']}) on ${hostname}"
 
 	def commonGradleBuildVersionFileChanged = readVersion()
 	setCommonGradleProperty("commonGradleBuildVersionFileChanged", commonGradleBuildVersionFileChanged)
@@ -79,7 +79,7 @@ init {
 	}
 
 	if (initShowGradle) {
-		printInfo(buildToolVersionStackMessage)
+		printInfo(buildToolVersionStackMessageFormatted)
 	}
 
 	if (initShowRuntime) {
