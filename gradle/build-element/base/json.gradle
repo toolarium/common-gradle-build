@@ -1,0 +1,136 @@
+/*
+ * json.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * MIT License: https://mit-license.org
+ */
+
+
+buildscript {
+	repositories {
+		jcenter()
+	}
+	dependencies {
+		classpath 'org.yaml:snakeyaml:1.27'
+	}
+}
+
+
+/** 
+ * Prepare indention string
+ */
+ext.indentJsonString = { indention = 0, doubleIndention = true ->
+	def result = ''
+	
+	if (indention<=0) {
+		return result
+	}
+	
+	for (int i = 0; i<indention; i++) {
+		result += INDENT
+	
+		if(doubleIndention) {
+			result += INDENT
+		}
+	}
+	
+	return result
+}
+
+
+/** 
+ * Prepare json tag name
+ */
+ext.prepareJsonTagName = { inputTagName, boolean withQuotationMarks = true ->
+	def result = inputTagName
+	if (inputTagName!=null) {
+		result = ''
+		if (withQuotationMarks) {
+			result += QUOTATION_MARKS
+		}
+		
+		result += "${inputTagName}".replace(QUOTATION_MARKS, '').replace('\r','').replace('\t','').replace('\n', '').trim()
+		
+		if (withQuotationMarks) {
+			result += QUOTATION_MARKS
+		}
+	}
+	
+	return result
+}
+
+
+/** 
+ * Start JSON element
+ */
+ext.startJsonElement = { indention = 0, jsonTagName = null, isArray = false ->
+	def result = indentJsonString(indention)
+	if (jsonTagName!=null && !jsonTagName.toString().trim().isEmpty()) {
+		result += prepareJsonTagName(jsonTagName) + ': '
+	}
+	
+	if (isArray) {
+		result += '['
+		result += NELINE
+		result += indentJsonString(indention + 1)
+	} 
+	
+	result += BRACE_START
+	result += NELINE
+	return result
+}
+
+
+/** 
+ * End JSON element
+ */
+ext.endJsonElement = { indention = 0, isArray = false ->
+	def result = ''
+
+	if (isArray) {
+		result += indentJsonString(indention + 1)
+		result += BRACE_END
+		result += NELINE
+		result += indentJsonString(indention)
+		result += ']'
+	} else {
+		result += indentJsonString(indention)	
+		result += BRACE_END
+	}
+
+	return result
+}
+
+
+/** 
+ * Start JSON element
+ */
+ext.createJsonKeyValueElement = { indention = 0, key, value = '' ->
+	def result = indentJsonString(indention)
+	if (name!=null && !name.toString().trim().isEmpty()) {
+		result += prepareJsonTagName(key) + ': ' + prepareJsonTagName(value)
+	}
+
+	return result
+}
+
+
+/** 
+ * Start JSON element
+ */
+ext.createJsonArrayElement = { indention = 0, arrayName, arrayList = [] ->
+	def result = startJsonElement(indention, arrayName, true)
+	
+	if (arrayList!=null && arrayList.size()>0) {
+		for (int i = 0; i<arrayList.size(); i++) {
+			result += indentJsonString(indention + 2) + arrayList[i]
+			if (i<arrayList.size()-1) {
+				result += ','
+			}
+			result += NELINE
+		}
+	}
+
+	result += endJsonElement(indention, true)
+	return result
+}
