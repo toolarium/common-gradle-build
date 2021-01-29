@@ -45,6 +45,7 @@ project.ext.set("kubernetesProjectConfiguration", false)
 apply from: "${commonGradleBuildElementPath}/base.gradle"
 apply from: "${commonGradleBuildElementPath}/base/gradle.gradle"
 apply from: "${commonGradleBuildElementPath}/base/run.gradle"
+apply from: "${commonGradleBuildElementPath}/base/json.gradle"
 apply from: "${commonGradleBuildElementPath}/base/kubernetes.gradle"
 apply from: "${commonGradleBuildElementPath}/java/repository.gradle"
 apply from: "${commonGradleBuildElementPath}/java/signing.gradle"
@@ -67,6 +68,112 @@ configurations {
 }
 configurations.kubernetes {
     transitive = false
+}
+
+
+/****************************************************************************************
+ * Create the apply config and secret install information
+ ****************************************************************************************/
+ext.createKubernetesApplyConfigInstallInformation = { ->
+
+	def kubernetesInstallConfigAndSecretArtefacts = ""
+	def counter = 0
+	new File("$kubernetesConfigurationPath/${kubernetesApplicationConfigPath}").eachFileRecurse (groovy.io.FileType.FILES) { file ->
+		printInfo("> Add kubernetes dependency " + colorize(HIGHLITE_LEVEL, file.getName()) + "...")
+		
+		if (counter>0) {
+			kubernetesInstallConfigAndSecretArtefacts += NELINE
+		}
+		
+		kubernetesInstallConfigAndSecretArtefacts += "${kubernetesApplyCommand} ${kubernetesApplicationConfigPath}/" + file.getName()
+		counter++
+	}
+
+	// set apply config and secret for install information
+	setCommonGradleProperty("kubernetesInstallConfigAndSecretArtefacts", "${kubernetesInstallConfigAndSecretArtefacts}")
+}
+
+
+/****************************************************************************************
+ * Create a json service information file
+ ****************************************************************************************/
+ext.createContainerImageFileList = { fileContent ->
+	def counter = 0
+	def line
+	def imageList = []
+	def imageListContent = new File("$gradleBuildDirectory/$kubernetesConfigurationPathname/${rootProject.name}-docker-reference.txt")
+	printInfo("> Create container image reference " + colorize(HIGHLITE_LEVEL, imageListContent.getName()) + "...")
+	def kubernetesInstallDockerPull = ""
+	fileContent.withReader {
+		while ((line = it.readLine()) != null) {
+			def pos = line.indexOf("#")
+			if (pos==0) {
+				line = ""
+			} else if (pos>0) {
+				line = line.substring(pos)
+			}
+			
+			if (!line.trim().isEmpty()) {
+				pos = line.indexOf("image:")
+				if (pos>=0) {
+					line = line.substring(6 + pos).trim()
+					
+					if (!imageList.contains(line)) {
+						imageList.add(line)
+						imageListContent.append(line + NELINE)
+						
+						if (counter>0) {
+							kubernetesInstallDockerPull += NELINE
+						}
+						kubernetesInstallDockerPull += "${dockerPullImageCommand} ${line}"
+						
+						logInfo("  -> Add docker image reference " + colorize(HIGHLITE_LEVEL, line) + ".")
+						counter++
+					} else {
+						logInfo("  -> Ignore duplicate docker image reference " + colorize(HIGHLITE_LEVEL, line) + ".")
+					}
+				}
+			}
+		}
+	}
+
+	// set docker images list for install information
+	setCommonGradleProperty("kubernetesInstallDockerPull", "${kubernetesInstallDockerPull}")
+}
+
+
+/****************************************************************************************
+ * Create a json service information file
+ ****************************************************************************************/
+ext.createJsonServiceInfo = { urlMap, serviceMap, serviceNamespace, serviceName, servicePort, servicePathExternal, servicePathInternal, labelsList, annotationsList ->
+	new File("$gradleBuildDirectory/${rootProject.name}-services/").mkdirs()
+	def productInfoFile = new File("$gradleBuildDirectory/${rootProject.name}-services/${serviceName}.json")
+	
+	def serviceNameUsePath = serviceMap[servicePathExternal] 
+	if (serviceNameUsePath == null) {
+		urlMap[servicePathExternal] = serviceName
+	} else {
+		//printWarn("WARNING: Service url path conflict with services ${serviceNameUsePath} and ${serviceName}!")
+		addError("WARNING: External service url path conflict with services ${serviceNameUsePath} and ${serviceName}!")
+	}
+
+	serviceNameUsePath = serviceMap[servicePathInternal] 
+	if (serviceNameUsePath == null) {
+		urlMap[servicePathInternal] = serviceName
+	} else {
+		//printWarn("WARNING: Service url path conflict with services ${serviceNameUsePath} and ${serviceName}!")
+		addError("WARNING: Internal service url path conflict with services ${serviceNameUsePath} and ${serviceName}!")
+	}
+	
+	productInfoFile.append(startJsonElement())
+	productInfoFile.append(createJsonKeyValueElement(1, "serviceNamespace", serviceNamespace) + ',' + NELINE)
+	productInfoFile.append(createJsonKeyValueElement(1, "serviceName", serviceName) + ',' + NELINE)
+	productInfoFile.append(createJsonKeyValueElement(1, "servicePort", servicePort) + ',' + NELINE)
+	productInfoFile.append(createJsonKeyValueElement(1, "servicePathExternal", servicePathExternal) + ',' + NELINE)
+	productInfoFile.append(createJsonKeyValueElement(1, "servicePathInternal", servicePathInternal) + ',' + NELINE)
+	productInfoFile.append(createJsonArrayElement(1, "labels", labelsList) + ',' + NELINE)
+	productInfoFile.append(createJsonArrayElement(1, "annotations", annotationsList) + NELINE)
+	productInfoFile.append(endJsonElement())
 }
 
 
@@ -105,8 +212,8 @@ task kubernetesIdm() {
 		def idmFile = "$kubernetesConfigurationServicesPath/${kubernetesConfigurationPathname}/${rootProject.name}-kubernetes-idm.yaml"
 		printInfo("> Created kubernetes idm configuration " + colorize(HIGHLITE_LEVEL, idmFile) + ".")
 		createFileFromTemplate("$idmFile", getTemplateFile('kubernetes-idm.template'), true, false)
-		createFileFromTemplate("$kubernetesConfigurationPath/config/${rootProject.name}-idm-config-kubernetes-idm.yaml", getTemplateFile('kubernetes-idm-config.template'), true /*overwrite*/, true /*print*/, true /*replace*/, NELINE /*only nl*/)
-		createFileFromTemplate("$kubernetesConfigurationPath/config/${rootProject.name}-idm-secret-kubernetes.yaml", getTemplateFile('kubernetes-idm-secret.template'), true /*overwrite*/, true /*print*/, true /*replace*/, NELINE /*only nl*/)
+		createFileFromTemplate("$kubernetesConfigurationPath/${kubernetesApplicationConfigPath}/${rootProject.name}-idm-config-kubernetes-idm.yaml", getTemplateFile('kubernetes-idm-config.template'), true /*overwrite*/, true /*print*/, true /*replace*/, NELINE /*only nl*/)
+		createFileFromTemplate("$kubernetesConfigurationPath/${kubernetesApplicationConfigPath}/${rootProject.name}-idm-secret-kubernetes.yaml", getTemplateFile('kubernetes-idm-secret.template'), true /*overwrite*/, true /*print*/, true /*replace*/, NELINE /*only nl*/)
 	}
 }
 
@@ -120,9 +227,13 @@ task kubernetesDatabase() {
 	onlyIf { return project.hasProperty('kubernetesSupportDatabase') && project.getProperty('kubernetesSupportDatabase') }
 	
 	doFirst {
-		def databaseFile = "$kubernetesConfigurationPath/sample/${rootProject.name}-kubernetes-database.yaml"
+		def databaseFilename = "sample/${rootProject.name}-kubernetes-database.yaml"
+		def databaseFile = "$kubernetesConfigurationPath/${databaseFilename}"
 		printInfo("> Created kubernetes database configuration " + colorize(HIGHLITE_LEVEL, databaseFile) + ".")
 		createFileFromTemplate("$databaseFile", getTemplateFile('kubernetes-database.template'), true /*overwrite*/, false /*print*/, true /*replace*/, NELINE /*only nl*/)
+		
+		// set file name for install information
+		setCommonGradleProperty("kubernetesInstallDatabase", "${kubernetesApplyCommand} ${databaseFilename}")
 	}
 }
 
@@ -156,8 +267,17 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 
 		def kubernetesServicesFilename = "$kubernetesConfigurationElementsPath/${rootProject.name}-services-kubernetes.yaml"
 		createFileFromTemplate(kubernetesServicesFilename, getTemplateFile('kubernetes-ingress-controller-header.template'))
-
-		def fileContent = new File("$gradleBuildDirectory/$kubernetesConfigurationPathname/${rootProject.name}-kubernetes.yaml")
+		
+		// set file name for install information
+		def kubernetesApplicationFilename = "${rootProject.name}-kubernetes.yaml"
+		setCommonGradleProperty("kubernetesInstallApplication", "${kubernetesApplyCommand} ${kubernetesApplicationFilename}")
+		
+		// set uninstall information
+		def kubernetesDeleteApplication = "${kubernetesDeleteCommand} namespace ${kubernetesNamespace} --namespace=${kubernetesNamespace}" + NELINE
+		kubernetesDeleteApplication += "${kubernetesDeleteCommand} -A ValidatingWebhookConfiguration ingress-nginx-admission"
+		setCommonGradleDefaultPropertyIfNull('kubernetesDeleteApplication', kubernetesDeleteApplication)
+		
+		def fileContent = new File("$gradleBuildDirectory/$kubernetesConfigurationPathname/${kubernetesApplicationFilename}")
 		def header = true
 		def line
 		def controllerContent = ""
@@ -187,29 +307,20 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 			fileContent.append("---" + NELINE)
 		}
 
-		// combone idm
-		/*
-		if (project.hasProperty('kubernetesSupportIdm') && project.getProperty('kubernetesSupportIdm')) {
-			new File("$kubernetesConfigurationElementsPath/${rootProject.name}-kubernetes-idm.yaml").withReader {
-				while ((line = it.readLine()) != null) {				
-					if (!header || !line.startsWith("#") || line.toString().trim().isEmpty()) {
-						fileContent.append(line + NELINE)
-						header = false		
-					}
-				}
-			}
-			fileContent.append("---" + NELINE)
-		}
-		*/
-		
+		// process all service definitions and select information
 		def countFiles = 0
-		def map=[:]
+		def serviceMap=[:]
 		new File("$kubernetesConfigurationServicesPath/${kubernetesConfigurationPathname}").eachFileRecurse (groovy.io.FileType.FILES) { file ->
 			printInfo("> Add kubernetes dependency " + colorize(HIGHLITE_LEVEL, file.getName()) + "...")
 
+			def urlMap =  [:]
+			def labelsList =  []
+			def annotationsList =  []
 			def serviceName = ""
 			def servicePort = 0
-			def servicePath = ""
+			def servicePathExternal = ""
+			def servicePathInternal = ""
+			def serviceNamespace = ""
 			try {			
 				file.withReader {
 					if (countFiles>0) {
@@ -242,33 +353,80 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 							
 							// search service path
 							if (mainSection.equalsIgnoreCase("metadata")) {
-								if (!line.startsWith("metadata") && line.trim().startsWith("name:")) {
-									def nameSplit = line.split(":")
-									if ("Service".equalsIgnoreCase(kind) && nameSplit!=null && nameSplit.length>1) {
-										serviceName = nameSplit[1].trim()
-										logInfo("Found service name " + colorize(HIGHLITE_LEVEL, serviceName) + "." )
+								if (!line.startsWith("metadata")) {
+									if (line.trim().startsWith("name:")) {
+										def nameSplit = line.split(":")
+										if ("Service".equalsIgnoreCase(kind) && nameSplit!=null && nameSplit.length>1) {
+											serviceName = nameSplit[1].trim()
+											logInfo("Found service name " + colorize(HIGHLITE_LEVEL, serviceName) + "." )
+										} 
 									}
-								}
-								else if (annotationIndex<=0) {
-									annotationIndex = line.indexOf("annotations:");
-								} else if (annotationIndex > 0 && line.length() > annotationIndex && line.substring(annotationIndex).matches("^\\s+.*")) {
-									def pathIndex = line.indexOf(kubernetesPathAnnotationName)
-									if (pathIndex>0) {
-										def pathExpression = line.substring(pathIndex + kubernetesPathAnnotationName.length()).replace('"', ' ').trim()
-										if (pathExpression!=null && !pathExpression.trim().isEmpty()) {
-											servicePath = pathExpression
-											logInfo("Found service path " + colorize(HIGHLITE_LEVEL, pathExpression) + ".")
+									else if (line.trim().startsWith("namespace:")) {
+										def namespaceSplit = line.split(":")
+										if ("Service".equalsIgnoreCase(kind) && namespaceSplit!=null && namespaceSplit.length>1) {
+											serviceNamespace = namespaceSplit[1].trim()
+											logInfo("Found service namespace " + colorize(HIGHLITE_LEVEL, serviceNamespace) + "." )
 										}
+									}
+									else if (annotationIndex<=0) {
+										annotationIndex = line.indexOf("annotations:");
+										
+										if ("Deployment".equalsIgnoreCase(kind)) {
+											def idx = line.indexOf('/')
+											if (idx>0) {
+												line = line.substring(idx + 1)
+											}
+											
+											idx = line.indexOf(':')
+											if (idx>0) {
+												def key = line.substring(0, idx).replace('\"', '').trim()
+												
+												if (!"labels".equals(key) && !"annotations".equals(key)) {
+													def value = line.substring(idx + 1).replace('\"', '').trim()
+													labelsList.add('\"' + key + '\": \"' + value + '\"')
+												}
+											}
+										}
+									} else if (annotationIndex > 0 /*&& line.length() > annotationIndex && line.substring(annotationIndex).matches("^\\s+.*")*/) {
+										if ("Deployment".equalsIgnoreCase(kind)) {
+											def idx = line.indexOf('/')
+											if (idx>0) {
+												line = line.substring(idx + 1)
+											}
+											
+											idx = line.indexOf(':')
+											if (idx>0) {
+												def key = line.substring(0, idx).replace('\"', '').trim()
+												def value = line.substring(idx + 1).replace('\"', '').trim()
+												annotationsList.add('\"' + key + '\": \"' + value + '\"')
+
+												if (key.equals(kubernetesPathAnnotationName)) {
+													servicePathExternal = value
+													logInfo("Found external service path " + colorize(HIGHLITE_LEVEL, servicePathExternal) + ".")
+												}
+											}
+										}
+									} else {
+										annotationIndex = 0
 									}
 								} else {
 									annotationIndex = 0
 								}
 							} else if (mainSection.equalsIgnoreCase("spec") && !line.startsWith("spec") && line.trim().startsWith("port:")) {
+								annotationIndex = 0
 								def portSplit = line.split(":")
 								if ("Service".equalsIgnoreCase(kind) && portSplit!=null && portSplit.length>1) {
 									servicePort = portSplit[1].trim()
 									logInfo("Found service port " + colorize(HIGHLITE_LEVEL, servicePort) + ".")
 								}
+							} else if (mainSection.equalsIgnoreCase("spec") && !line.startsWith("spec") && !line.startsWith("selector") && line.trim().indexOf("/instance:")>0) {
+								annotationIndex = 0
+								def selectorSplit = line.split(":")
+								if ("Service".equalsIgnoreCase(kind) && selectorSplit!=null && selectorSplit.length>1) {
+									servicePathInternal = selectorSplit[1].trim()
+									logInfo("Found internal service path " + colorize(HIGHLITE_LEVEL, servicePathInternal) + ".")
+								}
+								
 							} else {
 								annotationIndex = 0
 							}
@@ -277,12 +435,23 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 					
 					countFiles++
 					
-					if (serviceName!=null && !serviceName.trim().isEmpty() && servicePort!=null && !servicePort.trim().isEmpty() && servicePath!=null && !servicePath.trim().isEmpty()) {
-						printInfo("  -> Found service " + colorize(HIGHLITE_LEVEL, serviceName + ":" + servicePort) +  " -> " + colorize(HIGHLITE_LEVEL, servicePath) + ".")
-						controllerContent +=  "      - path: $servicePath" + NELINE
-						controllerContent += "        backend:" + NELINE
-						controllerContent += "          serviceName: $serviceName" + NELINE
-						controllerContent += "          servicePort: $servicePort" + NELINE
+					if (serviceName!=null && !serviceName.trim().isEmpty() && servicePort!=null && !servicePort.trim().isEmpty()) {
+						servicePathInternal = servicePathInternal + ":" + servicePort + servicePathExternal
+						def servicePath = servicePathInternal
+						
+						if (servicePathExternal!=null && !servicePathExternal.trim().isEmpty()) {
+							servicePath = servicePathExternal
+
+							controllerContent +=  "      - path: $servicePathExternal" + NELINE
+							controllerContent += "        backend:" + NELINE
+							controllerContent += "          serviceName: $serviceName" + NELINE
+							controllerContent += "          servicePort: $servicePort" + NELINE
+						}
+					
+						logInfo("  -> Found service " + colorize(HIGHLITE_LEVEL, serviceName + ":" + servicePort) +  " -> " + colorize(HIGHLITE_LEVEL, servicePath) + ".")
+						createJsonServiceInfo(urlMap, serviceMap, serviceNamespace, serviceName, servicePort, servicePathExternal, servicePathInternal, labelsList, annotationsList)
+					} else {
+						logInfo("No service found in " + colorize(HIGHLITE_LEVEL, file.getName()) + ".")
 					}
 				}	
 			} catch (Exception e) {
@@ -291,39 +460,19 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 			}			
 		}	
 
+		// append the controller content 
 		fileContent.append("---" + NELINE)
 		fileContent.append("# Source " + new File(kubernetesServicesFilename).getName() + NELINE)
 		fileContent.append(controllerContent)
 
-		// create file which contains all image references
-		def imageList = []
-		def imageListContent = new File("$gradleBuildDirectory/$kubernetesConfigurationPathname/${rootProject.name}-docker-reference.txt")
-		printInfo("> Create docker image reference " + colorize(HIGHLITE_LEVEL, imageListContent.getName()) + "...")
-		fileContent.withReader {
-			while ((line = it.readLine()) != null) {
-				def pos = line.indexOf("#")
-				if (pos==0) {
-					line = ""
-				} else if (pos>0) {
-					line = line.substring(pos)
-				}
-				
-				if (!line.trim().isEmpty()) {
-					pos = line.indexOf("image:")
-					if (pos>=0) {
-						line = line.substring(6 + pos).trim()
-						
-						if (!imageList.contains(line)) {
-							imageList.add(line)
-							imageListContent.append(line + NELINE)
-							logInfo("  -> Add docker image reference " + colorize(HIGHLITE_LEVEL, line) + ".")
-						} else {
-							logInfo("  -> Ignore duplicate docker image reference " + colorize(HIGHLITE_LEVEL, line) + ".")
-						}
-					}
-				}
-			}
-		}
+		// create a containter file list
+		createContainerImageFileList(fileContent)
+		
+		// create the kubernetes apply config / seceret information
+		createKubernetesApplyConfigInstallInformation()
+		
+		// create install information
+		createFileFromTemplate("$gradleBuildDirectory/$kubernetesConfigurationPathname/INSTALL.md", getTemplateFile('INSTALL.template'), true /*overwrite*/, true /*print*/, true /*replace*/, NELINE /*only nl*/)
 	}
 }
 

@@ -199,6 +199,9 @@ ext.searchReplaceByProperties = { inputLine, replacePlaceHolders = true ->
 		if (project.hasProperty('dockerEntrypoint')) {
 			line = line.replaceAll('@@dockerEntrypoint@@', "${project.ext.dockerEntrypoint}".toString())
 		}
+		if (project.hasProperty('dockerRepositoryHost')) {
+			line = line.replaceAll('@@DOCKER_REPOSITORY_HOST@@', "${project.ext.dockerRepositoryHost}".toString())
+		}
 		
 		// kubernetes
 		if (project.hasProperty('kubernetesLabelId')) {
@@ -362,6 +365,9 @@ ext.searchReplaceByProperties = { inputLine, replacePlaceHolders = true ->
 		if (project.hasProperty('kubernetesApplicationHost')) {
 			line = line.replaceAll('@@KUBERNETES_APPLICATION_HOST@@', "${project.ext.kubernetesApplicationHost}".toString())
 		}			
+		if (project.hasProperty('kubernetesApplicationPrototcol')) {
+			line = line.replaceAll('@@KUBERNETES_APPLICATION_PROTOCOL@@', "${project.ext.kubernetesApplicationPrototcol}".toString())
+		}			
 
 		// IDM config
 		if (project.hasProperty('kubernetesIdmServiceName')) {
@@ -421,6 +427,9 @@ ext.searchReplaceByProperties = { inputLine, replacePlaceHolders = true ->
 		}			
 		if (project.hasProperty('kubernetesIdmFrontendUrl')) {
 			line = line.replaceAll('@@KUBERNETES_IDM_FRONTEND_URL@@', "${project.ext.kubernetesIdmFrontendUrl}".toString())
+		}			
+		if (project.hasProperty('kubernetesIdmAdminUrl')) {
+			line = line.replaceAll('@@KUBERNETES_IDM_ADMIN_URL@@', "${project.ext.kubernetesIdmAdminUrl}".toString())
 		}			
 		if (project.hasProperty('kubernetesIdmLogLevel')) {
 			line = line.replaceAll('@@KUBERNETES_IDM_LOG_LEVEL@@', "${project.ext.kubernetesIdmLogLevel}".toString())
@@ -505,6 +514,26 @@ ext.searchReplaceByProperties = { inputLine, replacePlaceHolders = true ->
 		}
 		if (project.hasProperty('kubernetesIdmFrontendUrlEnvName')) {
 			line = line.replaceAll('@@KUBERNETES_IDM_FRONTEND_URL_ENV_NAME@@', "${kubernetesIdmFrontendUrlEnvName}")
+		}
+		
+		// kubernetes installation
+		if (project.hasProperty('kubernetesInstallDockerPull')) {
+			line = line.replaceAll('@@KUBERNETES_INSTALL_DOCKER_PULL@@', "${kubernetesInstallDockerPull}")
+		}
+		if (project.hasProperty('kubernetesInstallConfigAndSecretArtefacts')) {
+			line = line.replaceAll('@@KUBERNETES_INSTALL_CONFIG_AND_SECRET_ARTEFACTS@@', "${kubernetesInstallConfigAndSecretArtefacts}")
+		}
+		if (project.hasProperty('kubernetesInstallDatabase')) {
+			line = line.replaceAll('@@KUBERNETES_INSTALL_DATABASE@@', "${kubernetesInstallDatabase}")
+		}
+		if (project.hasProperty('kubernetesInstallApplication')) {
+			line = line.replaceAll('@@KUBERNETES_INSTALL_APPLICATION@@', "${kubernetesInstallApplication}")
+		}
+		if (project.hasProperty('kubernetesDeleteApplication')) {
+			line = line.replaceAll('@@KUBERNETES_DELETE_APPLICATION@@', "${kubernetesDeleteApplication}")
+		}
+		if (project.hasProperty('kubernetesInstallMessage')) {
+			line = line.replaceAll('@@KUBERNETES_INSTALL_MESSAGE@@', "${kubernetesInstallMessage}")
 		}
 	}
 	

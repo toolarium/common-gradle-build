@@ -1,0 +1,51 @@
+# Installation of @@PROJECT_NAME@@
+### @@VERSION@@, @@DATE@@
+
+@@KUBERNETES_INSTALL_MESSAGE@@
+
+___
+
+## Installation
+
+Here is a quick guide on how to deploy the kubernetes application:
+
+1. login to docker: 
+```
+docker login @@DOCKER_REPOSITORY_HOST@@
+```
+
+2. Pull images:
+```
+@@KUBERNETES_INSTALL_DOCKER_PULL@@
+```
+
+3. Deploy config and secret artefacts:
+```
+@@KUBERNETES_INSTALL_CONFIG_AND_SECRET_ARTEFACTS@@
+```
+
+4. Take care database is available (optional and depends on the prodcut)
+```
+@@KUBERNETES_INSTALL_DATABASE@@
+```
+
+5. Deploy the  application
+```
+@@KUBERNETES_INSTALL_APPLICATION@@
+```
+
+After successful installation, the site @@KUBERNETES_APPLICATION_PROTOCOL@@@@KUBERNETES_APPLICATION_HOST@@ can be accessed in the Kubernetes environment. 
+Please take the etc file is properly adapted (Linux `/etc/hosts`, Windows `%windir%\system32\drivers\etc\hosts`).
+
+To log in to the UI a user must first be created manually in the IDM at @@KUBERNETES_IDM_ADMIN_URL@@.
+
+___
+
+## Uninstallation or re-deployment
+For uninstallation or re-deployment, you can proceed as follows:
+```
+@@KUBERNETES_DELETE_APPLICATION@@
+```
+
+___
+(c) @@YEAR@@ @@LICENSE_ORGANISATION@@

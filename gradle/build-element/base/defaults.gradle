@@ -157,6 +157,7 @@ setCommonGradleDefaultPropertyIfNull("redirectIndexFile", "index.html")
  * view init settings
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("initShowJava", true)
+setCommonGradleDefaultPropertyIfNull("initShowGroovy", false)
 setCommonGradleDefaultPropertyIfNull("initShowRuntime", false)
 setCommonGradleDefaultPropertyIfNull("initShowPath", true)
 setCommonGradleDefaultPropertyIfNull("initShowTempPath", false)
@@ -494,6 +495,7 @@ setCommonGradleDefaultPropertyIfNull("dockerRepositoryUser", "")
 setCommonGradleDefaultPropertyIfNull("dockerRepositoryPassword", "")
 setCommonGradleDefaultPropertyIfNull("dockerCleanupAfterBuild", false)
 setCommonGradleDefaultPropertyIfNull("dockerCleanupAfterPublish", true)
+setCommonGradleDefaultPropertyIfNull("dockerPullImageCommand", "docker pull")
 
 if (!"$dockerIgnoreFile".toString().isEmpty()) {
 	addCommonGradlePropertyList("allowedMainFiles", "$dockerIgnoreFile")
@@ -517,10 +519,11 @@ if (project.hasProperty('projectGroupId') && !project.getProperty('projectGroupI
 }
 
 setCommonGradleDefaultPropertyIfNull("kubernetesApplicationHost", "${rootProject.name}.local")
+setCommonGradleDefaultPropertyIfNull("kubernetesApplicationPrototcol", "http://")
 setCommonGradleDefaultPropertyIfNull("kubernetesUsernamePasswordBase64Encode", true)
 setCommonGradleDefaultPropertyIfNull("kubernetesProjectConfiguration", true)
 //setCommonGradleDefaultPropertyIfNull("kubernetesDockerImage", "")
-setCommonGradleDefaultPropertyIfNull("kubernetesPathAnnotationName", "url-path:")
+setCommonGradleDefaultPropertyIfNull("kubernetesPathAnnotationName", "url-path")
 setCommonGradleDefaultPropertyIfNull("kubernetesUrlPath", "/api/${rootProject.name}")
 setCommonGradleDefaultPropertyIfNull("kubernetesConfigurationPathname", "kubernetes")
 setCommonGradleDefaultPropertyIfNull("kubernetesConfigurationPath", "$gradleBuildDirectory/${kubernetesConfigurationPathname}")
@@ -532,7 +535,7 @@ setCommonGradleDefaultPropertyIfNull("kubernetesControllerImage", "networking.k8
 // imgress-nginx: https://github.com/kubernetes/ingress-nginx
 setCommonGradleDefaultPropertyIfNull("kubernetesSupportIngressNginx", true)
 setCommonGradleDefaultPropertyIfNull("kubernetesDownloadIngressNginxVersion", false)
-setCommonGradleDefaultPropertyIfNull("kubernetesIngressNginxVersion", "0.41.0") // 0.40.2
+setCommonGradleDefaultPropertyIfNull("kubernetesIngressNginxVersion", "0.43.0") // see https://github.com/kubernetes/ingress-nginx
 setCommonGradleDefaultPropertyIfNull("kubernetesIngressUrl", "https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v${kubernetesIngressNginxVersion}/deploy/static/provider/cloud/deploy.yaml") 
 
 // kubernetes / application.properties environment variable names
@@ -543,9 +546,10 @@ setCommonGradleDefaultPropertyIfNull("kubernetesDatabasePasswordEnvName", "DATAB
 
 // application configuration
 setCommonGradleDefaultPropertyIfNull("kubernetesApplicationConfigName", "application-config")
-setCommonGradleDefaultPropertyIfNull("kubernetesApplicationConfigFilename", "config/${rootProject.name}-${kubernetesApplicationConfigName}-kubernetes.yaml")
+setCommonGradleDefaultPropertyIfNull("kubernetesApplicationConfigPath", "config")
+setCommonGradleDefaultPropertyIfNull("kubernetesApplicationConfigFilename", "${kubernetesApplicationConfigPath}/${rootProject.name}-${kubernetesApplicationConfigName}-kubernetes.yaml")
 setCommonGradleDefaultPropertyIfNull("kubernetesApplicationSecretName", "application-secret")
-setCommonGradleDefaultPropertyIfNull("kubernetesApplicationSecretFilename", "config/${rootProject.name}-${kubernetesApplicationSecretName}-kubernetes.yaml")
+setCommonGradleDefaultPropertyIfNull("kubernetesApplicationSecretFilename", "${kubernetesApplicationConfigPath}/${rootProject.name}-${kubernetesApplicationSecretName}-kubernetes.yaml")
 setCommonGradleDefaultPropertyIfNull("kubernetesApplicationOIDCClientIdEnvName", "OIDC_CLIENT_ID")
 setCommonGradleDefaultPropertyIfNull("kubernetesApplicationOIDCClientIdKey", "oidc.client-id")
 setCommonGradleDefaultPropertyIfNull("kubernetesApplicationOIDCPublicKeyEnvName", "OIDC_PUBLIC_KEY")
@@ -554,15 +558,15 @@ setCommonGradleDefaultPropertyIfNull("kubernetesApplicationOIDCClientId", "servi
 setCommonGradleDefaultPropertyIfNull("kubernetesApplicationOIDCPublicKey", "")
 setCommonGradleDefaultPropertyIfNull("kubernetesApplicationOIDCAuthServerUrlName", "OIDC_AUTH_SERVER_URL")
 setCommonGradleDefaultPropertyIfNull("kubernetesApplicationOIDCAuthServerUrlKey", "oidc.auth-server-url")
-setCommonGradleDefaultPropertyIfNull("kubernetesApplicationOIDCAuthServerUrl", "http://keycloak:8080/auth/realms")
+setCommonGradleDefaultPropertyIfNull("kubernetesApplicationOIDCAuthServerUrl", "${kubernetesApplicationPrototcol}keycloak:8080/auth/realms")
 setCommonGradleDefaultPropertyIfNull("kubernetesApplicationOIDCTokenIssuerName", "OIDC_TOKEN_ISSUER")
 setCommonGradleDefaultPropertyIfNull("kubernetesApplicationOIDCTokenIssuerKey", "oidc.token-issuer")
-setCommonGradleDefaultPropertyIfNull("kubernetesApplicationOIDCTokenIssuer", "http://${kubernetesApplicationHost}/auth/realms")
+setCommonGradleDefaultPropertyIfNull("kubernetesApplicationOIDCTokenIssuer", "${kubernetesApplicationPrototcol}${kubernetesApplicationHost}/auth/realms")
 
 // database secret name
 setCommonGradleDefaultPropertyIfNull("kubernetesSupportDatabase", true)
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseSecretName", "database-secret")
-setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseSecretFilename", "config/${rootProject.name}-${kubernetesDatabaseSecretName}-kubernetes.yaml")
+setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseSecretFilename", "${kubernetesApplicationConfigPath}/${rootProject.name}-${kubernetesDatabaseSecretName}-kubernetes.yaml")
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseUsernameKey", "username")
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabasePasswordKey", "password") 
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseUsername", "appuser")    // service database user
@@ -604,7 +608,10 @@ setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseMaxConnections", "10")
 setCommonGradleDefaultPropertyIfNull("kubernetesSupportIdm", true)
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmImageVersion", "11.0.2")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmUrlPath", "/auth")
-setCommonGradleDefaultPropertyIfNull("kubernetesIdmFrontendUrl", "http://${rootProject.name}.local${kubernetesIdmUrlPath}")
+setCommonGradleDefaultPropertyIfNull("kubernetesIdmUrlProtocol", "${kubernetesApplicationPrototcol}")
+setCommonGradleDefaultPropertyIfNull("kubernetesIdmFrontendUrl", "${kubernetesIdmUrlProtocol}${kubernetesApplicationHost}${kubernetesIdmUrlPath}")
+setCommonGradleDefaultPropertyIfNull("kubernetesIdmAdminUrlPath", "${kubernetesIdmUrlPath}/admin/")
+setCommonGradleDefaultPropertyIfNull("kubernetesIdmAdminUrl", "${kubernetesIdmUrlProtocol}${kubernetesApplicationHost}${kubernetesIdmAdminUrlPath}")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmPort", "8080")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmServiceName", "keycloak")	
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmDatabase", "${kubernetesDatabaseName}")
@@ -646,6 +653,9 @@ setCommonGradleDefaultPropertyIfNull("kubernetesIdmDatabasePasswordFileEnvName",
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmLogLevelEnvName", "KEYCLOAK_LOGLEVEL")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmAddressForwardingEnvName", "PROXY_ADDRESS_FORWARDING")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmFrontendUrlEnvName", "KEYCLOAK_FRONTEND_URL")
+setCommonGradleDefaultPropertyIfNull("kubernetesApplyCommand", "kubectl apply -f")
+setCommonGradleDefaultPropertyIfNull("kubernetesDeleteCommand", "kubectl delete")
+setCommonGradleDefaultPropertyIfNull("kubernetesInstallMessage", "This file describes the installation of the product.")
 
 
 /***************************************************************************************
