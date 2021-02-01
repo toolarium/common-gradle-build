@@ -106,6 +106,7 @@ setCommonGradleDefaultPropertyIfNull("configDirectoryName", "conf")
 setCommonGradleDefaultPropertyIfNull("configDirectory", "$rootDirectory/$configDirectoryName")
 setCommonGradleDefaultPropertyIfNull("configIgnoreEmptyPackages", true)
 setCommonGradleDefaultPropertyIfNull("configPackages", "")
+setCommonGradleDefaultPropertyIfNull("configPackageArchiveClassifier", "config")
 
 // build directory
 setCommonGradleDefaultPropertyIfNull("gradleBuildDirectory", "$rootDirectory/build")

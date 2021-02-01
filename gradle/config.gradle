@@ -20,6 +20,10 @@ if (!project.hasProperty('commonGradleBuildElementPath')) {
  ***************************************************************************************/
 ext.projectTypeTemplatePath='config'
 
+if (!project.hasProperty('configPackageArchiveClassifier')) {
+	ext.configPackageArchiveClassifier = ''
+}
+
 
 /***************************************************************************************
  * Dependencies
