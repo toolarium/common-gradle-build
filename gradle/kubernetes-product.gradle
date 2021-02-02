@@ -145,11 +145,58 @@ ext.createContainerImageFileList = { fileContent ->
 /****************************************************************************************
  * Create a json service information file
  ****************************************************************************************/
-ext.createJsonServiceInfo = { urlMap, serviceMap, serviceNamespace, serviceName, servicePort, servicePathExternal, servicePathInternal, labelsList, annotationsList ->
+ext.createProductServiceInfo = { serviceMap ->
 	new File("$gradleBuildDirectory/${rootProject.name}-services/").mkdirs()
-	def productInfoFile = new File("$gradleBuildDirectory/${rootProject.name}-services/${serviceName}.json")
+
+	def productServicesFile = new File("$gradleBuildDirectory/${rootProject.name}-services/services.json")
+	printInfo("> Create product information " + colorize(HIGHLITE_LEVEL, productServicesFile.getName()) + "...")
+	productServicesFile.append(startJsonElement())
 	
-	def serviceNameUsePath = serviceMap[servicePathExternal] 
+	productServicesFile.append(createJsonKeyValueElement(1, "namespace", "$kubernetesNamespace") + ',' + NELINE)
+	productServicesFile.append(createJsonKeyValueElement(1, "name", "${rootProject.name}") + ',' + NELINE)
+	productServicesFile.append(createJsonKeyValueElement(1, "version", "${project.version}") + ',' + NELINE)
+	productServicesFile.append(createJsonKeyValueElement(1, "organisation", "${project.ext.licenseOrganisation}") + ',' + NELINE)
+	
+	if (!"${project.ext.licenseText}".toString().trim().isEmpty()) {
+		productServicesFile.append(createJsonKeyValueElement(1, "license", "${project.ext.licenseText}") + ',' + NELINE)
+	}
+	
+	if (!"${project.ext.projectDescription}".toString().trim().isEmpty()) {
+		productServicesFile.append(createJsonKeyValueElement(1, "description", "${project.ext.projectDescription}") + ',' + NELINE)
+	}
+	
+	productServicesFile.append(createJsonKeyValueElement(1, "url-path", "${project.ext.kubernetesApplicationPrototcol}${project.ext.kubernetesApplicationHost}") + ',' + NELINE)
+	productServicesFile.append(createJsonKeyValueElement(1, "component", "${project.ext.projectType}") + ',' + NELINE)
+	//productServicesFile.append(createJsonKeyValueElement(1, "runtime-timezone", "${project.ext.dockerTimezone}") + ',' + NELINE)
+	productServicesFile.append(createJsonKeyValueElement(1, "build-reference", "${project.ext.scmVersionNumber}") + ',' + NELINE)
+	productServicesFile.append(createJsonKeyValueElement(1, "build-timestamp", "${project.ext.BUILD_TIMESTAMP}") + ',' + NELINE)
+	productServicesFile.append(createJsonKeyValueElement(1, "created-by", "${project.ext.buildToolVersionStackMessage}") + ',' + NELINE)
+	
+	productServicesFile.append(startJsonElement(1, 'services', true))
+	def size = serviceMap.size()
+	serviceMap.eachWithIndex { key, value, i ->
+		productServicesFile.append(createJsonKeyValueElement(3, "name", key))
+		productServicesFile.append(NELINE)
+		if (size>(i+1)) {
+			productServicesFile.append(endJsonElement(2))
+			productServicesFile.append(',' + NELINE)
+			productServicesFile.append(startJsonElement(2))
+		}
+	}
+	
+	productServicesFile.append(endJsonElement(1, true) + NELINE)
+	productServicesFile.append(endJsonElement())
+}
+
+
+/****************************************************************************************
+ * Create a json service information file
+ ****************************************************************************************/
+ext.createJsonServiceInfo = { urlMap, serviceMap, serviceNamespace, serviceName, imageName, servicePort, servicePathExternal, servicePathInternal, readinessPath, livenessPath, labelsList, annotationsList ->
+	new File("$gradleBuildDirectory/${rootProject.name}-services/").mkdirs()
+
+	def productInfoFile = new File("$gradleBuildDirectory/${rootProject.name}-services/${serviceName}.json")
+	def serviceNameUsePath = urlMap[servicePathExternal] 
 	if (serviceNameUsePath == null) {
 		urlMap[servicePathExternal] = serviceName
 	} else {
@@ -157,20 +204,24 @@ ext.createJsonServiceInfo = { urlMap, serviceMap, serviceNamespace, serviceName,
 		addError("WARNING: External service url path conflict with services ${serviceNameUsePath} and ${serviceName}!")
 	}
 
-	serviceNameUsePath = serviceMap[servicePathInternal] 
+	serviceMap[serviceName] = servicePathInternal	
+	serviceNameUsePath = urlMap[servicePathInternal] 
 	if (serviceNameUsePath == null) {
 		urlMap[servicePathInternal] = serviceName
 	} else {
 		//printWarn("WARNING: Service url path conflict with services ${serviceNameUsePath} and ${serviceName}!")
 		addError("WARNING: Internal service url path conflict with services ${serviceNameUsePath} and ${serviceName}!")
 	}
-	
+		
 	productInfoFile.append(startJsonElement())
 	productInfoFile.append(createJsonKeyValueElement(1, "serviceNamespace", serviceNamespace) + ',' + NELINE)
 	productInfoFile.append(createJsonKeyValueElement(1, "serviceName", serviceName) + ',' + NELINE)
 	productInfoFile.append(createJsonKeyValueElement(1, "servicePort", servicePort) + ',' + NELINE)
+	productInfoFile.append(createJsonKeyValueElement(1, "image", imageName) + ',' + NELINE)	
 	productInfoFile.append(createJsonKeyValueElement(1, "servicePathExternal", servicePathExternal) + ',' + NELINE)
 	productInfoFile.append(createJsonKeyValueElement(1, "servicePathInternal", servicePathInternal) + ',' + NELINE)
+	productInfoFile.append(createJsonKeyValueElement(1, "readinessPath", readinessPath) + ',' + NELINE)
+	productInfoFile.append(createJsonKeyValueElement(1, "livenessPath", livenessPath) + ',' + NELINE)
 	productInfoFile.append(createJsonArrayElement(1, "labels", labelsList) + ',' + NELINE)
 	productInfoFile.append(createJsonArrayElement(1, "annotations", annotationsList) + NELINE)
 	productInfoFile.append(endJsonElement())
@@ -254,6 +305,34 @@ task extractKubernetes(type: Copy) {
 }
 
 
+
+/****************************************************************************************
+ * Yaml file filter
+ ****************************************************************************************/
+ext.yamlIndentFiler = { LineNumberReader it, indentLevel ->
+	def result = []
+	def numberOfLines = 0
+	
+	it.mark(0)
+	def nextLine = ''
+	while ((nextLine = it.readLine()) != null) {
+		if (nextLine.length() > indentLevel && nextLine[indentLevel + 1] == ' ') {
+			numberOfLines++
+			result.add(nextLine)
+		} else {
+			break;
+		}
+	}
+	
+	it.reset()
+	for (int i = 0; i < numberOfLines; i++) {
+		it.readLine()
+	}
+	
+	return result
+}
+
+
 /****************************************************************************************
  * Extract kubernetes artefacts
  ****************************************************************************************/
@@ -317,10 +396,14 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 			def labelsList =  []
 			def annotationsList =  []
 			def serviceName = ""
+			def imageName = ""
 			def servicePort = 0
 			def servicePathExternal = ""
 			def servicePathInternal = ""
 			def serviceNamespace = ""
+			def readinessPath = ""
+			def livenessPath = ""
+
 			try {			
 				file.withReader {
 					if (countFiles>0) {
@@ -332,7 +415,7 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 					def annotationIndex = 0
 					header = true
 					fileContent.append("# Source: " + file.getName() + NELINE)
-					while ((line = it.readLine()) != null) {				
+					while ((line = it.readLine()) != null) {
 						def ignoreLine = line.startsWith("#") || line.toString().trim().isEmpty()
 						if (header && ignoreLine) {
 						} else {
@@ -425,8 +508,26 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 								if ("Service".equalsIgnoreCase(kind) && selectorSplit!=null && selectorSplit.length>1) {
 									servicePathInternal = selectorSplit[1].trim()
 									logInfo("Found internal service path " + colorize(HIGHLITE_LEVEL, servicePathInternal) + ".")
+								}								
+							} else if (mainSection.equalsIgnoreCase("spec") && !line.startsWith("spec") && line.trim().indexOf("image:")>0) {
+								def pos = line.indexOf("image:")
+								if (pos>=0) {
+									imageName = line.substring(6 + pos).trim()
 								}
-								
+							} else if (mainSection.equalsIgnoreCase("spec") && !line.startsWith("spec") && line.indexOf("readinessProbe:")>0) {
+								yamlIndentFiler(it, line.indexOf("readinessProbe:")).each { jt ->
+									def idx = jt.indexOf("path:")
+									if (idx>0) {
+										readinessPath = jt.toString().substring(idx).replace('\"', '')
+									}
+								}
+							} else if (mainSection.equalsIgnoreCase("spec") && !line.startsWith("spec") && line.indexOf("livenessProbe:")>0) {
+								yamlIndentFiler(it, line.indexOf("livenessProbe:")).each { jt ->
+									def idx = jt.indexOf("path:")
+									if (idx>0) {
+										livenessPath = jt.toString().substring(idx).replace('\"', '')
+									}
+								}
 							} else {
 								annotationIndex = 0
 							}
@@ -447,9 +548,9 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 							controllerContent += "          serviceName: $serviceName" + NELINE
 							controllerContent += "          servicePort: $servicePort" + NELINE
 						}
-					
+
 						logInfo("  -> Found service " + colorize(HIGHLITE_LEVEL, serviceName + ":" + servicePort) +  " -> " + colorize(HIGHLITE_LEVEL, servicePath) + ".")
-						createJsonServiceInfo(urlMap, serviceMap, serviceNamespace, serviceName, servicePort, servicePathExternal, servicePathInternal, labelsList, annotationsList)
+						createJsonServiceInfo(urlMap, serviceMap, serviceNamespace, serviceName, imageName, servicePort, servicePathExternal, servicePathInternal, readinessPath, livenessPath, labelsList, annotationsList)
 					} else {
 						logInfo("No service found in " + colorize(HIGHLITE_LEVEL, file.getName()) + ".")
 					}
@@ -464,6 +565,9 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 		fileContent.append("---" + NELINE)
 		fileContent.append("# Source " + new File(kubernetesServicesFilename).getName() + NELINE)
 		fileContent.append(controllerContent)
+
+		// create product service information
+		createProductServiceInfo(serviceMap)
 
 		// create a containter file list
 		createContainerImageFileList(fileContent)
