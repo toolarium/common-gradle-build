@@ -18,6 +18,10 @@ if (!project.hasProperty('commonGradleBuildUrl')) {
     ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
 }
 
+if (!project.hasProperty('commonGradleBuildElementPath')) {
+	ext.commonGradleBuildElementPath="${commonGradleBuildUrl}/build-element"
+}
+
 // default classifier name
 if (!project.hasProperty("shadowClassifier")) {
 	project.ext.set("shadowClassifier", "runner")
