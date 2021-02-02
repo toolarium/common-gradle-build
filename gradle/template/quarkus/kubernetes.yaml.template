@@ -82,6 +82,26 @@ spec:
 #                name: @@KUBERNETES_APPLICATION_CONFIG_NAME@@
 #                key: @@KUBERNETES_APPLICATION_OIDC_TOKEN_ISSUER_KEY@@
       restartPolicy: Always
+#      readinessProbe:
+#        failureThreshold: @@KUBERNETES_QUARKUS_READINESS_FAILURE_THRESHOLD@@
+#        httpGet:
+#          path: "/health/ready"
+#          port: @@DOCKER_EXPOSE_PORT@@
+#          scheme: "@@KUBERNETES_QUARKUS_READINESS_SCHEME@@"
+#        initialDelaySeconds: @@KUBERNETES_QUARKUS_READINESS_INITIAL_DELAY_SECONDS@@
+#        periodSeconds: @@KUBERNETES_QUARKUS_READINESS_PERIOD_SECONDS@@
+#        successThreshold: @@KUBERNETES_QUARKUS_READINESS_SUCCESS_THRESHOLD@@
+#        timeoutSeconds: @@KUBERNETES_QUARKUS_READINESS_TIMEOUT_SECONDS@@
+#      livenessProbe:
+#        failureThreshold:: @@KUBERNETES_QUARKUS_LIVENESS_FAILURE_THRESHOLD@@
+#        httpGet:
+#          path: "/health/live"
+#          port: @@DOCKER_EXPOSE_PORT@@
+#          scheme: "@@KUBERNETES_QUARKUS_LIVENESS_SCHEME@@"
+#        initialDelaySeconds: @@KUBERNETES_QUARKUS_LIVENESS_INITIAL_DELAY_SECONDS@@
+#        periodSeconds: @@KUBERNETES_QUARKUS_LIVENESS_PERIOD_SECONDS@@
+#        successThreshold: @@KUBERNETES_QUARKUS_LIVENESS_SUCCESS_THRESHOLD@@
+#        timeoutSeconds: @@KUBERNETES_QUARKUS_LIVENESS_TIMEOUT_SECONDS@@
 ---
 apiVersion: v1
 kind: Service

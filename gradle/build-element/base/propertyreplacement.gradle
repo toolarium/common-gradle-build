@@ -535,6 +535,167 @@ ext.searchReplaceByProperties = { inputLine, replacePlaceHolders = true ->
 		if (project.hasProperty('kubernetesInstallMessage')) {
 			line = line.replaceAll('@@KUBERNETES_INSTALL_MESSAGE@@', "${kubernetesInstallMessage}")
 		}
+		
+		// kubernetes readiness / liveness
+		if (project.hasProperty('kubernetesQuarkusReadinessFailureThreshold')) {
+			line = line.replaceAll('@@KUBERNETES_QUARKUS_READINESS_FAILURE_THRESHOLD@@', "${kubernetesQuarkusReadinessFailureThreshold}")
+		}
+		if (project.hasProperty('kubernetesQuarkusReadinessScheme')) {
+			line = line.replaceAll('@@KUBERNETES_QUARKUS_READINESS_SCHEME@@', "${kubernetesQuarkusReadinessScheme}")
+		}
+		if (project.hasProperty('kubernetesQuarkusReadinessInitialDelaySeconds')) {
+			line = line.replaceAll('@@KUBERNETES_QUARKUS_READINESS_INITIAL_DELAY_SECONDS@@', "${kubernetesQuarkusReadinessInitialDelaySeconds}")
+		}
+		if (project.hasProperty('kubernetesQuarkusReadinessPeriodSeconds')) {
+			line = line.replaceAll('@@KUBERNETES_QUARKUS_READINESS_PERIOD_SECONDS@@', "${kubernetesQuarkusReadinessPeriodSeconds}")
+		}
+		if (project.hasProperty('kubernetesQuarkusReadinessSuccessThreshold')) {
+			line = line.replaceAll('@@KUBERNETES_QUARKUS_READINESS_SUCCESS_THRESHOLD@@', "${kubernetesQuarkusReadinessSuccessThreshold}")
+		}
+		if (project.hasProperty('kubernetesQuarkusReadinessTimeoutSeconds')) {
+			line = line.replaceAll('@@KUBERNETES_QUARKUS_READINESS_TIMEOUT_SECONDS@@', "${kubernetesQuarkusReadinessTimeoutSeconds}")
+		}
+		if (project.hasProperty('kubernetesQuarkusLivenessFailureThreshold')) {
+			line = line.replaceAll('@@KUBERNETES_QUARKUS_LIVENESS_FAILURE_THRESHOLD@@', "${kubernetesQuarkusLivenessFailureThreshold}")
+		}
+		if (project.hasProperty('kubernetesQuarkusLivenessScheme')) {
+			line = line.replaceAll('@@KUBERNETES_QUARKUS_LIVENESS_SCHEME@@', "${kubernetesQuarkusLivenessScheme}")
+		}
+		if (project.hasProperty('kubernetesQuarkusLivenessInitialDelaySeconds')) {
+			line = line.replaceAll('@@KUBERNETES_QUARKUS_LIVENESS_INITIAL_DELAY_SECONDS@@', "${kubernetesQuarkusLivenessInitialDelaySeconds}")
+		}
+		if (project.hasProperty('kubernetesQuarkusLivenessPeriodSeconds')) {
+			line = line.replaceAll('@@KUBERNETES_QUARKUS_LIVENESS_PERIOD_SECONDS@@', "${kubernetesQuarkusLivenessPeriodSeconds}")
+		}
+		if (project.hasProperty('kubernetesQuarkusLivenessSuccessThreshold')) {
+			line = line.replaceAll('@@KUBERNETES_QUARKUS_LIVENESS_SUCCESS_THRESHOLD@@', "${kubernetesQuarkusLivenessSuccessThreshold}")
+		}
+		if (project.hasProperty('kubernetesQuarkusLivenessTimeoutSeconds')) {
+			line = line.replaceAll('@@KUBERNETES_QUARKUS_LIVENESS_TIMEOUT_SECONDS@@', "${kubernetesQuarkusLivenessTimeoutSeconds}")
+		}
+
+		if (project.hasProperty('kubernetesNodeReadinessCheckPath')) {
+			line = line.replaceAll('@@KUBERNETES_NODE_READINESS_CHECK_PATH@@', "${kubernetesNodeReadinessCheckPath}")
+		}
+		if (project.hasProperty('kubernetesNodeReadinessFailureThreshold')) {
+			line = line.replaceAll('@@KUBERNETES_NODE_READINESS_FAILURE_THRESHOLD@@', "${kubernetesNodeReadinessFailureThreshold}")
+		}
+		if (project.hasProperty('kubernetesNodeReadinessScheme')) {
+			line = line.replaceAll('@@KUBERNETES_NODE_READINESS_SCHEME@@', "${kubernetesNodeReadinessScheme}")
+		}
+		if (project.hasProperty('kubernetesNodeReadinessInitialDelaySeconds')) {
+			line = line.replaceAll('@@KUBERNETES_NODE_READINESS_INITIAL_DELAY_SECONDS@@', "${kubernetesNodeReadinessInitialDelaySeconds}")
+		}
+		if (project.hasProperty('kubernetesNodeReadinessPeriodSeconds')) {
+			line = line.replaceAll('@@KUBERNETES_NODE_READINESS_PERIOD_SECONDS@@', "${kubernetesNodeReadinessPeriodSeconds}")
+		}
+		if (project.hasProperty('kubernetesNodeReadinessSuccessThreshold')) {
+			line = line.replaceAll('@@KUBERNETES_NODE_READINESS_SUCCESS_THRESHOLD@@', "${kubernetesNodeReadinessSuccessThreshold}")
+		}
+		if (project.hasProperty('kubernetesNodeReadinessTimeoutSeconds')) {
+			line = line.replaceAll('@@KUBERNETES_NODE_READINESS_TIMEOUT_SECONDS@@', "${kubernetesNodeReadinessTimeoutSeconds}")
+		}
+		if (project.hasProperty('kubernetesNodeLivenessCheckPath')) {
+			line = line.replaceAll('@@KUBERNETES_NODE_LIVENESS_CHECK_PATH@@', "${kubernetesNodeLivenessCheckPath}")
+		}
+		if (project.hasProperty('kubernetesNodeLivenessFailureThreshold')) {
+			line = line.replaceAll('@@KUBERNETES_NODE_LIVENESS_FAILURE_THRESHOLD@@', "${kubernetesNodeLivenessFailureThreshold}")
+		}
+		if (project.hasProperty('kubernetesNodeLivenessScheme')) {
+			line = line.replaceAll('@@KUBERNETES_NODE_LIVENESS_SCHEME@@', "${kubernetesNodeLivenessScheme}")
+		}
+		if (project.hasProperty('kubernetesNodeLivenessInitialDelaySeconds')) {
+			line = line.replaceAll('@@KUBERNETES_NODE_LIVENESS_INITIAL_DELAY_SECONDS@@', "${kubernetesNodeLivenessInitialDelaySeconds}")
+		}
+		if (project.hasProperty('kubernetesNodeLivenessPeriodSeconds')) {
+			line = line.replaceAll('@@KUBERNETES_NODE_LIVENESS_PERIOD_SECONDS@@', "${kubernetesNodeLivenessPeriodSeconds}")
+		}
+		if (project.hasProperty('kubernetesNodeLivenessSuccessThreshold')) {
+			line = line.replaceAll('@@KUBERNETES_NODE_LIVENESS_SUCCESS_THRESHOLD@@', "${kubernetesNodeLivenessSuccessThreshold}")
+		}
+		if (project.hasProperty('kubernetesNodeLivenessTimeoutSeconds')) {
+			line = line.replaceAll('@@KUBERNETES_NODE_LIVENESS_TIMEOUT_SECONDS@@', "${kubernetesNodeLivenessTimeoutSeconds}")
+		}
+
+		if (project.hasProperty('kubernetesIdmReadinessCheckPath')) {
+			line = line.replaceAll('@@KUBERNETES_IDM_READINESS_CHECK_PATH@@', "${kubernetesIdmReadinessCheckPath}")
+		}
+		if (project.hasProperty('kubernetesIdmReadinessFailureThreshold')) {
+			line = line.replaceAll('@@KUBERNETES_IDM_READINESS_FAILURE_THRESHOLD@@', "${kubernetesIdmReadinessFailureThreshold}")
+		}
+		if (project.hasProperty('kubernetesIdmReadinessScheme')) {
+			line = line.replaceAll('@@KUBERNETES_IDM_READINESS_SCHEME@@', "${kubernetesIdmReadinessScheme}")
+		}
+		if (project.hasProperty('kubernetesIdmReadinessInitialDelaySeconds')) {
+			line = line.replaceAll('@@KUBERNETES_IDM_READINESS_INITIAL_DELAY_SECONDS@@', "${kubernetesIdmReadinessInitialDelaySeconds}")
+		}
+		if (project.hasProperty('kubernetesIdmReadinessPeriodSeconds')) {
+			line = line.replaceAll('@@KUBERNETES_IDM_READINESS_PERIOD_SECONDS@@', "${kubernetesIdmReadinessPeriodSeconds}")
+		}
+		if (project.hasProperty('kubernetesIdmReadinessSuccessThreshold')) {
+			line = line.replaceAll('@@KUBERNETES_IDM_READINESS_SUCCESS_THRESHOLD@@', "${kubernetesIdmReadinessSuccessThreshold}")
+		}
+		if (project.hasProperty('kubernetesIdmReadinessTimeoutSeconds')) {
+			line = line.replaceAll('@@KUBERNETES_IDM_READINESS_TIMEOUT_SECONDS@@', "${kubernetesIdmReadinessTimeoutSeconds}")
+		}
+		if (project.hasProperty('kubernetesIdmLivenessCheckPath')) {
+			line = line.replaceAll('@@KUBERNETES_IDM_LIVENESS_CHECK_PATH@@', "${kubernetesIdmLivenessCheckPath}")
+		}
+		if (project.hasProperty('kubernetesIdmLivenessFailureThreshold')) {
+			line = line.replaceAll('@@KUBERNETES_IDM_LIVENESS_FAILURE_THRESHOLD@@', "${kubernetesIdmLivenessFailureThreshold}")
+		}
+		if (project.hasProperty('kubernetesIdmLivenessScheme')) {
+			line = line.replaceAll('@@KUBERNETES_IDM_LIVENESS_SCHEME@@', "${kubernetesIdmLivenessScheme}")
+		}
+		if (project.hasProperty('kubernetesIdmLivenessInitialDelaySeconds')) {
+			line = line.replaceAll('@@KUBERNETES_IDM_LIVENESS_INITIAL_DELAY_SECONDS@@', "${kubernetesIdmLivenessInitialDelaySeconds}")
+		}
+		if (project.hasProperty('kubernetesIdmLivenessPeriodSeconds')) {
+			line = line.replaceAll('@@KUBERNETES_IDM_LIVENESS_PERIOD_SECONDS@@', "${kubernetesIdmLivenessPeriodSeconds}")
+		}
+		if (project.hasProperty('kubernetesIdmLivenessSuccessThreshold')) {
+			line = line.replaceAll('@@KUBERNETES_IDM_LIVENESS_SUCCESS_THRESHOLD@@', "${kubernetesIdmLivenessSuccessThreshold}")
+		}
+		if (project.hasProperty('kubernetesIdmLivenessTimeoutSeconds')) {
+			line = line.replaceAll('@@KUBERNETES_IDM_LIVENESS_TIMEOUT_SECONDS@@', "${kubernetesIdmLivenessTimeoutSeconds}")
+		}
+
+		if (project.hasProperty('kubernetesReadinessFailureThreshold')) {
+			line = line.replaceAll('@@KUBERNETES_READINESS_FAILURE_THRESHOLD@@', "${kubernetesReadinessFailureThreshold}")
+		}
+		if (project.hasProperty('kubernetesReadinessScheme')) {
+			line = line.replaceAll('@@KUBERNETES_READINESS_SCHEME@@', "${kubernetesReadinessScheme}")
+		}
+		if (project.hasProperty('kubernetesReadinessInitialDelaySeconds')) {
+			line = line.replaceAll('@@KUBERNETES_READINESS_INITIAL_DELAY_SECONDS@@', "${kubernetesReadinessInitialDelaySeconds}")
+		}
+		if (project.hasProperty('kubernetesReadinessPeriodSeconds')) {
+			line = line.replaceAll('@@KUBERNETES_READINESS_PERIOD_SECONDS@@', "${kubernetesReadinessPeriodSeconds}")
+		}
+		if (project.hasProperty('kubernetesReadinessSuccessThreshold')) {
+			line = line.replaceAll('@@KUBERNETES_READINESS_SUCCESS_THRESHOLD@@', "${kubernetesReadinessSuccessThreshold}")
+		}
+		if (project.hasProperty('kubernetesReadinessTimeoutSeconds')) {
+			line = line.replaceAll('@@KUBERNETES_READINESS_TIMEOUT_SECONDS@@', "${kubernetesReadinessTimeoutSeconds}")
+		}
+		if (project.hasProperty('kubernetesLivenessFailureThreshold')) {
+			line = line.replaceAll('@@KUBERNETES_LIVENESS_FAILURE_THRESHOLD@@', "${kubernetesLivenessFailureThreshold}")
+		}
+		if (project.hasProperty('kubernetesLivenessScheme')) {
+			line = line.replaceAll('@@KUBERNETES_LIVENESS_SCHEME@@', "${kubernetesLivenessScheme}")
+		}
+		if (project.hasProperty('kubernetesLivenessInitialDelaySeconds')) {
+			line = line.replaceAll('@@KUBERNETES_LIVENESS_INITIAL_DELAY_SECONDS@@', "${kubernetesLivenessInitialDelaySeconds}")
+		}
+		if (project.hasProperty('kubernetesLivenessPeriodSeconds')) {
+			line = line.replaceAll('@@KUBERNETES_LIVENESS_PERIOD_SECONDS@@', "${kubernetesLivenessPeriodSeconds}")
+		}
+		if (project.hasProperty('kubernetesLivenessSuccessThreshold')) {
+			line = line.replaceAll('@@KUBERNETES_LIVENESS_SUCCESS_THRESHOLD@@', "${kubernetesLivenessSuccessThreshold}")
+		}
+		if (project.hasProperty('kubernetesLivenessTimeoutSeconds')) {
+			line = line.replaceAll('@@KUBERNETES_LIVENESS_TIMEOUT_SECONDS@@', "${kubernetesLivenessTimeoutSeconds}")
+		}
 	}
 	
 	return line
