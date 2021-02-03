@@ -31,6 +31,9 @@ dependencies {
     //implementation 'io.quarkus:quarkus-oidc'
     //testImplementation 'io.quarkus:quarkus-test-security'
 
+    // readiness and liveness probe support
+    implementation 'io.quarkus:quarkus-smallrye-health'
+
     // orm
     //implementation 'io.quarkus:quarkus-hibernate-orm'
 
