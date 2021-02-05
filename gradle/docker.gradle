@@ -120,20 +120,21 @@ if (new File("${srcKubernetesDirectory}").exists()) {
 	 ***************************************************************************************/
 	task build() {
     }
-
-
-	/****************************************************************************************
-	 * Defines a implementation artefact
-	 ****************************************************************************************/
-	configurations {
-		implementation
-	}
-	configurations.named('implementation') {
-        attributes {
-            attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage, Usage.JAVA_RUNTIME))
-        }
-    }
 }
+
+
+/****************************************************************************************
+ * Defines a implementation artefact
+ ****************************************************************************************/
+configurations {
+	implementation
+}
+configurations.named('implementation') {
+	attributes {
+		attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage, Usage.JAVA_RUNTIME))
+	}
+}
+
 
 apply from: "${commonGradleBuildElementPath}/base/docker.gradle"
 

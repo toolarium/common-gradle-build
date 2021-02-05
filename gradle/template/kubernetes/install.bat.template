@@ -1,0 +1,68 @@
+@ECHO OFF
+
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+::
+:: install.bat: Installation script of @@PROJECT_NAME@@ v@@VERSION@@
+::
+:: Copyright by @@LICENSE_ORGANISATION@@, all rights reserved.
+:: @@LICENSE@@
+::
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+
+set "installDatabase=false"
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+:CHECK_PARAMETER
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+if %0X==X goto MAIN
+if .%1==.--db set "installDatabase=true"
+if .%1==.--reinstall call :uninstallApplication
+if .%1==.--uninstall (  call :uninstallApplication
+                        GOTO END )
+shift
+goto CHECK_PARAMETER
+
+
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+:: uninstall application
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+:uninstallApplication
+echo .: Uninstallation application @@PROJECT_NAME@@...
+@@KUBERNETES_DELETE_APPLICATION@@
+if not %ERRORLEVEL% EQU 0 goto END
+goto :eof
+
+
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+:MAIN
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+echo .: Installation application @@PROJECT_NAME@@ v@@VERSION@@...
+echo .: Login to docker
+docker login @@DOCKER_REPOSITORY_HOST@@
+if not %ERRORLEVEL% EQU 0 goto END
+
+echo .: Pull images...
+@@KUBERNETES_INSTALL_DOCKER_PULL@@
+if not %ERRORLEVEL% EQU 0 goto END
+
+echo .: Deploy config and secret artefacts...
+@@KUBERNETES_INSTALL_CONFIG_AND_SECRET_ARTEFACTS@@
+if not %ERRORLEVEL% EQU 0 goto END
+
+if .%installDatabase% == .false goto DEPLOY
+echo .: Install database ...
+@@KUBERNETES_INSTALL_DATABASE@@
+if not %ERRORLEVEL% EQU 0 goto END
+
+:DEPLOY
+echo .: Deploy the application...
+@@KUBERNETES_INSTALL_APPLICATION@@
+if not %ERRORLEVEL% EQU 0 goto END
+
+echo. 
+echo Successful installation, the site @@KUBERNETES_APPLICATION_PROTOCOL@@@@KUBERNETES_APPLICATION_HOST@@ can be accessed in the Kubernetes environment.
+echo Please verify the hosts file is properly adapted in ^%windir^%\system32\drivers\etc\hosts.
+echo.
+echo To log in to the UI a user must first be created manually in the IDM at @@KUBERNETES_IDM_ADMIN_URL@@.
+
+:END

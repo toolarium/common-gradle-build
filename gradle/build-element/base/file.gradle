@@ -215,11 +215,9 @@ ext.createFileFromTemplatePath = { inputFilename, theTemplatePath, templateSubPa
 		}
 	
 		if (print) {		
-			printInfo("> Create " + colorize(HIGHLITE_LEVEL, "${filePath}${filename}") + " from template " + colorize(HIGHLITE_LEVEL, "${templateSubPath}${templateFilename}") + ".")
-			logInfo("Create " + colorize(HIGHLITE_LEVEL, "${filePath}${filename}") + colorize(INFO_LEVEL, " from template ") + colorize(HIGHLITE_LEVEL, "${templateSubPath}${templateFilename}") + colorize(INFO_LEVEL, " (") + colorize(HIGHLITE_LEVEL, "${theTemplatePath}") + colorize(INFO_LEVEL, ")."))
-		} else {
-			logInfo("Create " + colorize(HIGHLITE_LEVEL, "${filePath}${filename}") + colorize(INFO_LEVEL, " from template ") + colorize(HIGHLITE_LEVEL, "${templateSubPath}${templateFilename}") + colorize(INFO_LEVEL, " (") + colorize(HIGHLITE_LEVEL, "${theTemplatePath}") + colorize(INFO_LEVEL, ")."))
+			printInfo("> Create " + colorize(HIGHLITE_LEVEL, "${filename}") + " from template " + colorize(HIGHLITE_LEVEL, "${templateSubPath}${templateFilename}") + ".")
 		}		
+		logInfo("Create " + colorize(HIGHLITE_LEVEL, "${filePath}${filename}") + colorize(INFO_LEVEL, " from template ") + colorize(HIGHLITE_LEVEL, "${templateSubPath}${templateFilename}") + colorize(INFO_LEVEL, " (") + colorize(HIGHLITE_LEVEL, "${theTemplatePath}") + colorize(INFO_LEVEL, ")."))
 		
 		File inputFile = new File("${theTemplatePath}${templateSubPath}/${templateFilename}")
 		File outputFile = new File("${filePath}/${filename}")

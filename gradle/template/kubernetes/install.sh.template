@@ -1,0 +1,65 @@
+#!/bin/bash
+
+#########################################################################
+#
+# install.sh: Installation script of @@PROJECT_NAME@@ v@@VERSION@@
+#
+# Copyright by @@LICENSE_ORGANISATION@@, all rights reserved.
+# @@LICENSE@@
+#
+#########################################################################
+
+
+#########################################################################
+# uninstall application
+#########################################################################
+uninstallApplication() {
+	echo ".: Uninstallation application @@PROJECT_NAME@@..."
+	@@KUBERNETES_DELETE_APPLICATION@@
+	[ $? -eq 0 ] && return || exit 1
+}
+
+
+#########################################################################
+# main
+#########################################################################
+installDatabase="false"
+while [ $# -gt 0 ]
+do
+    case "$1" in
+		--db) 			installDatabase="true";;
+		--reinstall) 	uninstallApplication;;
+		--uninstall) 	uninstallApplication; exit 0;;
+		*)				;;
+    esac
+    shift
+done
+
+echo ".: Installation application @@PROJECT_NAME@@ v@@VERSION@@..."
+echo ".: Login to docker"
+docker login @@DOCKER_REPOSITORY_HOST@@
+[ $? -eq 0 ] || exit 1
+
+echo ".: Pull images..."
+@@KUBERNETES_INSTALL_DOCKER_PULL@@
+[ $? -eq 0 ] || exit 1
+
+echo ".: Deploy config and secret artefacts..."
+@@KUBERNETES_INSTALL_CONFIG_AND_SECRET_ARTEFACTS@@
+[ $? -eq 0 ] || exit 1
+
+if [ "$installDatabase" = "true" ]; then
+	echo ".: Install database ..."
+	@@KUBERNETES_INSTALL_DATABASE@@
+	[ $? -eq 0 ] || exit 1
+fi
+
+echo ".: Deploy the application..."
+@@KUBERNETES_INSTALL_APPLICATION@@
+[ $? -eq 0 ] || exit 1
+
+echo ""
+echo "Successful installation, the site @@KUBERNETES_APPLICATION_PROTOCOL@@@@KUBERNETES_APPLICATION_HOST@@ can be accessed in the Kubernetes environment."
+echo "Please verify the hosts file is properly adapted in /etc/hosts."
+echo ""
+echo "To log in to the UI a user must first be created manually in the IDM at @@KUBERNETES_IDM_ADMIN_URL@@."

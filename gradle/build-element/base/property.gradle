@@ -38,17 +38,17 @@ ext.addCommonGradlePropertyList = { propertyName, propertyValue, logValue = true
 ext.setCommonGradleDefaultPropertyIfNull = { propertyName, propertyDefaultValue, logValue = true ->
 	if (!project.hasProperty(propertyName)) {
 		project.ext.set(propertyName, propertyDefaultValue)
-	}
 
-	def type = propertyDefaultValue.getClass()
-	def message = "Set [" + colorize(HIGHLITE_LEVEL, propertyName) + colorize(INFO_LEVEL, '] ')
-	if (logValue) {
-		message += colorize(INFO_LEVEL, 'to: [') + colorize(HIGHLITE_LEVEL, project.getProperty(propertyName)) + colorize(INFO_LEVEL, '] as ') + colorize(INFO_LEVEL, type)
-	} else {
-		message += colorize(INFO_LEVEL, 'as ') + colorize(INFO_LEVEL, type)
+		def type = propertyDefaultValue.getClass()
+		def message = "Set [" + colorize(HIGHLITE_LEVEL, propertyName) + colorize(INFO_LEVEL, '] ')
+		if (logValue) {
+			message += colorize(INFO_LEVEL, 'to: [') + colorize(HIGHLITE_LEVEL, project.getProperty(propertyName)) + colorize(INFO_LEVEL, '] as ') + colorize(INFO_LEVEL, type)
+		} else {
+			message += colorize(INFO_LEVEL, 'as ') + colorize(INFO_LEVEL, type)
+		}
+		
+		logInfo(message)
 	}
-	
-	logInfo(message)
 }
 
 

@@ -115,13 +115,13 @@ task kubernetesApplicationConfig() {
 	
 	doLast {
 		logInfo("Create kubernetes application / secret configuration.")
-		createFileFromTemplate("$kubernetesConfigurationPath/$kubernetesApplicationConfigFilename", getTemplateFile('kubernetes-application-config.template', 'kubernetes'), true /*overwrite*/, true /*print*/, true /*replace*/, NELINE /*only nl*/)
+		createFileFromTemplate("$kubernetesConfigurationPath/$kubernetesApplicationConfigFilename", getTemplateFile('kubernetes-application-config.template', 'kubernetes'), true /*overwrite*/, false /*print*/, true /*replace*/, NELINE /*only nl*/)
 		
 		if (project.hasProperty('kubernetesApplicationOIDCPublicKey') && !project.getProperty('kubernetesApplicationOIDCPublicKey').toString().isEmpty()) {
-			createFileFromTemplate("$kubernetesConfigurationPath/$kubernetesApplicationSecretFilename", getTemplateFile('kubernetes-application-secret.template', 'kubernetes'), true /*overwrite*/, true /*print*/, true /*replace*/, NELINE /*only nl*/)
+			createFileFromTemplate("$kubernetesConfigurationPath/$kubernetesApplicationSecretFilename", getTemplateFile('kubernetes-application-secret.template', 'kubernetes'), true /*overwrite*/, false /*print*/, true /*replace*/, NELINE /*only nl*/)
 		}
 		
-		createFileFromTemplate("$kubernetesConfigurationPath/$kubernetesDatabaseSecretFilename", getTemplateFile('kubernetes-database-secret.template', 'kubernetes'), true /*overwrite*/, true /*print*/, true /*replace*/, NELINE /*only nl*/)
+		createFileFromTemplate("$kubernetesConfigurationPath/$kubernetesDatabaseSecretFilename", getTemplateFile('kubernetes-database-secret.template', 'kubernetes'), true /*overwrite*/, false /*print*/, true /*replace*/, NELINE /*only nl*/)
 	}
 }
 
@@ -149,7 +149,7 @@ task kubernetesConfiguration() {
 				dockerTagPrefix = "${dockerTagPrefix}/"
 			}
 			setCommonGradleDefaultPropertyIfNull("kubernetesDockerImage", "${dockerTagPrefix}${rootProject.name}:${project.version}")
-			new File("$kubernetesConfigurationPath").mkdirs()
+			new File("$kubernetesConfigurationProjctPath").mkdirs()
 			
 			def count = 0
 			if (new File("${srcKubernetesDirectory}").exists()) {
@@ -159,7 +159,7 @@ task kubernetesConfiguration() {
 			if (count==0) {
 				def kubernetesFilename="${rootProject.name}-kubernetes.yaml"
 				logInfo("Create kubernetes configuration " + colorize(HIGHLITE_LEVEL, kubernetesFilename) + ".")
-				createFileFromTemplate("$kubernetesConfigurationPath/$kubernetesFilename", getTemplateFile('kubernetes.yaml.template'))
+				createFileFromTemplate("$kubernetesConfigurationProjctPath/$kubernetesFilename", getTemplateFile('kubernetes.yaml.template'))
 			}
 		}
 	}

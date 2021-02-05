@@ -1,0 +1,76 @@
+#
+# Copyright by @@LICENSE_ORGANISATION@@, all rights reserved.
+# @@LICENSE@@
+#
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.@@KUBERNETES_LABEL_ID@@/name: @@GROUP_ID@@-@@PROJECT_NAME@@
+    app.@@KUBERNETES_LABEL_ID@@/instance: @@PROJECT_NAME@@
+    app.@@KUBERNETES_LABEL_ID@@/version: "@@VERSION@@"
+    app.@@KUBERNETES_LABEL_ID@@/component: @@PROJECT_TYPE@@
+    app.@@KUBERNETES_LABEL_ID@@/part-of: @@COMPONENT_ID@@
+  annotations:
+    app.@@KUBERNETES_LABEL_ID@@/url-path: "@@KUBERNETES_URL_PATH@@"
+    app.@@KUBERNETES_LABEL_ID@@/description: "@@DESCRIPTION@@"
+    app.@@KUBERNETES_LABEL_ID@@/runtime-timezone: "@@DOCKER_TIMEZONE@@"
+    app.@@KUBERNETES_LABEL_ID@@/build-reference: "@@SCM_NUMBER@@"
+    app.@@KUBERNETES_LABEL_ID@@/build-timestamp: "@@BUILD_TIMESTAMP@@"
+    app.@@KUBERNETES_LABEL_ID@@/created-by: "@@BUILD_TOOL_VERSION_MESSAGE@@"
+  name: @@PROJECT_NAME@@
+  namespace: @@KUBERNETES_NAMESPACE@@
+spec:
+  replicas: @@KUBERNETES_REPLICAS@@
+  selector:
+    matchLabels:
+      app.@@KUBERNETES_LABEL_ID@@/instance: @@PROJECT_NAME@@
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app.@@KUBERNETES_LABEL_ID@@/instance: @@PROJECT_NAME@@
+    spec:
+      containers:
+      - image: @@KUBERNETES_DOCKER_IMAGE@@
+        name: @@PROJECT_NAME@@
+        ports:
+        - containerPort: @@DOCKER_EXPOSE_PORT@@
+      restartPolicy: Always
+      readinessProbe:
+        failureThreshold: @@KUBERNETES_NODE_READINESS_FAILURE_THRESHOLD@@
+        httpGet:
+          path: "@@KUBERNETES_NODE_READINESS_CHECK_PATH@@"
+          port: @@DOCKER_EXPOSE_PORT@@
+          scheme: "@@KUBERNETES_NODE_READINESS_SCHEME@@"
+        initialDelaySeconds: @@KUBERNETES_NODE_READINESS_INITIAL_DELAY_SECONDS@@
+        periodSeconds: @@KUBERNETES_NODE_READINESS_PERIOD_SECONDS@@
+        successThreshold: @@KUBERNETES_NODE_READINESS_SUCCESS_THRESHOLD@@
+        timeoutSeconds: @@KUBERNETES_NODE_READINESS_TIMEOUT_SECONDS@@
+      livenessProbe:
+        failureThreshold:: @@KUBERNETES_NODE_LIVENESS_FAILURE_THRESHOLD@@
+        httpGet:
+          path: "@@KUBERNETES_NODE_LIVENESS_CHECK_PATH@@"
+          port: @@DOCKER_EXPOSE_PORT@@
+          scheme: "@@KUBERNETES_NODE_LIVENESS_SCHEME@@"
+        initialDelaySeconds: @@KUBERNETES_NODE_LIVENESS_INITIAL_DELAY_SECONDS@@
+        periodSeconds: @@KUBERNETES_NODE_LIVENESS_PERIOD_SECONDS@@
+        successThreshold: @@KUBERNETES_NODE_LIVENESS_SUCCESS_THRESHOLD@@
+        timeoutSeconds: @@KUBERNETES_NODE_LIVENESS_TIMEOUT_SECONDS@@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.@@KUBERNETES_LABEL_ID@@/instance: @@PROJECT_NAME@@
+  name: @@PROJECT_NAME@@
+  namespace: @@KUBERNETES_NAMESPACE@@
+spec:
+  type: ClusterIP
+  ports:
+  - name: "@@DOCKER_EXPOSE_PORT@@"
+    port: @@DOCKER_EXPOSE_PORT@@
+    targetPort: @@DOCKER_EXPOSE_PORT@@
+  selector:
+    app.@@KUBERNETES_LABEL_ID@@/instance: @@PROJECT_NAME@@

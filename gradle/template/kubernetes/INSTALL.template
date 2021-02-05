@@ -35,7 +35,7 @@ docker login @@DOCKER_REPOSITORY_HOST@@
 ```
 
 After successful installation, the site @@KUBERNETES_APPLICATION_PROTOCOL@@@@KUBERNETES_APPLICATION_HOST@@ can be accessed in the Kubernetes environment. 
-Please take the etc file is properly adapted (Linux `/etc/hosts`, Windows `%windir%\system32\drivers\etc\hosts`).
+Please verify the hosts file is properly adapted (Linux `/etc/hosts`, Windows `%windir%\system32\drivers\etc\hosts`).
 
 To log in to the UI a user must first be created manually in the IDM at @@KUBERNETES_IDM_ADMIN_URL@@.
 
