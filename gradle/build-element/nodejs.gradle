@@ -191,7 +191,11 @@ if (!project.getProperty('IS_NEW')) {
 				
 		doFirst {
 			printInfo("> Initialize npm registry to " + colorize(HIGHLITE_LEVEL, "$nodeRegistry") + ".")
-			new File("$nodeConfigInitFile").write("$nodeRegistry")
+			
+			//new File("$nodeConfigInitFile").write("$nodeRegistry")
+			File nodeConfigInitFilePath = new File("$nodeConfigInitFile")
+			new File(nodeConfigInitFilePath.getParent()).mkdirs()
+			nodeConfigInitFilePath.write("$nodeRegistry")
 		}
 	}
 
@@ -213,7 +217,6 @@ if (!project.getProperty('IS_NEW')) {
 		npmInstall.dependsOn npmRegistry
 		npmRegistry.dependsOn npmFundMessage
 	}
-
 
 
 	/***************************************************************************************
