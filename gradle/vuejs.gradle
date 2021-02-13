@@ -70,7 +70,12 @@ projectValidation {
 			*/
 			
 			// use the defined files
-			new File(licenseFile).delete()
+			new File("$rootDirectory/$licenseFilename").delete()
+			if (!"$rootDirectory/$licenseFilename".toString().equalsIgnoreCase(licenseFile.toString())) {
+				// in case the license file not corresponds to a local file, just ignore
+			} else {
+				createFileFromTemplate(licenseFile, getTemplateFile('LICENSE.template'))
+			}
 			new File(readmeFile).delete()
 			createFileFromTemplate(readmeFile, getTemplateFile('README.template'))			
 			new File(editorConfigFile).delete()
