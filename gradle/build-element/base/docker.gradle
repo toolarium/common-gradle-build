@@ -276,8 +276,15 @@ task dockerBuild {
 
 			if (project.hasProperty("dockerRemoveDanglingImages") && project.getProperty("dockerRemoveDanglingImages")) {
 				printInfo("> Remove all dangling images...")
-				cmd="docker image prune -f"
-				execDocker(cmd, "Could not build docker image:\n    " + cmd, false)
+				sout = new StringBuilder()
+				exitStatus = execCommand("docker images -f 'dangling=true' -q", -1, sout, null)
+				if (exitStatus==0) {
+					sout.eachLine {line, count ->
+						logInfo("Remove dangling image ${line}...")
+						cmd="docker rmi -f ${line}"
+						execDocker(cmd, "Could not prune dangling image (${line}):\n    " + cmd, false)
+					}
+				}
 			}
 			
 			if (project.hasProperty("dockerRemovePreviousVersionImages") && project.getProperty("dockerRemovePreviousVersionImages")) {
