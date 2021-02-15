@@ -94,6 +94,27 @@ ext.readOSConfiguration = { ->
 
 
 /** 
+ * Check if it is a WSL windows installation
+ */
+ext.isWindowsWSL = { ->
+	if (!project.hasProperty("isWindowsWsl")) {
+		File file = new File("/proc/version");
+		if (file.exists() && file.canRead()) {
+			try {
+			  setCommonGradleProperty("isWindowsWsl", (file.text.toString().toLowerCase().indexOf("microsoft")>=0))
+			} catch (Exception e) {
+				setCommonGradleProperty("isWindowsWsl", false)
+			}
+		} else {
+			setCommonGradleProperty("isWindowsWsl", false)
+		}
+	}
+	
+	return project.getProperty("isWindowsWsl")
+}
+
+
+/** 
  * Get the arch type
  */
 ext.parseInteger = { value, defaultValue = 0, type = "" ->
