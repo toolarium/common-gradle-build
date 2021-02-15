@@ -318,7 +318,7 @@ setCommonGradleDefaultPropertyIfNull("jacocoReportPath", "${buildDir}/reports/te
 /***************************************************************************************
  * quarkus plugin defaults
  ***************************************************************************************/
-setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", '1.8.1.Final')
+setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", '1.10.5.Final')
 setCommonGradleDefaultPropertyIfNull("quarkusPlatformArtifactId", 'quarkus-universe-bom')
 setCommonGradleDefaultPropertyIfNull("quarkusPlatformGroupId", 'io.quarkus')
 setCommonGradleDefaultPropertyIfNull("quarkusPlatformVersion", "${quarkusPluginVersion}")
