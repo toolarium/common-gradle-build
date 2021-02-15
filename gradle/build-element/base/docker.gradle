@@ -34,7 +34,8 @@ ext.dockerInstallationAvailable=false
 ext.checkDockerInstallation = { ->
 	if (!dockerInstallationValidated) {
 		dockerInstallationValidated=true
-		def exitStatus = execCommand("docker --version")
+		def stdout = new StringBuilder()
+		def exitStatus = execCommand("docker --version", -1, stdout, stdout)
 		dockerInstallationCommandAvailable=(exitStatus==0)
 		
 		if (dockerInstallationCommandAvailable) {
@@ -192,8 +193,7 @@ task dockerBuild {
 			}
 
 			def dockerRemoveImageIdList = []
-			def dockerImageListFilename = getUniqueTempName("${rootProject.name}", "${project.version}-images", null)
-			cmd="docker image ls ${rootProject.name} > ${dockerImageListFilename}"
+			cmd="docker image ls ${rootProject.name}"
 			def sout = new StringBuilder()
 			exitStatus = execCommand(cmd, -1, sout, sout)
 			if (exitStatus>0) {
@@ -203,36 +203,35 @@ task dockerBuild {
 				}
 				logInfo(message)
 			} else {
-				def file = new File(dockerImageListFilename)
-				try {			
-					file.withReader {
-						def tagIndex, imageIndex, createdIndex, sizeIndex
-						def line = it.readLine()
+				try {
+					def tagIndex, imageIndex, createdIndex, sizeIndex
+					def readHeader = false
+					sout.eachLine {line, count ->
 						line = line.replace("IMAGE ID", "IMAGE_ID")
 						
 						def lineSplit = line.split(/\s+/)
-						for (int i = 0; i<lineSplit.length; i++) {
-							if (lineSplit[i]!=null && !lineSplit[i].toString().isEmpty()) {
-								if ("TAG".equals(lineSplit[i])) {
-									tagIndex = i
-								} else if ("IMAGE_ID".equals(lineSplit[i])) {
-									imageIndex = i
-								} else if ("CREATED".equals(lineSplit[i])) {
-									createdIndex = i
-								} else if ("SIZE".equals(lineSplit[i])) {
-									sizeIndex = i
-								}									
+						if (!readHeader) {
+							for (int i = 0; i<lineSplit.length; i++) {
+								if (lineSplit[i]!=null && !lineSplit[i].toString().isEmpty()) {
+									if ("TAG".equals(lineSplit[i])) {
+										tagIndex = i
+									} else if ("IMAGE_ID".equals(lineSplit[i])) {
+										imageIndex = i
+									} else if ("CREATED".equals(lineSplit[i])) {
+										createdIndex = i
+									} else if ("SIZE".equals(lineSplit[i])) {
+										sizeIndex = i
+									}									
+								}
 							}
-						}
-
-						while ((line = it.readLine()) != null) {				
+							readHeader = true
+						} else {
 							def sizeIdx = sizeIndex
 							if (line.indexOf("About")>=0) {
 								line = line.replace("About", "")
 								sizeIdx++
 							}
 							
-							lineSplit = line.split(/\s+/)
 							sizeIdx = lineSplit.length -1
 
 							def duration = 1
@@ -270,11 +269,9 @@ task dockerBuild {
 						}
 					}	
 				} catch (Exception e) {
-					printWarn("Could not add artefact depdendency " + file.getName() + ": " + e.getMessage())
+					printWarn("Could not add artefact depdendency: " + e.getMessage())
 					throw e
 				}
-				
-				file.delete()
 			}
 
 			if (project.hasProperty("dockerRemoveDanglingImages") && project.getProperty("dockerRemoveDanglingImages")) {
