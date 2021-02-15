@@ -37,27 +37,27 @@ spec:
         name: @@PROJECT_NAME@@
         ports:
         - containerPort: @@DOCKER_EXPOSE_PORT@@
+        readinessProbe:
+          failureThreshold: @@KUBERNETES_NODE_READINESS_FAILURE_THRESHOLD@@
+          httpGet:
+            path: "@@KUBERNETES_NODE_READINESS_CHECK_PATH@@"
+            port: @@DOCKER_EXPOSE_PORT@@
+            scheme: "@@KUBERNETES_NODE_READINESS_SCHEME@@"
+          initialDelaySeconds: @@KUBERNETES_NODE_READINESS_INITIAL_DELAY_SECONDS@@
+          periodSeconds: @@KUBERNETES_NODE_READINESS_PERIOD_SECONDS@@
+          successThreshold: @@KUBERNETES_NODE_READINESS_SUCCESS_THRESHOLD@@
+          timeoutSeconds: @@KUBERNETES_NODE_READINESS_TIMEOUT_SECONDS@@
+        livenessProbe:
+          failureThreshold: @@KUBERNETES_NODE_LIVENESS_FAILURE_THRESHOLD@@
+          httpGet:
+            path: "@@KUBERNETES_NODE_LIVENESS_CHECK_PATH@@"
+            port: @@DOCKER_EXPOSE_PORT@@
+            scheme: "@@KUBERNETES_NODE_LIVENESS_SCHEME@@"
+          initialDelaySeconds: @@KUBERNETES_NODE_LIVENESS_INITIAL_DELAY_SECONDS@@
+          periodSeconds: @@KUBERNETES_NODE_LIVENESS_PERIOD_SECONDS@@
+          successThreshold: @@KUBERNETES_NODE_LIVENESS_SUCCESS_THRESHOLD@@
+          timeoutSeconds: @@KUBERNETES_NODE_LIVENESS_TIMEOUT_SECONDS@@
       restartPolicy: Always
-      readinessProbe:
-        failureThreshold: @@KUBERNETES_NODE_READINESS_FAILURE_THRESHOLD@@
-        httpGet:
-          path: "@@KUBERNETES_NODE_READINESS_CHECK_PATH@@"
-          port: @@DOCKER_EXPOSE_PORT@@
-          scheme: "@@KUBERNETES_NODE_READINESS_SCHEME@@"
-        initialDelaySeconds: @@KUBERNETES_NODE_READINESS_INITIAL_DELAY_SECONDS@@
-        periodSeconds: @@KUBERNETES_NODE_READINESS_PERIOD_SECONDS@@
-        successThreshold: @@KUBERNETES_NODE_READINESS_SUCCESS_THRESHOLD@@
-        timeoutSeconds: @@KUBERNETES_NODE_READINESS_TIMEOUT_SECONDS@@
-      livenessProbe:
-        failureThreshold:: @@KUBERNETES_NODE_LIVENESS_FAILURE_THRESHOLD@@
-        httpGet:
-          path: "@@KUBERNETES_NODE_LIVENESS_CHECK_PATH@@"
-          port: @@DOCKER_EXPOSE_PORT@@
-          scheme: "@@KUBERNETES_NODE_LIVENESS_SCHEME@@"
-        initialDelaySeconds: @@KUBERNETES_NODE_LIVENESS_INITIAL_DELAY_SECONDS@@
-        periodSeconds: @@KUBERNETES_NODE_LIVENESS_PERIOD_SECONDS@@
-        successThreshold: @@KUBERNETES_NODE_LIVENESS_SUCCESS_THRESHOLD@@
-        timeoutSeconds: @@KUBERNETES_NODE_LIVENESS_TIMEOUT_SECONDS@@
 ---
 apiVersion: v1
 kind: Service

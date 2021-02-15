@@ -37,27 +37,27 @@ spec:
         name: @@PROJECT_NAME@@
         ports:
         - containerPort: @@DOCKER_EXPOSE_PORT@@
+#        readinessProbe:
+#          failureThreshold: @@KUBERNETES_READINESS_FAILURE_THRESHOLD@@
+#          httpGet:
+#            path: "/index.html"
+#            port: @@DOCKER_EXPOSE_PORT@@
+#            scheme: "@@KUBERNETES_READINESS_SCHEME@@"
+#          initialDelaySeconds: @@KUBERNETES_READINESS_INITIAL_DELAY_SECONDS@@
+#          periodSeconds: @@KUBERNETES_READINESS_PERIOD_SECONDS@@
+#          successThreshold: @@KUBERNETES_READINESS_SUCCESS_THRESHOLD@@
+#          timeoutSeconds: @@KUBERNETES_READINESS_TIMEOUT_SECONDS@@
+#        livenessProbe:
+#          failureThreshold: @@KUBERNETES_LIVENESS_FAILURE_THRESHOLD@@
+#          httpGet:
+#            path: "/index.html"
+#            port: @@DOCKER_EXPOSE_PORT@@
+#            scheme: "@@KUBERNETES_LIVENESS_SCHEME@@"
+#          initialDelaySeconds: @@KUBERNETES_LIVENESS_INITIAL_DELAY_SECONDS@@
+#          periodSeconds: @@KUBERNETES_LIVENESS_PERIOD_SECONDS@@
+#          successThreshold: @@KUBERNETES_LIVENESS_SUCCESS_THRESHOLD@@
+#          timeoutSeconds: @@KUBERNETES_LIVENESS_TIMEOUT_SECONDS@@
       restartPolicy: Always
-#      readinessProbe:
-#        failureThreshold: @@KUBERNETES_READINESS_FAILURE_THRESHOLD@@
-#        httpGet:
-#          path: "/index.html"
-#          port: @@DOCKER_EXPOSE_PORT@@
-#          scheme: "@@KUBERNETES_READINESS_SCHEME@@"
-#        initialDelaySeconds: @@KUBERNETES_READINESS_INITIAL_DELAY_SECONDS@@
-#        periodSeconds: @@KUBERNETES_READINESS_PERIOD_SECONDS@@
-#        successThreshold: @@KUBERNETES_READINESS_SUCCESS_THRESHOLD@@
-#        timeoutSeconds: @@KUBERNETES_READINESS_TIMEOUT_SECONDS@@
-#      livenessProbe:
-#        failureThreshold:: @@KUBERNETES_LIVENESS_FAILURE_THRESHOLD@@
-#        httpGet:
-#          path: "/index.html"
-#          port: @@DOCKER_EXPOSE_PORT@@
-#          scheme: "@@KUBERNETES_LIVENESS_SCHEME@@"
-#        initialDelaySeconds: @@KUBERNETES_LIVENESS_INITIAL_DELAY_SECONDS@@
-#        periodSeconds: @@KUBERNETES_LIVENESS_PERIOD_SECONDS@@
-#        successThreshold: @@KUBERNETES_LIVENESS_SUCCESS_THRESHOLD@@
-#        timeoutSeconds: @@KUBERNETES_LIVENESS_TIMEOUT_SECONDS@@
 ---
 apiVersion: v1
 kind: Service

@@ -221,6 +221,9 @@ ext.searchReplaceByProperties = { inputLine, replacePlaceHolders = true ->
 		if (project.hasProperty('kubernetesLabelId')) {
 			line = line.replaceAll('@@KUBERNETES_LABEL_ID@@', "${project.ext.kubernetesLabelId}".toString())
 		}
+		if (project.hasProperty('kubernetesUrlRootPath')) {
+			line = line.replaceAll('@@KUBERNETES_URL_ROOT_PATH@@', "${project.ext.kubernetesUrlRootPath}".toString())
+		}
 		if (project.hasProperty('kubernetesUrlPath')) {
 			line = line.replaceAll('@@KUBERNETES_URL_PATH@@', "${project.ext.kubernetesUrlPath}".toString())
 		}
@@ -551,6 +554,9 @@ ext.searchReplaceByProperties = { inputLine, replacePlaceHolders = true ->
 		}
 		
 		// kubernetes readiness / liveness
+		if (project.hasProperty('kubernetesQuarkusReadinessCheckPath')) {
+			line = line.replaceAll('@@KUBERNETES_QUARKUS_READINESS_CHECK_PATH@@', "${kubernetesQuarkusReadinessCheckPath}")
+		}
 		if (project.hasProperty('kubernetesQuarkusReadinessFailureThreshold')) {
 			line = line.replaceAll('@@KUBERNETES_QUARKUS_READINESS_FAILURE_THRESHOLD@@', "${kubernetesQuarkusReadinessFailureThreshold}")
 		}
@@ -568,6 +574,9 @@ ext.searchReplaceByProperties = { inputLine, replacePlaceHolders = true ->
 		}
 		if (project.hasProperty('kubernetesQuarkusReadinessTimeoutSeconds')) {
 			line = line.replaceAll('@@KUBERNETES_QUARKUS_READINESS_TIMEOUT_SECONDS@@', "${kubernetesQuarkusReadinessTimeoutSeconds}")
+		}
+		if (project.hasProperty('kubernetesQuarkusLivenessCheckPath')) {
+			line = line.replaceAll('@@KUBERNETES_QUARKUS_LIVENESS_CHECK_PATH@@', "${kubernetesQuarkusLivenessCheckPath}")
 		}
 		if (project.hasProperty('kubernetesQuarkusLivenessFailureThreshold')) {
 			line = line.replaceAll('@@KUBERNETES_QUARKUS_LIVENESS_FAILURE_THRESHOLD@@', "${kubernetesQuarkusLivenessFailureThreshold}")

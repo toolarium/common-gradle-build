@@ -7,7 +7,7 @@ projectDescription       = @@DESCRIPTION@@
 projectUrl               = @@URL@@
 
 # define base url of the service
-kubernetesUrlPath        = /api/@@PROJECT_NAME@@
+kubernetesUrlPath        = @@KUBERNETES_URL_PATH@@
 
 # tool information
 # checkstyleToolVersion    = @@checkstyleToolVersion@@
