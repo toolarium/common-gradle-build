@@ -29,7 +29,8 @@
  ***************************************************************************************/
 ext.execCommand = { args, timeout=-1, sout=null, serr=null ->
 	def osArgs = args.split(" ")
-	def windowsArgs = [ 'cmd', '/c' ]
+	//def windowsArgs = [ 'cmd.exe', '/c' ]
+	def windowsArgs = [ 'powershell.exe', '-Command' ]
 	windowsArgs.addAll(args.split(" "))
 	return execOSCommand(osArgs, windowsArgs, timeout, sout, serr)
 }
@@ -47,7 +48,8 @@ ext.execCommand = { args, timeout=-1, sout=null, serr=null ->
  ***************************************************************************************/
 ext.execCommands = { args, wargs, timeout=-1, sout=null, serr=null ->
 	def osArgs = args.split(" ")
-	def windowsArgs = [ 'cmd', '/c' ]
+	//def windowsArgs = [ 'cmd.exe', '/c' ]
+	def windowsArgs = [ 'powershell.exe', '-Command' ]
 	windowsArgs.addAll(wargs.split(" "))
 	return execOSCommand(osArgs, windowsArgs, timeout, sout, serr)
 }
@@ -64,10 +66,10 @@ ext.execCommands = { args, wargs, timeout=-1, sout=null, serr=null ->
  ***************************************************************************************/
 ext.execOSCommand = { args, windowsArgs, timeout=-1, sout=null, serr=null ->
 	def osArgs = args
-    if (getOsName().startsWith("windows")) {
+    if (getOsName().startsWith("windows") || isWindowsWSL()) {
         osArgs = windowsArgs
     }
-
+	
 	return execRawCommand(osArgs, timeout, sout, serr)
 }
 
@@ -138,6 +140,21 @@ ext.execRawCommand = { args, timeout=-1, sout=null, serr=null ->
 			ex.printStackTrace()
 		}
 	}	
+
+	err.eachLine {line, count ->
+		logInfo("${line}")
+
+		if (serr!=null) {
+			serr.append("${line}\n")
+		}
+	}
+	out.eachLine { line, count ->
+		logInfo("${line}")
+				
+		if (sout!=null) {
+			sout.append("${line}\n")
+		}
+	}
 
 	return result
 }
