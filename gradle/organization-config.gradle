@@ -1,5 +1,5 @@
 /*
- * config-home.gradle
+ * organization-config.gradle
  *
  * Copyright by toolarium, all rights reserved.
  * 
@@ -61,8 +61,8 @@ projectValidation {
 			new File(binPath).mkdirs()
 			def commonBuildHome=System.getenv('CB_HOME') 
 			if (commonBuildHome!=null) {
-				copyFile("${commonBuildHome}/bin/sample/cb-custom-sample.bat", "${binPath}/cb-custom.bat")
-				copyFile("${commonBuildHome}/bin/sample/cb-custom-sample.sh", "${binPath}/cb-custom.sh")
+				copyFile("${commonBuildHome}/bin/sample/cb-custom.bat", "${binPath}/cb-custom.bat")
+				copyFile("${commonBuildHome}/bin/sample/cb-custom.sh", "${binPath}/cb-custom.sh")
 				//copyFile("${commonBuildHome}/conf/dockterm-types.properties", "${confPath}/dockterm-types.properties")
 				//copyFile("${commonBuildHome}/conf/dockterm-types.properties", "${confPath}/dockterm-types.properties")
 			}
@@ -95,11 +95,10 @@ projectValidation {
 
 			def gradleCheckstyleTemplatePath = "${confPath}/checkstyle"
 			new File(gradleCheckstyleTemplatePath).mkdirs()
-			//copyFile( "${commonGradleTemplateCheckstylePath}/checkstyle-file-header.txt.template", "${gradleCheckstyleTemplatePath}/checkstyle-file-header.txt")
-			//copyFile( "${commonGradleTemplateCheckstylePath}/checkstyle-suppressions.xml.template", "${gradleCheckstyleTemplatePath}/checkstyle-suppressions.xml")
-			//copyFile( "${commonGradleTemplateCheckstylePath}/checkstyle.xml.template", "${gradleCheckstyleTemplatePath}/checkstyle.xml")
-
-			//delete "$gradleDirectory"
+			createFileFromTemplate("${gradleCheckstyleTemplatePath}/checkstyle-file-header.txt", getTemplateFile('checkstyle-file-header.txt.template', 'checkstyle'))
+			createFileFromTemplate("${gradleCheckstyleTemplatePath}/checkstyle-suppressions.xml", getTemplateFile('checkstyle-suppressions.xml.template', 'checkstyle'))
+			createFileFromTemplate("${gradleCheckstyleTemplatePath}/checkstyle.xml", getTemplateFile('checkstyle.xml.template', 'checkstyle'))
+			
 			delete "$editorConfigFile"
 			delete "$settingsGradleFile"			
 			delete "$rootDirectory/README.md"
@@ -107,8 +106,9 @@ projectValidation {
 			delete "$buildGradleFile"
 			
 			registerEndMessage("" << NELINE \
-								<< "  To get started, got to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
-								<< "      " + colorize(HIGHLITE_LEVEL, "$startExecutable") + "" << NELINE )
+								<< "  To get started, checkin the project into a git repository and refer the url of the repository in:" << NELINE \
+								<< "      - Windows: " + colorize(HIGHLITE_LEVEL, "%USERPROFILE%\\.common-build\\conf\\.cb-custom-config") << NELINE \
+								<< "      - Linux: " + colorize(HIGHLITE_LEVEL, "\$HOME/.common-build/conf/.cb-custom-config") << NELINE )
 		} 
 	}
 }
