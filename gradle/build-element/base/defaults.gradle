@@ -275,7 +275,7 @@ setCommonGradleDefaultPropertyIfNull("testMaxHeapSize", "512m")
 
 if (initTesting) {
 	if (useJUnit) {
-		setCommonGradleDefaultPropertyIfNull("testDependencyVersion", "5.6.2")
+		setCommonGradleDefaultPropertyIfNull("testDependencyVersion", "5.6.2") // 5.7.1
 
 		if (testDependencyVersion!=null && !testDependencyVersion.isEmpty()) {
 			if (testDependencyVersion.startsWith("4.")) {
@@ -679,7 +679,7 @@ setCommonGradleDefaultPropertyIfNull("kubernetesInstallMessage", "This file desc
 // readiness and liveness
 setCommonGradleDefaultPropertyIfNull("kubernetesReadinessFailureThreshold", 3)
 setCommonGradleDefaultPropertyIfNull("kubernetesReadinessScheme", "HTTP")
-setCommonGradleDefaultPropertyIfNull("kubernetesReadinessInitialDelaySeconds", 0)
+setCommonGradleDefaultPropertyIfNull("kubernetesReadinessInitialDelaySeconds", 180)
 setCommonGradleDefaultPropertyIfNull("kubernetesReadinessPeriodSeconds", 30)
 setCommonGradleDefaultPropertyIfNull("kubernetesReadinessSuccessThreshold", 1)
 setCommonGradleDefaultPropertyIfNull("kubernetesReadinessTimeoutSeconds", 10)
