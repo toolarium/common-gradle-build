@@ -11,6 +11,44 @@
 
 
 #########################################################################
+# Initialize
+#########################################################################
+PN=$(basename "$0" 2>/dev/null)
+SCRIPT_PATH=$(dirname "$0" 2>/dev/null)
+replicas=
+initialDelaySeconds=
+periodSeconds=
+installDatabase="false"
+
+
+#########################################################################
+# printUsage
+#########################################################################
+printUsage() {
+	echo "$PN - Script to install @@PROJECT_NAME@@ v@@VERSION@@"
+	echo "usage: $PN [OPTION]"
+	echo ""
+	echo "Overview of the available OPTIONs:"
+	echo " -h, --help                Show this help message."
+	echo " --version                 Print the version information."
+	echo " --db                      Install additional a postgress database."
+	echo " --replicas [num]          Define the number of replicas. It overwrites the defined replicas from the package."
+	echo " --initialDelay [seconds]  Overwrites from the package the number of seconds to initialize probes."
+    echo " --period [seconds]        Overwrites from the package the number of period seconds between probes."
+	echo " --reinstall               Re-install an existing installation."
+	echo " --uninstall               Uninstall an existing installation."
+}
+
+
+#########################################################################
+# printVersion
+#########################################################################
+printVersion() {
+	echo ".: Script to install @@PROJECT_NAME@@ v@@VERSION@@"
+}
+
+
+#########################################################################
 # uninstall application
 #########################################################################
 uninstallApplication() {
@@ -21,13 +59,59 @@ uninstallApplication() {
 
 
 #########################################################################
+# update kubernetes application file
+#########################################################################
+updateKubernetesInstallApplicationFile() {
+    kubernetesInstallApplicationFilename="@@KUBERNETES_INSTALL_APPLICATION_FILENAME@@"
+
+	if [ -z "$replicas" ] && [ -z "$initialDelaySeconds" ] && [ -z "$periodSeconds" ]; then	
+		if [ -r "${kubernetesInstallApplicationFilename}.org" ]; then
+			echo ".: Reset original package settings."
+			cp -f "${kubernetesInstallApplicationFilename}.org" "${kubernetesInstallApplicationFilename}" && rm -f "${kubernetesInstallApplicationFilename}.org"
+		fi
+	else
+		tempFilename="${kubernetesInstallApplicationFilename}.tmp"
+		! [ -r "${kubernetesInstallApplicationFilename}.org" ] && cp -f "${kubernetesInstallApplicationFilename}" "${kubernetesInstallApplicationFilename}.org"
+		cp -f "${kubernetesInstallApplicationFilename}.org" "${kubernetesInstallApplicationFilename}"
+		
+		if [ -n "$replicas" ] && [ "$replicas" -gt "0" ] 2>/dev/null; then
+			echo ".: Overwrite replicas to $replicas..."
+			cat "${kubernetesInstallApplicationFilename}" | sed "s/replicas\:.*$/replicas\:\ $replicas/g" > "$tempFilename" && cp -f "$tempFilename" "${kubernetesInstallApplicationFilename}"
+		else
+			[ -n "$replicas" ] &&  echo ".: Invalid replicas: $replicas!" && exit 1
+		fi
+
+		if [ -n "$initialDelaySeconds" ] && [ "$initialDelaySeconds" -eq "$initialDelaySeconds" ] 2>/dev/null; then
+			echo ".: Overwrite initial delay to $initialDelaySeconds seconds..."
+			cat "${kubernetesInstallApplicationFilename}" | sed "s/initialDelaySeconds\:.*$/initialDelaySeconds\:\ $initialDelaySeconds/g" > "$tempFilename" && cp -f "$tempFilename" "${kubernetesInstallApplicationFilename}"
+		else
+			[ -n "$initialDelaySeconds" ] && echo ".: Invalid initial delay: $initialDelaySeconds!" && exit 1
+		fi
+
+		if [ -n "$periodSeconds" ] && [ "$periodSeconds" -eq "$periodSeconds" ] 2>/dev/null; then
+			echo ".: Overwrite period between probes to $periodSeconds seconds..."
+			cat "${kubernetesInstallApplicationFilename}" | sed "s/periodSeconds\:.*$/periodSeconds\:\ $periodSeconds/g" > "$tempFilename" && cp -f "$tempFilename" "${kubernetesInstallApplicationFilename}"
+		else
+			[ -n "$periodSeconds" ] && echo ".: Invalid initial delay: $periodSeconds!" && exit 1
+		fi
+		rm -f "$tempFilename"
+	fi
+}
+
+
+#########################################################################
 # main
 #########################################################################
-installDatabase="false"
 while [ $# -gt 0 ]
 do
     case "$1" in
+		-h) 			printUsage && exit 0;;
+		--help) 		printUsage && exit 0;;
+		--version) 		printVersion && exit 0;;
 		--db) 			installDatabase="true";;
+		--replicas) 	shift; replicas=$1;;
+		--initialDelay) shift; initialDelaySeconds=$1;;
+		--period)       shift; periodSeconds=$1;;
 		--reinstall) 	uninstallApplication;;
 		--uninstall) 	uninstallApplication; exit 0;;
 		*)				;;
@@ -36,6 +120,9 @@ do
 done
 
 echo ".: Installation application @@PROJECT_NAME@@ v@@VERSION@@..."
+cd "$SCRIPT_PATH"
+updateKubernetesInstallApplicationFile
+
 echo ".: Login to docker"
 docker login @@DOCKER_REPOSITORY_HOST@@
 [ $? -eq 0 ] || exit 1

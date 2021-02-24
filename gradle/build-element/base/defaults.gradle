@@ -679,7 +679,7 @@ setCommonGradleDefaultPropertyIfNull("kubernetesInstallMessage", "This file desc
 // readiness and liveness
 setCommonGradleDefaultPropertyIfNull("kubernetesReadinessFailureThreshold", 3)
 setCommonGradleDefaultPropertyIfNull("kubernetesReadinessScheme", "HTTP")
-setCommonGradleDefaultPropertyIfNull("kubernetesReadinessInitialDelaySeconds", 180)
+setCommonGradleDefaultPropertyIfNull("kubernetesReadinessInitialDelaySeconds", 60)
 setCommonGradleDefaultPropertyIfNull("kubernetesReadinessPeriodSeconds", 30)
 setCommonGradleDefaultPropertyIfNull("kubernetesReadinessSuccessThreshold", 1)
 setCommonGradleDefaultPropertyIfNull("kubernetesReadinessTimeoutSeconds", 10)

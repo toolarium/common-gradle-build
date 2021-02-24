@@ -385,6 +385,7 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 		
 		// set file name for install information
 		def kubernetesApplicationFilename = "${rootProject.name}-kubernetes.yaml"
+		setCommonGradleProperty("kubernetesApplicationFilename", "${kubernetesApplicationFilename}")
 		setCommonGradleProperty("kubernetesInstallApplication", "${kubernetesApplyCommand} ${kubernetesApplicationFilename}")
 		
 		// set uninstall information
@@ -619,6 +620,9 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 			createFileFromTemplate("$gradleBuildDirectory/$kubernetesConfigurationPathname/INSTALL.md", getTemplateFile('INSTALL.template'), true /*overwrite*/, true /*print*/, true /*replace*/, NELINE /*only nl*/)
 			createFileFromTemplate("$gradleBuildDirectory/$kubernetesConfigurationPathname/install.sh", getTemplateFile('install.sh.template'), true /*overwrite*/, true /*print*/, true /*replace*/, NELINE /*only nl*/)
 			createFileFromTemplate("$gradleBuildDirectory/$kubernetesConfigurationPathname/install.bat", getTemplateFile('install.bat.template'), true /*overwrite*/, true /*print*/, true /*replace*/, NELINE /*only nl*/)
+			
+			new File("$gradleBuildDirectory/$kubernetesConfigurationPathname/install.sh").setExecutable(true, true);
+			new File("$gradleBuildDirectory/$kubernetesConfigurationPathname/install.bat").setExecutable(true, true);
 		}
 	}
 }

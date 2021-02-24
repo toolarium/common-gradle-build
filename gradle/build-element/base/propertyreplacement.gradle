@@ -543,6 +543,9 @@ ext.searchReplaceByProperties = { inputLine, replacePlaceHolders = true ->
 		if (project.hasProperty('kubernetesInstallDatabase')) {
 			line = line.replaceAll('@@KUBERNETES_INSTALL_DATABASE@@', "${kubernetesInstallDatabase}")
 		}
+		if (project.hasProperty('kubernetesApplicationFilename')) {
+			line = line.replaceAll('@@KUBERNETES_INSTALL_APPLICATION_FILENAME@@', "${kubernetesApplicationFilename}")
+		}
 		if (project.hasProperty('kubernetesInstallApplication')) {
 			line = line.replaceAll('@@KUBERNETES_INSTALL_APPLICATION@@', "${kubernetesInstallApplication}")
 		}

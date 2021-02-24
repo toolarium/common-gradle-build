@@ -10,12 +10,28 @@
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+:: Initialize
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+set "PN=%~nx0"
+set "SCRIPT_PATH=%~dp0"
+set "replicas="
+set "initialDelaySeconds="
+set "periodSeconds="
 set "installDatabase=false"
+
+
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 :CHECK_PARAMETER
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 if %0X==X goto MAIN
+if .%1==.-h goto HELP
+if .%1==.--help goto HELP
+if .%1==.--version goto VERSION
 if .%1==.--db set "installDatabase=true"
+if .%1==.--replicas shift & set "replicas=%2"
+if .%1==.--initialDelay shift & set "initialDelaySeconds=%2"
+if .%1==.--period shift & set "periodSeconds=%2"
 if .%1==.--reinstall call :uninstallApplication
 if .%1==.--uninstall (  call :uninstallApplication
                         GOTO END )
@@ -24,9 +40,33 @@ goto CHECK_PARAMETER
 
 
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-:: uninstall application
+:HELP
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+echo %PN% - Script to install @@PROJECT_NAME@@ v@@VERSION@@
+echo usage: %PN% [OPTION]
+echo.
+echo Overview of the available OPTIONs:
+echo  -h, --help                Show this help message.
+echo  --version                 Print the version information.
+echo  --db                      Install additional a postgress database.
+echo  --replicas [num]          Define the number of replicas. It overwrites the defined replicas from the package.
+echo  --initialDelay [seconds]  Overwrites from the package the number of seconds to initialize probes.
+echo  --period [seconds]        Overwrites from the package the number of period seconds between probes.
+echo  --reinstall               Re-install an existing installation.
+echo  --uninstall               Uninstall an existing installation.
+goto END
+
+
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+:VERSION
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+echo .: Script to install @@PROJECT_NAME@@ v@@VERSION@@
+goto END
+
+
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 :uninstallApplication
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 echo .: Uninstallation application @@PROJECT_NAME@@...
 @@KUBERNETES_DELETE_APPLICATION@@
 if not %ERRORLEVEL% EQU 0 goto END
@@ -34,9 +74,56 @@ goto :eof
 
 
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+:updateKubernetesInstallApplicationFile
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+set kubernetesInstallApplicationFilename=@@KUBERNETES_INSTALL_APPLICATION_FILENAME@@
+if exist %kubernetesInstallApplicationFilename%.org if .%replicas%==. if .%initialDelaySeconds%==. if .%periodSeconds%==. ( echo .: Reset original package settings.
+																															copy /Y %kubernetesInstallApplicationFilename%.org %kubernetesInstallApplicationFilename% >nul
+																															del /F %kubernetesInstallApplicationFilename%.org )
+if .%replicas%==. if .%initialDelaySeconds%==. if .%periodSeconds%==. goto :eof
+
+if not exist %kubernetesInstallApplicationFilename%.org copy /Y %kubernetesInstallApplicationFilename% %kubernetesInstallApplicationFilename%.org >nul
+if not .%replicas%==. if 1%replicas% neq +1%replicas% echo .: Invalid replicas: %replicas%! & exit /b 1
+if not .%initialDelaySeconds%==. if 1%initialDelaySeconds% neq +1%initialDelaySeconds% echo .: Invalid initial delay: %initialDelaySeconds%! & exit /b 1
+if not .%periodSeconds%==. if 1%periodSeconds% neq +1%periodSeconds% echo .: Invalid period seconds: %periodSeconds%! & exit /b 1
+
+set "TEMP_FILENAME=%kubernetesInstallApplicationFilename%.tmp"
+copy /Y %kubernetesInstallApplicationFilename%.org %kubernetesInstallApplicationFilename% >nul
+
+if not .%replicas%==. ( echo .: Overwrite replicas to %replicas%...
+						copy /Y %kubernetesInstallApplicationFilename% %TEMP_FILENAME% >nul
+                        set "replicasText=replicas: %replicas%"
+						powershell -Command "(Get-Content "$Env:TEMP_FILENAME") -replace 'replicas: .*$', "$Env:replicasText" | Out-File -encoding ASCII "$Env:kubernetesInstallApplicationFilename"" )
+
+if not .%initialDelaySeconds%==. ( echo .: Overwrite initial delay to %initialDelaySeconds% seconds...
+								   copy /Y %kubernetesInstallApplicationFilename% %TEMP_FILENAME% >nul
+								   set "initialDelaySecondsText=initialDelaySeconds: %initialDelaySeconds%"
+								   powershell -Command "(Get-Content "$Env:TEMP_FILENAME") -replace 'initialDelaySeconds: .*$', "$Env:initialDelaySecondsText" | Out-File -encoding ASCII "$Env:kubernetesInstallApplicationFilename"" )
+
+if not .%periodSeconds%==. ( echo .: Overwrite period between probes to %periodSeconds% seconds...
+								   copy /Y %kubernetesInstallApplicationFilename% %TEMP_FILENAME% >nul
+								   set "periodSecondsText=periodSeconds: %periodSeconds%"
+								   powershell -Command "(Get-Content "$Env:TEMP_FILENAME") -replace 'periodSeconds: .*$', "$Env:periodSecondsText" | Out-File -encoding ASCII "$Env:kubernetesInstallApplicationFilename"" )
+
+:: convert to unix format
+copy /Y %kubernetesInstallApplicationFilename% %TEMP_FILENAME% >nul
+powershell -Command "& {[IO.File]::WriteAllText("$Env:kubernetesInstallApplicationFilename", ([IO.File]::ReadAllText("$Env:TEMP_FILENAME") -replace \"`r`n\", \"`n\"))};"  
+
+del /F %TEMP_FILENAME%
+goto :eof
+
+
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 :MAIN
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+set "startPath=%CD%"
+echo %CD%
 echo .: Installation application @@PROJECT_NAME@@ v@@VERSION@@...
+if not "%CD%\" == "%SCRIPT_PATH%" cd /d "%SCRIPT_PATH%"
+
+call :updateKubernetesInstallApplicationFile
+if %ERRORLEVEL% NEQ 0 exit /b 1
+
 echo .: Login to docker
 docker login @@DOCKER_REPOSITORY_HOST@@
 if not %ERRORLEVEL% EQU 0 goto END
@@ -66,3 +153,4 @@ echo.
 echo To log in to the UI a user must first be created manually in the IDM at @@KUBERNETES_IDM_ADMIN_URL@@.
 
 :END
+if not "%CD%\" == "%SCRIPT_PATH%" cd /d "%startPath%"
