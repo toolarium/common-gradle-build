@@ -78,7 +78,7 @@ ext.execDocker = { cmd, errorMessage, failOnError = true ->
 			
 			throw new GradleException(errorMessage)		
 		} else {
-			printWarn("> $errorMessage")
+			printWarn("$errorMessage")
 		}
 	}
 	
@@ -226,38 +226,30 @@ task dockerBuild {
 							}
 							readHeader = true
 						} else {
-							def sizeIdx = sizeIndex
-							if (line.indexOf("About")>=0) {
-								line = line.replace("About", "")
-								sizeIdx++
-							}
-							
-							sizeIdx = lineSplit.length -1
-
-							def duration = 1
-							try {
-								duration = Integer.valueOf(lineSplit[createdIndex])
-							} catch(Exception e ) {
-								sizeIdx++
-							}
-
-							if (lineSplit[createdIndex+1].toString().startsWith("minute")) {
-								duration = duration * 60
-							} else if (lineSplit[createdIndex+1].toString().startsWith("hour")) {
-								duration = duration * 60 * 60
-							} else if (lineSplit[createdIndex+1].toString().startsWith("day")) {
-								duration = duration * 60 * 60 * 24 
-							} else if (lineSplit[createdIndex+1].toString().startsWith("week")) {
-								duration = duration * 60 * 60 * 24 * 7
-							} else if (lineSplit[createdIndex+1].toString().startsWith("month")) {
-								duration = duration * 60 * 60 * 24 * 30
-							} else if (lineSplit[createdIndex+1].toString().startsWith("year")) {
-								duration = duration * 60 * 60 * 24 * 365
-							}
-							
+							def sizeIdx = lineSplit.length -1
 							if ("${project.version}".toString().equals(lineSplit[tagIndex])) {
 								printInfo("> Docker images id " + colorize(HIGHLITE_LEVEL, lineSplit[imageIndex]) + ": " + colorize(HIGHLITE_LEVEL, lineSplit[sizeIdx]))
 							} else {
+							def duration = 1
+								try {
+									duration = Integer.valueOf(lineSplit[createdIndex])
+								} catch(Exception e ) {
+								}
+
+								if (lineSplit[createdIndex+1].toString().startsWith("minute")) {
+									duration = duration * 60
+								} else if (lineSplit[createdIndex+1].toString().startsWith("hour")) {
+									duration = duration * 60 * 60
+								} else if (lineSplit[createdIndex+1].toString().startsWith("day")) {
+									duration = duration * 60 * 60 * 24 
+								} else if (lineSplit[createdIndex+1].toString().startsWith("week")) {
+									duration = duration * 60 * 60 * 24 * 7
+								} else if (lineSplit[createdIndex+1].toString().startsWith("month")) {
+									duration = duration * 60 * 60 * 24 * 30
+								} else if (lineSplit[createdIndex+1].toString().startsWith("year")) {
+									duration = duration * 60 * 60 * 24 * 365
+								}
+							
 								logInfo("Found different tag " + colorize(HIGHLITE_LEVEL, lineSplit[tagIndex]) 
 										+ colorize(INFO_LEVEL,", docker images id ") + colorize(HIGHLITE_LEVEL, lineSplit[imageIndex]) + colorize(INFO_LEVEL, ": ") 
 										+ colorize(HIGHLITE_LEVEL, lineSplit[sizeIdx]) + colorize(INFO_LEVEL, " (age ") + colorize(HIGHLITE_LEVEL, duration) + colorize(INFO_LEVEL, "s)"))
