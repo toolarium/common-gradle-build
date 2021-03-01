@@ -239,7 +239,7 @@ setCommonGradleProperty("projectIndividualCheckstyleConfiguration", false)
 /***************************************************************************************
  * openapi plugin version
  ***************************************************************************************/
-//setCommonGradleProperty("openapiPluginVersion", '4.3.1')
+//setCommonGradleProperty("openapiPluginVersion", '5.0.0')
 
 
 /***************************************************************************************
