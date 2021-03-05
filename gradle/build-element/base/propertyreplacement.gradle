@@ -237,6 +237,11 @@ ext.searchReplaceByProperties = { inputLine, replacePlaceHolders = true ->
 			line = line.replaceAll('@@KUBERNETES_DOCKER_IMAGE@@', "${project.ext.kubernetesDockerImage}".toString())
 		}
 		
+		// kubernetes / ingres
+		if (project.hasProperty('kubernetesIngressProxyBodySize')) {
+			line = line.replaceAll('@@KUBERNETES_INGRESS_PROXY_BODY_SIZE@@', "${project.ext.kubernetesIngressProxyBodySize}".toString())
+		}
+		
 		// kubernetes / application.properties environment variable names
 		if (project.hasProperty('kubernetesDatabaseJdbcUrlEnvName')) {
 			line = line.replaceAll('@@KUBERNETES_DATABASE_JDBC_URL_ENV_NAME@@', "${project.ext.kubernetesDatabaseJdbcUrlEnvName}".toString())

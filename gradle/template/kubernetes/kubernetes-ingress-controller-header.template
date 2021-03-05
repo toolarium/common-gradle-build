@@ -8,6 +8,8 @@ kind: Ingress
 metadata:
   labels:
     app.@@KUBERNETES_LABEL_ID@@.ingress: @@PROJECT_NAME@@
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "@@KUBERNETES_INGRESS_PROXY_BODY_SIZE@@"
   name: @@PROJECT_NAME@@-ingress
   namespace: @@KUBERNETES_NAMESPACE@@
 spec:

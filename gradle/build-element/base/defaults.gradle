@@ -555,6 +555,7 @@ setCommonGradleDefaultPropertyIfNull("kubernetesSupportIngressNginx", true)
 setCommonGradleDefaultPropertyIfNull("kubernetesDownloadIngressNginxVersion", false)
 setCommonGradleDefaultPropertyIfNull("kubernetesIngressNginxVersion", "0.43.0") // see https://github.com/kubernetes/ingress-nginx
 setCommonGradleDefaultPropertyIfNull("kubernetesIngressUrl", "https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v${kubernetesIngressNginxVersion}/deploy/static/provider/cloud/deploy.yaml") 
+setCommonGradleDefaultPropertyIfNull("kubernetesIngressProxyBodySize", "10m") 
 
 // kubernetes / application.properties environment variable names
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseJdbcUrlEnvName", "DATABASE_JDBC_URL")
