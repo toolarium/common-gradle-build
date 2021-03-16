@@ -188,14 +188,14 @@ if (!project.getProperty('IS_NEW')) {
 		
 		doLast {
 			if (project.hasProperty("targetStatic") && project.getProperty("targetStatic")) {
-				addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/dist")
-				copyFile("$rootDirectory/$versionFilename", "$rootDirectory/dist/$versionFilename")
+				addCommonGradlePropertyList("allowedMainDirectories", "$commonGradleBuildDistPath")
+				copyFile("$rootDirectory/$versionFilename", "$commonGradleBuildDistPath/$versionFilename")
 
-				if (!new File("$rootDirectory/dist/robots.txt").exists()) {
-					def destRobotsFile= "$rootDirectory/dist/robots.txt"
+				if (!new File("$commonGradleBuildDistPath/robots.txt").exists()) {
+					def destRobotsFile= "$commonGradleBuildDistPath/robots.txt"
 					logInfo("Write file " + colorize(HIGHLITE_LEVEL, robotsFile) + colorize(INFO_LEVEL ,"..."))
 					if (!createFileFromTemplate(destRobotsFile, getTemplateFile('robots.template'))) {
-						printInfo("> Create " + colorize(HIGHLITE_LEVEL, "dist/robots.txt") + " with default values.")
+						printInfo("> Create " + colorize(HIGHLITE_LEVEL, "$commonGradleBuildDistName/robots.txt") + " with default values.")
 						new File(destRobotsFile).withWriter { w ->
 							w << "# robots.txt" << NELINE \
 							<< "" << NELINE \
@@ -205,11 +205,11 @@ if (!project.getProperty('IS_NEW')) {
 					}
 				}
 				
-				if (new File("$rootDirectory/dist/locales/").exists()) {
-					def destRedirectIndexFile= "$rootDirectory/dist/locales/${redirectIndexFile}"
+				if (new File("$commonGradleBuildDistPath/locales/").exists()) {
+					def destRedirectIndexFile= "$commonGradleBuildDistPath/locales/${redirectIndexFile}"
 					logInfo("Write file " + colorize(HIGHLITE_LEVEL, redirectIndexFile) + colorize(INFO_LEVEL ,"..."))
 					if (!createFileFromTemplate(destRedirectIndexFile, getTemplateFile('redirectIndexFile.template'))) {
-						printInfo("> Create " + colorize(HIGHLITE_LEVEL, "dist/locales/${redirectIndexFile}") + " with default values.")
+						printInfo("> Create " + colorize(HIGHLITE_LEVEL, "$commonGradleBuildDistName/locales/${redirectIndexFile}") + " with default values.")
 					
 						new File(destRedirectIndexFile).withWriter { w ->
 							w << "<!DOCTYPE html>" << NELINE \
@@ -228,7 +228,7 @@ if (!project.getProperty('IS_NEW')) {
 				}
 			}
 			
-			delete "$rootDirectory/dist/README.md"
+			delete "$commonGradleBuildDistPath/README.md"
 		}
 	}
 }

@@ -302,3 +302,66 @@ ext.generatePackageJson = { outputPath = "${$rootDirectory}",
 
 
 apply from: "${commonGradleBuildElementPath}/base/docker.gradle"
+
+
+/***************************************************************************************
+ * Build sources jar file
+ ***************************************************************************************/
+task distJar(type: Jar, dependsOn: build) { jar ->
+	group = 'Build'
+	description = 'Assembles the dist into a jar file'
+
+	from "${commonGradleBuildDistPath}"
+
+	if (project.getProperty('includeDocsDirectoryInSource')) {
+        into "${docsDirectoryName}", {
+            from "${docsDirectory}"
+        }
+	}
+
+	if (project.getProperty('includeChangelogFile')) {
+		from "${changelogFile}"
+	}
+
+	// include readme, license and version files
+	into 'META-INF', {
+		if (project.getProperty('includeReadmeFile')) {
+			from "${readmeFile}"
+		}
+
+		if (project.getProperty('includeLicenseFile')) {
+			from "${licenseFile}"
+		}
+
+		if (project.getProperty('includeVersionFile')) {
+			from "${versionFile}"
+		}
+
+		if (project.getProperty('includeChangelogFile')) {
+			from "${changelogFile}"
+		}
+	}
+
+	archiveClassifier = 'static'
+
+	// define proper manifest
+	manifest {
+		attributes 	'Specification-Title'   : rootProject.name,
+					'Specification-Version' : project.version,
+					'Implementation-Title'  : rootProject.name,
+					'Implementation-Version': project.version + project.ext.scmVersionNumber,
+					'Created-By'		   	: project.ext.buildToolVersionStackMessage,
+					'Built-By'			   	: publishingUsername,
+					'Build-Timestamp'	   	: BUILD_TIMESTAMP,
+					'Build-JDK'			   	: "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
+					'Build-OS'			   	: "${System.properties['os.name']} (${System.properties['os.version']}), ${System.properties['os.arch']}"
+	}
+
+	doLast {
+		if (project.hasProperty('showCreatedArtefacts') && project.getProperty('showCreatedArtefacts')) {
+			// jar.archiveFileName
+			def filename = prepareFilename(jar.archivePath.getPath())
+			printInfo("> Created package " + colorize(HIGHLITE_LEVEL, filename) + ".")
+		}
+	}
+}

@@ -227,7 +227,7 @@ setCommonGradleDefaultPropertyIfNull("compileJavaHome", "")
  * toolarium enum configuration support
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("hasToolariumEnumConfiguration", true)
-setCommonGradleDefaultPropertyIfNull("toolariumEnumConfigurationVersion", "0.7.1")
+setCommonGradleDefaultPropertyIfNull("toolariumEnumConfigurationVersion", "0.7.2")
 
 
 /***************************************************************************************
@@ -749,6 +749,8 @@ setCommonGradleDefaultPropertyIfNull("kubernetesIdmLivenessTimeoutSeconds", proj
 setCommonGradleDefaultPropertyIfNull("forceStaticTarget", false)
 setCommonGradleDefaultPropertyIfNull("generateTypescriptVersionFile", true)
 setCommonGradleDefaultPropertyIfNull("typescriptVersionFile", "${srcDirectory}/${generatedCommonGradleSubfolderName}/version.ts")
+setCommonGradleDefaultPropertyIfNull("commonGradleBuildDistName", "dist")
+setCommonGradleDefaultPropertyIfNull("commonGradleBuildDistPath", "${rootDirectory}/${commonGradleBuildDistName}")
 
 
 /***************************************************************************************
