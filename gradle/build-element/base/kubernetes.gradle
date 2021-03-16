@@ -242,16 +242,41 @@ if (new File(srcKubernetesDirectory).exists()) {
 	kubernetesConfiguration.finalizedBy(projectKubernetesArtefacts)
 }
 
+
+/***************************************************************************************
+ * Prepare toolarium enum configuration
+ ***************************************************************************************/
+task prepareToolariumEnumConfiguration {
+	group = 'Build'
+	description = 'Assembles the enum configuration'
+	
+	doLast {	
+		copyFile("$gradleBuildDirectory/classes/java/main/META-INF/toolarium-enum-configuration.json", "$kubernetesEnumConfigurationPath/${rootProject.name}.json")
+	}
+}
+
+
+/***************************************************************************************
+ * Prepare application configuration
+ ***************************************************************************************/
+task prepareApplicationConfiguration {
+}
+
+
 /***************************************************************************************
  * Build kubernetes jar file
  ***************************************************************************************/
-task kubernetesJar(type: Jar, dependsOn: 'kubernetesConfiguration') { jar ->
+task kubernetesJar(type: Jar, dependsOn: ['kubernetesConfiguration', 'prepareToolariumEnumConfiguration', 'prepareApplicationConfiguration']) { jar ->
 	group = 'Build'
 	description = 'Assembles the kubernetes configuration into a jar file'
 	onlyIf { return project.hasProperty('kubernetesSupport') && project.getProperty('kubernetesSupport') }
 
 	into "kubernetes", {
 		from "${kubernetesConfigurationPath}"
+	}
+
+	into "application-information", {
+		from "$kubernetesApplicationConfigurationInformationPath"
 	}
 
 	// include readme, license and version files

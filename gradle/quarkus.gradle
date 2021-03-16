@@ -99,6 +99,42 @@ if (project.hasProperty("quarkusRepository") && !project.getProperty("quarkusRep
  ***************************************************************************************/
 dependencies {
     implementation enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}")
+	
+	if (project.hasProperty("hasToolariumEnumConfiguration") && project.getProperty("hasToolariumEnumConfiguration")) {
+		implementation "com.github.toolarium:toolarium-enum-configuration:${toolariumEnumConfigurationVersion}"
+	}
+}
+
+/*
+task collectEnumConfiguration(type: Copy) {
+	group = 'Verification'
+	description = 'Create enum configuration.'
+
+    from { // use of closure defers evaluation until execution time
+        configurations.runtime.collect { zipTree(it).matching {include "toolarium-enum-configuration\\.json"} }
+    }
+  
+	rename { String fileName ->
+		fileName.replace("toolarium-enum-configuration.json", it + ".json")
+	}
+    into "$kubernetesEnumConfigurationPath"
+}
+prepareToolariumEnumConfiguration.dependsOn(collectEnumConfiguration)
+*/
+
+
+/***************************************************************************************
+ * Propagate production configuration of the application.properties file
+ ***************************************************************************************/
+prepareApplicationConfiguration {
+	doLast {
+		new File("$kubernetesApplicationConfigurationInformationPath").mkdirs()
+		new File("$kubernetesApplicationConfigurationPath").mkdirs()
+		Properties prop = readApplicationPropertiesFile();
+		OutputStream stream = new FileOutputStream("$kubernetesApplicationConfigurationPath/${rootProject.name}.properties");
+		prop.store(stream, "quarkus production application.properties")
+		stream.close()
+	}
 }
 
 

@@ -742,6 +742,10 @@ setCommonGradleDefaultPropertyIfNull("kubernetesIdmLivenessPeriodSeconds", proje
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmLivenessSuccessThreshold", project.getProperty('kubernetesLivenessSuccessThreshold'))
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmLivenessTimeoutSeconds", project.getProperty('kubernetesLivenessTimeoutSeconds'))
 
+setCommonGradleDefaultPropertyIfNull("kubernetesApplicationConfigurationInformationPath", "$gradleBuildDirectory/application-information")
+setCommonGradleDefaultPropertyIfNull("kubernetesApplicationConfigurationPath", "$kubernetesApplicationConfigurationInformationPath/services")
+setCommonGradleDefaultPropertyIfNull("kubernetesEnumConfigurationPath", "$kubernetesApplicationConfigurationInformationPath/toolarium-enum-configuration")
+
 
 /***************************************************************************************
  * nuxt
