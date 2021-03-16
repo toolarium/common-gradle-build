@@ -224,6 +224,13 @@ setCommonGradleDefaultPropertyIfNull("compileJavaHome", "")
 
 
 /***************************************************************************************
+ * toolarium enum configuration support
+ ***************************************************************************************/
+setCommonGradleDefaultPropertyIfNull("hasToolariumEnumConfiguration", true)
+setCommonGradleDefaultPropertyIfNull("toolariumEnumConfigurationVersion", "0.7.1")
+
+
+/***************************************************************************************
  * repository settings
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("commonGradleCacheDynamicDuration", 10*60)
