@@ -495,7 +495,8 @@ if (project.hasProperty('isSnapshotVersion') && project.getProperty('isSnapshotV
 			}				
 			
 			def git = openGit()
-			increaseRevisionVersion()		
+			prepareSnapReleaseVersion()
+			increaseRevisionVersion()
 			printInfo("> Prepare development " + colorize(HIGHLITE_LEVEL, "${project.version}") + ".")
 			git.add(patterns: ["$versionFilename"])
 			git.commit(message: "Prepare development v" + project.version)
