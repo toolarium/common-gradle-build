@@ -10,6 +10,11 @@ metadata:
     app.@@KUBERNETES_LABEL_ID@@.ingress: @@PROJECT_NAME@@
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: "@@KUBERNETES_INGRESS_PROXY_BODY_SIZE@@"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      sub_filter_types text/html text/html;
+      sub_filter "http://$http_host/" "/";
+      sub_filter "https://$http_host/" "/";
+      sub_filter_once off;	
   name: @@PROJECT_NAME@@-ingress
   namespace: @@KUBERNETES_NAMESPACE@@
 spec:
