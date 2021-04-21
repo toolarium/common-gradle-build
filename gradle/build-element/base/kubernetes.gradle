@@ -251,7 +251,9 @@ task prepareToolariumEnumConfiguration {
 	description = 'Assembles the enum configuration'
 	
 	doLast {	
-		copyFile("$gradleBuildDirectory/classes/java/main/META-INF/toolarium-enum-configuration.json", "$kubernetesEnumConfigurationPath/${rootProject.name}.json")
+		if (new File("$gradleBuildDirectory/classes/java/main/META-INF/toolarium-enum-configuration.json").exists()) {
+			copyFile("$gradleBuildDirectory/classes/java/main/META-INF/toolarium-enum-configuration.json", "$kubernetesEnumConfigurationPath/${rootProject.name}.json")
+		}
 	}
 }
 

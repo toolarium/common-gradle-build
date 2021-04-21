@@ -51,6 +51,8 @@ tasks.withType(JavaCompile) { compile ->
 	options.encoding = "${fileEncoding}"
 	options.compilerArgs << '-Xlint:unchecked'
 	options.compilerArgs << '-parameters'	
+    //options.compilerArgs << '-Aenumconfiguration.validate.strict=true'	
+
 	options.deprecation = true
 	sourceCompatibility = project.getProperty('sourceCompatibility')
     targetCompatibility = project.getProperty('targetCompatibility')
