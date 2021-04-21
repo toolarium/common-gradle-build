@@ -18,6 +18,14 @@
  * You should have received a copy of the GNU General Public License
  * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
  */
+buildscript {
+	repositories {
+		jcenter()
+	}
+	dependencies {
+		classpath "com.github.toolarium:toolarium-enum-configuration:0.9.4"
+	}
+}
 
 
 ext.projectTypeTemplatePath='kubernetes'
@@ -61,8 +69,11 @@ if (!project.hasProperty("dockerImage")) {
 	//project.ext.set("dockerImage", "node:alpine")
 	project.ext.set("dockerImage", "nginx:alpine")
 }
+
+project.ext.set("kubernetesProductServiceInformationName", "${rootProject.name}-services")
+project.ext.set("kubernetesProductServiceInformationPath", "${kubernetesProductServiceInformationName}/")
 if (!project.hasProperty("dockerDeploymentSourcePath")) {
-	project.ext.set("dockerDeploymentSourcePath", "build/${rootProject.name}-services/")
+	project.ext.set("dockerDeploymentSourcePath", "build/${kubernetesProductServiceInformationPath}")
 }
 
 
@@ -79,10 +90,10 @@ apply from: "${commonGradleBuildElementPath}/java/signing.gradle"
 apply from: "${commonGradleBuildElementPath}/java/publication.gradle"
 
 
-
 /***************************************************************************************
  * artefacts
  ***************************************************************************************/
+project.ext.set("kubernetesProductServiceInformationBuildPath", "$rootDirectory/build/${kubernetesProductServiceInformationPath}services")
 ext.kubernetesConfigurationProjctPath = "${kubernetesConfigurationServicesPath}/${kubernetesConfigurationPathname}"
 artifacts {
 	archives kubernetesJar
@@ -175,9 +186,9 @@ ext.createContainerImageFileList = { fileContent ->
  * Create a json service information file
  ****************************************************************************************/
 ext.createProductServiceInfo = { serviceMap ->
-	new File("$gradleBuildDirectory/${rootProject.name}-services/").mkdirs()
+	new File("$gradleBuildDirectory/${kubernetesProductServiceInformationPath}").mkdirs()
 
-	def productServicesFilePath = new File("$gradleBuildDirectory/${rootProject.name}-services/services")
+	def productServicesFilePath = new File("$kubernetesProductServiceInformationBuildPath")
 	productServicesFilePath.mkdir()
 	def productServicesFile = new File("$productServicesFilePath/services.json")
 	printInfo("> Create product information " + colorize(HIGHLITE_LEVEL, "${productServicesFile}".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")
@@ -227,8 +238,8 @@ ext.createProductServiceInfo = { serviceMap ->
  ****************************************************************************************/
 ext.createJsonServiceInfo = { urlMap, serviceMap, serviceNamespace, serviceName, imageName, servicePort, servicePathExternal, servicePathInternal, readinessPath, livenessPath, labelsList, annotationsList ->
 
-	new File("$gradleBuildDirectory/${rootProject.name}-services/").mkdirs()
-	def productServicesFilePath = new File("$gradleBuildDirectory/${rootProject.name}-services/services")
+	new File("$gradleBuildDirectory/${kubernetesProductServiceInformationPath}").mkdirs()
+	def productServicesFilePath = new File("$kubernetesProductServiceInformationBuildPath")
 	productServicesFilePath.mkdir()
 	def productInfoFile = new File("$productServicesFilePath/${serviceName}.json")
 	def serviceNameUsePath = urlMap[servicePathExternal] 
@@ -340,6 +351,66 @@ task extractKubernetes(type: Copy) {
 }
 
 
+/****************************************************************************************
+ * Extract service information artefacts
+ ****************************************************************************************/
+task extractKubernetesInformation(type: Copy) {
+	group = 'Build'
+	description = 'Extract kubernetes jar file dependencoes'
+    dependsOn configurations.kubernetes
+	
+    from { // use of closure defers evaluation until execution time
+        configurations.kubernetes.collect { zipTree(it).matching {include "${kubernetesApplicationConfigurationInformationPathname}/**"} }
+    }
+
+    into "$kubernetesConfigurationInformationPath"
+}
+
+
+/****************************************************************************************
+ * Combine the enum configuration
+ ****************************************************************************************/
+import com.github.toolarium.enumeration.configuration.resource.EnumConfigurationResourceFactory;
+import com.github.toolarium.enumeration.configuration.dto.EnumConfigurations;
+import com.github.toolarium.enumeration.configuration.dto.EnumConfiguration;
+
+task combineEnumConfiguration() {
+	group = 'Build'
+	description = 'Extract kubernetes jar file dependencoes'
+    dependsOn extractKubernetesInformation
+
+	doLast {
+		EnumConfigurations enumConfigurations = new EnumConfigurations();
+		new File("$kubernetesConfigurationInformationPath/${kubernetesApplicationConfigurationInformationPathname}/${kubernetesEnumConfigurationPathname}").eachFileRecurse (groovy.io.FileType.FILES) { file ->
+			def is = file.newInputStream()
+			def newEnumConfiguration = EnumConfigurationResourceFactory.getInstance().load(is)
+			is.close()
+			
+			logInfo("  -> Found enum configuration " + colorize(HIGHLITE_LEVEL, file.getName()) + "...")
+			for (def e : newEnumConfiguration.getEnumConfigurationList()) {
+				logInfo("    -> Add key " + colorize(HIGHLITE_LEVEL, e.getName()) + "...")
+				enumConfigurations.add(e)
+			}
+		}
+
+		def os = new File("$kubernetesConfigurationInformationPath/${kubernetesApplicationConfigurationInformationPathname}/${kubernetesEnumConfigurationFilename}").newOutputStream()
+		EnumConfigurationResourceFactory.getInstance().store(enumConfigurations, os);
+		os.close()
+		
+		// prepare mandatory configuration without default values
+		EnumConfigurations mandatoryEnumConfigurations = new EnumConfigurations();
+		for (def e : enumConfigurations.selectMandatoryConfigurationListWithMissingDefaultValue()) {
+			mandatoryEnumConfigurations.add(e)
+		}
+
+		os = new File("$kubernetesConfigurationInformationPath/${kubernetesApplicationConfigurationInformationPathname}/${kubernetesEnumConfigurationMandatoryWithMissingDefaultValueFilename}").newOutputStream()
+		EnumConfigurationResourceFactory.getInstance().store(mandatoryEnumConfigurations, os);
+		os.close()
+	
+		delete "$kubernetesConfigurationInformationPath/${kubernetesApplicationConfigurationInformationPathname}/${kubernetesEnumConfigurationPathname}"
+	}
+}
+
 
 /****************************************************************************************
  * Yaml file filter
@@ -372,7 +443,7 @@ ext.yamlIndentFiler = { LineNumberReader it, indentLevel ->
 /****************************************************************************************
  * Extract kubernetes artefacts
  ****************************************************************************************/
-task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extractKubernetes', 'kubernetesDatabase']) {
+task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extractKubernetes', 'extractKubernetesInformation', 'combineEnumConfiguration', 'kubernetesDatabase']) {
 	group = 'Build'
 	description = 'Concat kubernetes dependencoes'	
 
@@ -380,7 +451,7 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 		new File("$kubernetesConfigurationPath").mkdirs()
 		new File("$kubernetesConfigurationElementsPath").mkdirs()
 
-		def kubernetesServicesFilename = "$kubernetesConfigurationElementsPath/${rootProject.name}-services-kubernetes.yaml"
+		def kubernetesServicesFilename = "$kubernetesConfigurationElementsPath/${kubernetesProductServiceInformationName}-kubernetes.yaml"
 		createFileFromTemplate(kubernetesServicesFilename, getTemplateFile('kubernetes-ingress-controller-header.template'), true /*overwrite*/, false /*print*/)
 		
 		// set file name for install information
