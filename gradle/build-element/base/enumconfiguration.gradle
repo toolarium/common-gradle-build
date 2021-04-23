@@ -1,0 +1,169 @@
+/*
+ * enumconfiguration.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * 
+ * This file is part of the toolarium common-gradle-build.
+ * 
+ * The common-gradle-build is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * The common-gradle-build is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+ */
+buildscript {
+	repositories {
+		jcenter()
+	}
+	dependencies {
+		classpath "com.github.toolarium:toolarium-enum-configuration:0.9.4"
+	}
+}
+
+
+/****************************************************************************************
+ * Create an enum configuration index file
+ ****************************************************************************************/
+import com.github.toolarium.enumeration.configuration.resource.EnumConfigurationResourceFactory;
+import com.github.toolarium.enumeration.configuration.dto.EnumConfigurations;
+//import com.github.toolarium.enumeration.configuration.dto.EnumConfiguration;
+ext.createEnumConfigurationIndex = { inputPath, indexFilename ->
+
+	def enumConfigurationIndexFile = new File(indexFilename)
+	printInfo("> Create enum configuration " + colorize(HIGHLITE_LEVEL, "${enumConfigurationIndexFile}".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")
+	enumConfigurationIndexFile.append(startJsonElement())
+	enumConfigurationIndexFile.append(startJsonElement(1, 'enum-configuration-mapping', true))
+	
+	def counter = 0
+	new File(inputPath).eachFileRecurse (groovy.io.FileType.FILES) { file ->
+		def is = file.newInputStream()
+		EnumConfigurations enumConfigurations = EnumConfigurationResourceFactory.getInstance().load(is)
+		is.close()
+
+		if (counter>0) {
+			enumConfigurationIndexFile.append(endJsonElement(2))
+			enumConfigurationIndexFile.append(',' + NELINE)
+			enumConfigurationIndexFile.append(startJsonElement(2))
+		}
+
+		def enumConfigurationCounter = 0
+		for (def enumConfiguration : enumConfigurations.getEnumConfigurationList()) {
+			if (enumConfigurationCounter>0) {
+				enumConfigurationIndexFile.append(endJsonElement(2))
+				enumConfigurationIndexFile.append(',' + NELINE)
+				enumConfigurationIndexFile.append(startJsonElement(2))
+			}
+					
+			// add index
+			//enumConfigurationIndexFile.append(createJsonKeyValueElement(3, "name", file.getName().replace(".json", "")) + ',' + NELINE)
+			enumConfigurationIndexFile.append(createJsonKeyValueElement(3, "reference", file.getName()) + ',' + NELINE)
+			
+			def separator = ""
+			if ((enumConfiguration.getInterfaceList()!=null && !enumConfiguration.getInterfaceList().isEmpty()) || (enumConfiguration.getInterfaceList()!=null && !enumConfiguration.getMarkerInterfaceList().isEmpty())) {
+				separator = ","
+			}
+
+			enumConfigurationIndexFile.append(createJsonKeyValueElement(3, "name", enumConfiguration.getName()) + separator + NELINE)
+			
+			if (enumConfiguration.getInterfaceList()!=null && !enumConfiguration.getInterfaceList().isEmpty()) {
+				separator = ""
+				if (enumConfiguration.getInterfaceList()!=null && !enumConfiguration.getMarkerInterfaceList().isEmpty()) {
+					separator = ","
+				}
+				
+				enumConfigurationIndexFile.append(createJsonArray(3, "interfaceList", enumConfiguration.getInterfaceList()) + separator + NELINE)
+			}
+			
+			if (enumConfiguration.getInterfaceList()!=null && !enumConfiguration.getMarkerInterfaceList().isEmpty()) {
+				enumConfigurationIndexFile.append(createJsonArray(3, "markerInterfaceList", enumConfiguration.getMarkerInterfaceList()) + NELINE)
+			}
+			
+			enumConfigurationCounter++
+		}
+		
+		counter++
+	}	
+	
+	enumConfigurationIndexFile.append(endJsonElement(1, true) + NELINE)
+	enumConfigurationIndexFile.append(endJsonElement())
+}
+
+
+/****************************************************************************************
+ * Create an enum configuration file with missing default value file
+ ****************************************************************************************/
+ext.createEnumConfigurationMandatoryWithMissingDefaultValue = { inputPath, fileName ->
+	// prepare mandatory configuration without default values
+	
+	def enumConfigurationMandatoryWithMissingDefaultValueFile = new File(fileName)
+	printInfo("> Create enum configuration " + colorize(HIGHLITE_LEVEL, "${fileName}".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")
+	enumConfigurationMandatoryWithMissingDefaultValueFile.append(startJsonElement())
+	enumConfigurationMandatoryWithMissingDefaultValueFile.append(startJsonElement(1, 'enum-configuration-to-initialize', true))
+
+	def counter = 0
+	new File(inputPath).eachFileRecurse (groovy.io.FileType.FILES) { file ->
+		if (counter>0) {
+			enumConfigurationMandatoryWithMissingDefaultValueFile.append(endJsonElement(2))
+			enumConfigurationMandatoryWithMissingDefaultValueFile.append(',' + NELINE)
+			enumConfigurationMandatoryWithMissingDefaultValueFile.append(startJsonElement(2))
+		}
+
+		//enumConfigurationMandatoryWithMissingDefaultValueFile.append(createJsonKeyValueElement(3, "name", file.getName().replace(".json", "")) + ',' + NELINE)
+		enumConfigurationMandatoryWithMissingDefaultValueFile.append(createJsonKeyValueElement(3, "reference", file.getName()) + ',' + NELINE)
+	
+		def is = file.newInputStream()
+		EnumConfigurations enumConfigurations = EnumConfigurationResourceFactory.getInstance().load(is)
+		is.close()
+
+		logInfo("  -> Found enum configuration " + colorize(HIGHLITE_LEVEL, file.getName()) + "...")
+		def enumConfigurationCounter = 0
+		enumConfigurationMandatoryWithMissingDefaultValueFile.append(startJsonElement(3, 'configurationList', true))
+		for (def e : enumConfigurations.selectMandatoryConfigurationListWithMissingDefaultValue()) {
+			if (enumConfigurationCounter>0) {
+				enumConfigurationMandatoryWithMissingDefaultValueFile.append(endJsonElement(4))
+				enumConfigurationMandatoryWithMissingDefaultValueFile.append(',' + NELINE)
+				enumConfigurationMandatoryWithMissingDefaultValueFile.append(startJsonElement(4))
+			}
+			
+			enumConfigurationMandatoryWithMissingDefaultValueFile.append(createJsonKeyValueElement(5, "name", e.getName()) + ',' + NELINE)
+
+			def keyList = []
+			for (def keyElement : e.getKeyList()) {
+				logInfo("    -> Add mandatory configuration without default value: " + colorize(HIGHLITE_LEVEL, e.getName() + " -> " + keyElement.getKey()))
+				keyList << keyElement.getKey()
+			}
+			enumConfigurationMandatoryWithMissingDefaultValueFile.append(createJsonArray(5, "keyList", keyList) + NELINE)
+			enumConfigurationCounter++
+		}
+	    enumConfigurationMandatoryWithMissingDefaultValueFile.append(endJsonElement(3, true) + NELINE)
+		
+		counter++
+	}	
+	
+	enumConfigurationMandatoryWithMissingDefaultValueFile.append(endJsonElement(1, true) + NELINE)
+	enumConfigurationMandatoryWithMissingDefaultValueFile.append(endJsonElement())
+}
+
+
+/****************************************************************************************
+ * Combine the enum configuration
+ ****************************************************************************************/
+task prepareEnumConfigurationIndex() {
+	group = 'Build'
+	description = 'Create enum configuration index'
+
+	doLast {
+		createEnumConfigurationMandatoryWithMissingDefaultValue("$kubernetesConfigurationInformationPath/${kubernetesApplicationConfigurationInformationPathname}/${kubernetesEnumConfigurationPathname}",
+		                                                        "$kubernetesConfigurationInformationPath/${kubernetesApplicationConfigurationInformationPathname}/${kubernetesEnumConfigurationToInitialize}")
+		createEnumConfigurationIndex("$kubernetesConfigurationInformationPath/${kubernetesApplicationConfigurationInformationPathname}/${kubernetesEnumConfigurationPathname}",
+									 "$kubernetesConfigurationInformationPath/${kubernetesApplicationConfigurationInformationPathname}/${kubernetesEnumConfigurationMapping}")
+		
+	}
+}
