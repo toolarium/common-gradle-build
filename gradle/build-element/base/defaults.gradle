@@ -749,7 +749,8 @@ setCommonGradleDefaultPropertyIfNull("kubernetesApplicationConfigurationPathname
 setCommonGradleDefaultPropertyIfNull("kubernetesApplicationConfigurationPath", "$kubernetesApplicationConfigurationInformationPath/${kubernetesApplicationConfigurationPathname}")
 setCommonGradleDefaultPropertyIfNull("kubernetesEnumConfigurationPathname", "toolarium-enum-configuration")
 setCommonGradleDefaultPropertyIfNull("kubernetesEnumConfigurationFilename", "${kubernetesEnumConfigurationPathname}.json")
-setCommonGradleDefaultPropertyIfNull("kubernetesEnumConfigurationMandatoryWithMissingDefaultValueFilename", "${kubernetesEnumConfigurationPathname}-to-initialize.json")
+setCommonGradleDefaultPropertyIfNull("kubernetesEnumConfigurationToInitialize", "${kubernetesEnumConfigurationPathname}-to-initialize.json")
+setCommonGradleDefaultPropertyIfNull("kubernetesEnumConfigurationMapping", "${kubernetesEnumConfigurationPathname}-mapping.json")
 setCommonGradleDefaultPropertyIfNull("kubernetesEnumConfigurationPath", "$kubernetesApplicationConfigurationInformationPath/${kubernetesEnumConfigurationPathname}")
 
 
