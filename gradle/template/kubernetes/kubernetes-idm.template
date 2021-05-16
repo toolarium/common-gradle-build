@@ -79,6 +79,23 @@ spec:
             configMapKeyRef:
                 name: @@KUBERNETES_IDM_CONFIG_NAME@@
                 key: @@KUBERNETES_IDM_FRONTEND_URL_KEY@@
+        - name: JGROUPS_DISCOVERY_PROTOCOL
+          value: dns.DNS_PING
+        - name: JGROUPS_DISCOVERY_PROPERTIES
+          value: dns_query=keycloak-cluster
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        - name: KUBERNETES_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace                
+        - name: JAVA_OPTS_APPEND
+          value: >-
+              -Djboss.tx.node.id=$(echo $POD_NAME | cut -d'-' -f 1)-$(echo $POD_NAME | cut -d'-' -f 3)
+              -Djboss.site.name=$(KUBERNETES_NAMESPACE)                
         volumeMounts:
         - mountPath: /etc/secret
           name: idm-credentials
@@ -123,3 +140,19 @@ spec:
       port: @@KUBERNETES_IDM_PORT@@
   selector:
     app.@@KUBERNETES_LABEL_ID@@.idm: @@KUBERNETES_IDM_SERVICE_NAME@@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak-cluster
+  labels:
+    app.@@KUBERNETES_LABEL_ID@@.idm: keycloak
+  namespace: @@KUBERNETES_NAMESPACE@@
+spec:
+  clusterIP: None
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: @@KUBERNETES_IDM_PORT@@
+  selector:
+    app.@@KUBERNETES_LABEL_ID@@.idm: keycloak
