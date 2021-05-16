@@ -21,10 +21,9 @@
 buildscript {
 	repositories {
 		jcenter()
-		//maven { url("https://oss.sonatype.org/content/repositories/snapshots") }
 	}
 	dependencies {
-		classpath "com.github.toolarium:toolarium-enum-configuration:0.9.7"
+		classpath "com.github.toolarium:toolarium-enum-configuration:0.9.4"
 	}
 }
 
@@ -38,7 +37,7 @@ import com.github.toolarium.enumeration.configuration.dto.EnumConfigurations;
 ext.createEnumConfigurationIndex = { inputPath, indexFilename ->
 
 	def enumConfigurationIndexFile = new File(indexFilename)
-	logInfo("> Create enum configuration " + colorize(HIGHLITE_LEVEL, "${enumConfigurationIndexFile}".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")
+	printInfo("> Create enum configuration " + colorize(HIGHLITE_LEVEL, "${enumConfigurationIndexFile}".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")
 	enumConfigurationIndexFile.append(startJsonElement())
 	enumConfigurationIndexFile.append(startJsonElement(1, 'enum-configuration-mapping', true))
 	
@@ -64,13 +63,14 @@ ext.createEnumConfigurationIndex = { inputPath, indexFilename ->
 					
 			// add index
 			//enumConfigurationIndexFile.append(createJsonKeyValueElement(3, "name", file.getName().replace(".json", "")) + ',' + NELINE)
-			enumConfigurationIndexFile.append(createJsonKeyValueElement(3, "name", enumConfiguration.getName()) + ',' + NELINE)
+			enumConfigurationIndexFile.append(createJsonKeyValueElement(3, "reference", file.getName()) + ',' + NELINE)
 			
 			def separator = ""
-			if ((enumConfiguration.getInterfaceList()!=null && !enumConfiguration.getInterfaceList().isEmpty()) || (enumConfiguration.getMarkerInterfaceList()!=null && !enumConfiguration.getMarkerInterfaceList().isEmpty())) {
+			if ((enumConfiguration.getInterfaceList()!=null && !enumConfiguration.getInterfaceList().isEmpty()) || (enumConfiguration.getInterfaceList()!=null && !enumConfiguration.getMarkerInterfaceList().isEmpty())) {
 				separator = ","
 			}
-			enumConfigurationIndexFile.append(createJsonKeyValueElement(3, "reference", file.getName()) + separator + NELINE)
+
+			enumConfigurationIndexFile.append(createJsonKeyValueElement(3, "name", enumConfiguration.getName()) + separator + NELINE)
 			
 			if (enumConfiguration.getInterfaceList()!=null && !enumConfiguration.getInterfaceList().isEmpty()) {
 				separator = ""
@@ -103,7 +103,7 @@ ext.createEnumConfigurationMandatoryWithMissingDefaultValue = { inputPath, fileN
 	// prepare mandatory configuration without default values
 	
 	def enumConfigurationMandatoryWithMissingDefaultValueFile = new File(fileName)
-	logInfo("> Create enum configuration " + colorize(HIGHLITE_LEVEL, "${fileName}".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")
+	printInfo("> Create enum configuration " + colorize(HIGHLITE_LEVEL, "${fileName}".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")
 	enumConfigurationMandatoryWithMissingDefaultValueFile.append(startJsonElement())
 	enumConfigurationMandatoryWithMissingDefaultValueFile.append(startJsonElement(1, 'enum-configuration-to-initialize', true))
 
@@ -116,7 +116,7 @@ ext.createEnumConfigurationMandatoryWithMissingDefaultValue = { inputPath, fileN
 		}
 
 		//enumConfigurationMandatoryWithMissingDefaultValueFile.append(createJsonKeyValueElement(3, "name", file.getName().replace(".json", "")) + ',' + NELINE)
-		enumConfigurationMandatoryWithMissingDefaultValueFile.append(createJsonKeyValueElement(3, "service-name", file.getName().replace(".json", "") + ',' + NELINE)
+		enumConfigurationMandatoryWithMissingDefaultValueFile.append(createJsonKeyValueElement(3, "reference", file.getName()) + ',' + NELINE)
 	
 		def is = file.newInputStream()
 		EnumConfigurations enumConfigurations = EnumConfigurationResourceFactory.getInstance().load(is)
@@ -160,15 +160,10 @@ task prepareEnumConfigurationIndex() {
 	description = 'Create enum configuration index'
 
 	doLast {
-		def toInitializeTempFile=getUniqueTempName("${rootProject.name}", "${kubernetesEnumConfigurationToInitialize}", null)
-		createEnumConfigurationMandatoryWithMissingDefaultValue("$kubernetesApplicationInformationPath/${kubernetesEnumConfigurationPathname}", toInitializeTempFile)
-
-		def mappingTempFile=getUniqueTempName("${rootProject.name}", "${kubernetesEnumConfigurationMapping}", null)
-		createEnumConfigurationIndex("$kubernetesApplicationInformationPath/${kubernetesEnumConfigurationPathname}", mappingTempFile)
-
-		copyFile(toInitializeTempFile, "$kubernetesApplicationInformationPath/$kubernetesEnumConfigurationPathname/${kubernetesEnumConfigurationToInitialize}", true)
-		delete toInitializeTempFile
-		copyFile(mappingTempFile, "$kubernetesApplicationInformationPath/$kubernetesEnumConfigurationPathname/${kubernetesEnumConfigurationMapping}", true)
-		delete mappingTempFile
+		createEnumConfigurationMandatoryWithMissingDefaultValue("$kubernetesConfigurationInformationPath/${kubernetesApplicationConfigurationInformationPathname}/${kubernetesEnumConfigurationPathname}",
+		                                                        "$kubernetesConfigurationInformationPath/${kubernetesApplicationConfigurationInformationPathname}/${kubernetesEnumConfigurationToInitialize}")
+		createEnumConfigurationIndex("$kubernetesConfigurationInformationPath/${kubernetesApplicationConfigurationInformationPathname}/${kubernetesEnumConfigurationPathname}",
+									 "$kubernetesConfigurationInformationPath/${kubernetesApplicationConfigurationInformationPathname}/${kubernetesEnumConfigurationMapping}")
+		
 	}
 }

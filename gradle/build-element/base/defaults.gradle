@@ -227,7 +227,7 @@ setCommonGradleDefaultPropertyIfNull("compileJavaHome", "")
  * toolarium enum configuration support
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("hasToolariumEnumConfiguration", true)
-setCommonGradleDefaultPropertyIfNull("toolariumEnumConfigurationVersion", "0.9.7") // in kubernetes-product.gradle there is an additional dependency
+setCommonGradleDefaultPropertyIfNull("toolariumEnumConfigurationVersion", "0.9.4") // in kubernetes-product.gradle there is an additional dependency
 
 
 /***************************************************************************************
@@ -554,21 +554,9 @@ setCommonGradleDefaultPropertyIfNull("kubernetesConfigurationPath", "$gradleBuil
 setCommonGradleDefaultPropertyIfNull("kubernetesConfigurationProjctPath", "$kubernetesConfigurationPath")
 setCommonGradleDefaultPropertyIfNull("kubernetesConfigurationServicesPath", "${kubernetesConfigurationPath}-services")
 setCommonGradleDefaultPropertyIfNull("kubernetesConfigurationElementsPath", "${kubernetesConfigurationPath}-elements")
-
-setCommonGradleDefaultPropertyIfNull("kubernetesApplicationConfigurationInformationPathname", "application-information")
-setCommonGradleDefaultPropertyIfNull("kubernetesApplicationInformationPath", "$gradleBuildDirectory/${kubernetesApplicationConfigurationInformationPathname}")
-
-setCommonGradleDefaultPropertyIfNull("kubernetesApplicationConfigurationInformationPath", "$gradleBuildDirectory/${kubernetesApplicationConfigurationInformationPathname}")
-setCommonGradleDefaultPropertyIfNull("kubernetesApplicationConfigurationPathname", "quarkus")
-setCommonGradleDefaultPropertyIfNull("kubernetesApplicationConfigurationPath", "$kubernetesApplicationConfigurationInformationPath/${kubernetesApplicationConfigurationPathname}")
-setCommonGradleDefaultPropertyIfNull("kubernetesEnumConfigurationPathname", "toolarium-enum-configuration")
-setCommonGradleDefaultPropertyIfNull("kubernetesEnumConfigurationFilename", "${kubernetesEnumConfigurationPathname}.json")
-setCommonGradleDefaultPropertyIfNull("kubernetesEnumConfigurationToInitialize", "${kubernetesEnumConfigurationPathname}-to-initialize.json")
-setCommonGradleDefaultPropertyIfNull("kubernetesEnumConfigurationMapping", "index.json")
-setCommonGradleDefaultPropertyIfNull("kubernetesEnumConfigurationPath", "$kubernetesApplicationConfigurationInformationPath/${kubernetesEnumConfigurationPathname}")
-
-
+setCommonGradleDefaultPropertyIfNull("kubernetesConfigurationInformationPath", "${kubernetesConfigurationPath}-information")
 setCommonGradleDefaultPropertyIfNull("kubernetesIngresControlFilename", "$kubernetesConfigurationElementsPath/${rootProject.name}-ingress-controller.yaml")
+
 setCommonGradleDefaultPropertyIfNull("kubernetesControllerImage", "networking.k8s.io/v1beta1")
 // imgress-nginx: https://github.com/kubernetes/ingress-nginx
 setCommonGradleDefaultPropertyIfNull("kubernetesSupportIngressNginx", true)
@@ -754,6 +742,16 @@ setCommonGradleDefaultPropertyIfNull("kubernetesIdmLivenessInitialDelaySeconds",
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmLivenessPeriodSeconds", project.getProperty('kubernetesLivenessPeriodSeconds'))
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmLivenessSuccessThreshold", project.getProperty('kubernetesLivenessSuccessThreshold'))
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmLivenessTimeoutSeconds", project.getProperty('kubernetesLivenessTimeoutSeconds'))
+
+setCommonGradleDefaultPropertyIfNull("kubernetesApplicationConfigurationInformationPathname", "application-information")
+setCommonGradleDefaultPropertyIfNull("kubernetesApplicationConfigurationInformationPath", "$gradleBuildDirectory/${kubernetesApplicationConfigurationInformationPathname}")
+setCommonGradleDefaultPropertyIfNull("kubernetesApplicationConfigurationPathname", "quarkus")
+setCommonGradleDefaultPropertyIfNull("kubernetesApplicationConfigurationPath", "$kubernetesApplicationConfigurationInformationPath/${kubernetesApplicationConfigurationPathname}")
+setCommonGradleDefaultPropertyIfNull("kubernetesEnumConfigurationPathname", "toolarium-enum-configuration")
+setCommonGradleDefaultPropertyIfNull("kubernetesEnumConfigurationFilename", "${kubernetesEnumConfigurationPathname}.json")
+setCommonGradleDefaultPropertyIfNull("kubernetesEnumConfigurationToInitialize", "${kubernetesEnumConfigurationPathname}-to-initialize.json")
+setCommonGradleDefaultPropertyIfNull("kubernetesEnumConfigurationMapping", "${kubernetesEnumConfigurationPathname}-mapping.json")
+setCommonGradleDefaultPropertyIfNull("kubernetesEnumConfigurationPath", "$kubernetesApplicationConfigurationInformationPath/${kubernetesEnumConfigurationPathname}")
 
 
 /***************************************************************************************
