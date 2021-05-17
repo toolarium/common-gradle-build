@@ -173,7 +173,7 @@ task kubernetesConfiguration() {
 			if (count==0) {
 				def kubernetesFilename="${rootProject.name}-kubernetes.yaml"
 				logInfo("Create kubernetes configuration " + colorize(HIGHLITE_LEVEL, kubernetesFilename) + ".")
-				createFileFromTemplate("$kubernetesConfigurationProjctPath/$kubernetesFilename", getTemplateFile('kubernetes.yaml.template'))
+				createFileFromTemplate("$kubernetesConfigurationProjctPath/$kubernetesFilename", getTemplateFile(kubernetesFileTemplateName))
 			}
 		}
 	}
