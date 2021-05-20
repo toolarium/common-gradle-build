@@ -60,12 +60,6 @@ if (!project.hasProperty("dockerImage")) {
 	project.ext.set("dockerImage", "nginx:alpine")
 }
 
-project.ext.set("kubernetesProductServiceInformationName", "${rootProject.name}-services")
-project.ext.set("kubernetesProductServiceInformationPath", "${kubernetesProductServiceInformationName}/")
-if (!project.hasProperty("dockerDeploymentSourcePath")) {
-	project.ext.set("dockerDeploymentSourcePath", "build/${kubernetesProductServiceInformationPath}")
-}
-
 
 /***************************************************************************************
  * Dependencies
@@ -84,7 +78,9 @@ apply from: "${commonGradleBuildElementPath}/base/enumconfiguration.gradle"
 /***************************************************************************************
  * artefacts
  ***************************************************************************************/
-project.ext.set("kubernetesProductServiceInformationBuildPath", "$rootDirectory/build/${kubernetesProductServiceInformationPath}services")
+project.ext.set("dockerDeploymentSourcePath", "build/${kubernetesApplicationConfigurationInformationPathname}")
+project.ext.set("kubernetesProductServicesPathname", "container")
+
 ext.kubernetesConfigurationProjctPath = "${kubernetesConfigurationServicesPath}/${kubernetesConfigurationPathname}"
 artifacts {
 	archives kubernetesJar
@@ -126,7 +122,7 @@ ext.createKubernetesApplyConfigInstallInformation = { ->
 
 
 /****************************************************************************************
- * Create a json service information file
+ * Create a conatiner image file
  ****************************************************************************************/
 ext.createContainerImageFileList = { fileContent ->
 	def counter = 0
@@ -174,15 +170,15 @@ ext.createContainerImageFileList = { fileContent ->
 
 
 /****************************************************************************************
- * Create a json service information file
+ * Create a service information overview
  ****************************************************************************************/
 ext.createProductServiceInfo = { serviceMap ->
-	new File("$gradleBuildDirectory/${kubernetesProductServiceInformationPath}").mkdirs()
+	new File("$kubernetesApplicationConfigurationInformationPath").mkdirs()
 
-	def productServicesFilePath = new File("$kubernetesProductServiceInformationBuildPath")
+	def productServicesFilePath = new File("$kubernetesApplicationInformationPath/" + kubernetesProductServicesPathname)
 	productServicesFilePath.mkdir()
-	def productServicesFile = new File("$productServicesFilePath/services.json")
-	printInfo("> Create product information " + colorize(HIGHLITE_LEVEL, "${productServicesFile}".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")
+	def productServicesFile = new File("$productServicesFilePath/index.json")
+	logInfo("> Create product information " + colorize(HIGHLITE_LEVEL, "${productServicesFile}".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")
 	productServicesFile.append(startJsonElement())
 	
 	productServicesFile.append(createJsonKeyValueElement(1, "namespace", "$kubernetesNamespace") + ',' + NELINE)
@@ -205,10 +201,10 @@ ext.createProductServiceInfo = { serviceMap ->
 	productServicesFile.append(createJsonKeyValueElement(1, "build-timestamp", "${project.ext.BUILD_TIMESTAMP}") + ',' + NELINE)
 	productServicesFile.append(createJsonKeyValueElement(1, "created-by", "${project.ext.buildToolVersionStackMessage}") + ',' + NELINE)
 	
-	productServicesFile.append(startJsonElement(1, 'services', true))
+	productServicesFile.append(startJsonElement(1, 'containers', true))
 	def size = serviceMap.size()
 	serviceMap.eachWithIndex { key, value, i ->
-		productServicesFile.append(createJsonKeyValueElement(3, "name", key))
+		productServicesFile.append(createJsonKeyValueElement(3, "reference", key))
 		productServicesFile.append(',' + NELINE)
 		productServicesFile.append(createJsonKeyValueElement(3, "url", value))
 		productServicesFile.append(NELINE)
@@ -227,10 +223,10 @@ ext.createProductServiceInfo = { serviceMap ->
 /****************************************************************************************
  * Create a json service information file
  ****************************************************************************************/
-ext.createJsonServiceInfo = { urlMap, serviceMap, serviceNamespace, serviceName, imageName, servicePort, servicePathExternal, servicePathInternal, readinessPath, livenessPath, labelsList, annotationsList ->
+ext.createJsonServiceInfo = { urlMap, serviceMap, serviceNamespace, serviceName, imageName, servicePort, servicePathExternal, servicePathInternal, startupPath, readinessPath, livenessPath, labelsList, annotationsList ->
 
-	new File("$gradleBuildDirectory/${kubernetesProductServiceInformationPath}").mkdirs()
-	def productServicesFilePath = new File("$kubernetesProductServiceInformationBuildPath")
+	new File("$kubernetesApplicationConfigurationInformationPath").mkdirs()
+	def productServicesFilePath = new File("$kubernetesApplicationInformationPath/" + kubernetesProductServicesPathname)
 	productServicesFilePath.mkdir()
 	def productInfoFile = new File("$productServicesFilePath/${serviceName}.json")
 	def serviceNameUsePath = urlMap[servicePathExternal] 
@@ -257,11 +253,117 @@ ext.createJsonServiceInfo = { urlMap, serviceMap, serviceNamespace, serviceName,
 	productInfoFile.append(createJsonKeyValueElement(1, "image", imageName) + ',' + NELINE)	
 	productInfoFile.append(createJsonKeyValueElement(1, "servicePathExternal", servicePathExternal) + ',' + NELINE)
 	productInfoFile.append(createJsonKeyValueElement(1, "servicePathInternal", servicePathInternal) + ',' + NELINE)
-	productInfoFile.append(createJsonKeyValueElement(1, "readinessPath", readinessPath) + ',' + NELINE)
-	productInfoFile.append(createJsonKeyValueElement(1, "livenessPath", livenessPath) + ',' + NELINE)
+
+	if (startupPath!=null && !startupPath.toString().isEmpty()) {
+		productInfoFile.append(createJsonKeyValueElement(1, "startupPath", startupPath) + ',' + NELINE)
+	}
+	
+	if (readinessPath!=null && !readinessPath.toString().isEmpty()) {
+		productInfoFile.append(createJsonKeyValueElement(1, "readinessPath", readinessPath) + ',' + NELINE)
+	}
+	
+	if (livenessPath!=null && !livenessPath.toString().isEmpty()) {
+		productInfoFile.append(createJsonKeyValueElement(1, "livenessPath", livenessPath) + ',' + NELINE)
+	}
+	
 	productInfoFile.append(createJsonArrayElement(1, "labels", labelsList) + ',' + NELINE)
 	productInfoFile.append(createJsonArrayElement(1, "annotations", annotationsList) + NELINE)
 	productInfoFile.append(endJsonElement())
+}
+
+
+/****************************************************************************************
+ * Create the application information overview
+ ****************************************************************************************/
+ext.createApplicationInformationIndex = { ->
+	new File("$kubernetesApplicationConfigurationInformationPath").mkdirs()
+
+	def applicationInformationFilePath = new File("$kubernetesApplicationInformationPath")
+	applicationInformationFilePath.mkdir()
+	def applicationInformationIndexFile = new File("$applicationInformationFilePath/index.json")
+	logInfo("> Create application information index...")
+	applicationInformationIndexFile.append(startJsonElement())
+	applicationInformationIndexFile.append(startJsonElement(1, 'application-information', true))
+	
+	applicationInformationIndexFile.append(createJsonKeyValueElement(3, "reference", kubernetesProductServicesPathname))
+	applicationInformationIndexFile.append(NELINE)
+	applicationInformationIndexFile.append(endJsonElement(2))
+	applicationInformationIndexFile.append(',' + NELINE)
+	applicationInformationIndexFile.append(startJsonElement(2))
+	applicationInformationIndexFile.append(createJsonKeyValueElement(3, "reference", kubernetesEnumConfigurationPathname))
+	applicationInformationIndexFile.append(NELINE)
+	applicationInformationIndexFile.append(endJsonElement(2))
+	applicationInformationIndexFile.append(',' + NELINE)
+	applicationInformationIndexFile.append(startJsonElement(2))
+	applicationInformationIndexFile.append(createJsonKeyValueElement(3, "reference", kubernetesApplicationConfigurationPathname))
+	applicationInformationIndexFile.append(NELINE)
+	
+	applicationInformationIndexFile.append(endJsonElement(1, true) + NELINE)
+	applicationInformationIndexFile.append(endJsonElement())
+}
+
+
+/****************************************************************************************
+ * Create a service properties overview
+ ****************************************************************************************/
+ext.createApplicationInformationServiceIndex = { ->
+	new File("$kubernetesApplicationConfigurationInformationPath").mkdirs()
+
+	def applicationInformationQuarkusFilePath = new File("$kubernetesApplicationInformationPath/quarkus")
+	applicationInformationQuarkusFilePath.mkdir()
+	
+	
+	def applicationInformationQuarkusIndexFile = new File("$applicationInformationQuarkusFilePath/index.json")
+	logInfo("> Create application information service index...")
+	applicationInformationQuarkusIndexFile.append(startJsonElement())
+	applicationInformationQuarkusIndexFile.append(startJsonElement(1, 'service-properties', true))
+	
+	def counter = 0
+	new File("$applicationInformationQuarkusFilePath").eachFileRecurse (groovy.io.FileType.FILES) { file ->
+		if (!file.getName().endsWith("index.json")) {
+			if (counter>0) {
+				applicationInformationQuarkusIndexFile.append(endJsonElement(2))
+				applicationInformationQuarkusIndexFile.append(',' + NELINE)
+				applicationInformationQuarkusIndexFile.append(startJsonElement(2))
+			}
+		
+			logInfo("  -> Add property dependency " + colorize(HIGHLITE_LEVEL, file.getName()) + "...")
+			applicationInformationQuarkusIndexFile.append(createJsonKeyValueElement(3, "reference", file.getName()))
+			applicationInformationQuarkusIndexFile.append(NELINE)
+			counter++
+		}
+	}
+	
+	applicationInformationQuarkusIndexFile.append(endJsonElement(1, true) + NELINE)
+	applicationInformationQuarkusIndexFile.append(endJsonElement())
+}
+
+
+/****************************************************************************************
+ * Yaml ident fileter
+ ****************************************************************************************/
+ext.yamlIndentFiler = { LineNumberReader it, indentLevel ->
+	def result = []
+	def numberOfLines = 0
+	
+	it.mark(0)
+	def nextLine = ''
+	while ((nextLine = it.readLine()) != null) {
+		if (nextLine.length() > indentLevel && nextLine[indentLevel + 1] == ' ') {
+			numberOfLines++
+			result.add(nextLine)
+		} else {
+			break;
+		}
+	}
+	
+	/*
+	it.reset()
+	for (int i = 0; i < numberOfLines; i++) {
+		it.readLine()
+	}
+	*/
+	return result
 }
 
 
@@ -354,35 +456,7 @@ task extractKubernetesInformation(type: Copy) {
         configurations.kubernetes.collect { zipTree(it).matching {include "${kubernetesApplicationConfigurationInformationPathname}/**"} }
     }
 
-    into "$kubernetesConfigurationInformationPath"
-}
-
-
-/****************************************************************************************
- * Yaml file filter
- ****************************************************************************************/
-ext.yamlIndentFiler = { LineNumberReader it, indentLevel ->
-	def result = []
-	def numberOfLines = 0
-	
-	it.mark(0)
-	def nextLine = ''
-	while ((nextLine = it.readLine()) != null) {
-		if (nextLine.length() > indentLevel && nextLine[indentLevel + 1] == ' ') {
-			numberOfLines++
-			result.add(nextLine)
-		} else {
-			break;
-		}
-	}
-	
-	it.reset()
-	/*
-	for (int i = 0; i < numberOfLines; i++) {
-		it.readLine()
-	}
-	*/
-	return result
+    into "$gradleBuildDirectory"
 }
 
 
@@ -397,7 +471,7 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 		new File("$kubernetesConfigurationPath").mkdirs()
 		new File("$kubernetesConfigurationElementsPath").mkdirs()
 
-		def kubernetesServicesFilename = "$kubernetesConfigurationElementsPath/${kubernetesProductServiceInformationName}-kubernetes.yaml"
+		def kubernetesServicesFilename = "$kubernetesConfigurationElementsPath/${kubernetesApplicationConfigurationInformationPathname}-kubernetes.yaml"
 		createFileFromTemplate(kubernetesServicesFilename, getTemplateFile('kubernetes-ingress-controller-header.template'), true /*overwrite*/, false /*print*/)
 		
 		// set file name for install information
@@ -456,6 +530,7 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 			def servicePathExternal = ""
 			def servicePathInternal = ""
 			def serviceNamespace = ""
+			def startupPath = ""
 			def readinessPath = ""
 			def livenessPath = ""
 
@@ -569,6 +644,13 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 								if (pos>=0) {
 									imageName = line.substring(6 + pos).trim()
 								}
+							} else if (mainSection.equalsIgnoreCase("spec") && !line.startsWith("spec") && line.indexOf("startupProbe:")>0) {
+								yamlIndentFiler(it, line.indexOf("startupProbe:")).each { jt ->
+									def idx = jt.indexOf("path:")
+									if ((startupPath==null || startupPath.toString().isEmpty()) && idx>=0) {
+										startupPath = jt.toString().substring(idx+6).replace('\"', '')
+									}
+								}
 							} else if (mainSection.equalsIgnoreCase("spec") && !line.startsWith("spec") && line.indexOf("readinessProbe:")>0) {
 								yamlIndentFiler(it, line.indexOf("readinessProbe:")).each { jt ->
 									def idx = jt.indexOf("path:")
@@ -605,7 +687,7 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 						}
 
 						logInfo("  -> Found service " + colorize(HIGHLITE_LEVEL, serviceName + ":" + servicePort) +  " -> " + colorize(HIGHLITE_LEVEL, servicePath) + ".")
-						createJsonServiceInfo(urlMap, serviceMap, serviceNamespace, serviceName, imageName, servicePort, servicePathExternal, servicePathInternal, readinessPath, livenessPath, labelsList, annotationsList)
+						createJsonServiceInfo(urlMap, serviceMap, serviceNamespace, serviceName, imageName, servicePort, servicePathExternal, servicePathInternal, startupPath, readinessPath, livenessPath, labelsList, annotationsList)
 					} else {
 						logInfo("No service found in " + colorize(HIGHLITE_LEVEL, file.getName()) + ".")
 					}
@@ -621,6 +703,12 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 			createProductServiceInfo(serviceMap)
 		}
 
+		// create application information index
+		createApplicationInformationIndex()
+		
+		// create application information service index
+		createApplicationInformationServiceIndex()
+
 		// append the controller content 
 		fileContent.append("---" + NELINE)
 		fileContent.append("# Source " + new File(kubernetesServicesFilename).getName() + NELINE)
@@ -634,9 +722,9 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 		
 		if (project.hasProperty('kubernetesInstallSupport') && project.getProperty('kubernetesInstallSupport')) {
 			// create install information
-			createFileFromTemplate("$gradleBuildDirectory/$kubernetesConfigurationPathname/INSTALL.md", getTemplateFile('INSTALL.template'), true /*overwrite*/, true /*print*/, true /*replace*/, NELINE /*only nl*/)
-			createFileFromTemplate("$gradleBuildDirectory/$kubernetesConfigurationPathname/install.sh", getTemplateFile('install.sh.template'), true /*overwrite*/, true /*print*/, true /*replace*/, NELINE /*only nl*/)
-			createFileFromTemplate("$gradleBuildDirectory/$kubernetesConfigurationPathname/install.bat", getTemplateFile('install.bat.template'), true /*overwrite*/, true /*print*/, true /*replace*/, NELINE /*only nl*/)
+			createFileFromTemplate("$gradleBuildDirectory/$kubernetesConfigurationPathname/INSTALL.md", getTemplateFile('INSTALL.template'), true /*overwrite*/, false /*print*/, true /*replace*/, NELINE /*only nl*/)
+			createFileFromTemplate("$gradleBuildDirectory/$kubernetesConfigurationPathname/install.sh", getTemplateFile('install.sh.template'), true /*overwrite*/, false /*print*/, true /*replace*/, NELINE /*only nl*/)
+			createFileFromTemplate("$gradleBuildDirectory/$kubernetesConfigurationPathname/install.bat", getTemplateFile('install.bat.template'), true /*overwrite*/, false /*print*/, true /*replace*/, NELINE /*only nl*/)
 			
 			new File("$gradleBuildDirectory/$kubernetesConfigurationPathname/install.sh").setExecutable(true, true);
 			new File("$gradleBuildDirectory/$kubernetesConfigurationPathname/install.bat").setExecutable(true, true);

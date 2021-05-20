@@ -78,11 +78,7 @@ ext.projectInitialisation = { ->
 					&& !createGradleProperties \
 					&& !createBuildGradle \
 					&& project.hasProperty('projectGroupId') && project.hasProperty('projectComponentId') && project.hasProperty('projectRootPackageName') && project.hasProperty('projectDescription') \
-					&& !createVersionFile \
-					&& !createReadmeFile \
-					&& !createLicenseFile \
-					&& !createEditorConfigFile \
-					&& !createChangelogFile
+					&& !createVersionFile 
 
 	setCommonGradleProperty('IS_NEW', !isReady)
 
@@ -163,7 +159,11 @@ ext.projectInitialisation = { ->
 	setCommonGradleProperty('startExecutable', startExecutable)
 	
 	isReady = isReady \
-					&& !createGraldeHomeProperties
+					&& !createGraldeHomeProperties \
+					&& !createChangelogFile \
+					&& !createReadmeFile \
+					&& !createLicenseFile \
+					&& !createEditorConfigFile
 
 	if (!isReady) {
 		printLine(ERROR_LEVEL, true)
@@ -294,17 +294,19 @@ ext.projectInitialisation = { ->
 
 		if (createChangelogFile) {
 			logInfo("Write file " + colorize(HIGHLITE_LEVEL, changelogFile) + colorize(INFO_LEVEL ,"..."))
-			if (!createFileFromTemplate(changelogFile, getTemplateFile('changelog.template'))) {
+			if (!createFileFromTemplate(changelogFile, getTemplateFile('CHANGELOG.template'))) {
 				printInfo("> Create " + colorize(HIGHLITE_LEVEL, changelogFile) + " with default values.")
 				new File(changelogFile).withWriter { w ->
-					w << "# Changelog" << NELINE \
+					w << "# ${rootProject.name}" << NELINE \
 					<< "" << NELINE \
 					<< "All notable changes to this project will be documented in this file." << NELINE \
 					<< "" << NELINE \
 					<< "The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)," << NELINE \
 					<< "and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)." << NELINE \
 					<< "" << NELINE \
-					<< "## [Unreleased]" << NELINE \
+					<< "##  ${project.ext.majorVersionNumber}.${project.ext.minorVersionNumber}.${project.ext.revisionVersionNumber} - " + DATE << NELINE \
+					<< "### Changed" << NELINE \
+					<< "- " << NELINE \
 					<< "" << NELINE
 				}
 			}

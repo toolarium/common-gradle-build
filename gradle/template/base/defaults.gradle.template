@@ -52,7 +52,7 @@ setCommonGradleProperty("licenseFile", "$commonGradleBuildHome/$licenseFilename"
 //setCommonGradleProperty("includeLicenseFile", true)
 
 //setCommonGradleProperty("createChangelogFile", false)
-//setCommonGradleProperty("includeChangelogFile", false)
+//setCommonGradleProperty("includeChangelogFile", true)
 
 
 /***************************************************************************************
@@ -168,7 +168,9 @@ setCommonGradleProperty("projectIndividualCheckstyleConfiguration", false)
 /***************************************************************************************
  * quarkus plugin version
  ***************************************************************************************/
-//setCommonGradleProperty("quarkusPluginVersion", '1.10.5.Final')
+//setCommonGradleProperty("defaultQuarkusPluginVersion", '1.13.4.Final')
+//setCommonGradleProperty("quarkusPluginVersion", "${defaultQuarkusPluginVersion}")
+
 
 // readiness and liveness
 //setCommonGradleProperty("kubernetesReadinessFailureThreshold", 3)

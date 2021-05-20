@@ -62,6 +62,78 @@ project.ext.set("useJUnit", false)
 
 
 /***************************************************************************************
+ * Validate the quarkus version
+ ***************************************************************************************/
+ext.validateQuarkusVersion = { ->
+
+	Properties versionInformation = new Properties();
+	try {
+		def quarkusVersionList = "$commonGradleBuildCache/quarkus-versions.properties";
+		def loadVersionList = false
+		if (!new File(quarkusVersionList).canRead()) {
+			loadVersionList = true
+		} else {
+			def lastCheckTimeout = project.getProperty('commonGradleBuildCacheLastCheckTimeout')
+			def lastCheck = new File(quarkusVersionList).lastModified()
+			def timeout = new Date().getTime() - lastCheck
+			if ((lastCheck == null) || (lastCheckTimeout==null) || (timeout > lastCheckTimeout)) {
+				loadVersionList = true
+			}
+		}
+		
+		if (loadVersionList) {
+			def releases = readGithubReleases("https://api.github.com/repos/quarkusio/quarkus/releases");
+			releases.findAll{ "false".equalsIgnoreCase(it.prerelease.toString()) }.findAll{ 
+					def versionStr = it.name.toString();
+					if (versionStr!=null) {
+						try {
+							def releaseVersion = parseReleaseVersion(versionStr)
+							def mainVersion = "" + releaseVersion.getMajorNumber() + "." + releaseVersion.getMinorNumber();
+							def newestVersion = versionInformation.getProperty(mainVersion)
+							if (newestVersion == null || newestVersion.isBlank()) {
+								versionInformation.setProperty(mainVersion, versionStr)
+							}
+						} catch (Exception e) {
+							printWarn("Could not parse version " + versionStr + ": " + e.getMessage())
+						} 	
+					}
+				}
+
+			OutputStream stream = new FileOutputStream(quarkusVersionList);
+			versionInformation.store(stream, "quarkus version list")
+			stream.close()
+		} else {
+			versionInformation = readPropertiesFile(quarkusVersionList)
+		}
+
+		def currentVersion = parseReleaseVersion(quarkusPluginVersion);
+		if (currentVersion!=null) {
+			if (project.hasProperty('defaultQuarkusPluginVersion')) {
+				def minDefaultVersion = parseReleaseVersion(defaultQuarkusPluginVersion);
+				if (currentVersion.compareTo(minDefaultVersion) < 0) {
+					addError("Current quarkus version " + quarkusPluginVersion + " has to be updated to " + defaultQuarkusPluginVersion + "!")
+				} else {
+					logInfo("Current quarkus version " + quarkusPluginVersion + " is compliant with " + defaultQuarkusPluginVersion + ".")
+				}
+			}
+			
+			def newestVersion = versionInformation.getProperty("" + currentVersion.getMajorNumber() + "." + currentVersion.getMinorNumber());
+			def newestQuarkusVersion = parseReleaseVersion(newestVersion);
+			if (currentVersion.compareTo(newestQuarkusVersion) < 0) {
+				printWarn("There is a newer version quarkus version available " + colorize(HIGHLITE_LEVEL, newestVersion)  + colorize(WARN_LEVEL, ", current: $quarkusPluginVersion!"))
+			} else {
+				logInfo("Current quarkus version " + quarkusPluginVersion + " is up-to-date.")
+			}
+		}
+	} catch (Exception e) {
+		printWarn("Could not check quarlus version: " + e.getMessage())
+	}
+	
+	return versionInformation;
+}
+
+
+/***************************************************************************************
  * Depending on java-library
  ***************************************************************************************/
 apply from: "${commonGradleBuildUrl}/java-library.gradle"
@@ -153,6 +225,9 @@ projectValidation {
 	if (project.getProperty('IS_NEW')) {
 		gradle.startParameter.excludedTaskNames += "build"
 	}
+
+	// validate the quarkus version
+	validateQuarkusVersion()
 
 	doLast {
 		if (project.getProperty('IS_NEW')) {

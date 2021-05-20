@@ -85,7 +85,7 @@ apply from: "${commonGradleBuildElementPath}/base/project-report.gradle"
 apply from: "${commonGradleBuildElementPath}/base/exec.gradle"
 apply from: "${commonGradleBuildElementPath}/base/release.gradle"
 apply from: "${commonGradleBuildElementPath}/scm/git.gradle"
-//apply from: "${commonGradleBuildElementPath}/scm/changelog.gradle"
+apply from: "${commonGradleBuildElementPath}/scm/changelog.gradle"
 
 
 /***************************************************************************************
