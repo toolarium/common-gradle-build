@@ -19,11 +19,6 @@
  * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
  */
  
-def openapiPluginVersion="5.0.0"
-if (project.hasProperty('openapiPluginVersion')) {
-	openapiPluginVersion = project.getProperty('openapiPluginVersion')
-}
-
 buildscript {
 	repositories {
 		maven { url "https://repo1.maven.org/maven2" }
@@ -34,6 +29,7 @@ buildscript {
 			openapiPluginVersion = project.getProperty('openapiPluginVersion')
 		}
  
+ 	    //logInfo("openapi plugin version: ${openapiPluginVersion}")	
 		classpath "org.openapitools:openapi-generator-gradle-plugin:" + openapiPluginVersion
 	}
 }

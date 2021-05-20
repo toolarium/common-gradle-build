@@ -18,13 +18,20 @@
  * You should have received a copy of the GNU General Public License
  * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
  */
+ 
 buildscript {
 	repositories {
 		jcenter()
 		//maven { url("https://oss.sonatype.org/content/repositories/snapshots") }
 	}
 	dependencies {
-		classpath "com.github.toolarium:toolarium-enum-configuration:0.9.8"
+		def toolariumEnumConfigurationVersion="0.9.8"
+		if (project.hasProperty('toolariumEnumConfigurationVersion')) {
+			toolariumEnumConfigurationVersion = project.getProperty('toolariumEnumConfigurationVersion')
+		}
+
+		logInfo("toolarium enum-configuration version: ${toolariumEnumConfigurationVersion}")	
+		classpath "com.github.toolarium:toolarium-enum-configuration:${toolariumEnumConfigurationVersion}"
 	}
 }
 

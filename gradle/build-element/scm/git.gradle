@@ -23,12 +23,19 @@
 addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/.git")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.gitattributes")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.gitignore")
+
 buildscript {
 	repositories {
 		jcenter()
 	}
 	dependencies {
-		classpath 'org.ajoberstar.grgit:grgit-core:4.0.2'
+		def grgitCoreVersion="4.0.2"
+		if (project.hasProperty('grgitCoreVersion')) {
+			grgitCoreVersion = project.getProperty('grgitCoreVersion')
+		}
+	
+		logInfo("grgit core version: ${grgitCoreVersion}")	
+		classpath "org.ajoberstar.grgit:grgit-core:${grgitCoreVersion}"
 	}
 }
 

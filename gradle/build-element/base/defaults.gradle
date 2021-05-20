@@ -30,6 +30,8 @@ if ("windows" == getOsName()) {
 	setCommonGradleDefaultPropertyIfNull("userHomeDirectory", '~/')
 }
 
+setCommonGradleDefaultPropertyIfNull("snakeYamlVersion", "1.27")
+setCommonGradleDefaultPropertyIfNull("grgitCoreVersion", "4.0.2")
 setCommonGradleDefaultPropertyIfNull("gradleWrapperDefaultVersion", "6.7")
 setCommonGradleDefaultPropertyIfNull("gradleHome", "$userHomeDirectory/.gradle")
 setCommonGradleDefaultPropertyIfNull("gradleHomePropertiesFile", "$gradleHome/gradle.properties")
@@ -229,6 +231,12 @@ setCommonGradleDefaultPropertyIfNull("compileJavaHome", "")
 setCommonGradleDefaultPropertyIfNull("hasToolariumEnumConfiguration", true)
 setCommonGradleDefaultPropertyIfNull("toolariumEnumConfigurationVersion", "0.9.8") // in kubernetes-product.gradle there is an additional dependency
 
+/***************************************************************************************
+ * toolarium changelog parser support
+ ***************************************************************************************/
+setCommonGradleDefaultPropertyIfNull("toolariumChangelogParserVersion", "0.8.1")
+
+
 
 /***************************************************************************************
  * repository settings
@@ -348,7 +356,7 @@ setCommonGradleDefaultPropertyIfNull("nodeRegistry", "https://registry.npmjs.org
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("srcMainApiSpecDirectoryName", "api-spec")
 setCommonGradleDefaultPropertyIfNull("srcMainApiSpecDirectory", "${srcMainDirectory}/${srcMainApiSpecDirectoryName}")
-setCommonGradleDefaultPropertyIfNull("openapiPluginVersion", '5.0.0')
+setCommonGradleDefaultPropertyIfNull("openapiPluginVersion", "5.0.0")
 //setCommonGradleDefaultPropertyIfNull("openapiLibrary", 'okhttp-gson')
 //setCommonGradleDefaultPropertyIfNull("openapiGeneratorName", 'java')
 setCommonGradleDefaultPropertyIfNull("openapiGeneratorName", 'jaxrs-spec')
