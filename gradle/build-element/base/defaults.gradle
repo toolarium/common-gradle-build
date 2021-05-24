@@ -105,11 +105,25 @@ setCommonGradleDefaultPropertyIfNull("editorConfigFilename", ".editorconfig")
 setCommonGradleDefaultPropertyIfNull("editorConfigFile", "$rootDirectory/$editorConfigFilename")
 setCommonGradleDefaultPropertyIfNull("javaVersionConfigFilename", ".java-version")
 setCommonGradleDefaultPropertyIfNull("javaVersionConfigFile", "$rootDirectory/$javaVersionConfigFilename")
+setCommonGradleDefaultPropertyIfNull("includeGeneratedMetaInfFiles", true)
 setCommonGradleDefaultPropertyIfNull("includeLicenseFile", true)
 setCommonGradleDefaultPropertyIfNull("includeVersionFile", true)
-setCommonGradleDefaultPropertyIfNull("createChangelogFile", false)
 setCommonGradleDefaultPropertyIfNull("includeChangelogFile", true)
-setCommonGradleDefaultPropertyIfNull("includeGeneratedMetaInfFiles", true)
+setCommonGradleDefaultPropertyIfNull("createChangelogFile", true)
+setCommonGradleDefaultPropertyIfNull("validateChangelogFile", true)
+setCommonGradleDefaultPropertyIfNull("changelogDescription", "" + NELINE
+															 + "All notable changes to this project will be documented in this file." + NELINE
+															 + "" + NELINE
+															 + "The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)," + NELINE
+															 + "and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).")
+setCommonGradleDefaultPropertyIfNull("changelogHeaderSeparator", '-');
+setCommonGradleDefaultPropertyIfNull("changelogItemSeparator", '-');
+setCommonGradleDefaultPropertyIfNull("changelogSupportUnreleased", true);
+setCommonGradleDefaultPropertyIfNull("changelogSupportBracketsAroundVersion", true);
+setCommonGradleDefaultPropertyIfNull("changelogSupportReleaseLink", true);
+setCommonGradleDefaultPropertyIfNull("changelogSupportReleaseInfo", true);
+setCommonGradleDefaultPropertyIfNull("changelogSupportLinkInDescription", true);
+setCommonGradleDefaultPropertyIfNull("changelogSupportIdListOnEndOfTheComment", true);
 
 // defines artecfacts to create
 setCommonGradleDefaultPropertyIfNull("createJar", true)
@@ -234,8 +248,7 @@ setCommonGradleDefaultPropertyIfNull("toolariumEnumConfigurationVersion", "0.9.8
 /***************************************************************************************
  * toolarium changelog parser support
  ***************************************************************************************/
-setCommonGradleDefaultPropertyIfNull("toolariumChangelogParserVersion", "0.8.1")
-
+setCommonGradleDefaultPropertyIfNull("toolariumChangelogParserVersion", "0.8.3")
 
 
 /***************************************************************************************
