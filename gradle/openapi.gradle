@@ -18,8 +18,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
  */
-
-def openapiPluginVersion="5.0.0"
+def openapiPluginVersion="5.1.1"
 if (project.hasProperty('openapiPluginVersion')) {
 	openapiPluginVersion = project.getProperty('openapiPluginVersion')
 }
@@ -29,7 +28,7 @@ buildscript {
 		maven { url "https://repo1.maven.org/maven2" }
 	}
 	dependencies {
-		def openapiPluginVersion="5.0.0"
+		def openapiPluginVersion="5.1.1"
 		if (project.hasProperty('openapiPluginVersion')) {
 			openapiPluginVersion = project.getProperty('openapiPluginVersion')
 		}
@@ -268,7 +267,7 @@ task openApiProcess {
 							sourceSets.main.java.srcDirs += "${outPath}/src/gen/java/"
 							logInfo("Set source set to " + colorize(HIGHLITE_LEVEL, sourceSets.main.java.srcDirs))
 						}
-							
+
 						compileJava.dependsOn createOpenApi
 						
 					}

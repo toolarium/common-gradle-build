@@ -369,7 +369,7 @@ setCommonGradleDefaultPropertyIfNull("nodeRegistry", "https://registry.npmjs.org
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("srcMainApiSpecDirectoryName", "api-spec")
 setCommonGradleDefaultPropertyIfNull("srcMainApiSpecDirectory", "${srcMainDirectory}/${srcMainApiSpecDirectoryName}")
-setCommonGradleDefaultPropertyIfNull("openapiPluginVersion", "5.0.0")
+setCommonGradleDefaultPropertyIfNull("openapiPluginVersion", "5.1.1")
 //setCommonGradleDefaultPropertyIfNull("openapiLibrary", 'okhttp-gson')
 //setCommonGradleDefaultPropertyIfNull("openapiGeneratorName", 'java')
 setCommonGradleDefaultPropertyIfNull("openapiGeneratorName", 'jaxrs-spec')
