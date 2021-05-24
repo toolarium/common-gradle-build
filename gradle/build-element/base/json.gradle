@@ -30,7 +30,7 @@ buildscript {
 			snakeYamlVersion = project.getProperty('snakeYamlVersion')
 		}
 
-	    logInfo("snale yaml version: ${snakeYamlVersion}")	
+		logInfo("snale yaml version: " + colorize(HIGHLITE_LEVEL, snakeYamlVersion) + colorize(INFO_LEVEL, ".")); 
 		classpath "org.yaml:snakeyaml:${snakeYamlVersion}"
 	}
 }

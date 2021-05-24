@@ -34,7 +34,7 @@ buildscript {
 			grgitCoreVersion = project.getProperty('grgitCoreVersion')
 		}
 	
-		logInfo("grgit core version: ${grgitCoreVersion}")	
+		logInfo("grgit core version: " + colorize(HIGHLITE_LEVEL, grgitCoreVersion) + colorize(INFO_LEVEL, ".")); 
 		classpath "org.ajoberstar.grgit:grgit-core:${grgitCoreVersion}"
 	}
 }

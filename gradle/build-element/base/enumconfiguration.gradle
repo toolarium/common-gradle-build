@@ -30,7 +30,7 @@ buildscript {
 			toolariumEnumConfigurationVersion = project.getProperty('toolariumEnumConfigurationVersion')
 		}
 
-		logInfo("toolarium enum-configuration version: ${toolariumEnumConfigurationVersion}")	
+		logInfo("toolarium enum-configuration version: " + colorize(HIGHLITE_LEVEL, toolariumEnumConfigurationVersion) + colorize(INFO_LEVEL, ".")); 
 		classpath "com.github.toolarium:toolarium-enum-configuration:${toolariumEnumConfigurationVersion}"
 	}
 }

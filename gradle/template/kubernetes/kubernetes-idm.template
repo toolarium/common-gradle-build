@@ -100,31 +100,31 @@ spec:
         - mountPath: /etc/secret
           name: idm-credentials
           readOnly: true
+        readinessProbe:
+          failureThreshold: @@KUBERNETES_IDM_READINESS_FAILURE_THRESHOLD@@
+          httpGet:
+            path: "@@KUBERNETES_IDM_READINESS_CHECK_PATH@@"
+            port: @@DOCKER_EXPOSE_PORT@@
+            scheme: "@@KUBERNETES_IDM_READINESS_SCHEME@@"
+          initialDelaySeconds: @@KUBERNETES_IDM_READINESS_INITIAL_DELAY_SECONDS@@
+          periodSeconds: @@KUBERNETES_IDM_READINESS_PERIOD_SECONDS@@
+          successThreshold: @@KUBERNETES_IDM_READINESS_SUCCESS_THRESHOLD@@
+          timeoutSeconds: @@KUBERNETES_IDM_READINESS_TIMEOUT_SECONDS@@
+        livenessProbe:
+          failureThreshold: @@KUBERNETES_IDM_LIVENESS_FAILURE_THRESHOLD@@
+          httpGet:
+            path: "@@KUBERNETES_IDM_LIVENESS_CHECK_PATH@@"
+            port: @@DOCKER_EXPOSE_PORT@@
+            scheme: "@@KUBERNETES_IDM_LIVENESS_SCHEME@@"
+          initialDelaySeconds: @@KUBERNETES_IDM_LIVENESS_INITIAL_DELAY_SECONDS@@
+          periodSeconds: @@KUBERNETES_IDM_LIVENESS_PERIOD_SECONDS@@
+          successThreshold: @@KUBERNETES_IDM_LIVENESS_SUCCESS_THRESHOLD@@
+          timeoutSeconds: @@KUBERNETES_IDM_LIVENESS_TIMEOUT_SECONDS@@
       restartPolicy: Always
       volumes:
         - name: idm-credentials
           secret:
             secretName: @@KUBERNETES_IDM_SECRET_NAME@@
-      readinessProbe:
-        failureThreshold: @@KUBERNETES_IDM_READINESS_FAILURE_THRESHOLD@@
-        httpGet:
-          path: "@@KUBERNETES_IDM_READINESS_CHECK_PATH@@"
-          port: @@DOCKER_EXPOSE_PORT@@
-          scheme: "@@KUBERNETES_IDM_READINESS_SCHEME@@"
-        initialDelaySeconds: @@KUBERNETES_IDM_READINESS_INITIAL_DELAY_SECONDS@@
-        periodSeconds: @@KUBERNETES_IDM_READINESS_PERIOD_SECONDS@@
-        successThreshold: @@KUBERNETES_IDM_READINESS_SUCCESS_THRESHOLD@@
-        timeoutSeconds: @@KUBERNETES_IDM_READINESS_TIMEOUT_SECONDS@@
-      livenessProbe:
-        failureThreshold:: @@KUBERNETES_IDM_LIVENESS_FAILURE_THRESHOLD@@
-        httpGet:
-          path: "@@KUBERNETES_IDM_LIVENESS_CHECK_PATH@@"
-          port: @@DOCKER_EXPOSE_PORT@@
-          scheme: "@@KUBERNETES_IDM_LIVENESS_SCHEME@@"
-        initialDelaySeconds: @@KUBERNETES_IDM_LIVENESS_INITIAL_DELAY_SECONDS@@
-        periodSeconds: @@KUBERNETES_IDM_LIVENESS_PERIOD_SECONDS@@
-        successThreshold: @@KUBERNETES_IDM_LIVENESS_SUCCESS_THRESHOLD@@
-        timeoutSeconds: @@KUBERNETES_IDM_LIVENESS_TIMEOUT_SECONDS@@
 ---
 apiVersion: v1
 kind: Service

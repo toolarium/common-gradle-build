@@ -806,7 +806,7 @@ setCommonGradleDefaultPropertyIfNull("commonGradleJexcelapiModelGeneratorVersion
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("commonGradleSlf4jApiVersion", "1.7.30")
 setCommonGradleDefaultPropertyIfNull("commonGradleLogbackVersion", "1.2.3")
-setCommonGradleDefaultPropertyIfNull("commonGradleJptoolsVersion", "1.7.6")
+setCommonGradleDefaultPropertyIfNull("commonGradleJptoolsVersion", "1.7.7")
 setCommonGradleDefaultPropertyIfNull("commonGradleJavaxValidtionVersion", "2.0.1.Final")
 setCommonGradleDefaultPropertyIfNull("commonGradleJavaxWsRSApiVersion", "2.1.1")
 setCommonGradleDefaultPropertyIfNull("commonGradleJacksonAnnotationVersion", "2.11.2")
