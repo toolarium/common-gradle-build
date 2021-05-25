@@ -118,9 +118,7 @@ ext.validateChangelog = { inputChangelogConfig = null ->
  * Project validation
  ***************************************************************************************/
 projectValidation {
-	doLast {
-		if (new File(changelogFile).exists() && (project.hasProperty('validateChangelogFile') && project.getProperty('validateChangelogFile'))) {
-			validateChangelog()
-		}
+	if (new File(changelogFile).exists() && (project.hasProperty('validateChangelogFile') && project.getProperty('validateChangelogFile'))) {
+		validateChangelog()
 	}
 }
