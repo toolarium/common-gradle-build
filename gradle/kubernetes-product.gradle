@@ -19,6 +19,8 @@
  * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
  */
 ext.projectTypeTemplatePath='kubernetes'
+ext.includeApplicationInformation=false
+
 if (!project.hasProperty('commonGradleBuildUrl')) {
     ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
 }

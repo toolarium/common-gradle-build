@@ -278,7 +278,9 @@ task kubernetesJar(type: Jar, dependsOn: ['kubernetesConfiguration', 'prepareToo
 	}
 
 	into "application-information", {
-		from "$kubernetesApplicationInformationPath"
+		if (project.getProperty('includeApplicationInformation')) {
+			from "$kubernetesApplicationInformationPath"
+		}
 	}
 
 	// include readme, license and version files

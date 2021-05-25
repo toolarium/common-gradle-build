@@ -348,7 +348,7 @@ setCommonGradleDefaultPropertyIfNull("jacocoReportPath", "${buildDir}/reports/te
  ***************************************************************************************/
 //setCommonGradleDefaultPropertyIfNull("defaultQuarkusPluginVersion", '1.13.4.Final')
 //setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", "${defaultQuarkusPluginVersion}")
-setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", '1.13.4.Final')
+setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", '1.11.7.Final')
 setCommonGradleDefaultPropertyIfNull("quarkusPlatformArtifactId", 'quarkus-universe-bom')
 setCommonGradleDefaultPropertyIfNull("quarkusPlatformGroupId", 'io.quarkus')
 setCommonGradleDefaultPropertyIfNull("quarkusPlatformVersion", "${quarkusPluginVersion}")
@@ -580,9 +580,9 @@ setCommonGradleDefaultPropertyIfNull("kubernetesConfigurationElementsPath", "${k
 
 setCommonGradleDefaultPropertyIfNull("kubernetesApplicationConfigurationInformationPathname", "application-information")
 setCommonGradleDefaultPropertyIfNull("kubernetesApplicationInformationPath", "$gradleBuildDirectory/${kubernetesApplicationConfigurationInformationPathname}")
-
 setCommonGradleDefaultPropertyIfNull("kubernetesApplicationServicePathname", "quarkus")
 setCommonGradleDefaultPropertyIfNull("kubernetesApplicationServicePath", "$kubernetesApplicationInformationPath/${kubernetesApplicationServicePathname}")
+setCommonGradleDefaultPropertyIfNull("includeApplicationInformation", true)
 setCommonGradleDefaultPropertyIfNull("kubernetesEnumConfigurationPathname", "toolarium-enum-configuration")
 setCommonGradleDefaultPropertyIfNull("kubernetesEnumConfigurationFilename", "${kubernetesEnumConfigurationPathname}.json")
 setCommonGradleDefaultPropertyIfNull("kubernetesEnumConfigurationToInitialize", "${kubernetesEnumConfigurationPathname}-to-initialize.json")
