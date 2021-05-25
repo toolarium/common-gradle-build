@@ -110,7 +110,9 @@ ext.createEnumConfigurationIndex = { inputPath, indexFilename ->
 ext.createEnumConfigurationMandatoryWithMissingDefaultValue = { inputPath, fileName ->
 	// prepare mandatory configuration without default values
 
-	new File(inputPath).mkdirs()
+	if (!new File(inputPath).exists()) {
+		return;
+	}
 	
 	def enumConfigurationMandatoryWithMissingDefaultValueFile = new File(fileName)
 	logInfo("> Create enum configuration " + colorize(HIGHLITE_LEVEL, "${fileName}".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")
@@ -175,30 +177,31 @@ task prepareEnumConfigurationIndex() {
 	doLast {
 		def toInitializeTempFile=getUniqueTempName("${rootProject.name}", "${kubernetesEnumConfigurationToInitialize}", null)
 		new File("$kubernetesApplicationInformationPath").mkdirs()
-		new File("$kubernetesApplicationInformationPath/${kubernetesEnumConfigurationPathname}").mkdirs()
 		
-		createEnumConfigurationMandatoryWithMissingDefaultValue("$kubernetesApplicationInformationPath/${kubernetesEnumConfigurationPathname}", toInitializeTempFile)
+		if (new File("$kubernetesApplicationInformationPath/${kubernetesEnumConfigurationPathname}").exists()) {
+			createEnumConfigurationMandatoryWithMissingDefaultValue("$kubernetesApplicationInformationPath/${kubernetesEnumConfigurationPathname}", toInitializeTempFile)
 
-		def mappingTempFile=getUniqueTempName("${rootProject.name}", "${kubernetesEnumConfigurationMapping}", null)
-		createEnumConfigurationIndex("$kubernetesApplicationInformationPath/${kubernetesEnumConfigurationPathname}", mappingTempFile)
+			def mappingTempFile=getUniqueTempName("${rootProject.name}", "${kubernetesEnumConfigurationMapping}", null)
+			createEnumConfigurationIndex("$kubernetesApplicationInformationPath/${kubernetesEnumConfigurationPathname}", mappingTempFile)
 
-		copyFile(toInitializeTempFile, "$kubernetesApplicationInformationPath/$kubernetesEnumConfigurationPathname/${kubernetesEnumConfigurationToInitialize}", true)
+			copyFile(toInitializeTempFile, "$kubernetesApplicationInformationPath/$kubernetesEnumConfigurationPathname/${kubernetesEnumConfigurationToInitialize}", true)
 
-		String mappingFileContent = new File(mappingTempFile).text
-		int idx = mappingFileContent.lastIndexOf('}')
-		if (idx>=0) {
-			mappingFileContent = mappingFileContent.substring(0, idx - 1)
-			mappingFileContent += "," + NELINE
+			String mappingFileContent = new File(mappingTempFile).text
+			int idx = mappingFileContent.lastIndexOf('}')
+			if (idx>=0) {
+				mappingFileContent = mappingFileContent.substring(0, idx - 1)
+				mappingFileContent += "," + NELINE
+				
+				mappingFileContent += startJsonElement(1, 'to-initialize', true)
+				mappingFileContent += createJsonKeyValueElement(3, "reference", kubernetesEnumConfigurationToInitialize.toString().replace(".json", "")) + NELINE
+				mappingFileContent += endJsonElement(1, true) + NELINE
+				mappingFileContent += endJsonElement()
+				new File(mappingTempFile).write(mappingFileContent)
+			}
 			
-			mappingFileContent += startJsonElement(1, 'to-initialize', true)
-			mappingFileContent += createJsonKeyValueElement(3, "reference", kubernetesEnumConfigurationToInitialize.toString().replace(".json", "")) + NELINE
-			mappingFileContent += endJsonElement(1, true) + NELINE
-			mappingFileContent += endJsonElement()
-			new File(mappingTempFile).write(mappingFileContent)
+			delete toInitializeTempFile
+			copyFile(mappingTempFile, "$kubernetesApplicationInformationPath/$kubernetesEnumConfigurationPathname/${kubernetesEnumConfigurationMapping}", true)
+			delete mappingTempFile
 		}
-		
-		delete toInitializeTempFile
-		copyFile(mappingTempFile, "$kubernetesApplicationInformationPath/$kubernetesEnumConfigurationPathname/${kubernetesEnumConfigurationMapping}", true)
-		delete mappingTempFile
 	}
 }

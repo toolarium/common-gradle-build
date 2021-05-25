@@ -200,10 +200,10 @@ prepareToolariumEnumConfiguration.dependsOn(collectEnumConfiguration)
  ***************************************************************************************/
 prepareApplicationConfiguration {
 	doLast {
-		new File("$kubernetesApplicationConfigurationInformationPath").mkdirs()
-		new File("$kubernetesApplicationConfigurationPath").mkdirs()
+		new File("$kubernetesApplicationInformationPath").mkdirs()
+		new File("$kubernetesApplicationServicePath").mkdirs()
 		Properties prop = readApplicationPropertiesFile();
-		OutputStream stream = new FileOutputStream("$kubernetesApplicationConfigurationPath/${rootProject.name}.properties");
+		OutputStream stream = new FileOutputStream("$kubernetesApplicationServicePath/${rootProject.name}.properties");
 		prop.store(stream, "quarkus production application.properties")
 		stream.close()
 	}

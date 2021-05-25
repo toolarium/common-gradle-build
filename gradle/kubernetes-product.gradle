@@ -173,7 +173,7 @@ ext.createContainerImageFileList = { fileContent ->
  * Create a service information overview
  ****************************************************************************************/
 ext.createProductServiceInfo = { serviceMap ->
-	new File("$kubernetesApplicationConfigurationInformationPath").mkdirs()
+	new File("$kubernetesApplicationInformationPath").mkdirs()
 
 	def productServicesFilePath = new File("$kubernetesApplicationInformationPath/" + kubernetesProductServicesPathname)
 	productServicesFilePath.mkdir()
@@ -225,7 +225,7 @@ ext.createProductServiceInfo = { serviceMap ->
  ****************************************************************************************/
 ext.createJsonServiceInfo = { urlMap, serviceMap, serviceNamespace, serviceName, imageName, servicePort, servicePathExternal, servicePathInternal, startupPath, readinessPath, livenessPath, labelsList, annotationsList ->
 
-	new File("$kubernetesApplicationConfigurationInformationPath").mkdirs()
+	new File("$kubernetesApplicationInformationPath").mkdirs()
 	def productServicesFilePath = new File("$kubernetesApplicationInformationPath/" + kubernetesProductServicesPathname)
 	productServicesFilePath.mkdir()
 	def productInfoFile = new File("$productServicesFilePath/${serviceName}.json")
@@ -276,7 +276,7 @@ ext.createJsonServiceInfo = { urlMap, serviceMap, serviceNamespace, serviceName,
  * Create the application information overview
  ****************************************************************************************/
 ext.createApplicationInformationIndex = { ->
-	new File("$kubernetesApplicationConfigurationInformationPath").mkdirs()
+	new File("$kubernetesApplicationInformationPath").mkdirs()
 
 	def applicationInformationFilePath = new File("$kubernetesApplicationInformationPath")
 	applicationInformationFilePath.mkdir()
@@ -287,16 +287,22 @@ ext.createApplicationInformationIndex = { ->
 	
 	applicationInformationIndexFile.append(createJsonKeyValueElement(3, "reference", kubernetesProductServicesPathname))
 	applicationInformationIndexFile.append(NELINE)
+	
+	if (new File(kubernetesEnumConfigurationPath).exists()) {
 	applicationInformationIndexFile.append(endJsonElement(2))
-	applicationInformationIndexFile.append(',' + NELINE)
-	applicationInformationIndexFile.append(startJsonElement(2))
-	applicationInformationIndexFile.append(createJsonKeyValueElement(3, "reference", kubernetesEnumConfigurationPathname))
-	applicationInformationIndexFile.append(NELINE)
-	applicationInformationIndexFile.append(endJsonElement(2))
-	applicationInformationIndexFile.append(',' + NELINE)
-	applicationInformationIndexFile.append(startJsonElement(2))
-	applicationInformationIndexFile.append(createJsonKeyValueElement(3, "reference", kubernetesApplicationConfigurationPathname))
-	applicationInformationIndexFile.append(NELINE)
+		applicationInformationIndexFile.append(',' + NELINE)
+		applicationInformationIndexFile.append(startJsonElement(2))
+		applicationInformationIndexFile.append(createJsonKeyValueElement(3, "reference", kubernetesEnumConfigurationPathname))
+		applicationInformationIndexFile.append(NELINE)
+	}
+	
+	if (new File(kubernetesApplicationServicePath).exists()) {
+		applicationInformationIndexFile.append(endJsonElement(2))
+		applicationInformationIndexFile.append(',' + NELINE)
+		applicationInformationIndexFile.append(startJsonElement(2))
+		applicationInformationIndexFile.append(createJsonKeyValueElement(3, "reference", kubernetesApplicationServicePathname))
+		applicationInformationIndexFile.append(NELINE)
+	}
 	
 	applicationInformationIndexFile.append(endJsonElement(1, true) + NELINE)
 	applicationInformationIndexFile.append(endJsonElement())
@@ -307,11 +313,12 @@ ext.createApplicationInformationIndex = { ->
  * Create a service properties overview
  ****************************************************************************************/
 ext.createApplicationInformationServiceIndex = { ->
-	new File("$kubernetesApplicationConfigurationInformationPath").mkdirs()
+	new File("$kubernetesApplicationInformationPath").mkdirs()
 
 	def applicationInformationQuarkusFilePath = new File("$kubernetesApplicationInformationPath/quarkus")
-	applicationInformationQuarkusFilePath.mkdir()
-	
+	if(!applicationInformationQuarkusFilePath.exists() || !applicationInformationQuarkusFilePath.isDirectory()) { 
+		return;
+	}
 	
 	def applicationInformationQuarkusIndexFile = new File("$applicationInformationQuarkusFilePath/index.json")
 	logInfo("> Create application information service index...")
@@ -702,12 +709,12 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 			// create product service information
 			createProductServiceInfo(serviceMap)
 		}
+	
+		// create application information service index
+		createApplicationInformationServiceIndex()
 
 		// create application information index
 		createApplicationInformationIndex()
-		
-		// create application information service index
-		createApplicationInformationServiceIndex()
 
 		// append the controller content 
 		fileContent.append("---" + NELINE)
