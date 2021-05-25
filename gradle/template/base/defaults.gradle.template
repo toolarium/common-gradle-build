@@ -284,6 +284,7 @@ setCommonGradleProperty("projectIndividualCheckstyleConfiguration", false)
 //setCommonGradleProperty("kubernetesControllerImage", "networking.k8s.io/v1beta1")
 //setCommonGradleProperty("kubernetesIngressNginxVersion", "0.43.0") // see https://github.com/kubernetes/ingress-nginx
 //setCommonGradleProperty("kubernetesIngressProxyBodySize", "10m")
+
 //setCommonGradleProperty("kubernetesApplicationOIDCClientId", "services")
 //setCommonGradleProperty("kubernetesApplicationOIDCPublicKey", "")
 
@@ -299,7 +300,7 @@ setCommonGradleProperty("projectIndividualCheckstyleConfiguration", false)
 //setCommonGradleProperty("kubernetesDatabaseStorage", "100Mi")
  
 //setCommonGradleProperty("kubernetesSupportIdm", true)
-//setCommonGradleProperty("kubernetesIdmImageVersion", "11.0.2")
+//setCommonGradleProperty("kubernetesIdmImageVersion", "12.0.2")
 //setCommonGradleProperty("kubernetesIdmFrontendUrl", "http://app-${projectGroupId}.local/auth")
 //setCommonGradleProperty("kubernetesIdmPort", "8080")
 //setCommonGradleProperty("kubernetesIdmDatabase", "${kubernetesDatabaseName}_idm")
