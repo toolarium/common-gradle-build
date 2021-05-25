@@ -294,6 +294,7 @@ ext.projectInitialisation = { ->
 
 		if (createChangelogFile) {
 			logInfo("Write file " + colorize(HIGHLITE_LEVEL, changelogFile) + colorize(INFO_LEVEL ,"..."))
+			readVersion()
 			if (!createFileFromTemplate(changelogFile, getTemplateFile('CHANGELOG.template'))) {
 				printInfo("> Create " + colorize(HIGHLITE_LEVEL, changelogFile) + " with default values.")
 				new File(changelogFile).withWriter { w ->
