@@ -106,23 +106,41 @@ ext.validateQuarkusVersion = { ->
 			versionInformation = readPropertiesFile(quarkusVersionList)
 		}
 
-		def currentVersion = parseReleaseVersion(quarkusPluginVersion);
+		def currentVersion = parseReleaseVersion(quarkusPluginVersion);		
 		if (currentVersion!=null) {
+			def verifyNewestVersion = false;
 			if (project.hasProperty('defaultQuarkusPluginVersion')) {
 				def minDefaultVersion = parseReleaseVersion(defaultQuarkusPluginVersion);
 				if (currentVersion.compareTo(minDefaultVersion) < 0) {
-					addError("Current quarkus version " + quarkusPluginVersion + " has to be updated to " + defaultQuarkusPluginVersion + "!")
+					def quarkusWarningMessage = "Current quarkus version " + quarkusPluginVersion + " has to be updated to " + defaultQuarkusPluginVersion + ".";
+					try {		
+						copyFile(gradlePropertiesFile, gradlePropertiesFile + ".bak")
+						File backFile = new File(gradlePropertiesFile + ".bak");
+						new File(gradlePropertiesFile).withWriter { w ->
+							backFile.eachLine { line ->
+								w << line.replaceAll(quarkusPluginVersion, defaultQuarkusPluginVersion) + NELINE
+							}
+						}					
+						quarkusWarningMessage += "The file " + gradlePropertiesFile + " is already modified, please verify!"
+					} catch (Exception e) {
+						printWarn("Could not update ${gradlePropertiesFile}:" + e.getMessage())
+					}
+					
+					addError(quarkusWarningMessage)
 				} else {
+					verifyNewestVersion = true
 					logInfo("Current quarkus version " + quarkusPluginVersion + " is compliant with " + defaultQuarkusPluginVersion + ".")
 				}
 			}
 			
-			def newestVersion = versionInformation.getProperty("" + currentVersion.getMajorNumber() + "." + currentVersion.getMinorNumber());
-			def newestQuarkusVersion = parseReleaseVersion(newestVersion);
-			if (currentVersion.compareTo(newestQuarkusVersion) < 0) {
-				printWarn("There is a newer version quarkus version available " + colorize(HIGHLITE_LEVEL, newestVersion)  + colorize(WARN_LEVEL, ", current: $quarkusPluginVersion!"))
-			} else {
-				logInfo("Current quarkus version " + quarkusPluginVersion + " is up-to-date.")
+			if (verifyNewestVersion) {
+				def newestVersion = versionInformation.getProperty("" + currentVersion.getMajorNumber() + "." + currentVersion.getMinorNumber());
+				def newestQuarkusVersion = parseReleaseVersion(newestVersion);
+				if (currentVersion.compareTo(newestQuarkusVersion) < 0) {
+					printWarn("There is a newer quarkus version available " + colorize(HIGHLITE_LEVEL, newestVersion)  + colorize(WARN_LEVEL, ", current: $quarkusPluginVersion!"))
+				} else {
+					logInfo("Current quarkus version " + quarkusPluginVersion + " is up-to-date.")
+				}
 			}
 		}
 	} catch (Exception e) {
