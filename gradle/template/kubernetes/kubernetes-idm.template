@@ -3,6 +3,22 @@
 # @@LICENSE@@
 #
 
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app.@@KUBERNETES_LABEL_ID@@.configmap: keycloak-cache-config
+  name: keycloak-cache-config
+  namespace: @@KUBERNETES_NAMESPACE@@
+data:
+  configure-cache.cli: |
+    embed-server --server-config=standalone-ha.xml --std-out=echo
+    batch
+    echo * Setting CACHE_OWNERS to "${env.CACHE_OWNERS}" in session cache-containers
+    /subsystem=infinispan/cache-container=keycloak/distributed-cache=sessions:write-attribute(name=owners, value=${env.CACHE_OWNERS:1})
+    run-batch
+    stop-embedded-server
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -91,14 +107,19 @@ spec:
         - name: KUBERNETES_NAMESPACE
           valueFrom:
             fieldRef:
-              fieldPath: metadata.namespace                
+              fieldPath: metadata.namespace
         - name: JAVA_OPTS_APPEND
           value: >-
               -Djboss.tx.node.id=$(echo $POD_NAME | cut -d'-' -f 1)-$(echo $POD_NAME | cut -d'-' -f 3)
-              -Djboss.site.name=$(KUBERNETES_NAMESPACE)                
+              -Djboss.site.name=$(KUBERNETES_NAMESPACE)
+        - name: CACHE_OWNERS
+          value: "@@KUBERNETES_IDM_CACHE_OWNERS@@"
         volumeMounts:
         - mountPath: /etc/secret
           name: idm-credentials
+          readOnly: true
+        - mountPath: /opt/jboss/startup-scripts/
+          name: keycloak-cache-config
           readOnly: true
         readinessProbe:
           failureThreshold: @@KUBERNETES_IDM_READINESS_FAILURE_THRESHOLD@@
@@ -125,6 +146,10 @@ spec:
         - name: idm-credentials
           secret:
             secretName: @@KUBERNETES_IDM_SECRET_NAME@@
+        - name: keycloak-cache-config
+          configMap:
+            name: keycloak-cache-config
+            defaultMode: 0755
 ---
 apiVersion: v1
 kind: Service
@@ -137,7 +162,7 @@ spec:
   clusterIP: None
   ports:
     - protocol: TCP
-      port: 80
+      port: @@KUBERNETES_IDM_PORT@@
       targetPort: @@KUBERNETES_IDM_PORT@@
   selector:
     app.@@KUBERNETES_LABEL_ID@@.idm: keycloak

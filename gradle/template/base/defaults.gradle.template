@@ -51,8 +51,23 @@ setCommonGradleProperty("licenseFile", "$commonGradleBuildHome/$licenseFilename"
 //setCommonGradleProperty("includeReadmeFile", false)
 //setCommonGradleProperty("includeLicenseFile", true)
 
-//setCommonGradleProperty("createChangelogFile", false)
+//setCommonGradleProperty("createChangelogFile", true)
 //setCommonGradleProperty("includeChangelogFile", true)
+//setCommonGradleProperty("validateChangelogFile", true)
+//setCommonGradleProperty("changelogDescription", "" + NELINE
+//															 + "All notable changes to this project will be documented in this file." + NELINE
+//															 + "" + NELINE
+//															 + "The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)," + NELINE
+//															 + "and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).")
+//setCommonGradleProperty("changelogHeaderSeparator", '-');
+//setCommonGradleProperty("changelogItemSeparator", '-');
+//setCommonGradleProperty("changelogSupportUnreleased", true);
+//setCommonGradleProperty("changelogSupportBracketsAroundVersion", true);
+//setCommonGradleProperty("changelogSupportReleaseLink", true);
+//setCommonGradleProperty("changelogSupportReleaseInfo", true);
+//setCommonGradleProperty("changelogSupportLinkInDescription", true);
+//setCommonGradleProperty("changelogSupportIdListOnEndOfTheComment", true);
+
 
 
 /***************************************************************************************
@@ -87,8 +102,8 @@ setCommonGradleProperty("licenseFile", "$commonGradleBuildHome/$licenseFilename"
 /***************************************************************************************
  * compile settings
  ***************************************************************************************/
-//setCommonGradleProperty("sourceCompatibility", JavaVersion.VERSION_1_8)
-//setCommonGradleProperty("targetCompatibility", JavaVersion.VERSION_1_8)
+//setCommonGradleProperty("sourceCompatibility", JavaVersion.VERSION_11)
+//setCommonGradleProperty("targetCompatibility", JavaVersion.VERSION_11)
 //setCommonGradleProperty("fileEncoding", "UTF-8")
 //setCommonGradleProperty("compileJavaHome", "")
 
@@ -168,9 +183,8 @@ setCommonGradleProperty("projectIndividualCheckstyleConfiguration", false)
 /***************************************************************************************
  * quarkus plugin version
  ***************************************************************************************/
-//setCommonGradleProperty("defaultQuarkusPluginVersion", '1.13.4.Final')
+//setCommonGradleProperty("defaultQuarkusPluginVersion", '1.11.7.Final')
 //setCommonGradleProperty("quarkusPluginVersion", "${defaultQuarkusPluginVersion}")
-
 
 // readiness and liveness
 //setCommonGradleProperty("kubernetesReadinessFailureThreshold", 3)
@@ -216,14 +230,14 @@ setCommonGradleProperty("projectIndividualCheckstyleConfiguration", false)
 //setCommonGradleProperty("kubernetesNodeLivenessSuccessThreshold", project.getProperty('kubernetesLivenessSuccessThreshold'))
 //setCommonGradleProperty("kubernetesNodeLivenessTimeoutSeconds", project.getProperty('kubernetesLivenessTimeoutSeconds'))
 
-//setCommonGradleProperty("kubernetesIdmReadinessCheckPath", "${kubernetesIdmAdminUrlPath}master/console/")
+//setCommonGradleProperty("kubernetesIdmReadinessCheckPath", "${kubernetesIdmUrlPath}/realms/master")
 //setCommonGradleProperty("kubernetesIdmReadinessFailureThreshold", project.getProperty('kubernetesReadinessFailureThreshold'))
 //setCommonGradleProperty("kubernetesIdmReadinessScheme", project.getProperty('kubernetesReadinessScheme'))
 //setCommonGradleProperty("kubernetesIdmReadinessInitialDelaySeconds", project.getProperty('kubernetesReadinessInitialDelaySeconds'))
 //setCommonGradleProperty("kubernetesIdmReadinessPeriodSeconds", project.getProperty('kubernetesReadinessPeriodSeconds'))
 //setCommonGradleProperty("kubernetesIdmReadinessSuccessThreshold", project.getProperty('kubernetesReadinessSuccessThreshold'))
 //setCommonGradleProperty("kubernetesIdmReadinessTimeoutSeconds", project.getProperty('kubernetesReadinessTimeoutSeconds'))
-//setCommonGradleProperty("kubernetesIdmLivenessCheckPath", project.getProperty('kubernetesIdmReadinessCheckPath'))
+//setCommonGradleProperty("kubernetesIdmLivenessCheckPath", "${kubernetesIdmUrlPath}/")
 //setCommonGradleProperty("kubernetesIdmLivenessFailureThreshold", project.getProperty('kubernetesLivenessFailureThreshold'))
 //setCommonGradleProperty("kubernetesIdmLivenessScheme", project.getProperty('kubernetesLivenessScheme'))
 //setCommonGradleProperty("kubernetesIdmLivenessInitialDelaySeconds", project.getProperty('kubernetesLivenessInitialDelaySeconds'))
@@ -241,7 +255,7 @@ setCommonGradleProperty("projectIndividualCheckstyleConfiguration", false)
 /***************************************************************************************
  * openapi plugin version
  ***************************************************************************************/
-//setCommonGradleProperty("openapiPluginVersion", '5.0.0')
+//setCommonGradleProperty("openapiPluginVersion", '5.1.1')
 
 
 /***************************************************************************************
@@ -268,6 +282,8 @@ setCommonGradleProperty("projectIndividualCheckstyleConfiguration", false)
 //setCommonGradleProperty("kubernetesSupportIngressNginx", true)
 //setCommonGradleProperty("kubernetesIngressProxyBodySize", "10m") 
 //setCommonGradleProperty("kubernetesControllerImage", "networking.k8s.io/v1beta1")
+//setCommonGradleProperty("kubernetesIngressNginxVersion", "0.43.0") // see https://github.com/kubernetes/ingress-nginx
+//setCommonGradleProperty("kubernetesIngressProxyBodySize", "10m")
 //setCommonGradleProperty("kubernetesApplicationOIDCClientId", "services")
 //setCommonGradleProperty("kubernetesApplicationOIDCPublicKey", "")
 

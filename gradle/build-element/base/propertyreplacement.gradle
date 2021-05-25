@@ -462,6 +462,9 @@ ext.searchReplaceByProperties = { inputLine, replacePlaceHolders = true ->
 		if (project.hasProperty('kubernetesIdmPort')) {
 			line = line.replaceAll('@@KUBERNETES_IDM_PORT@@', "${project.ext.kubernetesIdmPort}".toString())
 		}			
+		if (project.hasProperty('kubernetesIdmCacheOwners')) {
+			line = line.replaceAll('@@KUBERNETES_IDM_CACHE_OWNERS@@', "${project.ext.kubernetesIdmCacheOwners}".toString())
+		}			
 		
 		// IDM secret
 		if (project.hasProperty('kubernetesIdmSecretName')) {
@@ -604,6 +607,27 @@ ext.searchReplaceByProperties = { inputLine, replacePlaceHolders = true ->
 		if (project.hasProperty('kubernetesQuarkusLivenessTimeoutSeconds')) {
 			line = line.replaceAll('@@KUBERNETES_QUARKUS_LIVENESS_TIMEOUT_SECONDS@@', "${kubernetesQuarkusLivenessTimeoutSeconds}")
 		}
+		if (project.hasProperty('kubernetesQuarkusStartupCheckPath')) {
+			line = line.replaceAll('@@KUBERNETES_QUARKUS_STARTUP_CHECK_PATH@@', "${kubernetesQuarkusStartupCheckPath}")
+		}
+		if (project.hasProperty('kubernetesQuarkusStartupFailureThreshold')) {
+			line = line.replaceAll('@@KUBERNETES_QUARKUS_STARTUP_FAILURE_THRESHOLD@@', "${kubernetesQuarkusStartupFailureThreshold}")
+		}
+		if (project.hasProperty('kubernetesQuarkusStartupScheme')) {
+			line = line.replaceAll('@@KUBERNETES_QUARKUS_STARTUP_SCHEME@@', "${kubernetesQuarkusStartupScheme}")
+		}
+		if (project.hasProperty('kubernetesQuarkusStartupInitialDelaySeconds')) {
+			line = line.replaceAll('@@KUBERNETES_QUARKUS_STARTUP_INITIAL_DELAY_SECONDS@@', "${kubernetesQuarkusStartupInitialDelaySeconds}")
+		}
+		if (project.hasProperty('kubernetesQuarkusStartupPeriodSeconds')) {
+			line = line.replaceAll('@@KUBERNETES_QUARKUS_STARTUP_PERIOD_SECONDS@@', "${kubernetesQuarkusStartupPeriodSeconds}")
+		}
+		if (project.hasProperty('kubernetesQuarkusStartupSuccessThreshold')) {
+			line = line.replaceAll('@@KUBERNETES_QUARKUS_STARTUP_SUCCESS_THRESHOLD@@', "${kubernetesQuarkusStartupSuccessThreshold}")
+		}
+		if (project.hasProperty('kubernetesQuarkusStartupTimeoutSeconds')) {
+			line = line.replaceAll('@@KUBERNETES_QUARKUS_STARTUP_TIMEOUT_SECONDS@@', "${kubernetesQuarkusStartupTimeoutSeconds}")
+		}
 
 		if (project.hasProperty('kubernetesNodeReadinessCheckPath')) {
 			line = line.replaceAll('@@KUBERNETES_NODE_READINESS_CHECK_PATH@@', "${kubernetesNodeReadinessCheckPath}")
@@ -646,6 +670,27 @@ ext.searchReplaceByProperties = { inputLine, replacePlaceHolders = true ->
 		}
 		if (project.hasProperty('kubernetesNodeLivenessTimeoutSeconds')) {
 			line = line.replaceAll('@@KUBERNETES_NODE_LIVENESS_TIMEOUT_SECONDS@@', "${kubernetesNodeLivenessTimeoutSeconds}")
+		}
+		if (project.hasProperty('kubernetesNodeStartupCheckPath')) {
+			line = line.replaceAll('@@KUBERNETES_NODE_STARTUP_CHECK_PATH@@', "${kubernetesNodeStartupCheckPath}")
+		}
+		if (project.hasProperty('kubernetesNodeStartupFailureThreshold')) {
+			line = line.replaceAll('@@KUBERNETES_NODE_STARTUP_FAILURE_THRESHOLD@@', "${kubernetesNodeStartupFailureThreshold}")
+		}
+		if (project.hasProperty('kubernetesNodeStartupScheme')) {
+			line = line.replaceAll('@@KUBERNETES_NODE_STARTUP_SCHEME@@', "${kubernetesNodeStartupScheme}")
+		}
+		if (project.hasProperty('kubernetesNodeStartupInitialDelaySeconds')) {
+			line = line.replaceAll('@@KUBERNETES_NODE_STARTUP_INITIAL_DELAY_SECONDS@@', "${kubernetesNodeStartupInitialDelaySeconds}")
+		}
+		if (project.hasProperty('kubernetesNodeStartupPeriodSeconds')) {
+			line = line.replaceAll('@@KUBERNETES_NODE_STARTUP_PERIOD_SECONDS@@', "${kubernetesNodeStartupPeriodSeconds}")
+		}
+		if (project.hasProperty('kubernetesNodeStartupSuccessThreshold')) {
+			line = line.replaceAll('@@KUBERNETES_NODE_STARTUP_SUCCESS_THRESHOLD@@', "${kubernetesNodeStartupSuccessThreshold}")
+		}
+		if (project.hasProperty('kubernetesNodeStartupTimeoutSeconds')) {
+			line = line.replaceAll('@@KUBERNETES_NODE_STARTUP_TIMEOUT_SECONDS@@', "${kubernetesNodeStartupTimeoutSeconds}")
 		}
 
 		if (project.hasProperty('kubernetesIdmReadinessCheckPath')) {
@@ -690,6 +735,27 @@ ext.searchReplaceByProperties = { inputLine, replacePlaceHolders = true ->
 		if (project.hasProperty('kubernetesIdmLivenessTimeoutSeconds')) {
 			line = line.replaceAll('@@KUBERNETES_IDM_LIVENESS_TIMEOUT_SECONDS@@', "${kubernetesIdmLivenessTimeoutSeconds}")
 		}
+		if (project.hasProperty('kubernetesIdmStartupCheckPath')) {
+			line = line.replaceAll('@@KUBERNETES_IDM_STARTUP_CHECK_PATH@@', "${kubernetesIdmStartupCheckPath}")
+		}
+		if (project.hasProperty('kubernetesIdmStartupFailureThreshold')) {
+			line = line.replaceAll('@@KUBERNETES_IDM_STARTUP_FAILURE_THRESHOLD@@', "${kubernetesIdmStartupFailureThreshold}")
+		}
+		if (project.hasProperty('kubernetesIdmStartupScheme')) {
+			line = line.replaceAll('@@KUBERNETES_IDM_STARTUP_SCHEME@@', "${kubernetesIdmStartupScheme}")
+		}
+		if (project.hasProperty('kubernetesIdmStartupInitialDelaySeconds')) {
+			line = line.replaceAll('@@KUBERNETES_IDM_STARTUP_INITIAL_DELAY_SECONDS@@', "${kubernetesIdmStartupInitialDelaySeconds}")
+		}
+		if (project.hasProperty('kubernetesIdmStartupPeriodSeconds')) {
+			line = line.replaceAll('@@KUBERNETES_IDM_STARTUP_PERIOD_SECONDS@@', "${kubernetesIdmStartupPeriodSeconds}")
+		}
+		if (project.hasProperty('kubernetesIdmStartupSuccessThreshold')) {
+			line = line.replaceAll('@@KUBERNETES_IDM_STARTUP_SUCCESS_THRESHOLD@@', "${kubernetesIdmStartupSuccessThreshold}")
+		}
+		if (project.hasProperty('kubernetesIdmStartupTimeoutSeconds')) {
+			line = line.replaceAll('@@KUBERNETES_IDM_STARTUP_TIMEOUT_SECONDS@@', "${kubernetesIdmStartupTimeoutSeconds}")
+		}
 
 		if (project.hasProperty('kubernetesReadinessFailureThreshold')) {
 			line = line.replaceAll('@@KUBERNETES_READINESS_FAILURE_THRESHOLD@@', "${kubernetesReadinessFailureThreshold}")
@@ -726,6 +792,24 @@ ext.searchReplaceByProperties = { inputLine, replacePlaceHolders = true ->
 		}
 		if (project.hasProperty('kubernetesLivenessTimeoutSeconds')) {
 			line = line.replaceAll('@@KUBERNETES_LIVENESS_TIMEOUT_SECONDS@@', "${kubernetesLivenessTimeoutSeconds}")
+		}
+		if (project.hasProperty('kubernetesStartupFailureThreshold')) {
+			line = line.replaceAll('@@KUBERNETES_STARTUP_FAILURE_THRESHOLD@@', "${kubernetesStartupFailureThreshold}")
+		}
+		if (project.hasProperty('kubernetesStartupScheme')) {
+			line = line.replaceAll('@@KUBERNETES_STARTUP_SCHEME@@', "${kubernetesStartupScheme}")
+		}
+		if (project.hasProperty('kubernetesStartupInitialDelaySeconds')) {
+			line = line.replaceAll('@@KUBERNETES_STARTUP_INITIAL_DELAY_SECONDS@@', "${kubernetesStartupInitialDelaySeconds}")
+		}
+		if (project.hasProperty('kubernetesStartupPeriodSeconds')) {
+			line = line.replaceAll('@@KUBERNETES_STARTUP_PERIOD_SECONDS@@', "${kubernetesStartupPeriodSeconds}")
+		}
+		if (project.hasProperty('kubernetesStartupSuccessThreshold')) {
+			line = line.replaceAll('@@KUBERNETES_STARTUP_SUCCESS_THRESHOLD@@', "${kubernetesStartupSuccessThreshold}")
+		}
+		if (project.hasProperty('kubernetesStartupTimeoutSeconds')) {
+			line = line.replaceAll('@@KUBERNETES_STARTUP_TIMEOUT_SECONDS@@', "${kubernetesStartupTimeoutSeconds}")
 		}
 	}
 	
