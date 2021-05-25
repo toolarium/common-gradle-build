@@ -48,7 +48,8 @@ ext.createEnumConfigurationIndex = { inputPath, indexFilename ->
 	logInfo("> Create enum configuration " + colorize(HIGHLITE_LEVEL, "${enumConfigurationIndexFile}".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")
 	enumConfigurationIndexFile.append(startJsonElement())
 	enumConfigurationIndexFile.append(startJsonElement(1, 'enum-configuration-mapping', true))
-	
+		new File(inputPath).mkdirs()
+
 	def counter = 0
 	new File(inputPath).eachFileRecurse (groovy.io.FileType.FILES) { file ->
 		def is = file.newInputStream()
@@ -108,6 +109,8 @@ ext.createEnumConfigurationIndex = { inputPath, indexFilename ->
  ****************************************************************************************/
 ext.createEnumConfigurationMandatoryWithMissingDefaultValue = { inputPath, fileName ->
 	// prepare mandatory configuration without default values
+
+	new File(inputPath).mkdirs()
 	
 	def enumConfigurationMandatoryWithMissingDefaultValueFile = new File(fileName)
 	logInfo("> Create enum configuration " + colorize(HIGHLITE_LEVEL, "${fileName}".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")
@@ -115,44 +118,47 @@ ext.createEnumConfigurationMandatoryWithMissingDefaultValue = { inputPath, fileN
 	enumConfigurationMandatoryWithMissingDefaultValueFile.append(startJsonElement(1, 'enum-configuration-to-initialize', true))
 
 	def counter = 0
-	new File(inputPath).eachFileRecurse (groovy.io.FileType.FILES) { file ->
-		if (counter>0) {
-			enumConfigurationMandatoryWithMissingDefaultValueFile.append(endJsonElement(2))
-			enumConfigurationMandatoryWithMissingDefaultValueFile.append(',' + NELINE)
-			enumConfigurationMandatoryWithMissingDefaultValueFile.append(startJsonElement(2))
-		}
-
-		//enumConfigurationMandatoryWithMissingDefaultValueFile.append(createJsonKeyValueElement(3, "name", file.getName().replace(".json", "")) + ',' + NELINE)
-		enumConfigurationMandatoryWithMissingDefaultValueFile.append(createJsonKeyValueElement(3, "service-name", file.getName().replace(".json", "")) + ',' + NELINE)
-		
-		def is = file.newInputStream()
-		EnumConfigurations enumConfigurations = EnumConfigurationResourceFactory.getInstance().load(is)
-		is.close()
-
-		logInfo("  -> Found enum configuration " + colorize(HIGHLITE_LEVEL, file.getName()) + "...")
-		def enumConfigurationCounter = 0
-		enumConfigurationMandatoryWithMissingDefaultValueFile.append(startJsonElement(3, 'configurationList', true))
-		for (def e : enumConfigurations.selectMandatoryConfigurationListWithMissingDefaultValue()) {
-			if (enumConfigurationCounter>0) {
-				enumConfigurationMandatoryWithMissingDefaultValueFile.append(endJsonElement(4))
+	try {
+		new File(inputPath).eachFileRecurse (groovy.io.FileType.FILES) { file ->
+			if (counter>0) {
+				enumConfigurationMandatoryWithMissingDefaultValueFile.append(endJsonElement(2))
 				enumConfigurationMandatoryWithMissingDefaultValueFile.append(',' + NELINE)
-				enumConfigurationMandatoryWithMissingDefaultValueFile.append(startJsonElement(4))
+				enumConfigurationMandatoryWithMissingDefaultValueFile.append(startJsonElement(2))
 			}
-			
-			enumConfigurationMandatoryWithMissingDefaultValueFile.append(createJsonKeyValueElement(5, "name", e.getName()) + ',' + NELINE)
 
-			def keyList = []
-			for (def keyElement : e.getKeyList()) {
-				logInfo("    -> Add mandatory configuration without default value: " + colorize(HIGHLITE_LEVEL, e.getName() + " -> " + keyElement.getKey()))
-				keyList << keyElement.getKey()
+			//enumConfigurationMandatoryWithMissingDefaultValueFile.append(createJsonKeyValueElement(3, "name", file.getName().replace(".json", "")) + ',' + NELINE)
+			enumConfigurationMandatoryWithMissingDefaultValueFile.append(createJsonKeyValueElement(3, "service-name", file.getName().replace(".json", "")) + ',' + NELINE)
+			
+			def is = file.newInputStream()
+			EnumConfigurations enumConfigurations = EnumConfigurationResourceFactory.getInstance().load(is)
+			is.close()
+
+			logInfo("  -> Found enum configuration " + colorize(HIGHLITE_LEVEL, file.getName()) + "...")
+			def enumConfigurationCounter = 0
+			enumConfigurationMandatoryWithMissingDefaultValueFile.append(startJsonElement(3, 'configurationList', true))
+			for (def e : enumConfigurations.selectMandatoryConfigurationListWithMissingDefaultValue()) {
+				if (enumConfigurationCounter>0) {
+					enumConfigurationMandatoryWithMissingDefaultValueFile.append(endJsonElement(4))
+					enumConfigurationMandatoryWithMissingDefaultValueFile.append(',' + NELINE)
+					enumConfigurationMandatoryWithMissingDefaultValueFile.append(startJsonElement(4))
+				}
+				
+				enumConfigurationMandatoryWithMissingDefaultValueFile.append(createJsonKeyValueElement(5, "name", e.getName()) + ',' + NELINE)
+
+				def keyList = []
+				for (def keyElement : e.getKeyList()) {
+					logInfo("    -> Add mandatory configuration without default value: " + colorize(HIGHLITE_LEVEL, e.getName() + " -> " + keyElement.getKey()))
+					keyList << keyElement.getKey()
+				}
+				enumConfigurationMandatoryWithMissingDefaultValueFile.append(createJsonArray(5, "keyList", keyList) + NELINE)
+				enumConfigurationCounter++
 			}
-			enumConfigurationMandatoryWithMissingDefaultValueFile.append(createJsonArray(5, "keyList", keyList) + NELINE)
-			enumConfigurationCounter++
-		}
-	    enumConfigurationMandatoryWithMissingDefaultValueFile.append(endJsonElement(3, true) + NELINE)
-		
-		counter++
-	}	
+			enumConfigurationMandatoryWithMissingDefaultValueFile.append(endJsonElement(3, true) + NELINE)
+			
+			counter++
+		}	
+	} catch (FileNotFoundException en) {
+	}
 	
 	enumConfigurationMandatoryWithMissingDefaultValueFile.append(endJsonElement(1, true) + NELINE)
 	enumConfigurationMandatoryWithMissingDefaultValueFile.append(endJsonElement())
@@ -168,6 +174,9 @@ task prepareEnumConfigurationIndex() {
 
 	doLast {
 		def toInitializeTempFile=getUniqueTempName("${rootProject.name}", "${kubernetesEnumConfigurationToInitialize}", null)
+		new File("$kubernetesApplicationInformationPath").mkdirs()
+		new File("$kubernetesApplicationInformationPath/${kubernetesEnumConfigurationPathname}").mkdirs()
+		
 		createEnumConfigurationMandatoryWithMissingDefaultValue("$kubernetesApplicationInformationPath/${kubernetesEnumConfigurationPathname}", toInitializeTempFile)
 
 		def mappingTempFile=getUniqueTempName("${rootProject.name}", "${kubernetesEnumConfigurationMapping}", null)
