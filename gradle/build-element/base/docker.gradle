@@ -336,6 +336,7 @@ task dockerPush {
 	group = 'Build'
 	description = 'Pusha docker image.'
     dependsOn dockerBuild 
+	onlyIf { return project.hasProperty('validBuild') && project.getProperty('validBuild') }
 
 	doLast {
 		if (!project.getProperty('IS_NEW') && checkDockerInstallation()) {
@@ -423,9 +424,9 @@ projectValidation {
 														|| (buildAlwaysDockerImageEnv!=null && !buildAlwaysDockerImageEnv.toString().trim().isEmpty() && "true".equalsIgnoreCase(buildAlwaysDockerImageEnv.toString().trim())));
 
 			if (buildAlwaysDockerImageSwitchEnabled && checkDockerInstallation()) {
-					logInfo("Enable build always docker image.")
-					build.finalizedBy(dockerBuild)
-					publish.finalizedBy(dockerPush)
+				logInfo("Enable build always docker image.")
+				build.finalizedBy(dockerBuild)
+				publish.finalizedBy(dockerPush)
 			}
 		}
 	}
