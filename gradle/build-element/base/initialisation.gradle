@@ -307,7 +307,7 @@ ext.projectInitialisation = { ->
 					<< "" << NELINE \
 					<< "##  ${project.ext.majorVersionNumber}.${project.ext.minorVersionNumber}.${project.ext.revisionVersionNumber} - " + DATE << NELINE \
 					<< "### Changed" << NELINE \
-					<< "- " << NELINE \
+					<< "- Setup initial version." << NELINE \
 					<< "" << NELINE
 				}
 			}
