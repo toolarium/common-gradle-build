@@ -25,7 +25,7 @@ buildscript {
 		//maven { url("https://oss.sonatype.org/content/repositories/snapshots") }
 	}
 	dependencies {
-		def toolariumChangelogParserVersion="0.8.3"
+		def toolariumChangelogParserVersion="0.9.0"
 		if (project.hasProperty('toolariumChangelogParserVersion')) {
 			toolariumChangelogParserVersion = project.getProperty('toolariumChangelogParserVersion')
 		}
@@ -40,10 +40,12 @@ buildscript {
  * Parse a semver compliant version
  */
 import com.github.toolarium.changelog.dto.ChangelogReleaseVersion;
+import com.github.toolarium.changelog.dto.ChangelogChangeType;
 import com.github.toolarium.changelog.ChangelogFactory;
 import com.github.toolarium.changelog.config.ChangelogConfig;
 import com.github.toolarium.changelog.parser.ChangelogParseResult;
 import com.github.toolarium.changelog.validator.ValidationException;
+
 import java.nio.file.Paths;
 ext.parseReleaseVersion = { inputVersion ->
 	ChangelogReleaseVersion releaseVersion = ChangelogFactory.getInstance().createChangelogParser().parseVersion("" + inputVersion);
@@ -52,9 +54,9 @@ ext.parseReleaseVersion = { inputVersion ->
 
 
 /** 
- * Validate a changelog file
+ * Create the changelog config based on settings
  */
-ext.validateChangelog = { inputChangelogConfig = null ->
+ext.createChangelogConfig = { inputChangelogConfig = null ->
 	ChangelogConfig changelogConfig = inputChangelogConfig;
 	if (changelogConfig == null) {
 		changelogConfig = new ChangelogConfig();		
@@ -68,6 +70,10 @@ ext.validateChangelog = { inputChangelogConfig = null ->
 
 		if (project.hasProperty("changelogSupportUnreleased")) {
 			changelogConfig.setSupportUnreleased(project.getProperty("changelogSupportUnreleased"));
+		}
+
+		if (project.hasProperty("changelogSupportEmptySection")) {
+			changelogConfig.setSupportEmptySection(project.getProperty("changelogSupportEmptySection"));
 		}
 
 		if (project.hasProperty("changelogSupportBracketsAroundVersion")) {
@@ -91,17 +97,27 @@ ext.validateChangelog = { inputChangelogConfig = null ->
 		}
 	}
 	
+	logInfo("Changelog config: $changelogConfig")	
+	return changelogConfig;
+}
+
+
+/** 
+ * Validate a changelog file
+ */
+ext.validateChangelog = { inputChangelogConfig = null ->
+	def failOnError = ("true".equalsIgnoreCase("" + project.getProperty('isReleaseVersion')) 
+		                 || (project.hasProperty("changelogFailOnSnapshotBuild") && project.getProperty("changelogFailOnSnapshotBuild")));
 	try {
 		def versionSection = "${project.ext.majorVersionNumber}.${project.ext.minorVersionNumber}.${project.ext.revisionVersionNumber}";
-		logInfo("Changelog config: $changelogConfig")	
-		//ChangelogParseResult changelogParseResult = ChangelogFactory.getInstance().parse(Paths.get("${changelogFile}"));
-		//printInfo("==>["+changelogParseResult.getChangelog().getDescription()+"]");
-
-		ChangelogFactory.getInstance().validate(changelogConfig, Paths.get("${changelogFile}"), "${rootProject.name}", "${changelogDescription}", "${versionSection}");
+		ChangelogFactory.getInstance().validate(createChangelogConfig(inputChangelogConfig), Paths.get("${changelogFile}"), "${rootProject.name}", "${changelogDescription}", "${versionSection}");
 		logInfo("Validated successful changelog file [" + colorize(HIGHLITE_LEVEL, changelogFile) + colorize(INFO_LEVEL, ".")); 
 	} catch (IOException e) {
 		printWarn("Could not validate changelog file [" + colorize(HIGHLITE_LEVEL, changelogFile) + colorize(WARN_LEVEL, "]: " +e.getMessage())) 
-		addError("Could not validate changelog file ${changelogFile}: " + e.getMessage())
+		
+		if (failOnError) {
+			addError("Could not validate changelog file ${changelogFile}: " + e.getMessage())
+		}
 	} catch (ValidationException ve) {
 		if (ve.getValidationErrorList() != null) {
 			printWarn("Invalid changelog file [" + colorize(HIGHLITE_LEVEL, changelogFile) + colorize(WARN_LEVEL, "]: " + NELINE + ve.getValidationErrorList().prepareString("    ")))
@@ -109,8 +125,35 @@ ext.validateChangelog = { inputChangelogConfig = null ->
 			printWarn("Invalid changelog file [" + colorize(HIGHLITE_LEVEL, changelogFile) + colorize(WARN_LEVEL, "]: " + ve.getMessage())) 
 		}
 		
-		addError("Invalid format in changelog: ${changelogFile}!")
+		if (failOnError) {
+			addError("Invalid format in changelog: ${changelogFile}!")
+		}
 	}
+}
+
+
+/** 
+ * Update the changelog
+ */
+ext.updateChangelog = { inputChangelogConfig = null ->
+	try {
+		def changelog = ChangelogFactory.getInstance().parse(Paths.get("${changelogFile}")).getChangelog();
+		logInfo("Parsed successful changelog file [" + colorize(HIGHLITE_LEVEL, changelogFile) + colorize(INFO_LEVEL, ".")); 
+		
+		def versionSection = "${project.ext.majorVersionNumber}.${project.ext.minorVersionNumber}.${project.ext.revisionVersionNumber}";
+		if (changelog.getEntry(versionSection)==null) {
+			changelog.addEntry(versionSection, null);//.addSection(ChangelogChangeType.CHANGED); //.add("");
+
+			def content = ChangelogFactory.getInstance().format(createChangelogConfig(inputChangelogConfig), changelog);
+			if (content!=null && !content.toString().isBlank()) {
+				new File("${changelogFile}").write(content)	
+			}
+
+			printInfo("Updated successful changelog file " + colorize(HIGHLITE_LEVEL, changelogFile) + "."); 
+		}
+	} catch (IOException e) {
+		printWarn("Could not parse changelog file [" + colorize(HIGHLITE_LEVEL, changelogFile) + colorize(WARN_LEVEL, "]: " +e.getMessage())) 
+	}	
 }
 
 

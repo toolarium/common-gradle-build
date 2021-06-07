@@ -45,7 +45,7 @@ ext.decodeBase64 = { encodedData, propertyCheckName = "" ->
 
 
 /** 
- * Add an error
+ * Add an error. The build will fail at the end.
  */
 ext.addError = { message ->
 	ext.validBuild=false
