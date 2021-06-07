@@ -492,13 +492,32 @@ if (project.hasProperty('isSnapshotVersion') && project.getProperty('isSnapshotV
 			// update version file
 			if (project.hasProperty("commonGradleBuildSupportSnapshotHandling") && project.getProperty("commonGradleBuildSupportSnapshotHandling")) {
 				setCommonGradleProperty("qualifierVersionNumber", SNAPSHOT_TAG_NAME)
-			}				
+			}			
 			
 			def git = openGit()
+			def previousReleaseVersionNumber = "${project.ext.majorVersionNumber}.${project.ext.minorVersionNumber}.${project.ext.revisionVersionNumber}"
 			prepareSnapReleaseVersion()
 			increaseRevisionVersion()
+			def newReleaseVersionNumber = "${project.ext.majorVersionNumber}.${project.ext.minorVersionNumber}.${project.ext.revisionVersionNumber}"			
 			printInfo("> Prepare development " + colorize(HIGHLITE_LEVEL, "${project.version}") + ".")
 			git.add(patterns: ["$versionFilename"])
+
+			// in case of changelog			
+			if (project.hasProperty('changelogUpdateFileAfterRelease') && project.getProperty('changelogUpdateFileAfterRelease')) {
+				if (project.hasProperty('createChangelogFile') && project.getProperty('createChangelogFile')) {
+					updateChangelog()			
+					git.add(patterns: ["$changelogFilename"])
+				}
+			}
+			
+			// in case of api spec
+			if (project.hasProperty('openapiUpdateFileAfterRelease') && project.getProperty('openapiUpdateFileAfterRelease')) {
+				def filesReplaced = replaceFile(srcMainApiSpecDirectory, ".yaml", previousReleaseVersionNumber, newReleaseVersionNumber, "${openapiVersionContentLineRegExp}")
+				for (File file: filesReplaced) {
+					git.add(patterns: ["$file"])
+				}
+			}
+			
 			git.commit(message: "Prepare development v" + project.version)
 			git.push()
 			
