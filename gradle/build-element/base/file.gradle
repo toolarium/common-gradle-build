@@ -313,6 +313,70 @@ ext.copyFile = { fileToCopy, fileDest, overwrite = false ->
 
 
 /** 
+ * Replace in a file
+ *
+ * filePath the file path
+ * fileExtension the file extension
+ * searchContext the search context
+ * relacesearchContext the replacement context
+ * lineSelectorRegex the line selector regular expression or null
+ */
+ext.replaceFile = { filePath, fileExtension, searchContext, relacesearchContext, lineSelectorRegex = null ->
+	def filesReplaced = []
+	if (filePath==null || !new File(filePath).exists()) {
+		return filesReplaced;
+	}
+
+	File[] files = new File(filePath).listFiles({File file -> file.name.toLowerCase().endsWith(fileExtension)} as FileFilter)
+	if (files == null || files.length == 0) {
+		return filesReplaced;
+	}
+	
+	def regExp = null;
+	if (lineSelectorRegex != null) {
+		regExp = ~"${lineSelectorRegex}"
+	}
+	
+	for (File file: files) {
+		def content = ""
+		def changedFile = false
+		try {			
+			file.withReader {
+				def line
+				while ((line = it.readLine()) != null) {
+					def replacedLine = null;
+					if (regExp != null) {
+						if (line ==~ regExp) {
+							replacedLine = line.replace(searchContext, relacesearchContext);
+						}
+					} else {
+						replacedLine = line.replace(searchContext, relacesearchContext);
+					}
+
+					if (replacedLine!=null && !line.toString().equals(replacedLine)) {
+						line = replacedLine
+						changedFile = true
+					}
+					
+					content += line + NELINE;
+				}
+			}
+			
+			if (changedFile) {
+				file.write(content)
+				filesReplaced.add(file)
+			}
+		} catch (Exception e) {
+			printWarn("Could not process file " + file.getName() + ": " + e.getMessage())
+		}
+	}
+	
+	logInfo("Update files : " + filesReplaced.size())										
+	return filesReplaced;
+}
+
+
+/** 
  * Read properties file: gradle.properties, application.properties
  */
 ext.readPropertiesFile = { inputFile ->
