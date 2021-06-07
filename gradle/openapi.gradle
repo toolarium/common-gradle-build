@@ -184,7 +184,7 @@ task openApiProcess {
 
 						// check version number
 						def expectedVersionNumber = "${project.ext.majorVersionNumber}.${project.ext.minorVersionNumber}.${project.ext.revisionVersionNumber}".toString()
-						def versionRegex = /^.+version\s?:.+$/
+						def versionRegex = ~"${openapiVersionContentLineRegExp}"
 						for (String line : file.readLines().findAll({ x -> x ==~ versionRegex })) {
 							def trimmedLine = line.toString().trim().replace("version", "").trim();
 							if (trimmedLine.startsWith(':')) {

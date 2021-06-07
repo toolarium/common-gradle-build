@@ -111,6 +111,7 @@ setCommonGradleDefaultPropertyIfNull("includeVersionFile", true)
 setCommonGradleDefaultPropertyIfNull("includeChangelogFile", true)
 setCommonGradleDefaultPropertyIfNull("createChangelogFile", true)
 setCommonGradleDefaultPropertyIfNull("validateChangelogFile", true)
+setCommonGradleDefaultPropertyIfNull("changelogUpdateFileAfterRelease", true)
 setCommonGradleDefaultPropertyIfNull("changelogFailOnSnapshotBuild", false);
 setCommonGradleDefaultPropertyIfNull("changelogDescription", "" + NELINE
 															 + "All notable changes to this project will be documented in this file." + NELINE
@@ -373,8 +374,9 @@ setCommonGradleDefaultPropertyIfNull("srcMainApiSpecDirectory", "${srcMainDirect
 setCommonGradleDefaultPropertyIfNull("openapiPluginVersion", "5.1.1")
 //setCommonGradleDefaultPropertyIfNull("openapiLibrary", 'okhttp-gson')
 //setCommonGradleDefaultPropertyIfNull("openapiGeneratorName", 'java')
+setCommonGradleDefaultPropertyIfNull("openapiVersionContentLineRegExp", "^.+version\\s?:.+\$")
+setCommonGradleDefaultPropertyIfNull("openapiUpdateFileAfterRelease", false)
 setCommonGradleDefaultPropertyIfNull("openapiGeneratorName", 'jaxrs-spec')
-
 setCommonGradleDefaultPropertyIfNull("openapiLibrary", 'quarkus')
 setCommonGradleDefaultPropertyIfNull("openapiDocs", true)
 setCommonGradleDefaultPropertyIfNull("openapiTests", true)
