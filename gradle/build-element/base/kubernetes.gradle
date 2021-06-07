@@ -127,6 +127,15 @@ task kubernetesApplicationConfig() {
 	description = 'Creates kubernetes application configuration'
 	onlyIf { return project.hasProperty("createApplicationConfigFile") && project.getProperty("createApplicationConfigFile") }
 	
+	doFirst {
+		if (project.hasProperty('kustomizeSupport') && project.getProperty('kustomizeSupport')) {
+			new File("$kustomizeConfigurationPath").mkdirs()
+			new File("$kustomizeConfigurationPath/$kustomizeBaseConfigurationPath").mkdirs()
+			new File("$kustomizeConfigurationPath/$kustomizeBaseServicesConfigurationPath").mkdirs()
+			new File("$kustomizeConfigurationPath/$kustomizeBaseControllerConfigurationPath").mkdirs()			
+		}
+	}
+	
 	doLast {
 		logInfo("Create kubernetes application / secret configuration.")
 		createFileFromTemplate("$kubernetesConfigurationPath/$kubernetesApplicationConfigFilename", getTemplateFile('kubernetes-application-config.template', 'kubernetes'), true /*overwrite*/, false /*print*/, true /*replace*/, NELINE /*only nl*/)

@@ -597,9 +597,9 @@ setCommonGradleDefaultPropertyIfNull("includeKustomizeConfiguration", true)
 setCommonGradleDefaultPropertyIfNull("kustomizeConfigurationPathname", "kustomize")
 setCommonGradleDefaultPropertyIfNull("kustomizeConfigurationPath", "$gradleBuildDirectory/${kustomizeConfigurationPathname}")
 setCommonGradleDefaultPropertyIfNull("kustomizeBaseConfigurationPath", "base")
-setCommonGradleDefaultPropertyIfNull("kustomizeBaseServicesConfigurationPath", "$kustomizeBaseConfigurationPath")
-setCommonGradleDefaultPropertyIfNull("kustomizeBaseConfigConfigurationPath", "$kustomizeBaseConfigurationPath")
-setCommonGradleDefaultPropertyIfNull("kustomizeBaseControllerConfigurationPath", "$kustomizeBaseConfigurationPath")
+setCommonGradleDefaultPropertyIfNull("kustomizeBaseServicesConfigurationPath", "$kustomizeBaseConfigurationPath/services")
+setCommonGradleDefaultPropertyIfNull("kustomizeBaseConfigConfigurationPath", "$kustomizeBaseConfigurationPath/config")
+setCommonGradleDefaultPropertyIfNull("kustomizeBaseControllerConfigurationPath", "$kustomizeBaseConfigurationPath/controller")
 setCommonGradleDefaultPropertyIfNull("kustomizeBaseKustomization", "$kustomizeBaseConfigurationPath/kustomization.yaml")
 
 setCommonGradleDefaultPropertyIfNull("kubernetesIngresControlFilename", "$kubernetesConfigurationElementsPath/${rootProject.name}-ingress-controller.yaml")
@@ -618,11 +618,13 @@ setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseUsernameEnvName", "DATAB
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabasePasswordEnvName", "DATABASE_PASSWORD")
 
 // application configuration
-setCommonGradleDefaultPropertyIfNull("kubernetesApplicationConfigName", "application-config")
+setCommonGradleDefaultPropertyIfNull("kubernetesApplicationConfigBaseName", "application-config")
+setCommonGradleDefaultPropertyIfNull("kubernetesApplicationConfigName", "${kubernetesApplicationConfigBaseName}") // -@@PRODUCT_BUILD_ID@@
 setCommonGradleDefaultPropertyIfNull("kubernetesApplicationConfigPath", "config")
-setCommonGradleDefaultPropertyIfNull("kubernetesApplicationConfigFilename", "${kubernetesApplicationConfigPath}/${rootProject.name}-${kubernetesApplicationConfigName}-kubernetes.yaml")
-setCommonGradleDefaultPropertyIfNull("kubernetesApplicationSecretName", "application-secret")
-setCommonGradleDefaultPropertyIfNull("kubernetesApplicationSecretFilename", "${kubernetesApplicationConfigPath}/${rootProject.name}-${kubernetesApplicationSecretName}-kubernetes.yaml")
+setCommonGradleDefaultPropertyIfNull("kubernetesApplicationConfigFilename", "${kubernetesApplicationConfigPath}/${rootProject.name}-${kubernetesApplicationConfigBaseName}-kubernetes.yaml")
+setCommonGradleDefaultPropertyIfNull("kubernetesApplicationSecretBaseName", "application-secret")
+setCommonGradleDefaultPropertyIfNull("kubernetesApplicationSecretName", "${kubernetesApplicationSecretBaseName}") // -@@PRODUCT_BUILD_ID@@
+setCommonGradleDefaultPropertyIfNull("kubernetesApplicationSecretFilename", "${kubernetesApplicationConfigPath}/${rootProject.name}-${kubernetesApplicationSecretBaseName}-kubernetes.yaml")
 setCommonGradleDefaultPropertyIfNull("kubernetesApplicationOIDCClientIdEnvName", "OIDC_CLIENT_ID")
 setCommonGradleDefaultPropertyIfNull("kubernetesApplicationOIDCClientIdKey", "oidc.client-id")
 setCommonGradleDefaultPropertyIfNull("kubernetesApplicationOIDCPublicKeyEnvName", "OIDC_PUBLIC_KEY")
@@ -638,13 +640,15 @@ setCommonGradleDefaultPropertyIfNull("kubernetesApplicationOIDCTokenIssuer", "${
 
 // database secret name
 setCommonGradleDefaultPropertyIfNull("kubernetesSupportDatabase", true)
-setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseSecretName", "database-secret")
-setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseSecretFilename", "${kubernetesApplicationConfigPath}/${rootProject.name}-${kubernetesDatabaseSecretName}-kubernetes.yaml")
+setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseSecretBaseName", "database-secret")
+setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseSecretName", "${kubernetesDatabaseSecretBaseName}") // -@@PRODUCT_BUILD_ID@@
+setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseSecretFilename", "${kubernetesApplicationConfigPath}/${rootProject.name}-${kubernetesDatabaseSecretBaseName}-kubernetes.yaml")
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseUsernameKey", "username")
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabasePasswordKey", "password") 
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseUsername", "appuser")    // service database user
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabasePassword", "pleaseCh@nge1t") // service database password
-setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseAdminSecretName", "database-admin-secret")
+setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseAdminSecretBaseName", "database-admin-secret")
+setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseAdminSecretName", "${kubernetesDatabaseAdminSecretBaseName}-@@PRODUCT_BUILD_ID@@")
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseAdminUsername", "dbadmin") // admin database user
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseAdminPassword", "${kubernetesDatabasePassword}") // service database password
 
@@ -707,10 +711,12 @@ setCommonGradleDefaultPropertyIfNull("kubernetesIdmDatabaseSchemaKey", "db.schem
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmFrontendUrlKey", "frontend.url")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmLogLevelKey", "log.level")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmAddressForwardingKey", "proxy.address.forwarding")
-setCommonGradleDefaultPropertyIfNull("kubernetesIdmConfigName", "idm-config")
+setCommonGradleDefaultPropertyIfNull("kubernetesIdmConfigBaseName", "idm-config")
+setCommonGradleDefaultPropertyIfNull("kubernetesIdmConfigName", "${kubernetesIdmConfigBaseName}") // -@@PRODUCT_BUILD_ID@@
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmLogLevel", "INFO")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmAddressForwarding", "true")
-setCommonGradleDefaultPropertyIfNull("kubernetesIdmSecretName", "idm-secret")
+setCommonGradleDefaultPropertyIfNull("kubernetesIdmSecretBaseName", "idm-secret")
+setCommonGradleDefaultPropertyIfNull("kubernetesIdmSecretName", "${kubernetesIdmSecretBaseName}") // -@@PRODUCT_BUILD_ID@@
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmDatabaseUsernameKey", "db-username")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmDatabasePasswordKey", "db-password")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmAdminUsernameKey", "admin-username")

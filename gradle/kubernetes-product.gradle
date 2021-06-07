@@ -480,17 +480,10 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 		new File("$kubernetesConfigurationPath").mkdirs()
 		new File("$kubernetesConfigurationElementsPath").mkdirs()
 
+		def kustomizeResources = []
 		def kubernetesServicesFilename = "$kubernetesConfigurationElementsPath/${rootProject.name}-ingress-controller-configuration-kubernetes.yaml"
 		createFileFromTemplate(kubernetesServicesFilename, getTemplateFile('kubernetes-ingress-controller-header.template'), true /*overwrite*/, false /*print*/)
 
-		def kustomizeResources = []
-		if (project.hasProperty('kustomizeSupport') && project.getProperty('kustomizeSupport')) {
-			new File("$kustomizeConfigurationPath").mkdirs()
-			new File("$kustomizeConfigurationPath/$kustomizeBaseConfigurationPath").mkdirs()
-			new File("$kustomizeConfigurationPath/$kustomizeBaseServicesConfigurationPath").mkdirs()
-			new File("$kustomizeConfigurationPath/$kustomizeBaseControllerConfigurationPath").mkdirs()			
-		}
-		
 		// set file name for install information
 		def kubernetesApplicationFilename = "${rootProject.name}-kubernetes.yaml"
 		setCommonGradleProperty("kubernetesApplicationFilename", "${kubernetesApplicationFilename}")
@@ -501,6 +494,14 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 		kubernetesDeleteApplication += "${kubernetesDeleteCommand} -A ValidatingWebhookConfiguration ingress-nginx-admission"
 		setCommonGradleDefaultPropertyIfNull('kubernetesDeleteApplication', kubernetesDeleteApplication)
 		
+		// replace global environment variable
+		def buildId = "${project.ext.scmVersionNumber}"
+		if (buildId == null || buildId.toString().isBlank()) {
+			buildId = "${project.ext.majorVersionNumber}_${project.ext.minorVersionNumber}_${project.ext.revisionVersionNumber}"
+		}
+		replaceFile("$kubernetesConfigurationServicesPath/$kubernetesConfigurationPathname", ".yaml", "@@PRODUCT_BUILD_ID@@", "$buildId").each{ printInfo("Modified service kubernetes file " + it + ".") }			
+		replaceFile("$kubernetesConfigurationElementsPath/$kubernetesConfigurationPathname", ".yaml", "@@PRODUCT_BUILD_ID@@", "$buildId").each{ printInfo("Modified elements kubernetes file " + it + ".") }			
+
 		def fileContent = new File("${kubernetesConfigurationPath}/${kubernetesApplicationFilename}")
 		printInfo("> Create kubernetes product " + colorize(HIGHLITE_LEVEL, "${fileContent}".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")		
 		def header = true
@@ -715,13 +716,13 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 					} else {
 						logInfo("No service found in " + colorize(HIGHLITE_LEVEL, file.getName()) + ".")
 					}
+				}
 
-					// prepare kustomize files
-					if (project.hasProperty('kustomizeSupport') && project.getProperty('kustomizeSupport')) {
-						copyFile(file.getPath(), "$kustomizeConfigurationPath/$kustomizeBaseServicesConfigurationPath/" + file.getName())
-						kustomizeResources.add("$kustomizeBaseServicesConfigurationPath/" + file.getName())
-					}
-				}	
+				// prepare kustomize files
+				if (project.hasProperty('kustomizeSupport') && project.getProperty('kustomizeSupport')) {
+					copyFile(file.getPath(), "$kustomizeConfigurationPath/$kustomizeBaseServicesConfigurationPath/" + file.getName())
+					kustomizeResources.add("$kustomizeBaseServicesConfigurationPath/" + file.getName())
+				}
 			} catch (Exception e) {
 				printWarn("Could not add artefact depdendency " + file.getName() + ": " + e.getMessage())
 				throw e
@@ -765,6 +766,13 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 			new File("$kubernetesConfigurationPath/${kubernetesApplicationConfigPath}").eachFileRecurse (groovy.io.FileType.FILES) { file ->
 				copyFile(file.getPath(), "$kustomizeConfigurationPath/$kustomizeBaseConfigConfigurationPath/" + file.getName());
 				kustomizeFile.append("  - $kustomizeBaseConfigConfigurationPath/" + file.getName() + NELINE);
+			}
+
+			new File("$kubernetesConfigurationElementsPath").eachFileRecurse (groovy.io.FileType.FILES) { file ->
+				if (!kustomizeResources.contains("$kustomizeBaseConfigConfigurationPath/" + file.getName()) && !kustomizeResources.contains("$kustomizeBaseControllerConfigurationPath/" + file.getName())) {
+					copyFile(file.getPath(), "$kustomizeConfigurationPath/$kustomizeBaseConfigConfigurationPath/" + file.getName());
+					kustomizeFile.append("  - $kustomizeBaseConfigConfigurationPath/" + file.getName() + NELINE);
+				}
 			}
 			
 			kustomizeResources.each{ kustomizeFile.append("  - " + it + NELINE) };
