@@ -480,8 +480,16 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 		new File("$kubernetesConfigurationPath").mkdirs()
 		new File("$kubernetesConfigurationElementsPath").mkdirs()
 
-		def kubernetesServicesFilename = "$kubernetesConfigurationElementsPath/${kubernetesApplicationConfigurationInformationPathname}-kubernetes.yaml"
+		def kubernetesServicesFilename = "$kubernetesConfigurationElementsPath/${rootProject.name}-ingress-controller-configuration-kubernetes.yaml"
 		createFileFromTemplate(kubernetesServicesFilename, getTemplateFile('kubernetes-ingress-controller-header.template'), true /*overwrite*/, false /*print*/)
+
+		def kustomizeResources = []
+		if (project.hasProperty('kustomizeSupport') && project.getProperty('kustomizeSupport')) {
+			new File("$kustomizeConfigurationPath").mkdirs()
+			new File("$kustomizeConfigurationPath/$kustomizeBaseConfigurationPath").mkdirs()
+			new File("$kustomizeConfigurationPath/$kustomizeBaseServicesConfigurationPath").mkdirs()
+			new File("$kustomizeConfigurationPath/$kustomizeBaseControllerConfigurationPath").mkdirs()			
+		}
 		
 		// set file name for install information
 		def kubernetesApplicationFilename = "${rootProject.name}-kubernetes.yaml"
@@ -498,11 +506,13 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 		def header = true
 		def line
 		def controllerContent = ""
+		def controllerHeader = ""
 		new File(kubernetesServicesFilename).withReader {
 			while ((line = it.readLine()) != null) {				
 				def hasComment = line.startsWith("#") || line.toString().trim().isEmpty()
 				if (header && hasComment) {
 					fileContent.append(line + NELINE)
+					controllerHeader += line + NELINE
 				} else {
 					header = false		
 					controllerContent += line + NELINE
@@ -510,8 +520,13 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 			}
 		}
 		
-		// combone ingress
+		// combine ingress
 		if (project.hasProperty('kubernetesIngresControlFilename') && !project.getProperty('kubernetesIngresControlFilename').toString().trim().isEmpty()) {
+			if (project.hasProperty('kustomizeSupport') && project.getProperty('kustomizeSupport')) {
+				copyFile(kubernetesIngresControlFilename, "$kustomizeConfigurationPath/$kustomizeBaseControllerConfigurationPath/" + new File(kubernetesIngresControlFilename).getName())
+				kustomizeResources.add("$kustomizeBaseControllerConfigurationPath/" + new File(kubernetesIngresControlFilename).getName())
+			}
+		
 			header = true
 			new File(kubernetesIngresControlFilename).withReader {
 				while ((line = it.readLine()) != null) {				
@@ -700,6 +715,12 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 					} else {
 						logInfo("No service found in " + colorize(HIGHLITE_LEVEL, file.getName()) + ".")
 					}
+
+					// prepare kustomize files
+					if (project.hasProperty('kustomizeSupport') && project.getProperty('kustomizeSupport')) {
+						copyFile(file.getPath(), "$kustomizeConfigurationPath/$kustomizeBaseServicesConfigurationPath/" + file.getName())
+						kustomizeResources.add("$kustomizeBaseServicesConfigurationPath/" + file.getName())
+					}
 				}	
 			} catch (Exception e) {
 				printWarn("Could not add artefact depdendency " + file.getName() + ": " + e.getMessage())
@@ -728,6 +749,26 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 		
 		// create the kubernetes apply config / seceret information
 		createKubernetesApplyConfigInstallInformation()
+
+		// modify the controlller configuration file
+		new File(kubernetesServicesFilename).write(controllerHeader)
+		new File(kubernetesServicesFilename).append(controllerContent)
+		
+		if (project.hasProperty('kustomizeSupport') && project.getProperty('kustomizeSupport')) {
+			def kustomizeFile = new File("$kustomizeConfigurationPath/$kustomizeBaseKustomization")
+			createFileFromTemplate(kustomizeFile.getPath(), getTemplateFile('kustomization.template'), true /*overwrite*/, true /*print*/, true /*replace*/, NELINE /*only nl*/)
+		
+			copyFile(kubernetesServicesFilename, "$kustomizeConfigurationPath/$kustomizeBaseControllerConfigurationPath/" + new File(kubernetesServicesFilename).getName());
+			kustomizeResources.add("$kustomizeBaseControllerConfigurationPath/" + new File(kubernetesServicesFilename).getName());
+
+			kustomizeFile.append("resources:" + NELINE)
+			new File("$kubernetesConfigurationPath/${kubernetesApplicationConfigPath}").eachFileRecurse (groovy.io.FileType.FILES) { file ->
+				copyFile(file.getPath(), "$kustomizeConfigurationPath/$kustomizeBaseConfigConfigurationPath/" + file.getName());
+				kustomizeFile.append("  - $kustomizeBaseConfigConfigurationPath/" + file.getName() + NELINE);
+			}
+			
+			kustomizeResources.each{ kustomizeFile.append("  - " + it + NELINE) };
+		}
 		
 		if (project.hasProperty('kubernetesInstallSupport') && project.getProperty('kubernetesInstallSupport')) {
 			// create install information

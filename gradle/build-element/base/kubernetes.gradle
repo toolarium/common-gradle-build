@@ -277,6 +277,12 @@ task kubernetesJar(type: Jar, dependsOn: ['kubernetesConfiguration', 'prepareToo
 		from "${kubernetesConfigurationPath}"
 	}
 
+	into "kustomize", {
+		if (project.hasProperty('kustomizeSupport') && project.getProperty('kustomizeSupport') && project.getProperty('includeKustomizeConfiguration')) {
+			from "${kustomizeConfigurationPath}"
+		}
+	}
+
 	into "application-information", {
 		if (project.getProperty('includeApplicationInformation')) {
 			from "$kubernetesApplicationInformationPath"
