@@ -514,8 +514,13 @@ if (project.hasProperty('isSnapshotVersion') && project.getProperty('isSnapshotV
 			if (project.hasProperty('openapiUpdateFileAfterRelease') && project.getProperty('openapiUpdateFileAfterRelease')) {
 				def filesReplaced = replaceFile(srcMainApiSpecDirectory, ".yaml", previousReleaseVersionNumber, newReleaseVersionNumber, "${openapiVersionContentLineRegExp}")
 				for (File file: filesReplaced) {
+					def specFileName = "${srcMainApiSpecDirectory}/" + file.getName()
+					if (specFileName.toString().startsWith("./")) {
+						specFileName = specFileName.toString().substring(2)
+					}
+
 					printInfo("> Updated successful api-spec file " + colorize(HIGHLITE_LEVEL, file.getName()) + "."); 
-					git.add(patterns: [ "${srcMainApiSpecDirectory}/" + file.getName() ])
+					git.add(patterns: [ "" + specFileName ])
 				}
 			}
 			
