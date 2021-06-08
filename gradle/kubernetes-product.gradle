@@ -479,6 +479,13 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 	doLast {			
 		new File("$kubernetesConfigurationPath").mkdirs()
 		new File("$kubernetesConfigurationElementsPath").mkdirs()
+		
+		if (project.hasProperty('kustomizeSupport') && project.getProperty('kustomizeSupport')) {
+			new File("$kustomizeConfigurationPath").mkdirs()
+			new File("$kustomizeConfigurationPath/$kustomizeBaseConfigurationPath").mkdirs()
+			new File("$kustomizeConfigurationPath/$kustomizeBaseServicesConfigurationPath").mkdirs()
+			new File("$kustomizeConfigurationPath/$kustomizeBaseControllerConfigurationPath").mkdirs()			
+		}
 
 		def kustomizeResources = []
 		def kubernetesServicesFilename = "$kubernetesConfigurationElementsPath/${rootProject.name}-ingress-controller-configuration-kubernetes.yaml"

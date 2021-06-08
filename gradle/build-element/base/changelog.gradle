@@ -149,7 +149,7 @@ ext.updateChangelog = { inputChangelogConfig = null ->
 				new File("${changelogFile}").write(content)	
 			}
 
-			printInfo("Updated successful changelog file " + colorize(HIGHLITE_LEVEL, changelogFile) + "."); 
+			printInfo("> Updated successful changelog file " + colorize(HIGHLITE_LEVEL, changelogFile) + "."); 
 		}
 	} catch (IOException e) {
 		printWarn("Could not parse changelog file [" + colorize(HIGHLITE_LEVEL, changelogFile) + colorize(WARN_LEVEL, "]: " +e.getMessage())) 
