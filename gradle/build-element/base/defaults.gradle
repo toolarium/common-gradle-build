@@ -595,12 +595,11 @@ setCommonGradleDefaultPropertyIfNull("kubernetesEnumConfigurationPath", "$kubern
 setCommonGradleDefaultPropertyIfNull("kustomizeSupport", true)
 setCommonGradleDefaultPropertyIfNull("includeKustomizeConfiguration", true)
 setCommonGradleDefaultPropertyIfNull("kustomizeConfigurationPathname", "kustomize")
-setCommonGradleDefaultPropertyIfNull("kustomizeConfigurationPath", "$gradleBuildDirectory/${kustomizeConfigurationPathname}")
-setCommonGradleDefaultPropertyIfNull("kustomizeBaseConfigurationPath", "base")
-setCommonGradleDefaultPropertyIfNull("kustomizeBaseServicesConfigurationPath", "$kustomizeBaseConfigurationPath/services")
-setCommonGradleDefaultPropertyIfNull("kustomizeBaseConfigConfigurationPath", "$kustomizeBaseConfigurationPath/config")
-setCommonGradleDefaultPropertyIfNull("kustomizeBaseControllerConfigurationPath", "$kustomizeBaseConfigurationPath/controller")
-setCommonGradleDefaultPropertyIfNull("kustomizeBaseKustomization", "$kustomizeBaseConfigurationPath/kustomization.yaml")
+setCommonGradleDefaultPropertyIfNull("kustomizeConfigurationPath", "$gradleBuildDirectory/${kustomizeConfigurationPathname}/base")
+setCommonGradleDefaultPropertyIfNull("kustomizeBaseServicesConfigurationPath", "services")
+setCommonGradleDefaultPropertyIfNull("kustomizeBaseConfigConfigurationPath", "config")
+setCommonGradleDefaultPropertyIfNull("kustomizeBaseControllerConfigurationPath", "controller")
+setCommonGradleDefaultPropertyIfNull("kustomizeBaseKustomization", "kustomization.yaml")
 
 setCommonGradleDefaultPropertyIfNull("kubernetesIngresControlFilename", "$kubernetesConfigurationElementsPath/${rootProject.name}-ingress-controller.yaml")
 setCommonGradleDefaultPropertyIfNull("kubernetesControllerImage", "networking.k8s.io/v1beta1")
@@ -618,9 +617,10 @@ setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseUsernameEnvName", "DATAB
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabasePasswordEnvName", "DATABASE_PASSWORD")
 
 // application configuration
+setCommonGradleDefaultPropertyIfNull("kubernetesApplicationConfigPath", "config")
+setCommonGradleDefaultPropertyIfNull("kubernetesApplicationNamespaceConfigFilename", "${kubernetesApplicationConfigPath}/${rootProject.name}-namespace-kubernetes.yaml")
 setCommonGradleDefaultPropertyIfNull("kubernetesApplicationConfigBaseName", "application-config")
 setCommonGradleDefaultPropertyIfNull("kubernetesApplicationConfigName", "${kubernetesApplicationConfigBaseName}") // -@@PRODUCT_BUILD_ID@@
-setCommonGradleDefaultPropertyIfNull("kubernetesApplicationConfigPath", "config")
 setCommonGradleDefaultPropertyIfNull("kubernetesApplicationConfigFilename", "${kubernetesApplicationConfigPath}/${rootProject.name}-${kubernetesApplicationConfigBaseName}-kubernetes.yaml")
 setCommonGradleDefaultPropertyIfNull("kubernetesApplicationSecretBaseName", "application-secret")
 setCommonGradleDefaultPropertyIfNull("kubernetesApplicationSecretName", "${kubernetesApplicationSecretBaseName}") // -@@PRODUCT_BUILD_ID@@

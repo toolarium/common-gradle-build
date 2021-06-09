@@ -3,14 +3,6 @@
 # @@LICENSE@@
 #
 
-# prevent to have the namespace
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: @@KUBERNETES_NAMESPACE@@
-  
----
-
 apiVersion: v1
 kind: ConfigMap
 metadata:

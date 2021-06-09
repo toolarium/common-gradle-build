@@ -129,8 +129,8 @@ task kubernetesApplicationConfig() {
 	
 	doFirst {
 		if (project.hasProperty('kustomizeSupport') && project.getProperty('kustomizeSupport')) {
+			new File("$gradleBuildDirectory/${kustomizeConfigurationPathname}").mkdirs()
 			new File("$kustomizeConfigurationPath").mkdirs()
-			new File("$kustomizeConfigurationPath/$kustomizeBaseConfigurationPath").mkdirs()
 			new File("$kustomizeConfigurationPath/$kustomizeBaseServicesConfigurationPath").mkdirs()
 			new File("$kustomizeConfigurationPath/$kustomizeBaseControllerConfigurationPath").mkdirs()			
 		}
@@ -138,6 +138,9 @@ task kubernetesApplicationConfig() {
 	
 	doLast {
 		logInfo("Create kubernetes application / secret configuration.")
+		
+		createFileFromTemplate("$kubernetesConfigurationPath/$kubernetesApplicationNamespaceConfigFilename", getTemplateFile('kubernetes-namespace.template', 'kubernetes'), true /*overwrite*/, false /*print*/, true /*replace*/, NELINE /*only nl*/)
+		
 		createFileFromTemplate("$kubernetesConfigurationPath/$kubernetesApplicationConfigFilename", getTemplateFile('kubernetes-application-config.template', 'kubernetes'), true /*overwrite*/, false /*print*/, true /*replace*/, NELINE /*only nl*/)
 		
 		if (project.hasProperty('kubernetesApplicationOIDCPublicKey') && !project.getProperty('kubernetesApplicationOIDCPublicKey').toString().isEmpty()) {

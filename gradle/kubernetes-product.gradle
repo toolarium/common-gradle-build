@@ -105,17 +105,13 @@ configurations.kubernetes {
  ****************************************************************************************/
 ext.createKubernetesApplyConfigInstallInformation = { ->
 
-	def kubernetesInstallConfigAndSecretArtefacts = ""
-	def counter = 0
+	def kubernetesInstallConfigAndSecretArtefacts = "${kubernetesApplyCommand} ${kubernetesApplicationNamespaceConfigFilename}"
 	new File("$kubernetesConfigurationPath/${kubernetesApplicationConfigPath}").eachFileRecurse (groovy.io.FileType.FILES) { file ->
-		logInfo("Add kubernetes install config and secret instruction for " + colorize(HIGHLITE_LEVEL, file.getName()) + "...")
-		
-		if (counter>0) {
+		if (!"${kubernetesApplicationNamespaceConfigFilename}".toString().endsWith(""+file.getName())) {
+			logInfo("Add kubernetes install config and secret instruction for " + colorize(HIGHLITE_LEVEL, file.getName()) + "...")
 			kubernetesInstallConfigAndSecretArtefacts += NELINE
+			kubernetesInstallConfigAndSecretArtefacts += "${kubernetesApplyCommand} ${kubernetesApplicationConfigPath}/" + file.getName()
 		}
-		
-		kubernetesInstallConfigAndSecretArtefacts += "${kubernetesApplyCommand} ${kubernetesApplicationConfigPath}/" + file.getName()
-		counter++
 	}
 
 	// set apply config and secret for install information
@@ -481,8 +477,8 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 		new File("$kubernetesConfigurationElementsPath").mkdirs()
 		
 		if (project.hasProperty('kustomizeSupport') && project.getProperty('kustomizeSupport')) {
+			new File("$gradleBuildDirectory/${kustomizeConfigurationPathname}").mkdirs()
 			new File("$kustomizeConfigurationPath").mkdirs()
-			new File("$kustomizeConfigurationPath/$kustomizeBaseConfigurationPath").mkdirs()
 			new File("$kustomizeConfigurationPath/$kustomizeBaseServicesConfigurationPath").mkdirs()
 			new File("$kustomizeConfigurationPath/$kustomizeBaseControllerConfigurationPath").mkdirs()			
 		}
@@ -506,11 +502,14 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 		if (buildId == null || buildId.toString().isBlank()) {
 			buildId = "${project.ext.majorVersionNumber}_${project.ext.minorVersionNumber}_${project.ext.revisionVersionNumber}"
 		}
-		replaceFile("$kubernetesConfigurationServicesPath/$kubernetesConfigurationPathname", ".yaml", "@@PRODUCT_BUILD_ID@@", "$buildId").each{ printInfo("Modified service kubernetes file " + it + ".") }			
-		replaceFile("$kubernetesConfigurationElementsPath/$kubernetesConfigurationPathname", ".yaml", "@@PRODUCT_BUILD_ID@@", "$buildId").each{ printInfo("Modified elements kubernetes file " + it + ".") }			
+		replaceFile("$kubernetesConfigurationServicesPath/$kubernetesConfigurationPathname", ".yaml", "@@PRODUCT_BUILD_ID@@", "$buildId"); //.each{ printInfo("Modified service kubernetes file " + it + ".") }			
+		replaceFile("$kubernetesConfigurationElementsPath/$kubernetesConfigurationPathname", ".yaml", "@@PRODUCT_BUILD_ID@@", "$buildId"); //.each{ printInfo("Modified elements kubernetes file " + it + ".") }			
 
 		def fileContent = new File("${kubernetesConfigurationPath}/${kubernetesApplicationFilename}")
 		printInfo("> Create kubernetes product " + colorize(HIGHLITE_LEVEL, "${fileContent}".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")		
+		copyFile("$kubernetesConfigurationPath/${kubernetesApplicationConfigPath}/" + new File(kubernetesApplicationNamespaceConfigFilename).getName(), "${kubernetesConfigurationPath}/${kubernetesApplicationFilename}");
+		fileContent.append("---")
+
 		def header = true
 		def line
 		def controllerContent = ""
@@ -519,7 +518,6 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 			while ((line = it.readLine()) != null) {				
 				def hasComment = line.startsWith("#") || line.toString().trim().isEmpty()
 				if (header && hasComment) {
-					fileContent.append(line + NELINE)
 					controllerHeader += line + NELINE
 				} else {
 					header = false		
@@ -765,14 +763,20 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 		if (project.hasProperty('kustomizeSupport') && project.getProperty('kustomizeSupport')) {
 			def kustomizeFile = new File("$kustomizeConfigurationPath/$kustomizeBaseKustomization")
 			createFileFromTemplate(kustomizeFile.getPath(), getTemplateFile('kustomization.template'), true /*overwrite*/, true /*print*/, true /*replace*/, NELINE /*only nl*/)
+
+			kustomizeFile.append("resources:" + NELINE)
+			copyFile("$kubernetesConfigurationPath/${kubernetesApplicationConfigPath}/" + new File(kubernetesApplicationNamespaceConfigFilename).getName(), 
+			         "$kustomizeConfigurationPath/$kustomizeBaseConfigConfigurationPath/" + new File(kubernetesApplicationNamespaceConfigFilename).getName());
+			kustomizeFile.append("  - $kustomizeBaseConfigConfigurationPath/" + new File(kubernetesApplicationNamespaceConfigFilename).getName() + NELINE);
 		
 			copyFile(kubernetesServicesFilename, "$kustomizeConfigurationPath/$kustomizeBaseControllerConfigurationPath/" + new File(kubernetesServicesFilename).getName());
 			kustomizeResources.add("$kustomizeBaseControllerConfigurationPath/" + new File(kubernetesServicesFilename).getName());
 
-			kustomizeFile.append("resources:" + NELINE)
 			new File("$kubernetesConfigurationPath/${kubernetesApplicationConfigPath}").eachFileRecurse (groovy.io.FileType.FILES) { file ->
-				copyFile(file.getPath(), "$kustomizeConfigurationPath/$kustomizeBaseConfigConfigurationPath/" + file.getName());
-				kustomizeFile.append("  - $kustomizeBaseConfigConfigurationPath/" + file.getName() + NELINE);
+				if (!"${kubernetesApplicationNamespaceConfigFilename}".toString().endsWith(""+file.getName())) {
+					copyFile(file.getPath(), "$kustomizeConfigurationPath/$kustomizeBaseConfigConfigurationPath/" + file.getName());
+					kustomizeFile.append("  - $kustomizeBaseConfigConfigurationPath/" + file.getName() + NELINE);
+				}
 			}
 
 			new File("$kubernetesConfigurationElementsPath").eachFileRecurse (groovy.io.FileType.FILES) { file ->
@@ -784,7 +788,7 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 			
 			kustomizeResources.each{ kustomizeFile.append("  - " + it + NELINE) };
 		}
-		
+
 		if (project.hasProperty('kubernetesInstallSupport') && project.getProperty('kubernetesInstallSupport')) {
 			// create install information
 			createFileFromTemplate("$gradleBuildDirectory/$kubernetesConfigurationPathname/INSTALL.md", getTemplateFile('INSTALL.template'), true /*overwrite*/, false /*print*/, true /*replace*/, NELINE /*only nl*/)
