@@ -648,7 +648,7 @@ setCommonGradleDefaultPropertyIfNull("kubernetesDatabasePasswordKey", "password"
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseUsername", "appuser")    // service database user
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabasePassword", "pleaseCh@nge1t") // service database password
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseAdminSecretBaseName", "database-admin-secret")
-setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseAdminSecretName", "${kubernetesDatabaseAdminSecretBaseName}-@@PRODUCT_BUILD_ID@@")
+setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseAdminSecretName", "${kubernetesDatabaseAdminSecretBaseName}") //-@@PRODUCT_BUILD_ID@@
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseAdminUsername", "dbadmin") // admin database user
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseAdminPassword", "${kubernetesDatabasePassword}") // service database password
 
