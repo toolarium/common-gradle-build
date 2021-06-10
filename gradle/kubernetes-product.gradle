@@ -525,6 +525,18 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 				}
 			}
 		}
+
+		// add additional content
+		if (project.hasProperty('kubernetesFileAdditionalContent') && !project.getProperty('kubernetesFileAdditionalContent').toString().trim().isEmpty()) {
+			def additionalContent = project.getProperty('kubernetesFileAdditionalContent').toString()
+			if (!additionalContent.toString().endsWith(NELINE)) {
+				additionalContent = additionalContent.toString() + NELINE
+			}
+			
+			fileContent.append(NELINE)
+			fileContent.append(additionalContent)
+			fileContent.append("---")
+		}
 		
 		// combine ingress
 		if (project.hasProperty('kubernetesIngresControlFilename') && !project.getProperty('kubernetesIngresControlFilename').toString().trim().isEmpty()) {
@@ -536,7 +548,7 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 			header = true
 			new File(kubernetesIngresControlFilename).withReader {
 				while ((line = it.readLine()) != null) {				
-					if (!header || !line.startsWith("#") || line.toString().trim().isEmpty()) {
+					if (!header || !line.startsWith("#") || line.toString().trim().isBlank()) {
 						fileContent.append(line + NELINE)
 						header = false		
 					}
