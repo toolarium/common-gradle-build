@@ -36,6 +36,7 @@ if (!project.hasProperty('commonGradleBuildElementPath')) {
 	ext.commonGradleBuildElementPath="${commonGradleBuildUrl}/build-element"
 }
 
+// nuxt.config.js
 def nuxtConfig="${project.rootDir}".replace('\\', '/')+"/$nuxtConfig"
 if (new File(nuxtConfig).exists()) {
 	new File(nuxtConfig).withReader('UTF-8') { reader ->

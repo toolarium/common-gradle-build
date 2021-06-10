@@ -10,11 +10,8 @@
 FROM @@dockerImage@@
 
 # define build settings
-ARG UID=@@dockerUID@@
-ARG GID=@@dockerGID@@
 ARG EXPOSE_PORT="@@dockerExposePort@@"
 ARG RUNTIMEUSER="@@dockerUser@@"
-ARG RUNTIMEGROUP="@@dockerGroup@@"
 ARG TIMEZONE="@@dockerTimezone@@"
 ARG DEPLOYMENT_SOURCE_PATH="@@dockerDeploymentSourcePath@@"
 ARG DEPLOYMENT_SUBPATH="@@dockerSubPathAccess@@"
@@ -35,9 +32,8 @@ LABEL vendor="@@LICENSE_ORGANISATION@@" \
     is-release-version="@@IS_RELEASE_VERSION@@" \
     build-timestamp="@@BUILD_TIMESTAMP_SHORT@@"
 
-# set user and group
-RUN addgroup -g ${UID} ${RUNTIMEGROUP} \
-    && adduser -D ${RUNTIMEUSER} -G ${RUNTIMEGROUP} -u ${GID}
+# set user
+RUN adduser -D ${RUNTIMEUSER}
 
 # set timezone
 RUN apk --no-cache add --update \
@@ -50,12 +46,16 @@ RUN if [ "${ENABLE_ACCESS_LOG}" = "false" ] ; then rm /var/log/nginx/access.log 
 
 # create path and set permissions for user
 RUN mkdir -p ${DEPLOYMENT_PATH}${DEPLOYMENT_SUBPATH} \
-  && chown -R ${RUNTIMEUSER}:${RUNTIMEGROUP} ${DEPLOYMENT_PATH}${DEPLOYMENT_SUBPATH} \
-  && chmod -R 755 ${DEPLOYMENT_PATH}${DEPLOYMENT_SUBPATH} \
-  && chown -R ${RUNTIMEUSER}:${RUNTIMEGROUP} /var/cache/nginx \
-  && chown -R ${RUNTIMEUSER}:${RUNTIMEGROUP} /var/log/nginx \
-  && touch /var/run/nginx.pid \
-  && chown -R ${RUNTIMEUSER}:${RUNTIMEGROUP} /var/run/nginx.pid
+    && chown -R ${RUNTIMEUSER} ${DEPLOYMENT_PATH}${DEPLOYMENT_SUBPATH} \
+    && chmod -R 755 ${DEPLOYMENT_PATH}${DEPLOYMENT_SUBPATH} \
+    && chmod -R g=u ${DEPLOYMENT_PATH}${DEPLOYMENT_SUBPATH} \
+    && chown -R ${RUNTIMEUSER} /var/cache/nginx \
+    && chmod -R g=u /var/cache/nginx \
+    && chown -R ${RUNTIMEUSER} /var/log/nginx \
+    && chmod -R g=u /var/log/nginx \
+    && touch /var/run/nginx.pid \
+    && chown -R ${RUNTIMEUSER} /var/run/nginx.pid \
+    && chmod -R g=u /var/run/nginx.pid
 
 # define port and root directory in the default.conf
 RUN cp /etc/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf.org \
@@ -84,7 +84,7 @@ RUN cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.org \
   && cat /etc/nginx/nginx.conf.org | sed 's/^user /#user /' > /etc/nginx/nginx.conf
 
 # copy the application
-COPY --chown=${RUNTIMEUSER}:${RUNTIMEGROUP} ${DEPLOYMENT_SOURCE_PATH} ${DEPLOYMENT_PATH}${DEPLOYMENT_SUBPATH}
+COPY --chown=${RUNTIMEUSER} ${DEPLOYMENT_SOURCE_PATH} ${DEPLOYMENT_PATH}${DEPLOYMENT_SUBPATH}
 
 # set language
 ENV LANG='${DEFAULT_LOCALE}.${DEFAULT_ENCODING}' LANGUAGE='${DEFAULT_LOCALE}:${DEFAULT_LANGUAGE}'
