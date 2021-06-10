@@ -104,6 +104,26 @@ task dockerBuild {
 			def createProjectDockerfile=project.hasProperty("createProjectIndividualDockerfie") && project.getProperty("createProjectIndividualDockerfie")
 			def tempDockerFile=getUniqueTempName("${rootProject.name}", "${project.version}-dockerfile", null)
 
+			if (project.hasProperty('dockerSupportProjectTemplateList') && project.getProperty('dockerSupportProjectTemplateList') && project.hasProperty('allowedDockerfileTemplateProjects')) {
+				def allowedDockerfileTemplateProjectList = new ArrayList(Arrays.asList(allowedDockerfileTemplateProjects.split(", ")))
+				if (allowedDockerfileTemplateProjectList!=null && !allowedDockerfileTemplateProjectList.isEmpty() && !allowedDockerfileTemplateProjectList.contains("${rootProject.name}".toString())) {
+					supportProjectDockerfile = false
+					createProjectDockerfile = false
+					
+					if (localFileExist) {
+						def ignoreDockerFilename = "$dockerFileTemplate"
+						if (localDockerFileExist) {
+							ignoreDockerFilename = "$dockerFile"
+						}
+						
+						printWarn("This project is not allowed to have own file " +colorize(HIGHLITE_LEVEL, ignoreDockerFilename) + "!")
+						if ("true".equalsIgnoreCase("" + project.getProperty('isReleaseVersion'))) {
+							addError("Found not supported dockerfile ${ignoreDockerFilename}!")
+						}
+					}
+				}
+			}
+	
 			if (supportProjectDockerfile && createProjectDockerfile) {			
 				if (!localFileExist) {
 					// create local file in project 

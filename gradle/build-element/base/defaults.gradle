@@ -548,6 +548,10 @@ if (!"$dockerIgnoreFile".toString().isEmpty()) {
 	addCommonGradlePropertyList("allowedMainFiles", "$dockerIgnoreFile")
 }
 
+// define the projects which are allowed to have a local Dockerfile.template
+setCommonGradleDefaultPropertyIfNull("dockerSupportProjectTemplateList", false)
+addCommonGradlePropertyList("allowedDockerfileTemplateProjects", "")
+
 
 /***************************************************************************************
  * kubernetes
@@ -824,6 +828,10 @@ setCommonGradleDefaultPropertyIfNull("kubernetesIdmStartupInitialDelaySeconds", 
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmStartupPeriodSeconds", project.getProperty('kubernetesLivenessPeriodSeconds'))
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmStartupSuccessThreshold", project.getProperty('kubernetesLivenessSuccessThreshold'))
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmStartupTimeoutSeconds", project.getProperty('kubernetesLivenessTimeoutSeconds'))
+
+// define the projects which are allowed to have a local kubernetes.template
+setCommonGradleDefaultPropertyIfNull("kubernetesSupportProjectTemplateList", false)
+addCommonGradlePropertyList("allowedKubernetesTemplateProjects", "")
 
 
 /***************************************************************************************

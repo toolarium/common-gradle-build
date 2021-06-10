@@ -161,7 +161,26 @@ task kubernetesConfiguration() {
 	dependsOn kubernetesApplicationConfig
 	onlyIf { return project.hasProperty('kubernetesSupport') && project.getProperty('kubernetesSupport') }
 
-	if (project.hasProperty('kubernetesProjectConfiguration') && project.getProperty('kubernetesProjectConfiguration')) {
+	def supportProjectKubernetesTemplate=project.hasProperty('kubernetesProjectConfiguration') && project.getProperty('kubernetesProjectConfiguration')
+
+	doFirst {
+		if (project.hasProperty('kubernetesSupportProjectTemplateList') && project.getProperty('kubernetesSupportProjectTemplateList') && project.hasProperty('allowedKubernetesTemplateProjects')) {
+			def allowedKubernetesTemplateProjectList = new ArrayList(Arrays.asList(allowedKubernetesTemplateProjects.split(", ")))
+			if (allowedKubernetesTemplateProjectList!=null && !allowedKubernetesTemplateProjectList.isEmpty() && !allowedKubernetesTemplateProjectList.contains("${rootProject.name}".toString())) {
+				supportProjectKubernetesTemplate = false
+				
+				def localFileExist=new File("${srcKubernetesDirectory}/${kubernetesFileTemplateName}").exists()
+				if (localFileExist) {
+					printWarn("This project is not allowed to have own file " +colorize(HIGHLITE_LEVEL, "${srcKubernetesDirectory}/${kubernetesFileTemplateName}") + "!")
+					if ("true".equalsIgnoreCase("" + project.getProperty('isReleaseVersion'))) {
+						addError("Found not supported own kuberntes file ${srcKubernetesDirectory}/${kubernetesFileTemplateName}!")
+					}
+				}
+			}
+		}
+	}
+
+	if (supportProjectKubernetesTemplate) {
 		doLast {
 			// add docker prefix tag
 			def dockerTagPrefix = ""

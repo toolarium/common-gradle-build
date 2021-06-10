@@ -340,3 +340,12 @@ setCommonGradleProperty("projectIndividualCheckstyleConfiguration", false)
  ***************************************************************************************/
 //addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/my-folder")
 //addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/my-text-file.txt")
+
+// define the projects which are allowed to have a local Dockerfile.template
+//setCommonGradleDefaultPropertyIfNull("dockerSupportProjectTemplateList", false)
+//addCommonGradlePropertyList("allowedDockerfileTemplateProjects", "")
+
+// define the projects which are allowed to have a local kubernetes.template
+//setCommonGradleDefaultPropertyIfNull("kubernetesSupportProjectTemplateList", false)
+//addCommonGradlePropertyList("allowedKubernetesTemplateProjects", "")
+
