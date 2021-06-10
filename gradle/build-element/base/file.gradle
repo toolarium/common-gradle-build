@@ -338,7 +338,8 @@ ext.replaceFile = { filePath, fileExtension, searchContext, relacesearchContext,
 	}
 	
 	for (File file: files) {
-		def content = ""
+		def tempFilename = getUniqueTempName("${rootProject.name}", "${project.version}-" + file.getName(), null)
+		def tempFile = new File(tempFilename)
 		def changedFile = false
 		try {			
 			file.withReader {
@@ -358,20 +359,28 @@ ext.replaceFile = { filePath, fileExtension, searchContext, relacesearchContext,
 						changedFile = true
 					}
 					
-					content += line + NELINE;
+					tempFile.append(line + NELINE);
 				}
 			}
 			
 			if (changedFile) {
-				file.write(content)
+				copyFile("$tempFilename", "" + file.getPath(), true)
 				filesReplaced.add(file)
 			}
 		} catch (Exception e) {
 			printWarn("Could not process file " + file.getName() + ": " + e.getMessage())
+		} finally {
+			try {
+				if (tempFile!=null) {
+					tempFile.delete()
+				}
+			} catch (Exception e) {				
+			}
+		
 		}
 	}
 	
-	logInfo("Update files : " + filesReplaced.size())										
+	logInfo("Update files: " + filesReplaced.size())										
 	return filesReplaced;
 }
 
