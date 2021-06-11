@@ -39,6 +39,12 @@ RUN apk --no-cache add --update \
     && cp "/usr/share/zoneinfo/${TIMEZONE}" /etc/localtime \
     && echo "${TIMEZONE}" > /etc/timezone
 
+# add common-build dependencies
+#RUN apk --no-cache add curl \
+#    && apk --no-cache add gawk \
+#    && apk --no-cache add xz \
+#    && apk --no-cache add bash
+
 # create path and set permissions for user
 RUN mkdir -p ${DEPLOYMENT_PATH} \
     && chown -R ${RUNTIMEUSER} ${DEPLOYMENT_PATH} \
@@ -57,6 +63,10 @@ ENV LANG='${DEFAULT_LOCALE}.${DEFAULT_ENCODING}' LANGUAGE='${DEFAULT_LOCALE}:${D
 
 # switch RUNTIMEUSER
 USER ${RUNTIMEUSER}
+
+# install cb
+#WORKDIR /home/${RUNTIMEUSER}
+#RUN bash -c "curl -fsSL https://raw.githubusercontent.com/toolarium/common-build/master/bin/cb-install | /bin/bash >/dev/null"
 
 # change working path
 WORKDIR ${DEPLOYMENT_PATH}

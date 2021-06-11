@@ -737,7 +737,15 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 
 				// prepare kustomize files
 				if (project.hasProperty('kustomizeSupport') && project.getProperty('kustomizeSupport')) {
-					copyFile(file.getPath(), "$kustomizeConfigurationPath/$kustomizeBaseServicesConfigurationPath/" + file.getName())
+					def destFile = new File("$kustomizeConfigurationPath/$kustomizeBaseServicesConfigurationPath/" + file.getName())
+					file.withReader {
+						def serviceFileLine
+						while ((serviceFileLine = it.readLine()) != null) {
+							serviceFileLine = replaceNamespace(serviceFileLine, "${kubernetesNamespace}")
+							destFile.append(serviceFileLine + NELINE);
+						}
+					}
+
 					kustomizeResources.add("$kustomizeBaseServicesConfigurationPath/" + file.getName())
 				}
 			} catch (Exception e) {

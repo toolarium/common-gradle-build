@@ -29,7 +29,7 @@ LABEL vendor="@@LICENSE_ORGANISATION@@" \
     version="@@VERSION@@" \
     is-release-version="@@IS_RELEASE_VERSION@@" \
     build-timestamp="@@BUILD_TIMESTAMP_SHORT@@"
-  
+
 # set user
 RUN adduser -D ${RUNTIMEUSER}
 
