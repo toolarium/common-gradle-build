@@ -33,8 +33,8 @@ LABEL vendor="@@LICENSE_ORGANISATION@@" \
 # set user
 RUN adduser -D ${RUNTIMEUSER}
 
-# set timezone
-RUN apk --no-cache add --update \
+# update and set timezone
+RUN apk --no-cache -U upgrade \
     && apk --no-cache add tzdata \
     && cp "/usr/share/zoneinfo/${TIMEZONE}" /etc/localtime \
     && echo "${TIMEZONE}" > /etc/timezone
