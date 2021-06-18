@@ -22,7 +22,7 @@ quarkus.log.console.format =%d{yyyy-MM-dd HH:mm:ss,SSS} - %.1p - [%H|%i|%t{id}] 
 # production configuration: never allow database generation on production!
 %prod.quarkus.hibernate-orm.database.generation = none
 %prod.quarkus.hibernate-orm.sql-load-script = no-file
-%prod.quarkus.datasource.db-kind = @@kubernetesDatabaseType@@
+%prod.quarkus.datasource.db-kind = ${@@KUBERNETES_DATABASE_KIND@@:@@KUBERNETES_DATABASE_DEFAULT_KIND@@}
 %prod.quarkus.datasource.username = ${@@KUBERNETES_DATABASE_USERNAME_ENV_NAME@@}
 %prod.quarkus.datasource.password = ${@@KUBERNETES_DATABASE_PASSWORD_ENV_NAME@@}
 %prod.quarkus.datasource.jdbc.url = ${@@KUBERNETES_DATABASE_JDBC_URL_ENV_NAME@@}
@@ -37,9 +37,11 @@ quarkus.log.console.format =%d{yyyy-MM-dd HH:mm:ss,SSS} - %.1p - [%H|%i|%t{id}] 
 %test.quarkus.liquibase.migrate-at-start = false
 %test.quarkus.hibernate-orm.sql-load-script = import-dev.sql
 %test.quarkus.datasource.db-kind = h2
+%test.quarkus.datasource.jdbc.driver = org.h2.Driver
 %test.quarkus.datasource.username = username-default
 %test.quarkus.datasource.password =
 %test.quarkus.datasource.jdbc.url = jdbc:h2:mem:@@PROJECT_NAME@@
+%test.quarkus.http.test-port = 0
 
 # dev configration: update database, log debug -> cb run
 %dev.quarkus.log.category."@@PACKAGE@@".level = DEBUG
@@ -51,7 +53,15 @@ quarkus.log.console.format =%d{yyyy-MM-dd HH:mm:ss,SSS} - %.1p - [%H|%i|%t{id}] 
 #%dev.quarkus.hibernate-orm.database.generation = update # or none
 #%dev.quarkus.liquibase.migrate-at-start = true
 #%dev.quarkus.hibernate-orm.sql-load-script = no-file
-#%dev.quarkus.datasource.db-kind = @@kubernetesDatabaseType@@
+
+#%dev.quarkus.datasource.db-kind = postgresql
 #%dev.quarkus.datasource.username = postgres
 #%dev.quarkus.datasource.password = admin
 #%dev.quarkus.datasource.jdbc.url = jdbc:postgresql://localhost:5432/@@PROJECT_NAME@@
+
+#%dev.quarkus.datasource.db-kind = oracle
+#%dev.quarkus.datasource.username = system
+#%dev.quarkus.datasource.password = oracle
+#%dev.quarkus.datasource.jdbc.url = jdbc:oracle:thin:@localhost:49161/xe
+
+
