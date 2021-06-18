@@ -376,7 +376,6 @@ ext.replaceFile = { filePath, fileExtension, searchContext, relacesearchContext,
 				}
 			} catch (Exception e) {				
 			}
-		
 		}
 	}
 	
