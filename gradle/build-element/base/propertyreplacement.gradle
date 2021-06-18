@@ -243,6 +243,9 @@ ext.searchReplaceByProperties = { inputLine, replacePlaceHolders = true ->
 		}
 		
 		// kubernetes / application.properties environment variable names
+		if (project.hasProperty('kubernetesDatabaseKind')) {
+			line = line.replaceAll('@@KUBERNETES_DATABASE_KIND@@', "${project.ext.kubernetesDatabaseKind}".toString())
+		}
 		if (project.hasProperty('kubernetesDatabaseJdbcUrlEnvName')) {
 			line = line.replaceAll('@@KUBERNETES_DATABASE_JDBC_URL_ENV_NAME@@', "${project.ext.kubernetesDatabaseJdbcUrlEnvName}".toString())
 		}
@@ -308,7 +311,7 @@ ext.searchReplaceByProperties = { inputLine, replacePlaceHolders = true ->
 			line = line.replaceAll('@@KUBERNETES_DATABASE_MAXSIZE_VALUE@@', "${project.ext.kubernetesDatabaseMaxConnections}".toString())
 		}
 		if (project.hasProperty('kubernetesDatabaseType')) {
-			line = line.replaceAll('@@kubernetesDatabaseType@@', "${project.ext.kubernetesDatabaseType}".toString())
+			line = line.replaceAll('@@KUBERNETES_DATABASE_DEFAULT_KIND@@', "${project.ext.kubernetesDatabaseType}".toString())
 		}
 
 		if (project.hasProperty('kubernetesApplicationSecretName')) {

@@ -154,7 +154,7 @@ setCommonGradleProperty("licenseFile", "$commonGradleBuildHome/$licenseFilename"
 /***************************************************************************************
  * code quality: checkstyle
  ***************************************************************************************/
-//setCommonGradleProperty("checkstyleToolVersion", '8.27')
+//setCommonGradleProperty("checkstyleToolVersion", '8.37')
 //setCommonGradleProperty("checkstyleMaxWarnings", 0)
 //setCommonGradleProperty("checkstyleXMLReport", false)
 //setCommonGradleProperty("checkstyleHTMLReport", true)
@@ -166,7 +166,7 @@ setCommonGradleProperty("projectIndividualCheckstyleConfiguration", false)
 /***************************************************************************************
  * test coverage: jacoco
  ***************************************************************************************/
-//setCommonGradleProperty("jacocoToolDefaultVersion", '0.8.5')
+//setCommonGradleProperty("jacocoToolDefaultVersion", '0.8.6')
 //setCommonGradleProperty("jacocoXMLReport", false)
 //setCommonGradleProperty("jacocoCSVReport", false)
 //setCommonGradleProperty("jacocoHTMLReport", true)

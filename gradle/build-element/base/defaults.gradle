@@ -247,7 +247,7 @@ setCommonGradleDefaultPropertyIfNull("compileJavaHome", "")
  * toolarium enum configuration support
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("hasToolariumEnumConfiguration", true)
-setCommonGradleDefaultPropertyIfNull("toolariumEnumConfigurationVersion", "0.9.9") // in kubernetes-product.gradle there is an additional dependency
+setCommonGradleDefaultPropertyIfNull("toolariumEnumConfigurationVersion", "0.9.10") // in kubernetes-product.gradle there is an additional dependency
 setCommonGradleDefaultPropertyIfNull("kubernetesProductEnvironmentVariableName", "environment-variables.properties")
 setCommonGradleDefaultPropertyIfNull("kubernetesProductEnvironmentVariablePath", "kubernetes-product")
 setCommonGradleDefaultPropertyIfNull("kubernetesProductEnvironmentVariableFilename", "${gradleBuildDirectory}/${kubernetesProductEnvironmentVariablePath}/${kubernetesProductEnvironmentVariableName}")
@@ -630,6 +630,7 @@ setCommonGradleDefaultPropertyIfNull("kubernetesIngressProxyBodySize", "10m")
 setCommonGradleDefaultPropertyIfNull("kubernetesFileAdditionalContent", "")
 
 // kubernetes / application.properties environment variable names
+setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseKind", "DATABASE_KIND")
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseJdbcUrlEnvName", "DATABASE_JDBC_URL")
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseMaxSizieEnvName", "DATABASE_JDBC_MAXSIZE")
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseUsernameEnvName", "DATABASE_USERNAME")

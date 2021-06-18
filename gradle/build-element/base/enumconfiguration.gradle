@@ -25,7 +25,7 @@ buildscript {
 		//maven { url("https://oss.sonatype.org/content/repositories/snapshots") }
 	}
 	dependencies {
-		def toolariumEnumConfigurationVersion="0.9.9"
+		def toolariumEnumConfigurationVersion="0.9.10"
 		if (project.hasProperty('toolariumEnumConfigurationVersion')) {
 			toolariumEnumConfigurationVersion = project.getProperty('toolariumEnumConfigurationVersion')
 		}
