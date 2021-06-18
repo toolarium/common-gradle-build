@@ -220,6 +220,7 @@ ext.createJavaSourcePath = { ->
 				new File(srcMainResourcesDirectory).mkdir()
 			}
 
+			/*
 			if (project.hasProperty('srcTestJavaDirectory') && !new File(srcTestJavaDirectory).exists()) {
 				printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcTestJavaDirectory) + ".")
 				if (new File(srcTestJavaDirectory).mkdirs()
@@ -227,6 +228,7 @@ ext.createJavaSourcePath = { ->
 					setCommonGradleProperty('IS_NEW_SRC_FOLDER', true)
 				}
 			}
+			*/
 
 			if (project.hasProperty('srcTestResourcesDirectory') && !new File(srcTestResourcesDirectory).exists()) {
 				printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcTestResourcesDirectory) + ".")
