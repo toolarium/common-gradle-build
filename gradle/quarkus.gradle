@@ -272,3 +272,28 @@ projectValidation {
 		}
 	}
 }
+
+/***************************************************************************************
+ * packaging
+ ***************************************************************************************/
+build { ->
+	doLast {
+		// support of quarkus < v1.12
+		def minDefaultVersion = parseReleaseVersion("1.12.0");
+		def currentVersion = parseReleaseVersion(quarkusPluginVersion);		
+		def file = new File("${quarkusAppDirectory}");
+		if (currentVersion!=null && (currentVersion.compareTo(minDefaultVersion) < 0) && file.isDirectory() && (file.list().length == 0)) {
+			def quarkusAppLib = new File("${quarkusAppDirectory}/lib");				
+			logInfo("Copy lib folder " + colorize(HIGHLITE_LEVEL, "${gradleBuildDirectory}/lib") + colorize(INFO_LEVEL, " to ") + colorize(HIGHLITE_LEVEL, "${quarkusAppLib}") + colorize(INFO_LEVEL, ".") )
+			copy { from "${gradleBuildDirectory}/lib" into "${quarkusAppLib}" } 
+
+			def runnerJarName = "${project.name}-${project.version}-runner.jar"
+			logInfo("Copy quarkus runner " + colorize(HIGHLITE_LEVEL, "${runnerJarName}") + colorize(INFO_LEVEL, " to ") + colorize(HIGHLITE_LEVEL, "${quarkusAppDirectory}/${quarkusAppJar}") + colorize(INFO_LEVEL, ".") )
+			copyFile("${gradleBuildDirectory}/${runnerJarName}", "${quarkusAppDirectory}/${quarkusAppJar}")
+		}
+
+		if (project.hasProperty('createFatJar') && project.getProperty('createFatJar')) {
+			buildFatJar("${gradleBuildDirectory}")
+		}
+	}
+}

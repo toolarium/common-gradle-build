@@ -47,8 +47,7 @@ RUN mkdir -p ${DEPLOYMENT_PATH} \
     && chmod -R g=u ${DEPLOYMENT_PATH}
 
 # copy application
-COPY --chown=${RUNTIMEUSER} build/lib/* ${DEPLOYMENT_PATH}/lib/
-COPY --chown=${RUNTIMEUSER} ${DEPLOYMENT_SOURCE_PATH} ${DEPLOYMENT_PATH}/app.jar
+COPY --chown=${RUNTIMEUSER} build/quarkus-app/ ${DEPLOYMENT_PATH}/
 
 # set language
 ENV LANG='${DEFAULT_LOCALE}.${DEFAULT_ENCODING}' LANGUAGE='${DEFAULT_LOCALE}:${DEFAULT_LANGUAGE}'
@@ -67,4 +66,4 @@ USER ${RUNTIMEUSER}
 WORKDIR ${DEPLOYMENT_PATH}
 
 # start service
-ENTRYPOINT [ "java", "-jar", "/deployment/app.jar" ]
+ENTRYPOINT [ "java", "-jar", "/deployment/quarkus-app.jar" ]
