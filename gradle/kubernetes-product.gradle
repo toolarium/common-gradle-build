@@ -235,7 +235,7 @@ ext.createJsonServiceInfo = { urlMap, serviceMap, serviceNamespace, serviceName,
 		addError("WARNING: External service url path conflict with services ${serviceNameUsePath} and ${serviceName}!")
 	}
 
-	serviceMap[serviceName] = servicePathExternal	
+	serviceMap[serviceName] = servicePathExternal
 	serviceNameUsePath = urlMap[servicePathInternal] 
 	if (serviceNameUsePath == null) {
 		urlMap[servicePathInternal] = serviceName
@@ -438,7 +438,7 @@ task kubernetesDatabase() {
  ****************************************************************************************/
 task extractKubernetes(type: Copy) {
 	group = 'Build'
-	description = 'Extract kubernetes jar file dependencoes'
+	description = 'Extract kubernetes jar file dependencies'
     dependsOn configurations.kubernetes
 
     from { // use of closure defers evaluation until execution time
@@ -454,7 +454,7 @@ task extractKubernetes(type: Copy) {
  ****************************************************************************************/
 task extractKubernetesInformation(type: Copy) {
 	group = 'Build'
-	description = 'Extract kubernetes jar file dependencoes'
+	description = 'Extract kubernetes jar file dependencies'
     dependsOn configurations.kubernetes
 	
     from { // use of closure defers evaluation until execution time
@@ -466,11 +466,82 @@ task extractKubernetesInformation(type: Copy) {
 
 
 /****************************************************************************************
+ * Process kubernetes dependencies
+ ****************************************************************************************/
+task processKubernetesDependencies() {
+	group = 'Build'
+	description = 'Process the kubernetes file dependencies'
+    dependsOn extractKubernetes
+	
+	doLast {
+		if (new File("${kubernetesProductEnvironmentVariableFilename}").exists()) {
+			def properties = readPropertiesFile("${kubernetesProductEnvironmentVariableFilename}")
+			
+			printInfo("> Process kubernetes dependency " + colorize(HIGHLITE_LEVEL, "$kubernetesConfigurationServicesPath/${kubernetesConfigurationPathname}".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")
+			new File("$kubernetesConfigurationServicesPath/${kubernetesConfigurationPathname}").eachFileRecurse (groovy.io.FileType.FILES) { file ->
+				printInfo("  -> Process kubernetes dependency " + colorize(HIGHLITE_LEVEL, file.getName()) + "...")
+
+				def tempFilename = getUniqueTempName("${rootProject.name}", "${project.version}-" + file.getName(), null)
+				def tempFile = new File(tempFilename)
+				def changedFile = false
+
+				try {			
+					file.withReader {
+						def line
+						def mainSection = ""
+						while ((line = it.readLine()) != null) {
+							tempFile.append(line + NELINE)
+							
+							if (!line.matches("^\\s+.*")) {
+								def sectionSplit = line.split(':')
+								if (sectionSplit!=null && sectionSplit.length>0) {
+									mainSection = sectionSplit[0]
+								}
+							}
+							
+							if (mainSection.equalsIgnoreCase("spec") && line.startsWith("        env:")) {
+								changedFile = true
+								properties.each { prop, val ->
+									tempFile.append("        - name: " + prop + NELINE)
+									tempFile.append("          value: \"" + val + "\"" + NELINE)
+								}
+							}
+						}
+					}
+					
+					if (changedFile) {
+						copyFile("$tempFilename", "" + file.getPath(), true)
+					}
+				} catch (Exception e) {
+					printWarn("Could not process file " + file.getName() + ": " + e.getMessage())
+				} finally {
+					try {
+						if (tempFile!=null) {
+							tempFile.delete()
+						}
+					} catch (Exception e) {				
+					}
+				}
+			}	
+		}
+		
+		// replace global environment variable
+		def buildId = "${project.ext.scmVersionNumber}"
+		if (buildId == null || buildId.toString().isBlank()) {
+			buildId = "${project.ext.majorVersionNumber}_${project.ext.minorVersionNumber}_${project.ext.revisionVersionNumber}"
+		}
+		replaceFile("$kubernetesConfigurationServicesPath/$kubernetesConfigurationPathname", ".yaml", "@@PRODUCT_BUILD_ID@@", "$buildId"); //.each{ printInfo("Modified service kubernetes file " + it + ".") }			
+		replaceFile("$kubernetesConfigurationElementsPath/$kubernetesConfigurationPathname", ".yaml", "@@PRODUCT_BUILD_ID@@", "$buildId"); //.each{ printInfo("Modified elements kubernetes file " + it + ".") }			
+	}
+}
+
+
+/****************************************************************************************
  * Extract kubernetes artefacts
  ****************************************************************************************/
-task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extractKubernetes', 'extractKubernetesInformation', 'prepareEnumConfigurationIndex', 'kubernetesDatabase']) {
+task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extractKubernetes', 'extractKubernetesInformation', 'processKubernetesDependencies', 'prepareEnumConfigurationIndex', 'kubernetesDatabase']) {
 	group = 'Build'
-	description = 'Concat kubernetes dependencoes'	
+	description = 'Concat kubernetes dependencies'	
 
 	doLast {			
 		new File("$kubernetesConfigurationPath").mkdirs()
@@ -496,14 +567,6 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 		def kubernetesDeleteApplication = "${kubernetesDeleteCommand} namespace ${kubernetesNamespace} --namespace=${kubernetesNamespace}" + NELINE
 		kubernetesDeleteApplication += "${kubernetesDeleteCommand} -A ValidatingWebhookConfiguration ingress-nginx-admission"
 		setCommonGradleDefaultPropertyIfNull('kubernetesDeleteApplication', kubernetesDeleteApplication)
-		
-		// replace global environment variable
-		def buildId = "${project.ext.scmVersionNumber}"
-		if (buildId == null || buildId.toString().isBlank()) {
-			buildId = "${project.ext.majorVersionNumber}_${project.ext.minorVersionNumber}_${project.ext.revisionVersionNumber}"
-		}
-		replaceFile("$kubernetesConfigurationServicesPath/$kubernetesConfigurationPathname", ".yaml", "@@PRODUCT_BUILD_ID@@", "$buildId"); //.each{ printInfo("Modified service kubernetes file " + it + ".") }			
-		replaceFile("$kubernetesConfigurationElementsPath/$kubernetesConfigurationPathname", ".yaml", "@@PRODUCT_BUILD_ID@@", "$buildId"); //.each{ printInfo("Modified elements kubernetes file " + it + ".") }			
 
 		def fileContent = new File("${kubernetesConfigurationPath}/${kubernetesApplicationFilename}")
 		printInfo("> Create kubernetes product " + colorize(HIGHLITE_LEVEL, "${fileContent}".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")		
