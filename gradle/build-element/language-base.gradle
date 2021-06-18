@@ -58,11 +58,13 @@ ext.createSourcePath = { ->
             }
 		}
 
+		/*
 		if (project.getProperty('createSrcTestDirectory')) {
 			printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, srcTestDirectory) + ".")
 			if (new File(srcTestDirectory).mkdirs()) {
                 setCommonGradleProperty('IS_NEW_SRC_FOLDER', true)
             }
 		}
+		*/
 	}
 }
