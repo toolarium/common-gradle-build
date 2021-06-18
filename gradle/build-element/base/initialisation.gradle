@@ -381,7 +381,7 @@ ext.projectInitialisation = { ->
 		if (createGradleProperties) {
 			def checkstyleToolVersion
 			if (!project.hasProperty('checkstyleToolVersion')) {
-				checkstyleToolVersion = "8.27"
+				checkstyleToolVersion = "8.37"
 			} else {
 				checkstyleToolVersion = project.getProperty('checkstyleToolVersion')
 			}

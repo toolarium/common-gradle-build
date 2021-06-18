@@ -130,6 +130,7 @@ setCommonGradleDefaultPropertyIfNull("changelogSupportIdListOnEndOfTheComment", 
 
 // defines artecfacts to create
 setCommonGradleDefaultPropertyIfNull("createJar", true)
+setCommonGradleDefaultPropertyIfNull("createFatJar", false)
 setCommonGradleDefaultPropertyIfNull("createSourceJar", true)
 setCommonGradleDefaultPropertyIfNull("createJavadocJar", true)
 setCommonGradleDefaultPropertyIfNull("createCustomJar", false)
@@ -246,12 +247,16 @@ setCommonGradleDefaultPropertyIfNull("compileJavaHome", "")
  * toolarium enum configuration support
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("hasToolariumEnumConfiguration", true)
-setCommonGradleDefaultPropertyIfNull("toolariumEnumConfigurationVersion", "0.9.8") // in kubernetes-product.gradle there is an additional dependency
+setCommonGradleDefaultPropertyIfNull("toolariumEnumConfigurationVersion", "0.9.9") // in kubernetes-product.gradle there is an additional dependency
+setCommonGradleDefaultPropertyIfNull("kubernetesProductEnvironmentVariableName", "environment-variables.properties")
+setCommonGradleDefaultPropertyIfNull("kubernetesProductEnvironmentVariablePath", "kubernetes-product")
+setCommonGradleDefaultPropertyIfNull("kubernetesProductEnvironmentVariableFilename", "${gradleBuildDirectory}/${kubernetesProductEnvironmentVariablePath}/${kubernetesProductEnvironmentVariableName}")
+
 
 /***************************************************************************************
  * toolarium changelog parser support
  ***************************************************************************************/
-setCommonGradleDefaultPropertyIfNull("toolariumChangelogParserVersion", "0.9.0")
+setCommonGradleDefaultPropertyIfNull("toolariumChangelogParserVersion", "0.9.1")
 
 
 /***************************************************************************************
@@ -324,8 +329,8 @@ if (initTesting) {
 /***************************************************************************************
  * code quality: checkstyle
  ***************************************************************************************/
-setCommonGradleDefaultPropertyIfNull("checkstyleToolDefaultVersion", '8.27')
-//setCommonGradleDefaultPropertyIfNull("checkstyleToolVersion", '8.27')
+setCommonGradleDefaultPropertyIfNull("checkstyleToolDefaultVersion", '8.37')
+//setCommonGradleDefaultPropertyIfNull("checkstyleToolVersion", '8.37')
 setCommonGradleDefaultPropertyIfNull("checkstyleMaxWarnings", 0)
 setCommonGradleDefaultPropertyIfNull("checkstyleXMLReport", false)
 setCommonGradleDefaultPropertyIfNull("checkstyleHTMLReport", true)
@@ -339,11 +344,17 @@ setCommonGradleDefaultPropertyIfNull("checkstyleEclipseConfigurationOverwrite", 
 /***************************************************************************************
  * test coverage: jacoco
  ***************************************************************************************/
-setCommonGradleDefaultPropertyIfNull("jacocoToolDefaultVersion", '0.8.5')
+setCommonGradleDefaultPropertyIfNull("jacocoToolDefaultVersion", '0.8.6')
 setCommonGradleDefaultPropertyIfNull("jacocoXMLReport", false)
 setCommonGradleDefaultPropertyIfNull("jacocoCSVReport", false)
 setCommonGradleDefaultPropertyIfNull("jacocoHTMLReport", true)
 setCommonGradleDefaultPropertyIfNull("jacocoReportPath", "${buildDir}/reports/testcoverage")
+
+
+/***************************************************************************************
+ * dependency-check
+ ***************************************************************************************/
+setCommonGradleDefaultPropertyIfNull("toolariumDependencyCheckVersion", '6.2.2')
 
 
 /***************************************************************************************
@@ -355,6 +366,8 @@ setCommonGradleDefaultPropertyIfNull("quarkusPlatformArtifactId", 'quarkus-unive
 setCommonGradleDefaultPropertyIfNull("quarkusPlatformGroupId", 'io.quarkus')
 setCommonGradleDefaultPropertyIfNull("quarkusPlatformVersion", "${quarkusPluginVersion}")
 setCommonGradleDefaultPropertyIfNull("quarkusRepository", "https://repository.jboss.org/maven2/")
+setCommonGradleDefaultPropertyIfNull("quarkusAppDirectory", "${gradleBuildDirectory}/quarkus-app")
+setCommonGradleDefaultPropertyIfNull("quarkusAppJar", "quarkus-app.jar")
 
 
 /***************************************************************************************
