@@ -288,3 +288,46 @@ task sourcesJar(type: Jar, dependsOn: classes) { jar ->
 		}
 	}
 }
+
+
+/***************************************************************************************
+ * Build a fat jar 
+ ***************************************************************************************/
+ext.buildFatJar = { jarLibFolder = "${gradleBuildDirectory}" ->
+	def manifestReferenceFile = "${gradleBuildDirectory}/tmp/jar/MANIFEST.MF"
+	if (!new File(manifestReferenceFile).exists()) {
+		ant.unzip(src: "${gradleBuildDirectory}/libs/${project.name}-${project.version}.jar", dest: "${gradleBuildDirectory}/tmp") {
+			patternset {
+				include( name: 'META-INF/MANIFEST.MF' )
+			}
+		}
+		manifestReferenceFile = "${gradleBuildDirectory}/tmp/META-INF/MANIFEST.MF"
+	}
+	
+	ant.jar(destfile: "${gradleBuildDirectory}/libs/${project.name}-${project.version}.jar", manifest: manifestReferenceFile) {
+		fileset(dir: "$jarLibFolder") { 
+			include(name: '*.jar') 
+			include(name: 'lib/**.jar') 
+		}
+
+		if (project.getProperty('includeLicenseFile')) {
+			fileset(file: "${licenseFile}") {}
+		}
+
+		if (project.getProperty('includeReadmeFile')) {
+			fileset(file: "${readmeFile}") {}
+		}
+
+		if (project.getProperty('includeVersionFile')) {
+			fileset(file: "${versionFile}") {}
+		}
+
+		if (project.getProperty('includeChangelogFile')) {
+			fileset(file: "${changelogFile}") {}
+		}
+	}
+	
+	if (project.hasProperty('showCreatedArtefacts') && project.getProperty('showCreatedArtefacts')) {
+		printInfo("> Created fat package " + colorize(HIGHLITE_LEVEL, "${gradleBuildDirectory}/libs/${project.name}-${project.version}.jar".replace("./", "")) + ".")
+	}
+}
