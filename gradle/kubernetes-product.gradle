@@ -938,6 +938,10 @@ configurations {
 }
 configurations.jar {
 	transitive = false
+	
+	attributes {
+		attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage, Usage.JAVA_API))
+	}
 }
 build { ->
 	doLast {

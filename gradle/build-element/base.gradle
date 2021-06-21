@@ -559,8 +559,9 @@ ext.buildFatJar = { jarLibBaseFolder = "${gradleBuildDirectory}",
 		}
 
 		fileset(dir: "$jarLibBaseFolder") { 
-			include(name: '*.jar') 
-			include(name: 'lib/**.jar')
+			include(name: '**/**.*')
+			//include(name: '*.jar') 
+			//include(name: '**/**.jar')
 		}
 
 		if (project.getProperty('includeLicenseFile')) {
