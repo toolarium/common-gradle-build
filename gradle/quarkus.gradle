@@ -273,6 +273,7 @@ projectValidation {
 	}
 }
 
+
 /***************************************************************************************
  * packaging
  ***************************************************************************************/
@@ -293,7 +294,7 @@ build { ->
 		}
 
 		if (project.hasProperty('createFatJar') && project.getProperty('createFatJar')) {
-			buildFatJar("${gradleBuildDirectory}")
+			buildFatJar("${quarkusAppDirectory}")
 		}
 	}
 }

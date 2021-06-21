@@ -36,11 +36,6 @@ if (!project.hasProperty('commonGradleBuildElementPath')) {
 	ext.commonGradleBuildElementPath="${commonGradleBuildUrl}/build-element"
 }
 
-// default classifier name
-if (!project.hasProperty("shadowClassifier")) {
-	project.ext.set("shadowClassifier", "runner")
-}
-
 // set docker image standards
 if (!project.hasProperty("dockerImage")) {
 	project.ext.set("dockerImage", "adoptopenjdk/openjdk11:alpine-jre")
@@ -49,13 +44,20 @@ if (!project.hasProperty("dockerDefaultJavaOptions")) {
 	project.ext.set("dockerDefaultJavaOptions", "-Djava.security.egd=file:/dev/./urandom")
 }
 
-
 apply from: "${commonGradleBuildUrl}/java-library.gradle"
 apply plugin: 'application'
 
+// default classifier name
+def shadowClassifierContext = ""
+if (project.hasProperty("javaApplicationShadowClassifier") && !project.getProperty("javaApplicationShadowClassifier").toString().isEmpty()) {
+	shadowClassifierContext = "-" + project.getProperty("javaApplicationShadowClassifier")
+}
+
+setCommonGradleProperty('jarRunnerFile', "${project.name}-${project.version}${shadowClassifierContext}.jar");
+
 if (!project.hasProperty("dockerDeploymentSourcePath")) {
-	//project.ext.set("dockerDeploymentSourcePath", 'build/libs/${project.name}-*-${shadowClassifier}.jar')
-	project.ext.set("dockerDeploymentSourcePath", "build/libs/*-runner.jar")
+	//project.ext.set("dockerDeploymentSourcePath", 'build/libs/${project.name}-*-${javaApplicationShadowClassifier}.jar')
+	project.ext.set("dockerDeploymentSourcePath", "build/libs/${jarRunnerFile}")
 }
 
 apply from: "${commonGradleBuildElementPath}/base/docker.gradle"
@@ -88,8 +90,8 @@ if (project.tasks.findByName('shadowJar')) {
 		exclude "META-INF/LICENSE"
 		exclude "META-INF/VERSION"
 		
-		if( project.hasProperty('shadowClassifier') ) {
-			classifier = project.getProperty('shadowClassifier')
+		if( project.hasProperty('javaApplicationShadowClassifier') ) {
+			classifier = project.getProperty('javaApplicationShadowClassifier')
 		} else {
 			classifier = 'runner'
 		}

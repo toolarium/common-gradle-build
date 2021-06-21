@@ -58,7 +58,7 @@ if (project.hasProperty('commonGradleBuildHome')) {
 
 		// apply from home
 		if (new File(commonGradleBuildHomeDefaultsFile).exists()) {
-			bootStraplogLifecycle("> Found defaults in common-gradle-build home path, apply.")
+			bootStraplogLifecycle(" > Found defaults in common-gradle-build home path, apply.")
 			def userDefined = "[${commonGradleBuildHomeDefaultsFile}]"
 			
 			if (LINE.length()>userDefined.length()) {
@@ -93,6 +93,12 @@ apply from: "${commonGradleBuildElementPath}/scm/git.gradle"
  ***************************************************************************************/
 apply from: "${commonGradleBuildElementPath}/base/model-generator.gradle"
 apply from: "${commonGradleBuildElementPath}/base/resourcebundle.gradle"
+
+
+/***************************************************************************************
+ * dependency check
+ ***************************************************************************************/
+//apply from: "${commonGradleBuildElementPath}/base/dependency-check.gradle"
 
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -519,4 +525,62 @@ ext.registerEndMessage = { message ->
 	msg += "\n  Do you like common-build?\n" 
 	msg += "  -> Go give it a star on " + colorize(TITLE_LEVEL, "https://github.com/toolarium/common-build") + "!\n"
 	setCommonGradleProperty("endMessage", msg)
+}
+
+
+/***************************************************************************************
+ * Build a fat-jar 
+ ***************************************************************************************/
+ext.buildFatJar = { jarLibBaseFolder = "${gradleBuildDirectory}",
+					sourceJarFile = "${gradleBuildDirectory}/libs/${project.name}-${project.version}.jar",
+					destJarFile = "${gradleBuildDirectory}/libs/${project.name}-${project.version}.jar",
+                    includeSourceJar = false ->					
+	def manifestReferenceFile = "${gradleBuildDirectory}/tmp/jar/MANIFEST.MF"
+	if (!new File(manifestReferenceFile).exists()) {
+		manifestReferenceFile = "${gradleBuildDirectory}/tmp/kubernetesJar/MANIFEST.MF"
+	}
+	else if (!new File(manifestReferenceFile).exists()) {
+		manifestReferenceFile = "${gradleBuildDirectory}/tmp/jarJar/MANIFEST.MF"
+	}
+
+	if ((includeSourceJar || !new File(manifestReferenceFile).exists()) && sourceJarFile!=null && new File(sourceJarFile).exists()) {
+		ant.unzip(src: sourceJarFile, dest: "${gradleBuildDirectory}/tmp") {
+			patternset {
+				include( name: 'META-INF/MANIFEST.MF' )
+			}
+		}
+		manifestReferenceFile = "${gradleBuildDirectory}/tmp/META-INF/MANIFEST.MF"
+	}
+	
+	ant.jar(destfile: destJarFile, manifest: manifestReferenceFile) {	
+		if (includeSourceJar && sourceJarFile!=null && new File(sourceJarFile).exists()) {
+			zipfileset(src: "$sourceJarFile") {
+			}
+		}
+
+		fileset(dir: "$jarLibBaseFolder") { 
+			include(name: '*.jar') 
+			include(name: 'lib/**.jar')
+		}
+
+		if (project.getProperty('includeLicenseFile')) {
+			fileset(file: "${licenseFile}") {}
+		}
+
+		if (project.getProperty('includeReadmeFile')) {
+			fileset(file: "${readmeFile}") {}
+		}
+
+		if (project.getProperty('includeVersionFile')) {
+			fileset(file: "${versionFile}") {}
+		}
+
+		if (project.getProperty('includeChangelogFile')) {
+			fileset(file: "${changelogFile}") {}
+		}
+	}
+	
+	if (project.hasProperty('showCreatedArtefacts') && project.getProperty('showCreatedArtefacts')) {
+		printInfo("> Created fat-jar package " + colorize(HIGHLITE_LEVEL, destJarFile.replace("./", "")) + ".")
+	}
 }

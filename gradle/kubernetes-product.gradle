@@ -78,6 +78,27 @@ apply from: "${commonGradleBuildElementPath}/base/enumconfiguration.gradle"
 
 
 /***************************************************************************************
+ * Build kubernetes jar file
+ ***************************************************************************************/
+task jarJar(type: Jar, dependsOn: ['kubernetesJar']) { jar ->
+	group = 'Build'
+	description = 'Assembles the kubernetes configuration into a jar file'
+
+	// define proper manifest
+	manifest {
+		attributes 	'Specification-Title'   : rootProject.name,
+					'Specification-Version' : project.version,
+					'Implementation-Title'  : rootProject.name,
+					'Implementation-Version': project.version + project.ext.scmVersionNumber,
+					'Created-By'		   	: project.ext.buildToolVersionStackMessage,
+					'Built-By'			   	: publishingUsername,
+					'Build-Timestamp'	   	: BUILD_TIMESTAMP,
+					'Build-OS'			   	: "${System.properties['os.name']} (${System.properties['os.version']}), ${System.properties['os.arch']}"
+	}
+}
+
+
+/***************************************************************************************
  * artefacts
  ***************************************************************************************/
 project.ext.set("dockerDeploymentSourcePath", "build/${kubernetesApplicationConfigurationInformationPathname}")
@@ -86,6 +107,7 @@ project.ext.set("kubernetesProductServicesPathname", "container")
 ext.kubernetesConfigurationProjctPath = "${kubernetesConfigurationServicesPath}/${kubernetesConfigurationPathname}"
 artifacts {
 	archives kubernetesJar
+	archives jarJar
 }
 
 
@@ -893,6 +915,64 @@ defaultTasks 'clean', 'projectValidation', 'build'
 if (project.hasProperty('kubernetesProductInformationSupport') && project.getProperty('kubernetesProductInformationSupport')) {
 	build.finalizedBy('dockerBuild')
 	publish.finalizedBy('dockerPush')
+}
+
+
+/****************************************************************************************
+ * Additional fat-jar
+ ****************************************************************************************/
+ // default classifier name
+def fatJarClassifierContext = ""
+if (project.hasProperty("fatJarClassifierContext") && !project.getProperty("fatJarClassifierContext").toString().isEmpty()) {
+	fatJarClassifierContext = "-" + project.getProperty("fatJarClassifierContext")
+}
+
+configurations {
+	jar {
+/*  
+		withDependencies { DependencySet dependencies ->
+			printInfo dependencies
+		}
+*/		
+	}
+}
+configurations.jar {
+	transitive = false
+}
+build { ->
+	doLast {
+		def fatJarFilename = "${gradleBuildDirectory}/libs/${project.name}-${project.version}.jar"
+		if (project.hasProperty('createFatJar') && project.getProperty('createFatJar')) {
+			printInfo("> Create java fat-jar " + colorize(HIGHLITE_LEVEL, "${fatJarFilename}".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")
+			setCommonGradleDefaultPropertyIfNull('jarRunnerFile', "${project.name}-${project.version}${fatJarClassifierContext}.jar");
+			def javaAppPath = "${gradleBuildDirectory}/app"
+			mkdir "$javaAppPath"
+			mkdir "$javaAppPath/lib"
+			def hasRunner = false
+			def counter = 0
+			configurations.jar.collect { 
+				if ("$jarRunnerFile".toString().isEmpty() || !it.getName().toString().startsWith("$jarRunnerFile".toString())) {
+				    printInfo("  -> Add fat-jar lib dependency " + colorize(HIGHLITE_LEVEL, it.getName()) + "...")
+					copyFile(""+it, "$javaAppPath/lib/" + it.getName(), true) 
+					counter++
+				} else {
+				    printInfo("  -> Set fat-jar runner dependency " + colorize(HIGHLITE_LEVEL, it.getName()) + "...")
+					copyFile(""+it, "${gradleBuildDirectory}/${project.name}-${project.version}.jar", true)
+					hasRunner = true
+				}
+			}
+			
+			if (!hasRunner) {
+				addError("No fat-jar runner found, expected ${jarRunnerFile}!")
+			} else if (counter==0) {
+				addError("No jar dependency found!")
+			}
+
+			buildFatJar("${javaAppPath}", "${gradleBuildDirectory}/${project.name}-${project.version}${fatJarClassifierContext}.jar", "$fatJarFilename", hasRunner)
+		} else {
+			delete fatJarFilename
+		}		
+	}
 }
 
 

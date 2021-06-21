@@ -371,6 +371,12 @@ setCommonGradleDefaultPropertyIfNull("quarkusAppJar", "quarkus-app.jar")
 
 
 /***************************************************************************************
+ * java-app defaults
+ ***************************************************************************************/
+setCommonGradleDefaultPropertyIfNull("javaApplicationShadowClassifier", "")
+
+
+/***************************************************************************************
  * node plugin defaults
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("nodePluginVersion", '2.2.4')
@@ -877,13 +883,6 @@ setCommonGradleDefaultPropertyIfNull("commonGradleConfigResourcebundleMaxMemory"
 
 
 /***************************************************************************************
- * resource bundle
- ***************************************************************************************/
-setCommonGradleDefaultPropertyIfNull("commonGradleJptoolsModelGeneratorVersion", "1.7.6")
-setCommonGradleDefaultPropertyIfNull("commonGradleJexcelapiModelGeneratorVersion", "2.6.12")
-
-
-/***************************************************************************************
  * library version used in templates
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("commonGradleSlf4jApiVersion", "1.7.30")
@@ -893,3 +892,11 @@ setCommonGradleDefaultPropertyIfNull("commonGradleJavaxValidtionVersion", "2.0.1
 setCommonGradleDefaultPropertyIfNull("commonGradleJavaxWsRSApiVersion", "2.1.1")
 setCommonGradleDefaultPropertyIfNull("commonGradleJacksonAnnotationVersion", "2.11.2")
 setCommonGradleDefaultPropertyIfNull("commonGradleJavaxAnnotationVersion", "1.3.2")
+
+
+/***************************************************************************************
+ * resource bundle
+ ***************************************************************************************/
+setCommonGradleDefaultPropertyIfNull("commonGradleJptoolsModelGeneratorVersion", "${commonGradleJptoolsVersion}")
+setCommonGradleDefaultPropertyIfNull("commonGradleJexcelapiModelGeneratorVersion", "2.6.12")
+

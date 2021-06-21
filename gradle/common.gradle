@@ -151,7 +151,7 @@ if (commonCustomConfigVersion!=null && !commonCustomConfigVersion.isEmpty()) {
 		bootStraplogWarn("Could not select cached version of the common-gradle-build: " + e.getMessage())
 	}
 
-	bootStraplogLifecycle("> Use common-gradle-build-home from " + commonGradleBuildHome)
+	bootStraplogLifecycle(" > Use common-gradle-build-home from " + commonGradleBuildHome)
 }
 project.ext.set('commonGradleBuildHome', commonGradleBuildHome)
 project.ext.set('commonGradleBuildHomeBase', commonGradleBuildHomeBase)
@@ -214,7 +214,7 @@ if (!project.hasProperty('commonGradleBuildUrl')) {
 		ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
 	}
 	
-	bootStraplogLifecycle("> Use common-gradle-build from " + ext.commonGradleBuildUrl)
+	bootStraplogLifecycle(" > Use common-gradle-build from " + ext.commonGradleBuildUrl)
 }
 
 if (!project.hasProperty('commonGradleBuildElementPath')) {
@@ -262,7 +262,7 @@ if (project.hasProperty('projectType')) {
 		includeFile += 'java-library.gradle'
 	}
 	
-	bootStraplogLifecycle("> Guessed projectType: ${includeFile}")
+	bootStraplogLifecycle(" > Guessed projectType: ${includeFile}")
 }
 
 
@@ -283,7 +283,7 @@ if (project.hasProperty('commonGradleBuildHome')) {
 
 		// apply from home
 		if (new File(commonGradleBuildHomeCustomFile).exists()) {
-			bootStraplogLifecycle("> Found custom in common-gradle-build home path, apply.")
+			bootStraplogLifecycle(" > Found custom in common-gradle-build home path, apply.")
 			def userDefined = "[${commonGradleBuildHomeCustomFile}]"
 			
 			if (LINE.length()>userDefined.length()) {
