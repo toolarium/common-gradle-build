@@ -367,6 +367,7 @@ setCommonGradleDefaultPropertyIfNull("quarkusPlatformGroupId", 'io.quarkus')
 setCommonGradleDefaultPropertyIfNull("quarkusPlatformVersion", "${quarkusPluginVersion}")
 setCommonGradleDefaultPropertyIfNull("quarkusRepository", "https://repository.jboss.org/maven2/")
 setCommonGradleDefaultPropertyIfNull("quarkusAppDirectory", "${gradleBuildDirectory}/quarkus-app")
+setCommonGradleDefaultPropertyIfNull("quarkusAppSubPathName", "app")
 setCommonGradleDefaultPropertyIfNull("quarkusAppJar", "quarkus-app.jar")
 
 
