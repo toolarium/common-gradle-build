@@ -966,6 +966,10 @@ build { ->
 				}
 			}
 			
+			if (new File("${srcMainResourcesDirectory}").exists()) {
+				copy { from "${srcMainResourcesDirectory}" into "${javaAppPath}" } 
+			}
+			
 			if (!hasRunner) {
 				addError("No fat-jar runner found, expected ${jarRunnerFile}!")
 			} else if (counter==0) {

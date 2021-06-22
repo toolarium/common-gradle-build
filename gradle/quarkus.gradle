@@ -154,6 +154,41 @@ ext.validateQuarkusVersion = { ->
 
 
 /***************************************************************************************
+ * Update application properties file
+ ***************************************************************************************/
+ext.updateApplicationProperties = { inputFile = "${srcMainResourcesDirectory}/application.properties", 
+									outputFile = "${gradleBuildDirectory}/application.properties" ->
+	new File(new File("$outputFile").getParent()).mkdirs()
+	def fileContent = new File(outputFile)
+	fileContent.createNewFile()
+	
+	new File(inputFile).withReader {
+		def header = true
+		def line
+		while ((line = it.readLine()) != null) {
+			def isComment = line.startsWith("#")
+			def isEmptyLine = line.toString().trim().isEmpty()
+			if (header) {
+				if (isComment || isEmptyLine) {
+					fileContent.append(line + NELINE)
+				} else {
+					header = false
+				}
+				
+				if (isEmptyLine) {
+					header = false
+				}
+			} else {
+				if (!isComment && !isEmptyLine && !line.toString().trim().startsWith("%test") && !line.toString().trim().startsWith("%dev")) {
+					fileContent.append(line.replace("%prod.", "") + NELINE)
+				}
+			}
+		}
+	}
+}
+
+
+/***************************************************************************************
  * Depending on java-library
  ***************************************************************************************/
 apply from: "${commonGradleBuildUrl}/java-library.gradle"
@@ -221,11 +256,8 @@ prepareToolariumEnumConfiguration.dependsOn(collectEnumConfiguration)
 prepareApplicationConfiguration {
 	doLast {
 		new File("$kubernetesApplicationInformationPath").mkdirs()
-		new File("$kubernetesApplicationServicePath").mkdirs()
-		Properties prop = readApplicationPropertiesFile();
-		OutputStream stream = new FileOutputStream("$kubernetesApplicationServicePath/${rootProject.name}.properties");
-		prop.store(stream, "quarkus production application.properties")
-		stream.close()
+		new File("$kubernetesApplicationServicePath").mkdirs()		
+		updateApplicationProperties("${srcMainResourcesDirectory}/application.properties", "$kubernetesApplicationServicePath/${rootProject.name}.properties")
 	}
 }
 
@@ -291,6 +323,63 @@ build { ->
 			def runnerJarName = "${project.name}-${project.version}-runner.jar"
 			logInfo("Copy quarkus runner " + colorize(HIGHLITE_LEVEL, "${runnerJarName}") + colorize(INFO_LEVEL, " to ") + colorize(HIGHLITE_LEVEL, "${quarkusAppDirectory}/${quarkusAppJar}") + colorize(INFO_LEVEL, ".") )
 			copyFile("${gradleBuildDirectory}/${runnerJarName}", "${quarkusAppDirectory}/${quarkusAppJar}")
+		}
+
+		if (project.hasProperty('createServicePathProperties') && project.getProperty('createServicePathProperties')) {
+			def applicationProperties = readPropertiesFile("${srcMainResourcesDirectory}/application.properties")
+			def serviceRootPath = applicationProperties.getProperty("quarkus.http.root-path", "/api")
+			def gradleProperties = readPropertiesFile("${gradlePropertiesFile}")
+			def serviceKubernetesUrlPath = gradleProperties.getProperty("kubernetesUrlPath", "$kubernetesUrlPath")
+			
+			def servicePathProperties = new File("${quarkusAppDirectory}/service-path.properties")
+			servicePathProperties.append("# service-path.properties" + NELINE)
+			servicePathProperties.append("service.root-path = " + serviceRootPath + NELINE)
+			servicePathProperties.append("service.resources = " + serviceKubernetesUrlPath + NELINE)		
+		}
+
+		if (project.hasProperty('updateApplicationProperties') && project.getProperty('updateApplicationProperties')) {
+			def jarFilename = "${quarkusAppDirectory}/${quarkusAppSubPathName}/${project.name}-${project.version}.jar"
+			def tempFile = "${quarkusAppDirectory}/${quarkusAppSubPathName}/${project.name}-${project.version}_old.jar"
+			def manifestReferenceFile = "${gradleBuildDirectory}/tmp/jar/MANIFEST.MF"
+				
+			if (new File(jarFilename).exists() && new File(manifestReferenceFile).exists()) {
+				def applicationPropertiesFile = "${quarkusAppDirectory}/${quarkusAppSubPathName}/application.properties"
+				updateApplicationProperties("${srcMainResourcesDirectory}/application.properties", applicationPropertiesFile)
+				copyFile("$jarFilename", "$tempFile", true)
+				
+				ant.jar(destfile: jarFilename, manifest: manifestReferenceFile) {	
+					zipfileset(src: tempFile) {
+						exclude(name: 'application.properties')
+					}
+					
+					fileset(dir: "${quarkusAppDirectory}/${quarkusAppSubPathName}") { 
+						include(name: 'application.properties')
+					}
+
+					if (project.getProperty('includeLicenseFile')) {
+						fileset(file: "${licenseFile}") {}
+					}
+
+					if (project.getProperty('includeReadmeFile')) {
+						fileset(file: "${readmeFile}") {}
+					}
+
+					if (project.getProperty('includeVersionFile')) {
+						fileset(file: "${versionFile}") {}
+					}
+
+					if (project.getProperty('includeChangelogFile')) {
+						fileset(file: "${changelogFile}") {}
+					}
+				}
+				
+				if (project.hasProperty('showCreatedArtefacts') && project.getProperty('showCreatedArtefacts')) {
+					printInfo("> Update package " + colorize(HIGHLITE_LEVEL, jarFilename.replace("./", "")) + ".")
+				}
+				
+				delete "$applicationPropertiesFile"
+				delete "$tempFile"
+			}
 		}
 
 		if (project.hasProperty('createFatJar') && project.getProperty('createFatJar')) {

@@ -369,6 +369,8 @@ setCommonGradleDefaultPropertyIfNull("quarkusRepository", "https://repository.jb
 setCommonGradleDefaultPropertyIfNull("quarkusAppDirectory", "${gradleBuildDirectory}/quarkus-app")
 setCommonGradleDefaultPropertyIfNull("quarkusAppSubPathName", "app")
 setCommonGradleDefaultPropertyIfNull("quarkusAppJar", "quarkus-app.jar")
+setCommonGradleDefaultPropertyIfNull("createServicePathProperties", true)
+setCommonGradleDefaultPropertyIfNull("updateApplicationProperties", true)
 
 
 /***************************************************************************************
