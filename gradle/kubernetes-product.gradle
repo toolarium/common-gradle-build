@@ -80,7 +80,7 @@ apply from: "${commonGradleBuildElementPath}/base/enumconfiguration.gradle"
 /***************************************************************************************
  * Build kubernetes jar file
  ***************************************************************************************/
-task jarJar(type: Jar, dependsOn: ['kubernetesJar']) { jar ->
+task customJar(type: Jar, dependsOn: ['kubernetesJar']) { jar ->
 	group = 'Build'
 	description = 'Assembles the kubernetes configuration into a jar file'
 
@@ -107,7 +107,7 @@ project.ext.set("kubernetesProductServicesPathname", "container")
 ext.kubernetesConfigurationProjctPath = "${kubernetesConfigurationServicesPath}/${kubernetesConfigurationPathname}"
 artifacts {
 	archives kubernetesJar
-	archives jarJar
+	archives customJar
 }
 
 
@@ -944,6 +944,10 @@ configurations.jar {
 	}
 }
 build { ->
+	if (project.hasProperty('createFatJar') && project.getProperty('createFatJar')) {
+		setCommonGradleProperty('createCustomJar', true);		
+	}
+	
 	doLast {
 		def fatJarFilename = "${gradleBuildDirectory}/libs/${project.name}-${project.version}.jar"
 		if (project.hasProperty('createFatJar') && project.getProperty('createFatJar')) {
