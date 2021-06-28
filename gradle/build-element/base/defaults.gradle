@@ -361,7 +361,8 @@ setCommonGradleDefaultPropertyIfNull("toolariumDependencyCheckVersion", '6.2.2')
  * quarkus plugin defaults
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("defaultQuarkusPluginVersion", '1.11.7.Final')
-setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", "${defaultQuarkusPluginVersion}")
+setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", '1.13.7.Final')
+//setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", "${defaultQuarkusPluginVersion}")
 setCommonGradleDefaultPropertyIfNull("quarkusPlatformArtifactId", 'quarkus-universe-bom')
 setCommonGradleDefaultPropertyIfNull("quarkusPlatformGroupId", 'io.quarkus')
 setCommonGradleDefaultPropertyIfNull("quarkusPlatformVersion", "${quarkusPluginVersion}")
