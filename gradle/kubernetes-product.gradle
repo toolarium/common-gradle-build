@@ -77,6 +77,12 @@ apply from: "${commonGradleBuildElementPath}/java/publication.gradle"
 apply from: "${commonGradleBuildElementPath}/base/enumconfiguration.gradle"
 
 
+// set product name, organisation and copy right
+setCommonGradleDefaultPropertyIfNull("productName", "${rootProject.name}")
+setCommonGradleDefaultPropertyIfNull("productOrganisation", "${licenseOrganisation}")
+setCommonGradleDefaultPropertyIfNull("copyrightText", "© ${YEAR} ${productOrganisation} – v${version}")
+
+
 /***************************************************************************************
  * Build kubernetes jar file
  ***************************************************************************************/
@@ -202,9 +208,10 @@ ext.createProductServiceInfo = { serviceMap ->
 	productServicesFile.append(startJsonElement())
 	
 	productServicesFile.append(createJsonKeyValueElement(1, "namespace", "$kubernetesNamespace") + ',' + NELINE)
-	productServicesFile.append(createJsonKeyValueElement(1, "name", "${rootProject.name}") + ',' + NELINE)
+	productServicesFile.append(createJsonKeyValueElement(1, "name", "${productName}") + ',' + NELINE)
 	productServicesFile.append(createJsonKeyValueElement(1, "version", "${project.version}") + ',' + NELINE)
-	productServicesFile.append(createJsonKeyValueElement(1, "organisation", "${project.ext.licenseOrganisation}") + ',' + NELINE)
+	productServicesFile.append(createJsonKeyValueElement(1, "organisation", "${productOrganisation}") + ',' + NELINE)
+	productServicesFile.append(createJsonKeyValueElement(1, "copyright", "$copyrightText") + ',' + NELINE)
 	
 	if (!"${project.ext.licenseText}".toString().trim().isEmpty()) {
 		productServicesFile.append(createJsonKeyValueElement(1, "license", "${project.ext.licenseText}") + ',' + NELINE)
