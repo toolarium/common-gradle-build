@@ -95,6 +95,7 @@ setCommonGradleProperty("licenseFile", "$commonGradleBuildHome/$licenseFilename"
  * project basic settings
  ***************************************************************************************/
 //setCommonGradleProperty("licenseOrganisation", "your-organisation-name")
+//setCommonGradleProperty("productOrganisation", "${licenseOrganisation}")
 //setCommonGradleProperty("licenseText", "MIT License: https://mit-license.org")
 //setCommonGradleProperty("licenseUrl", "https://mit-license.org")
 
@@ -183,7 +184,7 @@ setCommonGradleProperty("projectIndividualCheckstyleConfiguration", false)
 /***************************************************************************************
  * quarkus plugin version
  ***************************************************************************************/
-//setCommonGradleProperty("defaultQuarkusPluginVersion", '1.11.7.Final')
+//setCommonGradleProperty("defaultQuarkusPluginVersion", '1.13.7.Final')
 //setCommonGradleProperty("quarkusPluginVersion", "${defaultQuarkusPluginVersion}")
 
 // readiness and liveness
