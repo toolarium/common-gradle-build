@@ -374,9 +374,9 @@ ext.createApplicationInformationServiceIndex = { ->
 
 
 /****************************************************************************************
- * Yaml ident fileter
+ * Yaml ident filter
  ****************************************************************************************/
-ext.yamlIndentFiler = { LineNumberReader it, indentLevel ->
+ext.yamlIndentFilter = { LineNumberReader it, indentLevel ->
 	def result = []
 	def numberOfLines = 0
 	
@@ -390,13 +390,7 @@ ext.yamlIndentFiler = { LineNumberReader it, indentLevel ->
 			break;
 		}
 	}
-	
-	/*
 	it.reset()
-	for (int i = 0; i < numberOfLines; i++) {
-		it.readLine()
-	}
-	*/
 	return result
 }
 
@@ -680,14 +674,14 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 					header = true
 					fileContent.append("# Source: " + file.getName() + NELINE)
 					while ((line = it.readLine()) != null) {
-						def ignoreLine = line.startsWith("#") || line.toString().trim().isEmpty()
+						def ignoreLine = line.trim().startsWith("#") || line.toString().trim().isEmpty()
 						if (header && ignoreLine) {
 						} else {
 							header = false			
 							line = replaceNamespace(line, "${kubernetesNamespace}")
 							fileContent.append(line + NELINE)
 							
-							if (!line.matches("^\\s+.*")) {
+							if (!ignoreLine && !line.matches("^\\s+.*")) {
 								def sectionSplit = line.split(':')
 								if (sectionSplit!=null && sectionSplit.length>0) {
 									mainSection = sectionSplit[0]
@@ -699,7 +693,8 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 							}
 							
 							// search service path
-							if (mainSection.equalsIgnoreCase("metadata")) {
+							if (ignoreLine) {
+							} else if (mainSection.equalsIgnoreCase("metadata")) {
 								if (!line.startsWith("metadata")) {
 									if (line.trim().startsWith("name:")) {
 										def nameSplit = line.split(":")
@@ -728,7 +723,7 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 											if (idx>0) {
 												def key = line.substring(0, idx).replace('\"', '').trim()
 												
-												if (!"labels".equals(key) && !"annotations".equals(key)) {
+												if (!"labels".equals(key) && !"annotations".equals(key) && !line.toString().startsWith(" ")) {
 													def value = line.substring(idx + 1).replace('\"', '').trim()
 													labelsList.add('\"' + key + '\": \"' + value + '\"')
 												}
@@ -772,28 +767,28 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 								if ("Service".equalsIgnoreCase(kind) && selectorSplit!=null && selectorSplit.length>1) {
 									servicePathInternal = selectorSplit[1].trim()
 									logInfo("Found internal service path " + colorize(HIGHLITE_LEVEL, servicePathInternal) + ".")
-								}								
+								}
 							} else if (mainSection.equalsIgnoreCase("spec") && !line.startsWith("spec") && line.trim().indexOf("image:")>0) {
 								def pos = line.indexOf("image:")
 								if (pos>=0) {
 									imageName = line.substring(6 + pos).trim()
 								}
 							} else if (mainSection.equalsIgnoreCase("spec") && !line.startsWith("spec") && line.indexOf("startupProbe:")>0) {
-								yamlIndentFiler(it, line.indexOf("startupProbe:")).each { jt ->
+								yamlIndentFilter(it, line.indexOf("startupProbe:")).each { jt ->
 									def idx = jt.indexOf("path:")
 									if ((startupPath==null || startupPath.toString().isEmpty()) && idx>=0) {
 										startupPath = jt.toString().substring(idx+6).replace('\"', '')
 									}
 								}
 							} else if (mainSection.equalsIgnoreCase("spec") && !line.startsWith("spec") && line.indexOf("readinessProbe:")>0) {
-								yamlIndentFiler(it, line.indexOf("readinessProbe:")).each { jt ->
+								yamlIndentFilter(it, line.indexOf("readinessProbe:")).each { jt ->
 									def idx = jt.indexOf("path:")
 									if ((readinessPath==null || readinessPath.toString().isEmpty()) && idx>=0) {
 										readinessPath = jt.toString().substring(idx+6).replace('\"', '')
 									}
 								}
 							} else if (mainSection.equalsIgnoreCase("spec") && !line.startsWith("spec") && line.indexOf("livenessProbe:")>0) {
-								yamlIndentFiler(it, line.indexOf("livenessProbe:")).each { jt ->
+								yamlIndentFilter(it, line.indexOf("livenessProbe:")).each { jt ->
 									def idx = jt.indexOf("path:")
 									if ((livenessPath==null || livenessPath.toString().isEmpty()) && idx>=0) {
 										livenessPath = jt.toString().substring(idx+6).replace('\"', '')
