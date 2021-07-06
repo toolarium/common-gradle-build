@@ -497,9 +497,17 @@ task processKubernetesDependencies() {
     dependsOn extractKubernetes
 	
 	doLast {
+		def properties = null
 		if (new File("${kubernetesProductEnvironmentVariableFilename}").exists()) {
-			def properties = readPropertiesFile("${kubernetesProductEnvironmentVariableFilename}")
-			
+			properties = readPropertiesFile("${kubernetesProductEnvironmentVariableFilename}")
+		}
+		
+		def configMapProperties = null
+		if (new File("${kubernetesProductConfigMapEnvironmentVariableFilename}").exists()) {
+			configMapProperties = readPropertiesFile("${kubernetesProductConfigMapEnvironmentVariableFilename}")
+		}
+		
+		if (properties !=null || configMapProperties != null) {
 			printInfo("> Process kubernetes dependency " + colorize(HIGHLITE_LEVEL, "$kubernetesConfigurationServicesPath/${kubernetesConfigurationPathname}".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")
 			new File("$kubernetesConfigurationServicesPath/${kubernetesConfigurationPathname}").eachFileRecurse (groovy.io.FileType.FILES) { file ->
 				printInfo("  -> Process kubernetes dependency " + colorize(HIGHLITE_LEVEL, file.getName()) + "...")
@@ -524,9 +532,22 @@ task processKubernetesDependencies() {
 							
 							if (mainSection.equalsIgnoreCase("spec") && line.startsWith("        env:")) {
 								changedFile = true
-								properties.each { prop, val ->
-									tempFile.append("        - name: " + prop + NELINE)
-									tempFile.append("          value: \"" + val + "\"" + NELINE)
+								
+								if (properties!=null) {
+									properties.each { prop, val ->
+										tempFile.append("        - name: " + prop + NELINE)
+										tempFile.append("          value: \"" + val + "\"" + NELINE)
+									}
+								}
+								
+								if (configMapProperties!=null) {
+									configMapProperties.each { prop, secretName ->
+										tempFile.append("        - name: " + prop + NELINE)
+										tempFile.append("          valueFrom:" + NELINE)
+										tempFile.append("            secretKeyRef:" + NELINE)
+										tempFile.append("              name: " + secretName + NELINE)
+										tempFile.append("              key: " + prop + NELINE)
+									}
 								}
 							}
 						}

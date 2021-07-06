@@ -540,7 +540,7 @@ ext.buildFatJar = { jarLibBaseFolder = "${gradleBuildDirectory}",
 		manifestReferenceFile = "${gradleBuildDirectory}/tmp/kubernetesJar/MANIFEST.MF"
 	}
 	else if (!new File(manifestReferenceFile).exists()) {
-		manifestReferenceFile = "${gradleBuildDirectory}/tmp/jarJar/MANIFEST.MF"
+		manifestReferenceFile = "${gradleBuildDirectory}/tmp/customJar/MANIFEST.MF"
 	}
 
 	if ((includeSourceJar || !new File(manifestReferenceFile).exists()) && sourceJarFile!=null && new File(sourceJarFile).exists()) {

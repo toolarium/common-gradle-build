@@ -247,10 +247,12 @@ setCommonGradleDefaultPropertyIfNull("compileJavaHome", "")
  * toolarium enum configuration support
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("hasToolariumEnumConfiguration", true)
-setCommonGradleDefaultPropertyIfNull("toolariumEnumConfigurationVersion", "0.9.10") // in kubernetes-product.gradle there is an additional dependency
-setCommonGradleDefaultPropertyIfNull("kubernetesProductEnvironmentVariableName", "environment-variables.properties")
+setCommonGradleDefaultPropertyIfNull("toolariumEnumConfigurationVersion", "0.9.12") // in kubernetes-product.gradle there is an additional dependency
+setCommonGradleDefaultPropertyIfNull("kubernetesProductEnvironmentVariableName", "kubernetes-environment-variables.properties")
+setCommonGradleDefaultPropertyIfNull("kubernetesProductConfigMapEnvironmentVariableName", "kubernetes-configmap-environment-variables.properties")
 setCommonGradleDefaultPropertyIfNull("kubernetesProductEnvironmentVariablePath", "kubernetes-product")
 setCommonGradleDefaultPropertyIfNull("kubernetesProductEnvironmentVariableFilename", "${gradleBuildDirectory}/${kubernetesProductEnvironmentVariablePath}/${kubernetesProductEnvironmentVariableName}")
+setCommonGradleDefaultPropertyIfNull("kubernetesProductConfigMapEnvironmentVariableFilename", "${gradleBuildDirectory}/${kubernetesProductEnvironmentVariablePath}/${kubernetesProductConfigMapEnvironmentVariableName}")
 
 
 /***************************************************************************************
@@ -330,7 +332,7 @@ if (initTesting) {
  * code quality: checkstyle
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("checkstyleToolDefaultVersion", '8.37')
-//setCommonGradleDefaultPropertyIfNull("checkstyleToolVersion", '8.37')
+//setCommonGradleDefaultPropertyIfNull("checkstyleToolVersion", '8.42')
 setCommonGradleDefaultPropertyIfNull("checkstyleMaxWarnings", 0)
 setCommonGradleDefaultPropertyIfNull("checkstyleXMLReport", false)
 setCommonGradleDefaultPropertyIfNull("checkstyleHTMLReport", true)
