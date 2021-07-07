@@ -1,0 +1,97 @@
+/*
+ * security.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * 
+ * This file is part of the toolarium common-gradle-build.
+ * 
+ * The common-gradle-build is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * The common-gradle-build is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+/**
+ * Create password
+ */
+ext.createPassword = { length = 64 ->
+	def special = ['.' ,'-', '_', '+', '*', '$']
+	def pool = ['a'..'z','A'..'Z',0..9,'_'].flatten().plus(special);
+	Random rand = new Random(System.currentTimeMillis());
+	def passChars = (0..length - 1).collect { pool[rand.nextInt(pool.size)] };
+	def specialChar = special[rand.nextInt(special.size)]
+	passChars[rand.nextInt(passChars.size)] = specialChar
+	return passChars.join();
+}
+
+
+/**
+ * Create hash
+ */
+ext.createHash = { length = 64 ->
+	def pool = ['a'..'z','A'..'Z',0..9].flatten();
+	Random rand = new Random(System.currentTimeMillis());
+	def passChars = (0..length - 1).collect { pool[rand.nextInt(pool.size)] };
+	return passChars.join();
+}
+
+
+/**
+ * Read the public key from a file
+ */
+ext.readPublicKeyFromFile = { filename ->
+	def result = ""
+	if (new File(filename).exists()) {
+    	result = new File(filename).text
+    	result = result.replace("\r", "").replace("\n", "").replace("-----BEGIN PUBLIC KEY-----", "").replace("-----END PUBLIC KEY-----", "").toString()
+	}
+	return result
+}
+
+
+/**
+ * Read the private key from a file
+ */
+ext.readPrivateKeyFromFile = { filename ->
+	def result = ""
+	if (new File(filename).exists()) {
+    	result = new File(filename).text
+    	result = result.replace("\r", "").replace("\n", "").replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "").toString()
+	}
+	return result
+}
+
+
+/**
+ * Sign a message
+ */
+ext.signMessage = { privateKeyFilename, message, hashAlgorithm = "SHA-256" -> 
+    def privateKey = java.security.KeyFactory.getInstance("RSA").generatePrivate(new java.security.spec.PKCS8EncodedKeySpec(java.util.Base64.getDecoder().decode(readApplicationPrivateKey(privateKeyFilename))));
+	javax.crypto.Cipher cipher = javax.crypto.Cipher.getInstance("RSA");
+	cipher.init(javax.crypto.Cipher.ENCRYPT_MODE, privateKey);
+    byte[] messageHash = java.security.MessageDigest.getInstance(hashAlgorithm).digest(message.getBytes());        
+    byte[] digitalSignature = cipher.doFinal(messageHash);
+	return new String(java.util.Base64.getEncoder().encode(cipher.doFinal(message.getBytes())));
+}
+
+
+/**
+ * Verify signed message
+ */
+ext.verifyMessage = { publicKeyFilename, message, hash, hashAlgorithm = "SHA-256" ->
+    def publicKey = java.security.KeyFactory.getInstance("RSA").generatePublic(new java.security.spec.X509EncodedKeySpec(java.util.Base64.getDecoder().decode(readApplicationPublicKey(publicKeyFilename))));
+	javax.crypto.Cipher cipher = javax.crypto.Cipher.getInstance("RSA");
+	cipher.init(javax.crypto.Cipher.DECRYPT_MODE, publicKey);
+	byte[] decryptedMessageHash = cipher.doFinal(java.util.Base64.getDecoder().decode(hash.toString()))
+    byte[] newMessageHash = java.security.MessageDigest.getInstance(hashAlgorithm).digest(message.getBytes());
+    return java.util.Arrays.equals(decryptedMessageHash, newMessageHash);
+}
