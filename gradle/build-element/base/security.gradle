@@ -75,7 +75,7 @@ ext.readPrivateKeyFromFile = { filename ->
  * Sign a message
  */
 ext.signMessage = { privateKeyFilename, message, hashAlgorithm = "SHA-256" -> 
-    def privateKey = java.security.KeyFactory.getInstance("RSA").generatePrivate(new java.security.spec.PKCS8EncodedKeySpec(java.util.Base64.getDecoder().decode(readApplicationPrivateKey(privateKeyFilename))));
+    def privateKey = java.security.KeyFactory.getInstance("RSA").generatePrivate(new java.security.spec.PKCS8EncodedKeySpec(java.util.Base64.getDecoder().decode(readPrivateKeyFromFile(privateKeyFilename))));
 	javax.crypto.Cipher cipher = javax.crypto.Cipher.getInstance("RSA");
 	cipher.init(javax.crypto.Cipher.ENCRYPT_MODE, privateKey);
     byte[] messageHash = java.security.MessageDigest.getInstance(hashAlgorithm).digest(message.getBytes());        
@@ -88,7 +88,7 @@ ext.signMessage = { privateKeyFilename, message, hashAlgorithm = "SHA-256" ->
  * Verify signed message
  */
 ext.verifyMessage = { publicKeyFilename, message, hash, hashAlgorithm = "SHA-256" ->
-    def publicKey = java.security.KeyFactory.getInstance("RSA").generatePublic(new java.security.spec.X509EncodedKeySpec(java.util.Base64.getDecoder().decode(readApplicationPublicKey(publicKeyFilename))));
+    def publicKey = java.security.KeyFactory.getInstance("RSA").generatePublic(new java.security.spec.X509EncodedKeySpec(java.util.Base64.getDecoder().decode(readPublicKeyFromFile(publicKeyFilename))));
 	javax.crypto.Cipher cipher = javax.crypto.Cipher.getInstance("RSA");
 	cipher.init(javax.crypto.Cipher.DECRYPT_MODE, publicKey);
 	byte[] decryptedMessageHash = cipher.doFinal(java.util.Base64.getDecoder().decode(hash.toString()))
