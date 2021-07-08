@@ -45,6 +45,19 @@ ext.createHash = { length = 64 ->
 }
 
 
+/*
+ openssl req -newkey rsa:4096 \
+             -x509 \
+             -sha256 \
+             -days 3650 \
+             -nodes \
+             -out certificate.crt \
+             -keyout privatekey.key \
+             -subj "/C=CH/ST=Zurich/L=Zurich/O=Security/OU=IT Department/CN=toolarium"
+
+ openssl x509 -in certificate.crt -pubkey -noout > publickey.pem
+ */
+
 /**
  * Read the public key from a file
  */
@@ -72,22 +85,22 @@ ext.readPrivateKeyFromFile = { filename ->
 
 
 /**
- * Sign a message
+ * Create a message hash
  */
-ext.signMessage = { privateKeyFilename, message, hashAlgorithm = "SHA-256" -> 
+ext.createMessageHash = { privateKeyFilename, message, hashAlgorithm = "SHA-256" -> 
     def privateKey = java.security.KeyFactory.getInstance("RSA").generatePrivate(new java.security.spec.PKCS8EncodedKeySpec(java.util.Base64.getDecoder().decode(readPrivateKeyFromFile(privateKeyFilename))));
 	javax.crypto.Cipher cipher = javax.crypto.Cipher.getInstance("RSA");
 	cipher.init(javax.crypto.Cipher.ENCRYPT_MODE, privateKey);
     byte[] messageHash = java.security.MessageDigest.getInstance(hashAlgorithm).digest(message.getBytes());        
     byte[] digitalSignature = cipher.doFinal(messageHash);
-	return new String(java.util.Base64.getEncoder().encode(cipher.doFinal(message.getBytes())));
+	return java.util.Base64.getEncoder().encodeToString(digitalSignature);
 }
 
 
 /**
- * Verify signed message
+ * Verify signed a message hash
  */
-ext.verifyMessage = { publicKeyFilename, message, hash, hashAlgorithm = "SHA-256" ->
+ext.verifyMessageHash = { publicKeyFilename, message, hash, hashAlgorithm = "SHA-256" ->
     def publicKey = java.security.KeyFactory.getInstance("RSA").generatePublic(new java.security.spec.X509EncodedKeySpec(java.util.Base64.getDecoder().decode(readPublicKeyFromFile(publicKeyFilename))));
 	javax.crypto.Cipher cipher = javax.crypto.Cipher.getInstance("RSA");
 	cipher.init(javax.crypto.Cipher.DECRYPT_MODE, publicKey);
