@@ -93,18 +93,29 @@ ext.createMessageHash = { privateKeyFilename, message, hashAlgorithm = "SHA-256"
 	cipher.init(javax.crypto.Cipher.ENCRYPT_MODE, privateKey);
     byte[] messageHash = java.security.MessageDigest.getInstance(hashAlgorithm).digest(message.getBytes());        
     byte[] digitalSignature = cipher.doFinal(messageHash);
-	return java.util.Base64.getEncoder().encodeToString(digitalSignature);
+	return "{" + hashAlgorithm + "}" + java.util.Base64.getEncoder().encodeToString(digitalSignature);
 }
 
 
 /**
  * Verify signed a message hash
  */
-ext.verifyMessageHash = { publicKeyFilename, message, hash, hashAlgorithm = "SHA-256" ->
+ext.verifyMessageHash = { publicKeyFilename, message, messageHash, defaultHashAlgorithm = "SHA-256" ->
+	def hash = "" + messageHash;
+	def hashAlgorithm = defaultHashAlgorithm
+	if (hash.startsWith("{")) {
+	    def idx = hash.toString().indexOf("}", 1)
+		if (idx>0) {
+			hashAlgorithm = hash.substring(1, idx).trim()
+			hash = hash.substring(idx + 1).trim()
+		}
+	}
+
     def publicKey = java.security.KeyFactory.getInstance("RSA").generatePublic(new java.security.spec.X509EncodedKeySpec(java.util.Base64.getDecoder().decode(readPublicKeyFromFile(publicKeyFilename))));
 	javax.crypto.Cipher cipher = javax.crypto.Cipher.getInstance("RSA");
 	cipher.init(javax.crypto.Cipher.DECRYPT_MODE, publicKey);
 	byte[] decryptedMessageHash = cipher.doFinal(java.util.Base64.getDecoder().decode(hash.toString()))
+	
     byte[] newMessageHash = java.security.MessageDigest.getInstance(hashAlgorithm).digest(message.getBytes());
     return java.util.Arrays.equals(decryptedMessageHash, newMessageHash);
 }
