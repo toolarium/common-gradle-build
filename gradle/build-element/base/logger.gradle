@@ -157,7 +157,7 @@ ext.detectANSISupport = { ->
 	if (hasEnvironmentValueSet("TERM_PROGRAM", "iterm.app")) {			
 		def value = getEnvironmentValue("TERM_PROGRAM_VERSION");
 		if (value!=null && !value.isEmpty()) {
-			val ver = parseInteger(value)
+			def ver = parseInteger(value)
 			if (ver!=null && ver>=3) {
 				return TermColors.TRUECOLOR;
 			}				
@@ -165,7 +165,7 @@ ext.detectANSISupport = { ->
 		}
 	}
 	
-	val term = getEnvironmentValue("TERM");
+	def term = getEnvironmentValue("TERM");
 	if (term==null || term.isEmpty()) {
 		return TermColors.NONE;
 	}
