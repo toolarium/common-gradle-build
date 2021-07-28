@@ -66,4 +66,4 @@ USER ${RUNTIMEUSER}
 WORKDIR ${DEPLOYMENT_PATH}
 
 # start service
-ENTRYPOINT [ "java", "-jar", "/deployment/quarkus-app.jar" ]
+ENTRYPOINT [ "java", "-jar", "/deployment/quarkus-run.jar" ]

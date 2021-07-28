@@ -371,7 +371,7 @@ setCommonGradleDefaultPropertyIfNull("quarkusPlatformVersion", "${quarkusPluginV
 setCommonGradleDefaultPropertyIfNull("quarkusRepository", "https://repository.jboss.org/maven2/")
 setCommonGradleDefaultPropertyIfNull("quarkusAppDirectory", "${gradleBuildDirectory}/quarkus-app")
 setCommonGradleDefaultPropertyIfNull("quarkusAppSubPathName", "app")
-setCommonGradleDefaultPropertyIfNull("quarkusAppJar", "quarkus-app.jar")
+setCommonGradleDefaultPropertyIfNull("quarkusAppJar", "quarkus-run.jar")
 setCommonGradleDefaultPropertyIfNull("createServicePathProperties", true)
 setCommonGradleDefaultPropertyIfNull("updateApplicationProperties", true)
 
