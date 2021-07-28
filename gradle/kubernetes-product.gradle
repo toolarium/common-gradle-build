@@ -21,6 +21,11 @@
 ext.projectTypeTemplatePath='kubernetes'
 ext.includeApplicationInformation=false
 
+ext.createCustomJar = false
+if (project.hasProperty('createFatJar') && project.getProperty('createFatJar').toString().trim().equalsIgnoreCase("true")) {
+	ext.createCustomJar = project.getProperty('createFatJar').toString().trim().equalsIgnoreCase("true");
+}
+
 if (!project.hasProperty('commonGradleBuildUrl')) {
     ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
 }
@@ -70,17 +75,7 @@ apply from: "${commonGradleBuildElementPath}/base.gradle"
 apply from: "${commonGradleBuildElementPath}/base/gradle.gradle"
 apply from: "${commonGradleBuildElementPath}/base/run.gradle"
 apply from: "${commonGradleBuildElementPath}/base/json.gradle"
-apply from: "${commonGradleBuildElementPath}/base/kubernetes.gradle"
-apply from: "${commonGradleBuildElementPath}/java/repository.gradle"
-apply from: "${commonGradleBuildElementPath}/java/signing.gradle"
-apply from: "${commonGradleBuildElementPath}/java/publication.gradle"
-apply from: "${commonGradleBuildElementPath}/base/enumconfiguration.gradle"
 
-
-// set product name, organisation and copy right
-setCommonGradleDefaultPropertyIfNull("productName", "${rootProject.name}")
-setCommonGradleDefaultPropertyIfNull("productOrganisation", "${licenseOrganisation}")
-setCommonGradleDefaultPropertyIfNull("copyrightText", "© ${YEAR} ${productOrganisation} – v${version}")
 
 
 /***************************************************************************************
@@ -89,7 +84,8 @@ setCommonGradleDefaultPropertyIfNull("copyrightText", "© ${YEAR} ${productOrgan
 task customJar(type: Jar, dependsOn: ['kubernetesJar']) { jar ->
 	group = 'Build'
 	description = 'Assembles the kubernetes configuration into a jar file'
-
+	onlyIf { return (project.hasProperty('createCustomJar') && project.getProperty('createCustomJar').toString().equalsIgnoreCase("true")) }
+	
 	// define proper manifest
 	manifest {
 		attributes 	'Specification-Title'   : rootProject.name,
@@ -102,6 +98,18 @@ task customJar(type: Jar, dependsOn: ['kubernetesJar']) { jar ->
 					'Build-OS'			   	: "${System.properties['os.name']} (${System.properties['os.version']}), ${System.properties['os.arch']}"
 	}
 }
+
+apply from: "${commonGradleBuildElementPath}/base/kubernetes.gradle"
+apply from: "${commonGradleBuildElementPath}/java/repository.gradle"
+apply from: "${commonGradleBuildElementPath}/java/signing.gradle"
+apply from: "${commonGradleBuildElementPath}/java/publication.gradle"
+apply from: "${commonGradleBuildElementPath}/base/enumconfiguration.gradle"
+
+
+// set product name, organisation and copy right
+setCommonGradleDefaultPropertyIfNull("productName", "${rootProject.name}")
+setCommonGradleDefaultPropertyIfNull("productOrganisation", "${licenseOrganisation}")
+setCommonGradleDefaultPropertyIfNull("copyrightText", "© ${YEAR} ${productOrganisation} – v${version}")
 
 
 /***************************************************************************************
@@ -967,13 +975,9 @@ configurations.jar {
 	}
 }
 build { ->
-	if (project.hasProperty('createFatJar') && project.getProperty('createFatJar')) {
-		setCommonGradleProperty('createCustomJar', true);		
-	}
-	
 	doLast {
 		def fatJarFilename = "${gradleBuildDirectory}/libs/${project.name}-${project.version}.jar"
-		if (project.hasProperty('createFatJar') && project.getProperty('createFatJar')) {
+		if (project.hasProperty('createFatJar') && project.getProperty('createFatJar').toString().trim().equalsIgnoreCase("true")) {
 			printInfo("> Create java fat-jar " + colorize(HIGHLITE_LEVEL, "${fatJarFilename}".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")
 			setCommonGradleDefaultPropertyIfNull('jarRunnerFile', "${project.name}-${project.version}${fatJarClassifierContext}.jar");
 			def javaAppPath = "${gradleBuildDirectory}/app"
@@ -1009,6 +1013,7 @@ build { ->
 		}		
 	}
 }
+customJar.mustRunAfter("kubernetesJar")
 
 
 /***************************************************************************************

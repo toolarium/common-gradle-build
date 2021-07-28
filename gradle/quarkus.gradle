@@ -382,7 +382,7 @@ build { ->
 			}
 		}
 
-		if (project.hasProperty('createFatJar') && project.getProperty('createFatJar')) {
+		if (project.hasProperty('createFatJar') && project.getProperty('createFatJar').toString().trim().equalsIgnoreCase("true")) {
 			buildFatJar("${quarkusAppDirectory}")
 		}
 	}

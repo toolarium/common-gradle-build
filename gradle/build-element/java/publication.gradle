@@ -49,7 +49,7 @@ publishing {
 				artifact kubernetesJar
 			}
 
-			if (project.hasProperty('createCustomJar') && project.getProperty('createCustomJar')) {
+			if (project.hasProperty('createCustomJar') && project.getProperty('createCustomJar').toString().equalsIgnoreCase("true")) {
 				artifact customJar
 			}
 			

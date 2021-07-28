@@ -124,7 +124,7 @@ artifacts {
 		archives kubernetesJar
 	}
 
-	if (project.hasProperty('createCustomJar') && project.getProperty('createCustomJar')) {
+	if (project.hasProperty('createCustomJar') && project.getProperty('createCustomJar').toString().equalsIgnoreCase("true")) {
 		archives customJar
 	}
 }
