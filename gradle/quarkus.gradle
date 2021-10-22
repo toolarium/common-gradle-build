@@ -46,6 +46,7 @@ if (!project.hasProperty("dockerImage")) {
 }
 if (!project.hasProperty("dockerDefaultJavaOptions")) {
 	project.ext.set("dockerDefaultJavaOptions", "-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager -Djava.security.egd=file:/dev/./urandom")
+	//project.ext.set("dockerDefaultJavaOptions", "-Djava.security.egd=file:/dev/./urandom")
 }
 if (!project.hasProperty("dockerDeploymentSourcePath")) {
 	project.ext.set("dockerDeploymentSourcePath", 'build/*-runner.jar')
@@ -276,7 +277,12 @@ test {
 projectValidation {
 	if (project.getProperty('IS_NEW')) {
 		gradle.startParameter.excludedTaskNames += "build"
-	}
+	} else { // in older versions
+		File f = new File (srcMainResourcesDirectory + "/META-INF/resources/index.html")
+		if (f.exists()) {
+			f.delete()
+		}
+	}	
 
 	// validate the quarkus version
 	validateQuarkusVersion()
@@ -290,7 +296,7 @@ projectValidation {
 			
 			def quarkusResourcePath = srcMainResourcesDirectory + "/META-INF/resources"
 			new File(quarkusResourcePath).mkdirs()
-			createFileFromTemplate("${quarkusResourcePath}/index.html", getTemplateFile("index.html.template")) 
+			//createFileFromTemplate("${quarkusResourcePath}/index.html", getTemplateFile("index.html.template")) 
 
 			registerEndMessage("" << NELINE \
 								<< "  To get started, got to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
