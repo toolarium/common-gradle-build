@@ -32,7 +32,7 @@ if ("windows" == getOsName()) {
 
 setCommonGradleDefaultPropertyIfNull("snakeYamlVersion", "1.27")
 setCommonGradleDefaultPropertyIfNull("grgitCoreVersion", "4.0.2")
-setCommonGradleDefaultPropertyIfNull("gradleWrapperDefaultVersion", "6.7")
+setCommonGradleDefaultPropertyIfNull("gradleWrapperDefaultVersion", "7.2")
 setCommonGradleDefaultPropertyIfNull("gradleHome", "$userHomeDirectory/.gradle")
 setCommonGradleDefaultPropertyIfNull("gradleHomePropertiesFile", "$gradleHome/gradle.properties")
 setCommonGradleDefaultPropertyIfNull("defaultCommonGradleBuildUrl", "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/common.gradle")
@@ -331,8 +331,8 @@ if (initTesting) {
 /***************************************************************************************
  * code quality: checkstyle
  ***************************************************************************************/
-setCommonGradleDefaultPropertyIfNull("checkstyleToolDefaultVersion", '8.37')
-//setCommonGradleDefaultPropertyIfNull("checkstyleToolVersion", '8.42')
+//setCommonGradleDefaultPropertyIfNull("checkstyleToolDefaultVersion", '8.37')
+setCommonGradleDefaultPropertyIfNull("checkstyleToolVersion", '8.42')
 setCommonGradleDefaultPropertyIfNull("checkstyleMaxWarnings", 0)
 setCommonGradleDefaultPropertyIfNull("checkstyleXMLReport", false)
 setCommonGradleDefaultPropertyIfNull("checkstyleHTMLReport", true)
@@ -362,8 +362,10 @@ setCommonGradleDefaultPropertyIfNull("toolariumDependencyCheckVersion", '6.2.2')
 /***************************************************************************************
  * quarkus plugin defaults
  ***************************************************************************************/
-setCommonGradleDefaultPropertyIfNull("defaultQuarkusPluginVersion", '1.11.7.Final')
-setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", '1.13.7.Final')
+// the quarkusPluginVersion is used for setup new projects where defaultQuarkusPluginVersion 
+// controls the used version and force for update.
+setCommonGradleDefaultPropertyIfNull("defaultQuarkusPluginVersion", '2.1.4.Final')
+setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", '2.1.4.Final')
 //setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", "${defaultQuarkusPluginVersion}")
 setCommonGradleDefaultPropertyIfNull("quarkusPlatformArtifactId", 'quarkus-universe-bom')
 setCommonGradleDefaultPropertyIfNull("quarkusPlatformGroupId", 'io.quarkus')
@@ -559,7 +561,7 @@ setCommonGradleDefaultPropertyIfNull("dockerEnableAccessLog", false)
 setCommonGradleDefaultPropertyIfNull("dockerBuildPull", "--pull --force-rm")
 setCommonGradleDefaultPropertyIfNull("dockerBuildCompress", "--compress")
 setCommonGradleDefaultPropertyIfNull("dockerBuildArgs", "") // "--build-arg "
-setCommonGradleDefaultPropertyIfNull("dockerRepositoryHost", "https://hub.docker.com/")
+setCommonGradleDefaultPropertyIfNull("dockerRepositoryHost", "")
 setCommonGradleDefaultPropertyIfNull("dockerTagPrefix", "hub.docker.com")
 setCommonGradleDefaultPropertyIfNull("dockerSnapshotRepositoryHost", "")
 setCommonGradleDefaultPropertyIfNull("dockerSnapshotTagPrefix", "")
@@ -789,21 +791,21 @@ setCommonGradleDefaultPropertyIfNull("kubernetesStartupPeriodSeconds", project.g
 setCommonGradleDefaultPropertyIfNull("kubernetesStartupSuccessThreshold", project.getProperty('kubernetesReadinessSuccessThreshold'))
 setCommonGradleDefaultPropertyIfNull("kubernetesStartupTimeoutSeconds", project.getProperty('kubernetesReadinessTimeoutSeconds'))
 
-setCommonGradleDefaultPropertyIfNull("kubernetesQuarkusReadinessCheckPath", "${kubernetesUrlRootPath}/health/ready")
+setCommonGradleDefaultPropertyIfNull("kubernetesQuarkusReadinessCheckPath", "${kubernetesUrlRootPath}/q/health/ready")
 setCommonGradleDefaultPropertyIfNull("kubernetesQuarkusReadinessFailureThreshold", project.getProperty('kubernetesReadinessFailureThreshold'))
 setCommonGradleDefaultPropertyIfNull("kubernetesQuarkusReadinessScheme", project.getProperty('kubernetesReadinessScheme'))
 setCommonGradleDefaultPropertyIfNull("kubernetesQuarkusReadinessInitialDelaySeconds", project.getProperty('kubernetesReadinessInitialDelaySeconds'))
 setCommonGradleDefaultPropertyIfNull("kubernetesQuarkusReadinessPeriodSeconds", project.getProperty('kubernetesReadinessPeriodSeconds'))
 setCommonGradleDefaultPropertyIfNull("kubernetesQuarkusReadinessSuccessThreshold", project.getProperty('kubernetesReadinessSuccessThreshold'))
 setCommonGradleDefaultPropertyIfNull("kubernetesQuarkusReadinessTimeoutSeconds", project.getProperty('kubernetesReadinessTimeoutSeconds'))
-setCommonGradleDefaultPropertyIfNull("kubernetesQuarkusLivenessCheckPath", "${kubernetesUrlRootPath}/health/live")
+setCommonGradleDefaultPropertyIfNull("kubernetesQuarkusLivenessCheckPath", "${kubernetesUrlRootPath}/q/health/live")
 setCommonGradleDefaultPropertyIfNull("kubernetesQuarkusLivenessFailureThreshold", project.getProperty('kubernetesLivenessFailureThreshold'))
 setCommonGradleDefaultPropertyIfNull("kubernetesQuarkusLivenessScheme", project.getProperty('kubernetesLivenessScheme'))
 setCommonGradleDefaultPropertyIfNull("kubernetesQuarkusLivenessInitialDelaySeconds", project.getProperty('kubernetesLivenessInitialDelaySeconds'))
 setCommonGradleDefaultPropertyIfNull("kubernetesQuarkusLivenessPeriodSeconds", project.getProperty('kubernetesLivenessPeriodSeconds'))
 setCommonGradleDefaultPropertyIfNull("kubernetesQuarkusLivenessSuccessThreshold", project.getProperty('kubernetesLivenessSuccessThreshold'))
 setCommonGradleDefaultPropertyIfNull("kubernetesQuarkusLivenessTimeoutSeconds", project.getProperty('kubernetesLivenessTimeoutSeconds'))
-setCommonGradleDefaultPropertyIfNull("kubernetesQuarkusStartupCheckPath", "${kubernetesUrlRootPath}/health/ready")
+setCommonGradleDefaultPropertyIfNull("kubernetesQuarkusStartupCheckPath", "${kubernetesUrlRootPath}/q/health/ready")
 setCommonGradleDefaultPropertyIfNull("kubernetesQuarkusStartupFailureThreshold", project.getProperty('kubernetesLivenessFailureThreshold'))
 setCommonGradleDefaultPropertyIfNull("kubernetesQuarkusStartupScheme", project.getProperty('kubernetesLivenessScheme'))
 setCommonGradleDefaultPropertyIfNull("kubernetesQuarkusStartupInitialDelaySeconds", project.getProperty('kubernetesLivenessInitialDelaySeconds'))

@@ -377,7 +377,7 @@ task dockerPush {
 					logInfo("Can't push docker image because of empty repository setting dockerRepositoryHost.")
 				} 
 			}
-			
+
 			if ("${dockerDeployRepositoryHost}".toString().isEmpty()) {
 				printInfo("> Ignore dockerPush (no host defined to where to push).")
 			} else {
@@ -387,7 +387,12 @@ task dockerPush {
 				if (loginFirst) {
 					printInfo("> Login docker host: " +colorize(HIGHLITE_LEVEL,  dockerDeployRepositoryHost) + ".")
 					def cmd="docker login --username " + project.getProperty('dockerRepositoryUser') + " --password"
-					exitStatus = execDocker("$cmd " + project.getProperty('dockerRepositoryPassword') + " $dockerDeployRepositoryHost", "Could not login into docker host:\n    " + cmd + " ... $dockerDeployRepositoryHost")
+					
+					def cmdDockerDeployRepositoryHost = dockerDeployRepositoryHost
+					if ("$cmdDockerDeployRepositoryHost".toString().startsWith("https://hub.docker.com")) {
+					    cmdDockerDeployRepositoryHost = "" // in case it's dockerhub just ignore the repository host because it don't work stable on windows
+					}
+					exitStatus = execDocker("$cmd " + project.getProperty('dockerRepositoryPassword') + " $cmdDockerDeployRepositoryHost", "Could not login into docker host:\n    " + cmd + " ... $dockerDeployRepositoryHost")
 				} 
 				
 				if (exitStatus==0) {
