@@ -1,5 +1,5 @@
 # common-gradle-build
-[![License](https://img.shields.io/github/license/toolarium/common-gradle-build)](https://opensource.org/licenses/MIT)
+[![License](https://img.shields.io/github/license/toolarium/common-gradle-build)](https://opensource.org/licenses/GPL-3.0)
 
 <img align="right" height="110" src="docs/logo/common-gradle-build-small.png">
 
