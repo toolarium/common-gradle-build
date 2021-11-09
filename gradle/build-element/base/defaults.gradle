@@ -313,7 +313,7 @@ setCommonGradleDefaultPropertyIfNull("testMaxHeapSize", "512m")
 
 if (initTesting) {
 	if (useJUnit) {
-		setCommonGradleDefaultPropertyIfNull("testDependencyVersion", "5.6.2") // 5.7.1
+		setCommonGradleDefaultPropertyIfNull("testDependencyVersion", "5.7.1")
 
 		if (testDependencyVersion!=null && !testDependencyVersion.isEmpty()) {
 			if (testDependencyVersion.startsWith("4.")) {

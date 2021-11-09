@@ -388,7 +388,7 @@ ext.projectInitialisation = { ->
 
 			def testDependencyVersion
 			if (!project.hasProperty('testDependencyVersion')) {
-				testDependencyVersion = "5.6.2"
+				testDependencyVersion = "5.7.1"
 			} else {
 				testDependencyVersion = project.getProperty('testDependencyVersion')
 			}
