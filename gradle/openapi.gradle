@@ -57,10 +57,15 @@ if (project.plugins.findPlugin('org.openapi.generator')==null) {
 ext.projectTypeTemplatePath='openapi'
 ext.initCheckstyle=false
 ext.projectNameTypeRegularExpressionPattern='^.*-api-spec$'
-ext.allowMultipleSourceFiles=false
-ext.inputSourceFilePattern='^' + "${rootProject.name}".replace("-api-spec", "-api") + '.yaml$'
-ext.sampleInputSourceFileName="${rootProject.name}".replace("-api-spec", "-api")
 
+if (!project.hasProperty('allowMultipleSourceFiles')) {
+    ext.allowMultipleSourceFiles="false"
+}
+
+if (!project.hasProperty('inputSourceFilePattern') || project.getProperty('inputSourceFilePattern').toString().isBlank()) {
+    ext.inputSourceFilePattern='^' + "${rootProject.name}".replace("-api-spec", "-api") + '.yaml$'
+}
+ext.sampleInputSourceFileName="${rootProject.name}".replace("-api-spec", "-api")
 
 if (!project.hasProperty('commonGradleBuildUrl')) {
 	ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
@@ -137,7 +142,7 @@ task openApiProcess {
 			File[] files = new File(srcMainApiSpecDirectory).listFiles({File file -> file.name.toLowerCase().endsWith(".yaml") || 
 																					 file.name.toLowerCase().endsWith(".json")} as FileFilter)
 			if (files != null && files.length > 0) {
-				if (files.length > 1 && !allowMultipleSourceFiles) {
+				if (files.length > 1 && !project.getProperty('allowMultipleSourceFiles').toString().equalsIgnoreCase("true")) {
 					addError("Multiple input source files found which is not allowed!")
 				}
 
@@ -269,7 +274,6 @@ task openApiProcess {
 						}
 
 						compileJava.dependsOn createOpenApi
-						
 					}
 				}
 			}
