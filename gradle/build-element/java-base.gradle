@@ -34,7 +34,7 @@ apply from: "${commonGradleBuildElementPath}/java/checkstyle.gradle"
 apply from: "${commonGradleBuildElementPath}/java/testcoverage.gradle"
 apply from: "${commonGradleBuildElementPath}/java/eclipse.gradle"
 
-defaultTasks 'clean', 'build'
+defaultTasks 'clean', 'projectValidation', 'build'
 jar.dependsOn(createResourceBundle)
 
 
@@ -71,7 +71,6 @@ ext.createPackagePath = { basePath, packageName ->
  * Defines the api configuration
  *
  * https://docs.gradle.org/current/userguide/declaring_dependencies.html
- * https://docs.gradle.org/current/userguide/declaring_dependencies.html
  * https://docs.gradle.org/current/userguide/java_plugin.html#tab:configurations
  * https://reflectoring.io/maven-scopes-gradle-configurations/
  * https://github.com/gradle/gradle/issues/1118
@@ -93,15 +92,6 @@ publishing.publications.all {
         }.each { it.scope*.value = 'compile'}
     }
 }
-
-task printDependencies() {
-	doFirst {
-		configurations.api.getAllDependencies().each { dep -> 
-			logInfo("API dependency: "+dep.group + ", " + dep.name + ", " + dep.version)
-		}
-	}
-}
-clean.finalizedBy('printDependencies')
 
 
 /***************************************************************************************

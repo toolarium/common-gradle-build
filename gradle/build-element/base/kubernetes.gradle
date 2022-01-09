@@ -301,6 +301,7 @@ task prepareApplicationConfiguration {
  ***************************************************************************************/
 task kubernetesJar(type: Jar, dependsOn: ['kubernetesConfiguration', 'prepareToolariumEnumConfiguration', 'prepareApplicationConfiguration']) { jar ->
 	group = 'Build'
+    duplicatesStrategy = 'exclude' // work around, currendly don't work "$duplicatesStrategy"
 	description = 'Assembles the kubernetes configuration into a jar file'
 	onlyIf { return project.hasProperty('kubernetesSupport') && project.getProperty('kubernetesSupport') }
 

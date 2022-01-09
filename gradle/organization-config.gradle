@@ -29,9 +29,18 @@ if (!project.hasProperty('commonGradleBuildElementPath')) {
 	ext.commonGradleBuildElementPath="${commonGradleBuildUrl}/build-element"
 }
 
-
 apply from: "${commonGradleBuildElementPath}/base.gradle"
 apply from: "${commonGradleBuildElementPath}/base/gradle.gradle"
+
+
+/***************************************************************************************
+ * clean
+ ***************************************************************************************/
+task clean() {
+	doFirst {
+		delete "${rootDirectory}/build/"
+	}
+}	
 
 
 /***************************************************************************************

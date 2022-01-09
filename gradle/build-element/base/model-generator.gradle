@@ -34,6 +34,8 @@ task modelGeneratorDependency {
     }
 	dependencies {
 		modelGenerator "net.sf.jptools:jptools:" + commonGradleJptoolsModelGeneratorVersion
-		modelGenerator "net.sourceforge.jexcelapi:jxl:" + commonGradleJexcelapiModelGeneratorVersion
+		modelGenerator("net.sourceforge.jexcelapi:jxl:" + commonGradleJexcelapiModelGeneratorVersion) {
+			exclude group: 'log4j'
+		}
 	}
 }

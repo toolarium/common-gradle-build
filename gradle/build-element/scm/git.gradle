@@ -26,10 +26,18 @@ addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.gitignore")
 
 buildscript {
 	repositories {
-		jcenter()
+        if (Integer.valueOf(gradle.gradleVersion.toString().split('\\.')[0])<7) {
+			jcenter()
+		} else {
+			mavenCentral()
+			maven {
+				url "https://mvnrepository.com/artifact"
+				
+			}
+		}
 	}
 	dependencies {
-		def grgitCoreVersion="4.0.2"
+		def grgitCoreVersion="4.1.1"
 		if (project.hasProperty('grgitCoreVersion')) {
 			grgitCoreVersion = project.getProperty('grgitCoreVersion')
 		}

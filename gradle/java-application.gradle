@@ -40,8 +40,9 @@ if (!project.hasProperty('commonGradleBuildElementPath')) {
 if (!project.hasProperty("dockerImage")) {
 	project.ext.set("dockerImage", "adoptopenjdk/openjdk11:alpine-jre")
 }
-if (!project.hasProperty("dockerDefaultJavaOptions")) {
-	project.ext.set("dockerDefaultJavaOptions", "-Djava.security.egd=file:/dev/./urandom")
+if (!project.hasProperty("dockerJavaOptions")) {
+	project.ext.set("dockerJavaOptions", "-Djava.security.egd=file:/dev/./urandom")
+	project.ext.set("dockerDefaultJavaOptions", "${dockerJavaOptions}")
 }
 
 apply from: "${commonGradleBuildUrl}/java-library.gradle"

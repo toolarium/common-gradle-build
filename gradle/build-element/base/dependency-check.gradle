@@ -1,0 +1,171 @@
+/*
+ * dependency-check.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * 
+ * This file is part of the toolarium common-gradle-build.
+ * 
+ * The common-gradle-build is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * The common-gradle-build is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+buildscript {
+    repositories {
+        if (Integer.valueOf(gradle.gradleVersion.toString().split('\\.')[0])<7) {
+			jcenter()
+		} else {
+			mavenCentral()
+			maven {
+				url "https://mvnrepository.com/artifact"
+				
+			}
+		}
+    }
+    dependencies {
+		def toolariumDependencyCheckVersion="6.5.2.1"
+		if (project.hasProperty('toolariumDependencyCheckVersion')) {
+			toolariumDependencyCheckVersion = project.getProperty('toolariumDependencyCheckVersion')
+		}
+	
+		logInfo("toolarium dependency-check version: " + colorize(HIGHLITE_LEVEL, toolariumDependencyCheckVersion) + colorize(INFO_LEVEL, ".")); 
+        classpath "org.owasp:dependency-check-gradle:${toolariumDependencyCheckVersion}"
+
+		def jsurferVersion="1.6.3"
+		if (project.hasProperty('jsurferVersion')) {
+			jsurferVersion = project.getProperty('jsurferVersion')
+		}
+		logInfo("jsurfer version: " + colorize(HIGHLITE_LEVEL, jsurferVersion) + colorize(INFO_LEVEL, ".")); 
+		classpath "com.github.jsurfer:jsurfer-fastjson:${jsurferVersion}"
+    }
+}
+
+
+import org.owasp.dependencycheck.gradle.DependencyCheckPlugin;
+org.owasp.dependencycheck.gradle.DependencyCheckPlugin p = new org.owasp.dependencycheck.gradle.DependencyCheckPlugin()
+p.apply(project);
+
+dependencyCheck {
+    autoUpdate = project.getProperty('dependencyAutoUpdate') // true
+    cveValidForHours = project.getProperty('dependencyCveValidForHours') // 12
+    formats = ['HTML', 'JSON']
+	//format='ALL'
+	outputDirectory = "$dependencyCheckReportPath"
+    //junitFailOnCVSS = 0
+    //failBuildOnCVSS = 11
+    failOnError = project.getProperty('dependencyFailOnError') // true
+	
+	analyzers {
+	    assemblyEnabled = false
+	}
+	
+    //suppressionFile
+}
+
+
+/***************************************************************************************
+ * Get dependencyCheck
+ ***************************************************************************************/
+dependencyCheckAnalyze {
+	project.getLogging().captureStandardError(LogLevel.INFO);
+	project.getLogging().captureStandardOutput(LogLevel.INFO);
+	
+    doFirst {
+	     logInfo("Check dependency vulnerabilities...")
+		 new File("$dependencyCheckReportPath").mkdirs()
+	}
+	doLast {
+		File file = new File("$dependencyCheckReportPath/dependency-check-report.html")
+		if (file.exists()) {
+ 		     file.renameTo(new java.io.File(dependencyCheckReportPath, "index.html"))
+		}
+	}
+}
+
+setCommonGradleProperty('dependencyCheckIsReadyToUpdate', false)
+if (!new File("$gradleHome/dependency-check-data").exists()) {
+	def fileZip = new File("${dependencyCheckPreparedDatabaseArchiveFile}")
+	if (!fileZip.exists()) {
+		def hasOnlineConnection = project.hasProperty('HAS_ONLINE_CONNECTION') && project.getProperty('HAS_ONLINE_CONNECTION')
+		if (hasOnlineConnection && (!"$dependencyCheckPreparedDatabaseArchiveUrl".toString().trim().isEmpty())) {
+			logInfo("Download release " + colorize(HIGHLITE_LEVEL, "$dependencyCheckPreparedDatabaseArchiveFile") + " in " + colorize(HIGHLITE_LEVEL, "${gradleHome}") + ".")
+			printInfo("> Download release " + colorize(HIGHLITE_LEVEL, getFilename("$dependencyCheckPreparedDatabaseArchiveFile")) + ".")
+			new URL("$dependencyCheckPreparedDatabaseArchiveUrl").withInputStream { i -> fileZip.withOutputStream { it << i } }
+			setCommonGradleProperty('dependencyCheckIsReadyToUpdate', true)
+		} else {
+			logInfo("Ignore dependency-check..."); 
+			dependencyCheckUpdate.enabled = false
+		}
+	}
+	
+	if (fileZip.exists()) {
+		printInfo("> Unzip " + colorize(HIGHLITE_LEVEL, getFilename("$dependencyCheckPreparedDatabaseArchiveFile")) + "....")
+		unzip(fileZip, "$gradleHome", null)
+	}
+}
+
+
+/***************************************************************************************
+ * project java validation
+ ***************************************************************************************/
+if (!project.getProperty('IS_NEW') && project.hasProperty("dependencyCheckEnabled") && "true".toString().equalsIgnoreCase(project.getProperty("dependencyCheckEnabled").toString())) {
+    projectValidation.finalizedBy("dependencyCheckAnalyze")	
+}
+
+
+import org.jsfr.json.ValueBox;
+import java.util.Collection;
+
+task verifyDependencies2() {
+
+    doLast {
+	    // prepare dependency json
+		prepareDependenciesJson("${dependenciesReportPath}/root.js", "${dependenciesFile}")
+		if (new File("${dependenciesFile}").exists()) {
+			// parse json
+			org.jsfr.json.Collector dependencyCollector = org.jsfr.json.JsonSurferFastJson.INSTANCE.collector(new java.io.FileInputStream("${dependenciesFile}"));
+			ValueBox<Collection<String>> names = dependencyCollector.collectAll('$.project.configurations[*].name'.toString(), String.class);
+			ValueBox<Collection<String>> implementationDependencies = dependencyCollector.collectAll("\$.project.configurations[?(@.name=='implementation')].dependencies[*].name".toString(), String.class);
+			ValueBox<Collection<String>> runtimeDependencies = dependencyCollector.collectAll("\$.project.configurations[?(@.name=='runtimeClasspath')].dependencies[*].name".toString(), String.class);
+			dependencyCollector.exec();
+			logInfo("Dependency sections: [" + colorize(HIGHLITE_LEVEL, names.get()) + colorize(INFO_LEVEL, "].")); 
+			printInfo("===>"+implementationDependencies.get())
+			printInfo("===>"+runtimeDependencies.get())
+		}
+		
+		/*
+		if (new File("${dependencyCheckReportFile}").exists()) {
+				org.jsfr.json.Collector dependencyCheckReportCollector = org.jsfr.json.JsonSurferFastJson.INSTANCE.collector(new java.io.FileInputStream("${dependencyCheckReportFile}"));
+		//$.store.book[?(@.price < 10 || @.category && @.isbn && @.price>10)].volumes[?(@.chapter == 1)]
+				//ValueBox<Collection<String>> vulnarabilityDependencies = dependencyCheckReportCollector.collectAll("\$.dependencies[?(@.projectReferences[?(@.* =='" + name + ":implementation')])].name".toString(), String.class);
+				//def s = "\$.dependencies[?(@.projectReferences[*])].fileName".toString();
+				def s = "\$.dependencies[?(@.projectReferences[?(@ == '" + rootProject.name + ":runtimeClasspath')])].fileName".toString();
+		//		def s = "\$.dependencies[?(@.projectReferences[*]['" + rootProject.name + ":runtimeClasspath'])].fileName".toString();
+		//		          $.dependencies[?(@.projectReferences[*]['htmlDependencyReport:implementation'])].name
+				printInfo("===>"+s)
+				ValueBox<Collection<String>> vulnarabilityDependencies = dependencyCheckReportCollector.collectAll(s, String.class);
+				
+				//['author','title']
+				dependencyCheckReportCollector.exec();
+				printInfo("===>"+vulnarabilityDependencies.get())
+		}
+		*/
+
+		/*
+		java.util.Map<String, Object> obj = readJsonFile("${dependenciesFile}")
+		obj = obj.get("project");
+		printInfo("==>"+obj.keySet())
+		obj = obj.get("configurations");
+		printInfo("==>"+obj.keySet())
+		*/
+	}
+}

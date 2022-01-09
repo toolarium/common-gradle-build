@@ -1,5 +1,5 @@
 /*
- * config.gradle
+ * script.gradle
  *
  * Copyright by toolarium, all rights reserved.
  * 
@@ -32,35 +32,15 @@ if (!project.hasProperty('commonGradleBuildElementPath')) {
 /***************************************************************************************
  * Set additional template path
  ***************************************************************************************/
-if (!project.hasProperty('projectTypeTemplatePath')) {
-	ext.projectTypeTemplatePath='config'
-}
-
-if (!project.hasProperty('configPackageArchiveClassifier')) {
-	ext.configPackageArchiveClassifier = ''
-}
+ext.projectTypeTemplatePath='script'
+ext.configDirectoryName='bin'
+ext.configPackageArchiveClassifier=''
 
 
 /***************************************************************************************
  * Dependencies
  ***************************************************************************************/
-apply from: "${commonGradleBuildElementPath}/base.gradle"
-apply from: "${commonGradleBuildElementPath}/base/gradle.gradle"
-apply from: "${commonGradleBuildElementPath}/config/publication.gradle"
-apply from: "${commonGradleBuildElementPath}/java/signing.gradle"
-apply plugin: 'distribution'
-
-
-/***************************************************************************************
- * default tasks
- ***************************************************************************************/
-defaultTasks 'clean', 'configJar'
-
-
-/***************************************************************************************
- * Avoid code compile and generation
- ***************************************************************************************/
-ext.compileTimestamp = BUILD_TIMESTAMP
+apply from: "${commonGradleBuildUrl}/config.gradle"
 
 
 /***************************************************************************************
@@ -68,31 +48,8 @@ ext.compileTimestamp = BUILD_TIMESTAMP
  ***************************************************************************************/
 projectValidation {
 	if (project.getProperty('IS_NEW')) {
-		def configDirectory = project.getProperty('configDirectory')
-		if (!new File(configDirectory).exists()) {
-			new File(configDirectory).mkdirs()
-			printInfo("> Create directory " + colorize(HIGHLITE_LEVEL, configDirectory) + ".")
-		}
-		
 		registerEndMessage("" << NELINE \
-							<< "  Define in the " + colorize(HIGHLITE_LEVEL, "$rootDirectory/gradle.properties") + " the sub configuration packages:" << NELINE \
-							<< "      " + colorize(HIGHLITE_LEVEL, "configPackages = sample1, sample2") + "" << NELINE \
-							<< "" << NELINE \
 							<< "  To get started, got to " + project.projectDir.toString() + ":" << NELINE \
 							<< "      " + colorize(HIGHLITE_LEVEL, startExecutable) + "" << NELINE)
 	}
 }
-
-
-/***************************************************************************************
- * configuration distribution
- ***************************************************************************************/
-distributions {
-    configJar {
-        distributionBaseName = 'someName'
-        contents {
-            from 'config'
-        }
-    }
-}
-

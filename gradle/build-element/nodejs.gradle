@@ -97,6 +97,7 @@ addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/package-lock.jso
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.babelrc")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.eslintrc.js")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.prettierrc")
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.prettierignore")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/jest.config.js")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/jsconfig.json")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/tsconfig.json")
@@ -226,6 +227,9 @@ if (!project.getProperty('IS_NEW')) {
 	npmBuild.dependsOn npmInstall
 	npmInstall.args = ['--loglevel', 'silent']
 
+	// run after first build
+    dependencyCheckAnalyze.dependsOn npmBuild
+
 	// if there was never an initialisation add dependencies
 	if (!new File("$nodeConfigInitFile").exists()) {
 		npmInstall.dependsOn npmRegistry
@@ -309,6 +313,7 @@ apply from: "${commonGradleBuildElementPath}/base/docker.gradle"
  ***************************************************************************************/
 task distJar(type: Jar, dependsOn: build) { jar ->
 	group = 'Build'
+    duplicatesStrategy = 'exclude' // work around, currendly don't work "$duplicatesStrategy"
 	description = 'Assembles the dist into a jar file'
 
 	from "${commonGradleBuildDistPath}"

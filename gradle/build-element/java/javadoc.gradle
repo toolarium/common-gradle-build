@@ -28,6 +28,7 @@
  ***************************************************************************************/
 task javadocJar(type: Jar) { jar ->
 	group = 'Build'
+    duplicatesStrategy = 'exclude' // work around, currendly don't work "$duplicatesStrategy"
 	description = 'Assembles the javadoc into a jar file'
 	onlyIf { return project.compileTimestamp != null }
 	from javadoc

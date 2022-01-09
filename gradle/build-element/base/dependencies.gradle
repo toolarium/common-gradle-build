@@ -1,0 +1,218 @@
+/*
+ * dependencies.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * 
+ * This file is part of the toolarium common-gradle-build.
+ * 
+ * The common-gradle-build is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * The common-gradle-build is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+apply from: "${commonGradleBuildElementPath}/base/json.gradle"
+
+
+/** 
+ * Verify dependencies against white- and balcklist
+ */
+def commonGradleConfigWhitelistDependenciesPath = project.getProperty('commonGradleBuildUrl') + "/conf/" + project.getProperty('commonGradleConfigWhitelistDependenciesName')
+if (new File("${commonGradleBuildHome}/conf/${commonGradleConfigWhitelistDependenciesName}").exists()) {
+	commonGradleConfigWhitelistDependenciesPath = "${commonGradleBuildHome}/conf/${commonGradleConfigWhitelistDependenciesName}"
+}
+def commonGradleConfigBlacklistDependenciesPath = project.getProperty('commonGradleBuildUrl') + "/conf/" + project.getProperty('commonGradleConfigBlacklistDependenciesName')
+if (new File("${commonGradleBuildHome}/conf/${commonGradleConfigBlacklistDependenciesName}").exists()) {
+	commonGradleConfigBlacklistDependenciesPath = "${commonGradleBuildHome}/conf/${commonGradleConfigBlacklistDependenciesName}"
+}
+
+logInfo("Load white- and blacklist dependencies (" + colorize(HIGHLITE_LEVEL, commonGradleConfigWhitelistDependenciesPath) + colorize(INFO_LEVEL, ", ") + colorize(HIGHLITE_LEVEL, commonGradleConfigBlacklistDependenciesPath) + colorize(INFO_LEVEL, ")")); 
+Properties whitelistDependencies = readPropertiesFile(commonGradleConfigWhitelistDependenciesPath)
+Properties blacklistDependencies = readPropertiesFile(commonGradleConfigBlacklistDependenciesPath)
+
+ext.getVersionExpression = { Properties properties, sourceName, dependencyGroupName, dependencyName ->
+	def versionExpression = properties.getProperty(("" + dependencyGroupName).toString())
+	if (versionExpression!=null && !versionExpression.toString().trim().isEmpty()) {
+		logInfo("Version expression found, groupname " + dependencyGroupName + " => " +versionExpression)
+	    return versionExpression;
+	}		
+
+	versionExpression = properties.getProperty(("" + dependencyGroupName + "." + dependencyName).toString())
+	if (versionExpression!=null && !versionExpression.toString().trim().isEmpty()) {
+		logInfo("Version expression found, name " + dependencyGroupName + "." + dependencyName + " => " +versionExpression)
+	    return versionExpression;
+	}
+	
+	versionExpression = properties.getProperty(("[" + sourceName + "]" + dependencyGroupName).toString())
+	if (versionExpression!=null && !versionExpression.toString().trim().isEmpty()) {
+		logInfo("Version expression in section [" + sourceName + "] found, groupname " + dependencyGroupName + " => " +versionExpression)
+	    return versionExpression;
+	}		
+	
+	versionExpression = properties.getProperty(("[" + sourceName + "]" + dependencyGroupName + "." + dependencyName).toString())
+	if (versionExpression!=null && !versionExpression.toString().trim().isEmpty()) {
+		logInfo("Version expression in section [" + sourceName + "] found, name " + dependencyGroupName + "." + dependencyName + " => " +versionExpression)
+	    return versionExpression;
+	}		
+	return null
+}
+
+def dependencyReportedMap = [:]
+ext.validateDependency = { sourceName, dependencyGroupName, dependencyName, dependencyVersion ->
+	if (dependencyVersion == null) {
+		return false;
+	}
+	
+	def depVersion=("" + dependencyVersion).toString()
+	def whitelistVersionExpression = getVersionExpression(whitelistDependencies, sourceName, dependencyGroupName, dependencyName)
+	if (whitelistVersionExpression!=null && !whitelistVersionExpression.toString().trim().isEmpty()) {
+		def inSourceTree = false
+		if (whitelistVersionExpression.startsWith("*")) {
+			inSourceTree = true
+			whitelistVersionExpression = whitelistVersionExpression.substring(1).trim()
+		}
+		if (isCompliantVersion("${whitelistVersionExpression}", "${depVersion}")) {
+			logInfo("[" + colorize(HIGHLITE_LEVEL, sourceName) + colorize(INFO_LEVEL, "] "
+					+ "Valid dependency ") + colorize(HIGHLITE_LEVEL, dependencyName) + colorize(INFO_LEVEL, " v") + colorize(HIGHLITE_LEVEL, depVersion) 
+					+ colorize(INFO_LEVEL, " (") + colorize(HIGHLITE_LEVEL, whitelistVersionExpression) + colorize(INFO_LEVEL, ").") ); 
+			return true
+		}
+	}
+	
+	def blacklistVersionExpression = getVersionExpression(blacklistDependencies, sourceName, dependencyGroupName, dependencyName)
+	if (blacklistVersionExpression!=null && !blacklistVersionExpression.toString().trim().isEmpty()) {
+		def inSourceTree = false
+		if (blacklistVersionExpression.startsWith('*')) {
+			inSourceTree = true
+			blacklistVersionExpression = blacklistVersionExpression.substring(1).trim()
+		}
+
+		if (isCompliantVersion("${blacklistVersionExpression}", "${depVersion}")) {
+			logInfo("[" + colorize(HIGHLITE_LEVEL, sourceName) + colorize(INFO_LEVEL, "] "
+					+ "Invalid dependency ") + colorize(HIGHLITE_LEVEL, dependencyName) + colorize(INFO_LEVEL, " v") + colorize(HIGHLITE_LEVEL, depVersion) 
+					+ colorize(INFO_LEVEL, " (") + colorize(HIGHLITE_LEVEL, blacklistVersionExpression) + colorize(INFO_LEVEL, ").") ); 
+			
+			def key = (dependencyGroupName + ":" + dependencyName + ":" + depVersion).toString()
+			if (!dependencyReportedMap.containsKey(key)) {
+				addError("[" + sourceName + "] Invalid dependency found ${dependencyName} v${depVersion} -> blacklisted (${blacklistVersionExpression})")
+				dependencyReportedMap.put(key, blacklistVersionExpression)
+			}
+			
+			return false;
+		}
+	}
+	
+	return true
+}
+
+
+
+/** 
+ * Prepare dependencies json file
+ */
+ext.prepareDependenciesJson = { inputFilename, outputFilename -> 
+	File inputFile = new File(inputFilename)
+	File outputFile = new File(outputFilename)
+	
+	if (!inputFile.exists()) {
+		printWarn("Could not find file " + inputFile.getName() + "!")
+		return
+	}
+	
+	if (outputFile.exists()) {
+		outputFile.delete()
+	}
+
+	try {			
+		logInfo("Create " + colorize(HIGHLITE_LEVEL, "${outputFilename}") + colorize(INFO_LEVEL, " from source ") + colorize(HIGHLITE_LEVEL, "${outputFilename}") + colorize(INFO_LEVEL, "."))
+	    def newLine = System.getProperty("line.separator")
+	    def replacedVar = false
+		inputFile.withReader {
+			def line
+			while ((line = it.readLine()) != null) {
+				//var projectDependencyReport = 
+				if (!replacedVar && line.indexOf("var") >= 0) {
+					def idx = line.indexOf("=")
+					if (idx>=0) {
+					   line = line.substring(idx + 1)
+					   replacedVar = true
+					}
+				}
+				
+				outputFile.append(line.replace(';', ' ') + newLine)
+			}
+		}
+	} catch (Exception e) {
+		printWarn("Could not process file " + inputFile.getName() + ": " + e.getMessage())
+		throw e
+	}			
+}
+
+
+/** 
+ * Verify the direct dependencies
+ */
+task verifyDependencies() {
+	def configurationList = []
+	def implementationList = []
+	def dependencyMap = [:]
+	project.configurations.all {
+		configurationList.add(it.name)
+
+		try {
+			it.incoming.dependencies.all { dep ->
+				def list = []
+				list = dependencyMap.get(it.name.toString())
+				if (list == null) {
+				   list = []
+				}
+				// TODO:printInfo "=>"+it.getClass().getName()
+				def dependencyVersion = ""
+				if (dep.version != null) {
+					dependencyVersion = ("" + dep.version).toString()
+				}
+				
+				validateDependency(it.name, dep.group, dep.name, dependencyVersion);
+				list.add(("" + dep.group + ":" + dep.name + ":" + dependencyVersion).toString())
+				dependencyMap.put(it.name.toString(), list)
+			}
+		} catch (Exception e) {
+			e.printStackTrace()
+		}
+	}
+	
+	doFirst {
+		logInfo "Configuratiin: $configurationList"
+		printInfo "> Implementation: " + dependencyMap.get("implementation")
+		printInfo "> runtimeClasspath: " + dependencyMap.get("runtimeClasspath")
+	}
+}
+
+
+/***************************************************************************************
+ * project validation
+ ***************************************************************************************/
+if (!project.getProperty('IS_NEW') && project.hasProperty('dependencyTextReport') && project.getProperty('dependencyTextReport')) {
+    projectValidation.finalizedBy("dependencyReport")	
+}
+if (!project.getProperty('IS_NEW') && project.hasProperty('dependencyHTMLReport') && project.getProperty('dependencyHTMLReport')) {
+    projectValidation.finalizedBy("htmlDependencyReport")
+}
+
+htmlDependencyReport {
+	reports.html.destination = file("$dependenciesReportPath")
+	
+    doLast {
+	    // prepare dependency json
+		prepareDependenciesJson("${dependenciesReportPath}/root.js", "${dependenciesFile}")
+	}
+}

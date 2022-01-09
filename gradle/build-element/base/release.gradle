@@ -296,10 +296,34 @@ task checkReleaseCredentials(dependsOn: ['clean']) {
 	}
 }
 
+
 /***************************************************************************************
  * release prepare
  ***************************************************************************************/
-task releasePrepare(dependsOn: ['checkReleaseCredentials']) {
+task checkValidReleaseEnvironment(dependsOn: ['clean']) {
+	group = 'Release'
+	description = 'Check release environment.'
+
+	doFirst {
+		if (project.hasProperty("cbBuildUpdate") && "true".toString().equalsIgnoreCase(project.getProperty("cbBuildUpdate").toString()) 
+			|| project.hasProperty("hasExpectedWrapperVersion") && !"true".toString().equalsIgnoreCase(project.getProperty("hasExpectedWrapperVersion").toString())) {
+			def errorMessage="An implicit update of the build environment blocks the release"
+			if (project.hasProperty("hasExpectedWrapperVersion") && !"true".toString().equalsIgnoreCase(project.getProperty("hasExpectedWrapperVersion").toString())) { 
+				errorMessage="${errorMessage} (gradle wrapper update)!"
+			} else {
+				errorMessage="${errorMessage} (common build, cb)!"
+			}
+			
+			throw new GradleException("- ${errorMessage}")		
+		}
+	}
+}
+
+
+/***************************************************************************************
+ * release prepare
+ ***************************************************************************************/
+task releasePrepare(dependsOn: ['checkValidReleaseEnvironment', 'checkReleaseCredentials']) {
 	group = 'Release'
 	description = 'Prepare release.'
 
@@ -341,7 +365,7 @@ releasePrepare.finalizedBy('build')
 /***************************************************************************************
  * release snashot prepare
  ***************************************************************************************/
-task releasePrepareSnapshot(dependsOn: ['clean']) {
+task releasePrepareSnapshot(dependsOn: ['checkValidReleaseEnvironment', 'clean']) {
 	group = 'Release'
 	description = 'Prepare snapshot release.'
 	
@@ -469,6 +493,7 @@ if (project.hasProperty("commonGradleBuildReleasePublish") && project.getPropert
  * release 
  ***************************************************************************************/
 // setCommonGradleProperty('isSnapshotVersion', !project.getProperty('isReleaseVersion'))
+setCommonGradleProperty("cbBuildUpdate", System.getenv('CB_BUILD_UPDATE'))
 if (project.hasProperty('isSnapshotVersion') && project.getProperty('isSnapshotVersion')) {
 	task release(dependsOn: ['releasePrepareSnapshot']) {
 		group = 'Release'

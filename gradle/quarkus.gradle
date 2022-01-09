@@ -21,6 +21,19 @@
 
 
 /***************************************************************************************
+ * Compliance for v2.6.1.Final
+ ***************************************************************************************/
+apply plugin: 'java'
+import org.gradle.api.JavaVersion;
+if (!project.hasProperty("sourceCompatibility")) {
+	project.ext.set("sourceCompatibility", JavaVersion.toVersion("${System.properties['java.version']}"))
+}
+if (!project.hasProperty("targetCompatibility")) {
+	project.ext.set("targetCompatibility", JavaVersion.toVersion("${System.properties['java.version']}"))
+}
+
+
+/***************************************************************************************
  * Set additional template path
  ***************************************************************************************/
 ext.projectTypeTemplatePath='quarkus'
@@ -44,9 +57,10 @@ if (!project.hasProperty('commonGradleBuildElementPath')) {
 if (!project.hasProperty("dockerImage")) {
 	project.ext.set("dockerImage", "adoptopenjdk/openjdk11:alpine-jre")
 }
-if (!project.hasProperty("dockerDefaultJavaOptions")) {
-	project.ext.set("dockerDefaultJavaOptions", "-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager -Djava.security.egd=file:/dev/./urandom")
-	//project.ext.set("dockerDefaultJavaOptions", "-Djava.security.egd=file:/dev/./urandom")
+if (!project.hasProperty("dockerJavaOptions")) {
+	//project.ext.set("dockerJavaOptions", "-Djava.security.egd=file:/dev/./urandom")
+	project.ext.set("dockerJavaOptions", "-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager -Djava.security.egd=file:/dev/./urandom")
+	project.ext.set("dockerDefaultJavaOptions", "${dockerJavaOptions}")
 }
 if (!project.hasProperty("dockerDeploymentSourcePath")) {
 	project.ext.set("dockerDeploymentSourcePath", 'build/*-runner.jar')
@@ -202,11 +216,18 @@ setCommonGradleProperty("createLogbackConfig", false)
  * Don't do project validation in case of quarkus dev
  ***************************************************************************************/
 if (!project.getProperty('IS_NEW')) {
-	quarkusDev {
-		projectValidation.enabled = false
-		setCommonGradleProperty('hasProjectValidationExecuted', true)
+	if (quarkusDev.enabled) {
+		quarkusDev {
+		    dependsOn htmlDependencyReport
+		    dependsOn dependencyReport
+			
+			//htmlDependencyReport.enabled = false
+			//dependencyReport.enabled = false
+			//projectValidation.enabled = false
+			//setCommonGradleProperty('hasProjectValidationExecuted', true)
+		}
+		run.dependsOn quarkusDev		
 	}
-	run.dependsOn quarkusDev
 }
 
 
@@ -279,8 +300,8 @@ projectValidation {
 		gradle.startParameter.excludedTaskNames += "build"
 	} else { // in older versions
 		File f = new File (srcMainResourcesDirectory + "/META-INF/resources/index.html")
-		if (f.exists()) {
-			f.delete()
+		if (!f.exists()) {
+		    createFileFromTemplate("${quarkusResourcePath}/index.html", getTemplateFile("index.html.template")) 
 		}
 	}	
 
@@ -296,7 +317,7 @@ projectValidation {
 			
 			def quarkusResourcePath = srcMainResourcesDirectory + "/META-INF/resources"
 			new File(quarkusResourcePath).mkdirs()
-			//createFileFromTemplate("${quarkusResourcePath}/index.html", getTemplateFile("index.html.template")) 
+			createFileFromTemplate("${quarkusResourcePath}/index.html", getTemplateFile("index.html.template")) 
 
 			registerEndMessage("" << NELINE \
 								<< "  To get started, got to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
@@ -331,18 +352,34 @@ build { ->
 			copyFile("${gradleBuildDirectory}/${runnerJarName}", "${quarkusAppDirectory}/${quarkusAppJar}")
 		}
 
-		if (project.hasProperty('createServicePathProperties') && project.getProperty('createServicePathProperties')) {
+		if (project.hasProperty('createServiceProperties') && project.getProperty('createServiceProperties')) {
 			def applicationProperties = readPropertiesFile("${srcMainResourcesDirectory}/application.properties")
 			def serviceRootPath = applicationProperties.getProperty("quarkus.http.root-path", "/api")
 			def gradleProperties = readPropertiesFile("${gradlePropertiesFile}")
 			def serviceKubernetesUrlPath = gradleProperties.getProperty("kubernetesUrlPath", "$kubernetesUrlPath")
 			
-			def servicePathProperties = new File("${quarkusAppDirectory}/service-path.properties")
+			def servicePathProperties = new File("${quarkusAppDirectory}/service.properties")
 			servicePathProperties.append("# service-path.properties" + NELINE)
+		    servicePathProperties.append("service.name = ${rootProject.name}" + NELINE)
+		    servicePathProperties.append("service.version = ${project.version}" + NELINE)		
 			servicePathProperties.append("service.root-path = " + serviceRootPath + NELINE)
 			servicePathProperties.append("service.resources = " + serviceKubernetesUrlPath + NELINE)		
 		}
 
+		/* TODO:
+		if (project.hasProperty('createServiceJavaRunner') && project.getProperty('createServiceJavaRunner')) {
+		//copyFile()
+		  //  createFileFromTemplate()
+		  //	createFileFromTemplate("${dockerJavaRunner}", "${dockerJavaRunner}") = { inputFilename, inputTemplateFilename, 
+
+	      //	def servicePathProperties = new File("${quarkusAppDirectory}/${dockerJavaRunner}")
+		}
+
+		if (project.hasProperty('createServiceJavaAgent') && project.getProperty('createServiceJavaAgent')) {
+			def servicePathProperties = new File("${quarkusAppDirectory}/${dockerJavaAgent}")
+		}
+		*/
+		
 		if (project.hasProperty('updateApplicationProperties') && project.getProperty('updateApplicationProperties')) {
 			def jarFilename = "${quarkusAppDirectory}/${quarkusAppSubPathName}/${project.name}-${project.version}.jar"
 			def tempFile = "${quarkusAppDirectory}/${quarkusAppSubPathName}/${project.name}-${project.version}_old.jar"

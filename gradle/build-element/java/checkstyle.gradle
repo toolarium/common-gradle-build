@@ -70,16 +70,30 @@ if (project.hasProperty('initCheckstyle') && project.getProperty('initCheckstyle
 		
 		tasks.withType(Checkstyle) {
 			reports {
-				if (project.hasProperty('checkstyleXMLReport')) {
-					xml.enabled project.getProperty('checkstyleXMLReport')
+				if (Integer.valueOf(gradle.gradleVersion.toString().split('\\.')[0])<7) {
+					if (project.hasProperty('checkstyleXMLReport')) {
+						xml.enabled = project.getProperty('checkstyleXMLReport')
+					} else {
+						xml.enabled = false
+					}
+					
+					if (project.hasProperty('checkstyleHTMLReport')) {
+						html.enabled = project.getProperty('checkstyleHTMLReport')
+					} else {
+						html.enabled = true
+					}
 				} else {
-					xml.enabled false
-				}
-				
-				if (project.hasProperty('checkstyleHTMLReport')) {
-					html.enabled project.getProperty('checkstyleHTMLReport')
-				} else {
-					html.enabled true
+					if (project.hasProperty('checkstyleXMLReport')) {
+						xml.required = project.getProperty('checkstyleXMLReport')
+					} else {
+						xml.required = false
+					}
+					
+					if (project.hasProperty('checkstyleHTMLReport')) {
+						html.required = project.getProperty('checkstyleHTMLReport')
+					} else {
+						html.required = true
+					}
 				}
 				
 				if (project.hasProperty('checkstyleCustomStylesheet')) {

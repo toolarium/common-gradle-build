@@ -57,15 +57,7 @@ if (project.plugins.findPlugin('org.openapi.generator')==null) {
 ext.projectTypeTemplatePath='openapi'
 ext.initCheckstyle=false
 ext.projectNameTypeRegularExpressionPattern='^.*-api-spec$'
-
-if (!project.hasProperty('allowMultipleSourceFiles')) {
-    ext.allowMultipleSourceFiles="false"
-}
-
-if (!project.hasProperty('inputSourceFilePattern') || project.getProperty('inputSourceFilePattern').toString().isBlank()) {
-    ext.inputSourceFilePattern='^' + "${rootProject.name}".replace("-api-spec", "-api") + '.yaml$'
-}
-ext.sampleInputSourceFileName="${rootProject.name}".replace("-api-spec", "-api")
+ext.allowMultipleSourceFiles=false
 
 if (!project.hasProperty('commonGradleBuildUrl')) {
 	ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
@@ -75,6 +67,17 @@ if (!project.hasProperty('commonGradleBuildElementPath')) {
 	ext.commonGradleBuildElementPath="${commonGradleBuildUrl}/build-element"
 }
 apply from: "${commonGradleBuildElementPath}/java-base.gradle"
+
+if (project.hasProperty('openApiAllowMultipleSourceFiles') && !project.getProperty('openApiAllowMultipleSourceFiles').toString().isBlank()) {
+    ext.allowMultipleSourceFiles=project.getProperty('openApiAllowMultipleSourceFiles').toString().equalsIgnoreCase("true")
+}
+
+if (project.hasProperty('openApiInputSourceFilePattern') && !project.getProperty('openApiInputSourceFilePattern').toString().isBlank()) {
+    ext.inputSourceFilePattern=project.getProperty('openApiInputSourceFilePattern').toString()
+} else if (!project.hasProperty('inputSourceFilePattern') || project.getProperty('inputSourceFilePattern').toString().isBlank()) {
+    ext.inputSourceFilePattern='^' + "${rootProject.name}".replace("-api-spec", "-api") + '.yaml$'
+}
+ext.sampleInputSourceFileName="${rootProject.name}".replace("-api-spec", "-api")
 
 
 /***************************************************************************************
@@ -184,8 +187,25 @@ task openApiProcess {
 			
 				for (File file : files) {
 					if (!file.isDirectory()) {
-						def fileName = file.getName()
+			            def fileName = file.getName()
 						def apiName = file.getName().replace(".yaml", "");
+
+					    def packageName = "${project.ext.projectRootPackageName}"
+						if (files.length>1) {
+					         def subPackageName = ""
+						     def apiNameSplit = apiName.replace("${projectComponentIdSeparator}api", "").split(projectComponentIdSeparator)
+							 for (int i = 0; i<apiNameSplit.length; i++) {
+							     subPackageName += "." + apiNameSplit[i]
+								 
+								 if (packageName.toString().endsWith(subPackageName.toString())) {
+								     subPackageName = ""
+								 }
+					         }
+							 
+							 if (!subPackageName.isEmpty()) {
+							     packageName += subPackageName
+						     }
+						}
 
 						// check version number
 						def expectedVersionNumber = "${project.ext.majorVersionNumber}.${project.ext.minorVersionNumber}.${project.ext.revisionVersionNumber}".toString()
@@ -212,7 +232,11 @@ task openApiProcess {
 						def openApiTaskName="openApiGenerate${apiName}"
 						def createOpenApi = tasks.create(name: "${openApiTaskName}", type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
 							logInfo("Create the open api task " + colorize(HIGHLITE_LEVEL, "[$openApiTaskName]") + " for [" + colorize(HIGHLITE_LEVEL, srcMainApiSpecDirectory + "/" + fileName) + colorize(INFO_LEVEL, "]."))						
-							printInfo("> Generate source from openapi " + colorize(HIGHLITE_LEVEL, fileName) + ".")
+							printInfo("> Generate source from " + colorize(HIGHLITE_LEVEL, fileName) + " (" + colorize(HIGHLITE_LEVEL, packageName) + ").")
+							logging.captureStandardError LogLevel.INFO
+							logging.captureStandardOutput LogLevel.INFO				
+							// reset: logging.captureStandardError LogLevel.ERROR
+							// reset: logging.captureStandardOutput LogLevel.QUIET
 
 							verbose = false
 							inputSpec = "${yamlPath}/${fileName}".toString()
@@ -220,9 +244,9 @@ task openApiProcess {
 							generatorName = "${openapiGeneratorName}".toString()
 							id = "${rootProject.name}".toString()
 							groupId = "${project.ext.projectGroupId}".toString()					
-							apiPackage = "${project.ext.projectRootPackageName}.${versionNumberPackageAddon}.api".toString()
-							invokerPackage = "${project.ext.projectRootPackageName}.${versionNumberPackageAddon}.client".toString()
-							modelPackage = "${project.ext.projectRootPackageName}.${versionNumberPackageAddon}.dto".toString()
+							apiPackage = "${packageName}.${versionNumberPackageAddon}.api".toString()
+							invokerPackage = "${packageName}.${versionNumberPackageAddon}.client".toString()
+							modelPackage = "${packageName}.${versionNumberPackageAddon}.dto".toString()
 							//templateDir = "$rootDir/src/main/resources/api/templates".toString()
 							version = "${project.version}".toString()
 
@@ -267,13 +291,13 @@ task openApiProcess {
 								//snapshotVersion = "${}"
 								//sourceFolder = "${}"
 							]
-							
+													
 							def generatedCommonGradleBuildSources = project.getProperty('generatedCommonGradleBuildSources');
 							sourceSets.main.java.srcDirs += "${outPath}/src/gen/java/"
 							logInfo("Set source set to " + colorize(HIGHLITE_LEVEL, sourceSets.main.java.srcDirs))
 						}
 
-						compileJava.dependsOn createOpenApi
+						compileJava.dependsOn createOpenApi						
 					}
 				}
 			}
@@ -308,7 +332,7 @@ createMeateInfFiles {
 /***************************************************************************************
  * project java validation
  ***************************************************************************************/
-projectValidation {
+projectValidation {   
 	doFirst {
 		if (project.hasProperty('projectNameTypeRegularExpressionPattern') && !project.getProperty('projectNameTypeRegularExpressionPattern').toString().trim().isEmpty()) {
 			if (!(rootProject.name ==~ projectNameTypeRegularExpressionPattern)) {

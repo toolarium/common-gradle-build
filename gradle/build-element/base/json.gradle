@@ -22,16 +22,48 @@
 
 buildscript {
 	repositories {
-		jcenter()
+        if (Integer.valueOf(gradle.gradleVersion.toString().split('\\.')[0])<7) {
+			jcenter()
+		} else {
+			mavenCentral()
+			maven {
+				url "https://mvnrepository.com/artifact"
+				
+			}
+		}
 	}
 	dependencies {
-		def snakeYamlVersion="1.27"
+		def snakeYamlVersion="1.29"
+		
 		if (project.hasProperty('snakeYamlVersion')) {
 			snakeYamlVersion = project.getProperty('snakeYamlVersion')
 		}
-
 		logInfo("snale yaml version: " + colorize(HIGHLITE_LEVEL, snakeYamlVersion) + colorize(INFO_LEVEL, ".")); 
 		classpath "org.yaml:snakeyaml:${snakeYamlVersion}"
+	}
+}
+
+
+/** 
+ * Read and parse json file
+ */
+import org.yaml.snakeyaml.Yaml;
+ext.readJsonFile = { file ->
+	InputStream inputStream = null;
+	try {
+		logInfo("Parse json file " + colorize(HIGHLITE_LEVEL, "${file}") + colorize(INFO_LEVEL, "."))
+		inputStream = new java.io.FileInputStream(file);
+	    Yaml yaml = new Yaml();
+		java.util.Map<String, Object> obj = yaml.load(inputStream);
+		return obj;
+	} finally {
+		if (inputStream!=null) {
+			try { 
+				inputStream.close();
+			} finally {
+				// NOP
+			}
+		} 
 	}
 }
 

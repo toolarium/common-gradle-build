@@ -35,6 +35,7 @@ if (!project.hasProperty('commonGradleBuildElementPath')) {
  * basic groovy imports
  ***************************************************************************************/
 apply from: "${commonGradleBuildElementPath}/base/constants.gradle"
+apply from: "${commonGradleBuildElementPath}/base/ansi-support.gradle"
 apply from: "${commonGradleBuildElementPath}/base/logger.gradle"
 apply from: "${commonGradleBuildElementPath}/base/property.gradle"
 apply from: "${commonGradleBuildElementPath}/base/util.gradle"
@@ -97,9 +98,16 @@ apply from: "${commonGradleBuildElementPath}/base/resourcebundle.gradle"
 
 
 /***************************************************************************************
+ * script import
+ ***************************************************************************************/
+//apply from: "${commonGradleBuildElementPath}/base/scripts.gradle"
+
+
+/***************************************************************************************
  * dependency check
  ***************************************************************************************/
-//apply from: "${commonGradleBuildElementPath}/base/dependency-check.gradle"
+apply from: "${commonGradleBuildElementPath}/base/dependencies.gradle"
+apply from: "${commonGradleBuildElementPath}/base/dependency-check.gradle"
 
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -120,7 +128,7 @@ tasks.matching { it != projectValidation }.all {
 			taskNameString = taskNameString.substring(0, idx)
 		}
 
-		def mainTaskProtectExclusion = [ "tasks", "help", "wrapper", "projectValidation", "configJar" ];
+		def mainTaskProtectExclusion = [ "tasks", "help", "wrapper", "clean", "projectValidation", "configJar", "htmlDependencyReport", "dependencyReport" ];
 		if (project.hasProperty("mainTaskProtectExclusion") && project.getProperty("mainTaskProtectExclusion")!=null) {
 			if (project.getProperty("mainTaskProtectExclusion").getClass().isArray()) {
 				mainTaskProtectExclusion = project.getProperty("mainTaskProtectExclusion")
@@ -327,27 +335,29 @@ task checkUpdateCommonGradleBuild() {
 	group = 'Build'
 	description = 'Check for common gradle build update.'
 
-	delete "${commonGradleBuildCache}/lastCheck.properties"
+    doFirst {
+		delete "${commonGradleBuildCache}/lastCheck.properties"
 
-	// check common gradle build cache
-	try {
-		downloadCommonGradleBuildCache()
-	} catch (Exception e) {
-		printWarn("Could not download common gradle build to cache: " + e.getMessage())
-	}
+		// check common gradle build cache
+		try {
+			downloadCommonGradleBuildCache()
+		} catch (Exception e) {
+			printWarn("Could not download common gradle build to cache: " + e.getMessage())
+		}
 
-	// check common gradle build home
-	try {
-		downloadCommonGradleBuildHome()
-	} catch (Exception e) {
-		printWarn("Could not download common gradle build home: " + e.getMessage())
+		// check common gradle build home
+		try {
+			downloadCommonGradleBuildHome()
+		} catch (Exception e) {
+			printWarn("Could not download common gradle build home: " + e.getMessage())
+		}
 	}
 }
-
 
 /***************************************************************************************
  * project validation
  ***************************************************************************************/
+projectValidation.mustRunAfter("clean")
 projectValidation {
 	// check common gradle build cache
 	try {

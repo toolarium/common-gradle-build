@@ -98,6 +98,7 @@ tasks.withType(JavaCompile) { compile ->
  * Build jar file
  ***************************************************************************************/
 jar { jar ->
+    duplicatesStrategy = 'exclude' // work around, currendly don't work "$duplicatesStrategy"
 	onlyIf { return project.compileTimestamp != null }
 
 	logInfo("Set project root package name to [" + colorize(HIGHLITE_LEVEL, projectRootPackageName) + colorize(INFO_LEVEL, "]  -> ") + colorize(HIGHLITE_LEVEL, sourceSets.main.allJava.srcDirs))

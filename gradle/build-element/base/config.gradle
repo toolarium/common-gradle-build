@@ -34,6 +34,7 @@ if (configDirectory!=null && !configDirectory.isEmpty()) {
  ***************************************************************************************/
 task configJar(type: Jar) { jar ->
 	group = 'Build'
+    duplicatesStrategy = 'exclude' // work around, currendly don't work "$duplicatesStrategy"
 	description = 'Assembles the configuration into a jar file(s) depend on configPackages entries (default only one package)'
 	
 	if (project.hasProperty('configPackageArchiveClassifier')) {
@@ -100,6 +101,7 @@ configPackages.each { configName ->
 
 			def taskName = "configJar${configTypeProperty}"
 			tasks.create(name: taskName, type: Jar) { jar ->
+                duplicatesStrategy = 'exclude' // work around, currendly don't work "$duplicatesStrategy"
 				def prefix = ''
 				if (project.hasProperty('configPackageArchiveClassifier') && !project.getProperty('configPackageArchiveClassifier').toString().trim().isEmpty()) {
 					prefix = project.getProperty('configPackageArchiveClassifier') + '-'

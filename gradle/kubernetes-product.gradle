@@ -83,6 +83,7 @@ apply from: "${commonGradleBuildElementPath}/base/json.gradle"
  ***************************************************************************************/
 task customJar(type: Jar, dependsOn: ['kubernetesJar']) { jar ->
 	group = 'Build'
+    duplicatesStrategy = 'exclude' // work around, currendly don't work "$duplicatesStrategy"
 	description = 'Assembles the kubernetes configuration into a jar file'
 	onlyIf { return (project.hasProperty('createCustomJar') && project.getProperty('createCustomJar').toString().equalsIgnoreCase("true")) }
 	

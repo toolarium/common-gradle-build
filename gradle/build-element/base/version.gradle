@@ -20,6 +20,29 @@
  */
 
 
+buildscript {
+	repositories {
+        if (Integer.valueOf(gradle.gradleVersion.toString().split('\\.')[0])<7) {
+			jcenter()
+		} else {
+			mavenCentral()
+			maven {
+				url "https://mvnrepository.com/artifact"
+				
+			}
+		}
+	}
+	dependencies {
+		def semver4jVersion="3.1.0"
+		if (project.hasProperty('semver4jVersion')) {
+			semver4jVersion = project.getProperty('semver4jVersion')
+		}
+		logInfo("smver4j version: " + colorize(HIGHLITE_LEVEL, semver4jVersion) + colorize(INFO_LEVEL, ".")); 
+		classpath "com.vdurmont:semver4j:${semver4jVersion}"
+	}
+}
+
+
 /***************************************************************************************
  * Read version: see https://semver.org/ 
  ***************************************************************************************/
@@ -156,4 +179,54 @@ ext.increaseRevisionVersion = { ->
 	logInfo("Increase revision number " + revisionVersionNumber + ": " + project.version)
 	updateVersion()
 	readVersion()
+}
+
+
+/***************************************************************************************
+ * Parse a version number
+ ***************************************************************************************/
+import com.vdurmont.semver4j.Semver;
+ext.parseVersion = { inputVersion, strict = true ->
+	if (inputVersion == null || inputVersion.toString().trim().isEmpty()) {
+	    return null;
+	}
+
+	try {
+		if (strict) {
+			logInfo("Parse strict version number " + inputVersion + ".")
+			return new Semver(inputVersion.toString());
+		}
+		
+		logInfo("Parse version number " + inputVersion + ".")
+		return new Semver(inputVersion.toString(), SemverType.IVY);
+	} catch (Exception e) {
+		logInfo("Invalid version number " + inputVersion + ": " + e.getMessage())
+		return null;
+	}
+}
+
+
+/***************************************************************************************
+ * Check if the version is compliant
+ ***************************************************************************************/
+ext.isCompliantVersion = { referenceVersion, versionToCheck ->
+	if (referenceVersion == null || referenceVersion.toString().trim().isEmpty()) {
+	    return true;
+	}
+	
+	if (versionToCheck == null || versionToCheck.toString().trim().isEmpty()) {
+	    return false;
+	}
+
+	def refSemVer = parseVersion(referenceVersion, false);
+	if (refSemVer == null) {
+	    return true;
+	}
+	
+	def semVer = parseVersion(versionToCheck);
+	if (semVer == null) {
+	    return false;
+	}
+	
+	return semVer.satisfies(referenceVersion); // e.g. 1.2.+
 }

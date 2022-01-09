@@ -46,9 +46,16 @@ jacocoTestReport {
     dependsOn test // tests are required to run before generating the report
 	
 	reports {
-		xml.enabled jacocoXMLReport
-		csv.enabled jacocoCSVReport
-		html.enabled jacocoHTMLReport
+        if (Integer.valueOf(gradle.gradleVersion.toString().split('\\.')[0])<7) {
+			xml.enabled = jacocoXMLReport
+			csv.enabled = jacocoCSVReport
+			html.enabled = jacocoHTMLReport
+		} else {
+			xml.required = jacocoXMLReport
+			csv.required = jacocoCSVReport
+			html.required = jacocoHTMLReport
+		}
+			
 		html.destination file("${jacocoReportPath}")
     }
 }

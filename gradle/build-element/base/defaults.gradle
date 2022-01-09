@@ -30,9 +30,11 @@ if ("windows" == getOsName()) {
 	setCommonGradleDefaultPropertyIfNull("userHomeDirectory", '~/')
 }
 
-setCommonGradleDefaultPropertyIfNull("snakeYamlVersion", "1.27")
-setCommonGradleDefaultPropertyIfNull("grgitCoreVersion", "4.0.2")
-setCommonGradleDefaultPropertyIfNull("gradleWrapperDefaultVersion", "7.2")
+setCommonGradleDefaultPropertyIfNull("snakeYamlVersion", "1.29")
+setCommonGradleDefaultPropertyIfNull("grgitCoreVersion", "4.1.1")
+setCommonGradleDefaultPropertyIfNull("jsurferVersion", "1.6.3")
+setCommonGradleDefaultPropertyIfNull("semver4jVersion", "3.1.0")
+setCommonGradleDefaultPropertyIfNull("gradleWrapperDefaultVersion", "7.3.1")
 setCommonGradleDefaultPropertyIfNull("gradleHome", "$userHomeDirectory/.gradle")
 setCommonGradleDefaultPropertyIfNull("gradleHomePropertiesFile", "$gradleHome/gradle.properties")
 setCommonGradleDefaultPropertyIfNull("defaultCommonGradleBuildUrl", "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/common.gradle")
@@ -46,13 +48,51 @@ setCommonGradleDefaultPropertyIfNull("commonGradleBuildCustomConfigName", "Custo
 
 
 /***************************************************************************************
+ * set project validation patterns
+ ***************************************************************************************/
+setCommonGradleDefaultPropertyIfNull("projectNameRegularExpressionPattern", '^[a-zA-Z0-9\\-]+$')
+setCommonGradleDefaultPropertyIfNull("projectGroupIdRegularExpressionPattern", '^[a-zA-Z0-9\\.]+$')
+setCommonGradleDefaultPropertyIfNull("projectComponentIdRegularExpressionPattern", '^[a-zA-Z0-9\\-]+$')
+setCommonGradleDefaultPropertyIfNull("projectComponentIdIsPartOfProjectName", true)
+setCommonGradleDefaultPropertyIfNull("projectComponentIdSeparator", "-")
+setCommonGradleDefaultPropertyIfNull("projectRootPackageNamePrefix", "")
+setCommonGradleDefaultPropertyIfNull("projectParentPackageElements", 1)
+setCommonGradleDefaultPropertyIfNull("validateRootFiles", true)
+setCommonGradleDefaultPropertyIfNull("validateRootDirectories", false)
+setCommonGradleDefaultPropertyIfNull("validateProjectNameAndFolder", false)
+
+
+/***************************************************************************************
+ * set project type rules
+ ***************************************************************************************/
+ // projectNameTypeRegularExpressionPattern is used to support additional check names 
+ // against a pattern. The projectNameRegularExpressionPattern builds the general name 
+ // pattern, whereas the projectNameTypeRegularExpressionPattern could check patterns 
+ // for specific name rules depending on the project type. Null or empty means no 
+ // additional rule.
+setCommonGradleDefaultPropertyIfNull("projectNameTypeRegularExpressionPattern", '')
+
+// In normal case multiple source files is the regular case. For specific project
+// types this can be used to have only a single input file.
+setCommonGradleDefaultPropertyIfNull("allowMultipleSourceFiles", true)
+
+// Define the input source file pattern. Null or empty means no pattern. In
+// case of a pattern definition is made, please also adapt the 
+// sampleInputSourceFileName
+setCommonGradleDefaultPropertyIfNull("inputSourceFilePattern", '')
+
+// Define the sample input source file name. Null or empty takes the default.
+setCommonGradleDefaultPropertyIfNull("sampleInputSourceFileName", '')
+
+
+/***************************************************************************************
  * gradle cache properties file
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("commonGradleBuildCache", "$gradleHome/common-gradle-build")
 setCommonGradleDefaultPropertyIfNull("commonGradleBuildCacheLastCheckFile", "$commonGradleBuildCache/lastCheck.properties")
 setCommonGradleDefaultPropertyIfNull("commonGradleBuildCacheLastCheckTimeout", 1000 * 60 * 60 * 12) // half day
-setCommonGradleDefaultPropertyIfNull("mainTaskProtectExclusion", "tasks, help, wrapper, projectValidation, configJar")
-
+setCommonGradleDefaultPropertyIfNull("mainTaskProtectExclusion", "tasks, help, wrapper, clean, projectValidation, configJar, dependencyReport, htmlDependencyReport")
+setCommonGradleDefaultPropertyIfNull("duplicatesStrategy", "exclude")
 
 /***************************************************************************************
  * base path
@@ -182,10 +222,13 @@ setCommonGradleDefaultPropertyIfNull("logbackConfigPath", "${srcTestResourcesDir
 setCommonGradleDefaultPropertyIfNull("tempDirectoryName", "temp")
 setCommonGradleDefaultPropertyIfNull("tempDirectory", "$rootDirectory/$tempDirectoryName")
 
-
 // package files
 setCommonGradleDefaultPropertyIfNull("robotsFile", "robots.txt")
 setCommonGradleDefaultPropertyIfNull("redirectIndexFile", "index.html")
+
+// common gradle script directory
+setCommonGradleDefaultPropertyIfNull("scriptsConfigurationPathname", "scripts")
+setCommonGradleDefaultPropertyIfNull("scriptsConfigurationPath", "$gradleBuildDirectory/${scriptsConfigurationPathname}")
 
 
 /***************************************************************************************
@@ -268,7 +311,14 @@ setCommonGradleDefaultPropertyIfNull("commonGradleCacheDynamicDuration", 10*60)
 setCommonGradleDefaultPropertyIfNull("commonGradleCacheChangingModulesDuration", 0)
 setCommonGradleDefaultPropertyIfNull("allowMavenCentralRepository", true)
 setCommonGradleDefaultPropertyIfNull("allowGoogleRepository", true)
-setCommonGradleDefaultPropertyIfNull("allowJCenterRepository", true)
+
+if (Integer.valueOf(gradle.gradleVersion.toString().split('\\.')[0])<7) {
+    setCommonGradleDefaultPropertyIfNull("allowJCenterRepository", true)
+    setCommonGradleDefaultPropertyIfNull("allowMavenCenterRepository", false)
+} else {
+    setCommonGradleDefaultPropertyIfNull("allowJCenterRepository", false)
+    setCommonGradleDefaultPropertyIfNull("allowMavenCenterRepository", true)
+}
 setCommonGradleDefaultPropertyIfNull("mavenPublishUrl", "https://oss.sonatype.org/service/local/staging/deploy/maven2") // by sonatype you deploy to staging, after go to -> https://oss.sonatype.org/#stagingRepositories -> close
 setCommonGradleDefaultPropertyIfNull("mavenRepositoryUrl", "https://oss.sonatype.org/content/repositories/public")
 setCommonGradleDefaultPropertyIfNull("allowMavenRepository", false)
@@ -329,6 +379,26 @@ if (initTesting) {
 
 
 /***************************************************************************************
+ * dependency report
+ ***************************************************************************************/
+setCommonGradleDefaultPropertyIfNull("dependencyCheckEnabled", false)
+setCommonGradleDefaultPropertyIfNull("dependencyTextReport", true)
+setCommonGradleDefaultPropertyIfNull("dependencyHTMLReport", true)
+setCommonGradleDefaultPropertyIfNull("reportsPath", "${buildDir}/reports")
+setCommonGradleDefaultPropertyIfNull("dependenciesReportPath", "${reportsPath}/dependencies")
+setCommonGradleDefaultPropertyIfNull("dependenciesFile", "${reportsPath}/dependencies/dependencies.json")
+
+setCommonGradleDefaultPropertyIfNull("dependencyAutoUpdate", true)
+setCommonGradleDefaultPropertyIfNull("dependencyCveValidForHours", 12)
+setCommonGradleDefaultPropertyIfNull("dependencyFailOnError", true)
+setCommonGradleDefaultPropertyIfNull("dependencyCheckReportPath", "${reportsPath}/dependency-check")
+setCommonGradleDefaultPropertyIfNull("dependencyCheckReportFile", "${dependencyCheckReportPath}/dependency-check-report.json")
+setCommonGradleDefaultPropertyIfNull("dependencyCheckPreparedDatabaseArchiveFile", "${gradleHome}/dependency-check-data.zip")
+setCommonGradleDefaultPropertyIfNull("dependencyCheckPreparedDatabaseArchiveUrl", "")
+
+
+
+/***************************************************************************************
  * code quality: checkstyle
  ***************************************************************************************/
 //setCommonGradleDefaultPropertyIfNull("checkstyleToolDefaultVersion", '8.37')
@@ -350,13 +420,13 @@ setCommonGradleDefaultPropertyIfNull("jacocoToolDefaultVersion", '0.8.6')
 setCommonGradleDefaultPropertyIfNull("jacocoXMLReport", false)
 setCommonGradleDefaultPropertyIfNull("jacocoCSVReport", false)
 setCommonGradleDefaultPropertyIfNull("jacocoHTMLReport", true)
-setCommonGradleDefaultPropertyIfNull("jacocoReportPath", "${buildDir}/reports/testcoverage")
+setCommonGradleDefaultPropertyIfNull("jacocoReportPath", "${reportsPath}/testcoverage")
 
 
 /***************************************************************************************
  * dependency-check
  ***************************************************************************************/
-setCommonGradleDefaultPropertyIfNull("toolariumDependencyCheckVersion", '6.2.2')
+setCommonGradleDefaultPropertyIfNull("toolariumDependencyCheckVersion", '6.5.0.1')
 
 
 /***************************************************************************************
@@ -364,9 +434,9 @@ setCommonGradleDefaultPropertyIfNull("toolariumDependencyCheckVersion", '6.2.2')
  ***************************************************************************************/
 // the quarkusPluginVersion is used for setup new projects where defaultQuarkusPluginVersion 
 // controls the used version and force for update.
-setCommonGradleDefaultPropertyIfNull("defaultQuarkusPluginVersion", '2.1.4.Final')
-setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", '2.1.4.Final')
-//setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", "${defaultQuarkusPluginVersion}")
+setCommonGradleDefaultPropertyIfNull("defaultQuarkusPluginVersion", '2.5.4.Final')
+//setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", '2.5.4.Final')
+setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", "${defaultQuarkusPluginVersion}")
 setCommonGradleDefaultPropertyIfNull("quarkusPlatformArtifactId", 'quarkus-universe-bom')
 setCommonGradleDefaultPropertyIfNull("quarkusPlatformGroupId", 'io.quarkus')
 setCommonGradleDefaultPropertyIfNull("quarkusPlatformVersion", "${quarkusPluginVersion}")
@@ -374,8 +444,10 @@ setCommonGradleDefaultPropertyIfNull("quarkusRepository", "https://repository.jb
 setCommonGradleDefaultPropertyIfNull("quarkusAppDirectory", "${gradleBuildDirectory}/quarkus-app")
 setCommonGradleDefaultPropertyIfNull("quarkusAppSubPathName", "app")
 setCommonGradleDefaultPropertyIfNull("quarkusAppJar", "quarkus-run.jar")
-setCommonGradleDefaultPropertyIfNull("createServicePathProperties", true)
+setCommonGradleDefaultPropertyIfNull("createServiceProperties", true)
 setCommonGradleDefaultPropertyIfNull("updateApplicationProperties", true)
+setCommonGradleDefaultPropertyIfNull("createServiceJavaRunner", true) // re dockerJavaRunner will be taken
+setCommonGradleDefaultPropertyIfNull("createServiceJavaAgent", true) // the dockerJavaAgent will be taken
 
 
 /***************************************************************************************
@@ -401,6 +473,11 @@ setCommonGradleDefaultPropertyIfNull("srcMainApiSpecDirectory", "${srcMainDirect
 setCommonGradleDefaultPropertyIfNull("openapiPluginVersion", "5.1.1")
 //setCommonGradleDefaultPropertyIfNull("openapiLibrary", 'okhttp-gson')
 //setCommonGradleDefaultPropertyIfNull("openapiGeneratorName", 'java')
+// openApiInputSourceFilePattern: my-special-service-api-spec -> my-special-service -> my-special -> ^my-special.*(service|service-adapter)-api.yaml$
+setCommonGradleDefaultPropertyIfNull("openApiInputSourceFilePattern", '^' + "${rootProject.name}".replace(projectComponentIdSeparator + srcMainApiSpecDirectoryName, '') /* cut -api-spec */
+	.replace(projectComponentIdSeparator + 'adapter' + projectComponentIdSeparator + 'service', '').replace(projectComponentIdSeparator + 'service', '') /* cut -adapter-service and -service */
+	+ '.*(service|service' + projectComponentIdSeparator + 'adapter)' + projectComponentIdSeparator + 'api.yaml$') /* add .*(service|service-adapter)-api.yaml$ */
+setCommonGradleDefaultPropertyIfNull("openApiAllowMultipleSourceFiles", true);
 setCommonGradleDefaultPropertyIfNull("openapiVersionContentLineRegExp", "^.+version\\s?:.+\$")
 setCommonGradleDefaultPropertyIfNull("openapiUpdateFileAfterRelease", true)
 setCommonGradleDefaultPropertyIfNull("openapiGeneratorName", 'jaxrs-spec')
@@ -409,7 +486,7 @@ setCommonGradleDefaultPropertyIfNull("openapiDocs", true)
 setCommonGradleDefaultPropertyIfNull("openapiTests", true)
 setCommonGradleDefaultPropertyIfNull("openapiModelDocs", false)
 setCommonGradleDefaultPropertyIfNull("openapiModelTests", false)
-setCommonGradleDefaultPropertyIfNull("openapiDateLibrary", "legacy") // java8
+setCommonGradleDefaultPropertyIfNull("openapiDateLibrary", "java8") // legacy
 setCommonGradleDefaultPropertyIfNull("openapiInterfaceOnly", true)
 setCommonGradleDefaultPropertyIfNull("openapiReturnResponse", true)
 setCommonGradleDefaultPropertyIfNull("openapiUseJava8Features", true)
@@ -426,50 +503,12 @@ setCommonGradleDefaultPropertyIfNull("openapiSerializableModel", true)
 /***************************************************************************************
  * gradle jvm arguments
  ***************************************************************************************/
-setCommonGradleDefaultPropertyIfNull("gradlePropertiesJvmArgs", "-Xmx1g -XX:MaxHeapSize=1g -XX:MaxPermSize=256m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=${fileEncoding}")
+setCommonGradleDefaultPropertyIfNull("gradlePropertiesJvmArgs", "-Xmx1g -XX:MaxHeapSize=1g -XX:MaxMetaspaceSize=256m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=${fileEncoding}")
 //setCommonGradleDefaultPropertyIfNull("gradlePropertiesLogLevel", "lifecycle")
 setCommonGradleDefaultPropertyIfNull("gradlePropertiesLogLevel", "quiet")
 setCommonGradleDefaultPropertyIfNull("gradlePropertiesConsole", "rich")
 setCommonGradleDefaultPropertyIfNull("gradlePropertiesWarningMode", "all")
 //gradle.startParameter.showStacktrace = org.gradle.api.logging.configuration.ShowStacktrace.ALWAYS
-
-
-/***************************************************************************************
- * set project validation patterns
- ***************************************************************************************/
-setCommonGradleDefaultPropertyIfNull("projectNameRegularExpressionPattern", '^[a-zA-Z0-9\\-]+$')
-setCommonGradleDefaultPropertyIfNull("projectGroupIdRegularExpressionPattern", '^[a-zA-Z0-9\\.]+$')
-setCommonGradleDefaultPropertyIfNull("projectComponentIdRegularExpressionPattern", '^[a-zA-Z0-9\\-]+$')
-setCommonGradleDefaultPropertyIfNull("projectComponentIdIsPartOfProjectName", true)
-setCommonGradleDefaultPropertyIfNull("projectComponentIdSeparator", "-")
-setCommonGradleDefaultPropertyIfNull("projectRootPackageNamePrefix", "")
-setCommonGradleDefaultPropertyIfNull("projectParentPackageElements", 1)
-setCommonGradleDefaultPropertyIfNull("validateRootFiles", true)
-setCommonGradleDefaultPropertyIfNull("validateRootDirectories", false)
-setCommonGradleDefaultPropertyIfNull("validateProjectNameAndFolder", false)
-
-
-/***************************************************************************************
- * set project type rules
- ***************************************************************************************/
- // projectNameTypeRegularExpressionPattern is used to support additional check names 
- // against a pattern. The projectNameRegularExpressionPattern builds the general name 
- // pattern, whereas the projectNameTypeRegularExpressionPattern could check patterns 
- // for specific name rules depending on the project type. Null or empty means no 
- // additional rule.
-setCommonGradleDefaultPropertyIfNull("projectNameTypeRegularExpressionPattern", '')
-
-// In normal case multiple source files is the regular case. For specific project
-// types this can be used to have only a single input file.
-setCommonGradleDefaultPropertyIfNull("allowMultipleSourceFiles", true)
-
-// Define the input source file pattern. Null or empty means no pattern. In
-// case of a pattern definition is made, please also adapt the 
-// sampleInputSourceFileName
-setCommonGradleDefaultPropertyIfNull("inputSourceFilePattern", '')
-
-// Define the sample input source file name. Null or empty takes the default.
-setCommonGradleDefaultPropertyIfNull("sampleInputSourceFileName", '')
 
 
 /***************************************************************************************
@@ -556,7 +595,18 @@ setCommonGradleDefaultPropertyIfNull("dockerMaxNumberOfImages", 2) // keep max 2
 setCommonGradleDefaultPropertyIfNull("dockerDefaultEncoding", "${fileEncoding}")
 setCommonGradleDefaultPropertyIfNull("dockerDefaultLanguage", "en")
 setCommonGradleDefaultPropertyIfNull("dockerDefaultLocale", "${dockerDefaultLanguage}_US")
-setCommonGradleDefaultPropertyIfNull("dockerDefaultJavaOptions", "-Djava.security.egd=file:/dev/./urandom")
+setCommonGradleDefaultPropertyIfNull("dockerJavaOptions", "-Djava.security.egd=file:/dev/./urandom")
+setCommonGradleDefaultPropertyIfNull("dockerDefaultJavaOptions", "${dockerJavaOptions}")
+setCommonGradleDefaultPropertyIfNull("dockerJavaAgent", "")
+setCommonGradleDefaultPropertyIfNull("dockerProxyHost", "")
+setCommonGradleDefaultPropertyIfNull("dockerProxyPort", "")
+setCommonGradleDefaultPropertyIfNull("dockerNoProxyHosts", "")
+setCommonGradleDefaultPropertyIfNull("dockerHttpAgent", "")
+setCommonGradleDefaultPropertyIfNull("dockerKeepAlive", "")
+setCommonGradleDefaultPropertyIfNull("dockerMaxConnections", "")
+setCommonGradleDefaultPropertyIfNull("dockerMaxRedirects", "")
+setCommonGradleDefaultPropertyIfNull("dockerLogLevel", "")
+setCommonGradleDefaultPropertyIfNull("dockerJavaRunner", "java-runner")
 setCommonGradleDefaultPropertyIfNull("dockerEnableAccessLog", false)
 setCommonGradleDefaultPropertyIfNull("dockerBuildPull", "--pull --force-rm")
 setCommonGradleDefaultPropertyIfNull("dockerBuildCompress", "--compress")
@@ -885,9 +935,15 @@ setCommonGradleDefaultPropertyIfNull("commonGradleResourcebundleOutputNamePrefix
 setCommonGradleDefaultPropertyIfNull("referenceSheetName", "")
 setCommonGradleDefaultPropertyIfNull("referenceSheetHasNoSubFolder", "false")
 
-
 setCommonGradleDefaultPropertyIfNull("commonGradleResourcebundleJsonSupport", false)
 setCommonGradleDefaultPropertyIfNull("commonGradleConfigResourcebundleMaxMemory", "512m")
+
+
+/***************************************************************************************
+ * white- and blacklist dependencies
+ ***************************************************************************************/
+setCommonGradleDefaultPropertyIfNull("commonGradleConfigWhitelistDependenciesName", "whitelist-dependencies.properties")
+setCommonGradleDefaultPropertyIfNull("commonGradleConfigBlacklistDependenciesName", "blacklist-dependencies.properties")
 
 
 /***************************************************************************************

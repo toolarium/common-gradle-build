@@ -39,6 +39,15 @@ repositories {
 		jcenter()
 	}
 
+	if (project.hasProperty('allowMavenCenterRepository') && project.getProperty('allowMavenCenterRepository')) {
+		logInfo("Allow mavenCenter repository")
+		mavenCentral()
+		maven {
+			url "https://mvnrepository.com/artifact"
+			
+		}
+	}
+
 	if (project.hasProperty('allowMavenSnapshotRepository') && project.getProperty('allowMavenSnapshotRepository') && project.hasProperty('mavenSnapshotRepositoryUrl')) {
 		def mavenSnapshotRepositoryUrl = project.getProperty('mavenSnapshotRepositoryUrl')
 		if (mavenSnapshotRepositoryUrl!=null && !mavenSnapshotRepositoryUrl.isEmpty()) {	

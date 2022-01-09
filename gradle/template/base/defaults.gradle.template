@@ -40,6 +40,14 @@
 
 
 /***************************************************************************************
+ * set organization specific settings
+ ***************************************************************************************/
+// signature keys
+//setCommonGradleProperty("publicKeyFilename", "${commonGradleBuildHome}/conf/security/publickey.pem")
+//setCommonGradleProperty("privateKeyFilename", "${gradleHome}/privatekey.key")
+
+
+/***************************************************************************************
  * reference the license always global
  ***************************************************************************************/
 setCommonGradleProperty("licenseFile", "$commonGradleBuildHome/$licenseFilename")
@@ -124,7 +132,8 @@ setCommonGradleProperty("licenseFile", "$commonGradleBuildHome/$licenseFilename"
 //setCommonGradleProperty("commonGradleBuildReleasePublish", true)
 //setCommonGradleProperty("allowMavenCentralRepository", true)
 //setCommonGradleProperty("allowGoogleRepository", true)
-//setCommonGradleProperty("allowJCenterRepository", true)
+//setCommonGradleProperty("allowJCenterRepository", false)
+//setCommonGradleProperty("allowMavenCenterRepository", true)
 //setCommonGradleProperty("mavenPublishUrl", "https://your-publish-repository-url")
 //setCommonGradleProperty("mavenRepositoryUrl", "https://your-repository-url")
 //setCommonGradleProperty("allowMavenRepository", true)
@@ -147,9 +156,19 @@ setCommonGradleProperty("licenseFile", "$commonGradleBuildHome/$licenseFilename"
  ***************************************************************************************/
 //setCommonGradleProperty("initTesting", true)
 //setCommonGradleProperty("useJUnit", true)
-//setCommonGradleProperty("testDependencyVersion", "5.6.2")
+//setCommonGradleProperty("testDependencyVersion", "5.7.1")
 //setCommonGradleProperty("testImplementationDependency", "junit:junit:${testDependencyVersion}")
 //setCommonGradleProperty("testRuntimeOnlyDependency", "junit:junit:${testDependencyVersion}")
+
+
+/***************************************************************************************
+ * dependency report
+ ***************************************************************************************/
+//setCommonGradleProperty("dependencyCheckEnabled", true)
+//setCommonGradleProperty("dependencyTextReport", false)
+//setCommonGradleProperty("dependencyHTMLReport", true)
+//setCommonGradleProperty("dependencyCheckPreparedDatabaseArchiveFile", "${commonGradleBuildHome}/dependency-check/dependency-check-data.zip")
+//setCommonGradleProperty("dependencyCheckPreparedDatabaseArchiveUrl", "")
 
 
 /***************************************************************************************
@@ -184,7 +203,7 @@ setCommonGradleProperty("projectIndividualCheckstyleConfiguration", false)
 /***************************************************************************************
  * quarkus plugin version
  ***************************************************************************************/
-//setCommonGradleProperty("defaultQuarkusPluginVersion", '1.13.7.Final')
+//setCommonGradleProperty("defaultQuarkusPluginVersion", '2.5.4.Final')
 //setCommonGradleProperty("quarkusPluginVersion", "${defaultQuarkusPluginVersion}")
 
 // readiness and liveness
@@ -257,6 +276,9 @@ setCommonGradleProperty("projectIndividualCheckstyleConfiguration", false)
  * openapi plugin version
  ***************************************************************************************/
 //setCommonGradleProperty("openapiPluginVersion", '5.1.1')
+//setCommonGradleProperty("openapiDateLibrary", "java8")
+//setCommonGradleProperty("openApiInputSourceFilePattern", '^' + "${rootProject.name}".replace("-api-spec", "").replace("-adapter-service", "").replace("-service", "") + '.*(service|service-adapter)-api.yaml$')
+//setCommonGradleProperty("openApiAllowMultipleSourceFiles", "true");
 
 
 /***************************************************************************************
@@ -277,6 +299,7 @@ setCommonGradleProperty("projectIndividualCheckstyleConfiguration", false)
  ***************************************************************************************/
 //setCommonGradleProperty("kubernetesSupport", false)
 //setCommonGradleProperty("kubernetesApplicationHost", "${rootProject.name}.local")
+//setCommonGradleProperty("kubernetesApplicationPrototcol", "http://")
 //setCommonGradleProperty("kubernetesReplicas", "2")
 //setCommonGradleProperty("kubernetesUrlRootPath", "/api")
 //setCommonGradleProperty("kubernetesUrlPath", "${kubernetesUrlRootPath}/${rootProject.name}")
@@ -316,7 +339,7 @@ setCommonGradleProperty("projectIndividualCheckstyleConfiguration", false)
 /***************************************************************************************
  * gradle jvm arguments
  ***************************************************************************************/
-//setCommonGradleProperty("gradlePropertiesJvmArgs", "-Xmx1g -XX:MaxHeapSize=1g -XX:MaxPermSize=256m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=${fileEncoding}")
+//setCommonGradleProperty("gradlePropertiesJvmArgs", "-Xmx1g -XX:MaxHeapSize=1g -XX:MaxMetaspaceSize=256m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=${fileEncoding}")
 //setCommonGradleProperty("gradlePropertiesLogLevel", "lifecycle")
 //setCommonGradleProperty("gradlePropertiesLogLevel", "quiet")
 

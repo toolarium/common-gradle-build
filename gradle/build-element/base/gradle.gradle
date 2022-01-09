@@ -66,6 +66,7 @@ def hasWrapperFiles=(new File("gradle").exists() \
 						&& new File("gradlew.").exists() \
 						&& new File("gradlew.bat").exists())
 def hasExpectedWrapperVersion="$gradleWrapperDefaultVersion".equals("$gradle.gradleVersion")
+setCommonGradleProperty("hasExpectedWrapperVersion", hasExpectedWrapperVersion);
 
 wrapper {
 	onlyIf { installGradleWrapper && (!hasExpectedWrapperVersion || !hasWrapperFiles) }

@@ -21,8 +21,15 @@
  
 buildscript {
 	repositories {
-		jcenter()
-		//maven { url("https://oss.sonatype.org/content/repositories/snapshots") }
+        if (Integer.valueOf(gradle.gradleVersion.toString().split('\\.')[0])<7) {
+			jcenter()
+		} else {
+			mavenCentral()
+			maven {
+				url "https://mvnrepository.com/artifact"
+				
+			}
+		}
 	}
 	dependencies {
 		def toolariumEnumConfigurationVersion="0.9.10"

@@ -22,10 +22,17 @@
  
 // bootsrap logger
 ext.BOOTSTRAPSTYLER = 'black red green yellow blue magenta cyan white' .split().toList().withIndex(30).collectEntries { key, val -> [(key) : { "\033[${val}m${it}\033[0m" }] }
-ext.bootStraplogLifecycle = { message -> logger.lifecycle "${BOOTSTRAPSTYLER['cyan'](message)}" }
-ext.bootStraplogInfo = { message -> logger.info "${BOOTSTRAPSTYLER['cyan'](message)}" }
-ext.bootStraplogWarn = { message -> logger.warn "${BOOTSTRAPSTYLER['yellow'](message)}" }
-
+ext.isRunningInEclipse = (System.getProperty("eclipse.vmargs")!=null && !System.getProperty("eclipse.vmargs").isEmpty()) || (System.getProperty("eclipse.commands")!=null && !System.getProperty("eclipse.commands").isEmpty()) || (System.getProperty("eclipse.buildId")!=null && !System.getProperty("eclipse.buildId").isEmpty())
+ext.bootstrapColorize = { color, message ->
+    if ((ext.has("org.gradle.console") && "plain".equalsIgnoreCase(ext.get("org.gradle.console").toString().trim())) || (project.hasProperty("org.gradle.console") && "plain".equalsIgnoreCase(project.getProperty("org.gradle.console").toString().trim()))
+	    || isRunningInEclipse  || (project.ext.has("termColors") && "NONE".equals(project.ext.get("termColors"))) ) {
+        return message
+	}
+	return "${BOOTSTRAPSTYLER[color](message)}"
+}
+ext.bootStraplogLifecycle = { message -> logger.lifecycle bootstrapColorize('cyan', message) }
+ext.bootStraplogInfo = { message -> logger.info bootstrapColorize('cyan', message) }
+ext.bootStraplogWarn = { message -> logger.warn bootstrapColorize('yellow', message) }
 
 /***************************************************************************************
  * Read last version
@@ -151,7 +158,7 @@ if (commonCustomConfigVersion!=null && !commonCustomConfigVersion.isEmpty()) {
 		bootStraplogWarn("Could not select cached version of the common-gradle-build: " + e.getMessage())
 	}
 
-	bootStraplogLifecycle(" > Use common-gradle-build-home from " + commonGradleBuildHome)
+	bootStraplogLifecycle("> Use common-gradle-build-home from " + commonGradleBuildHome)
 }
 project.ext.set('commonGradleBuildHome', commonGradleBuildHome)
 project.ext.set('commonGradleBuildHomeBase', commonGradleBuildHomeBase)
@@ -214,7 +221,7 @@ if (!project.hasProperty('commonGradleBuildUrl')) {
 		ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
 	}
 	
-	bootStraplogLifecycle(" > Use common-gradle-build from " + ext.commonGradleBuildUrl)
+	bootStraplogLifecycle("> Use common-gradle-build from " + ext.commonGradleBuildUrl)
 }
 
 if (!project.hasProperty('commonGradleBuildElementPath')) {

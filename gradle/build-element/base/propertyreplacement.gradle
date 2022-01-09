@@ -59,8 +59,8 @@ ext.searchReplaceByProperties = { inputLine, replacePlaceHolders = true ->
 		line = line.replaceAll('@@COMMON_GRADLE_BUILD_URL@@', "${defaultCommonGradleBuildUrl}".toString())
 		line = line.replaceAll('@@BUILD_TOOL_VERSION_MESSAGE@@', "${project.ext.buildToolVersionStackMessage}".toString())
 		
-		line = line.replaceAll('@@sourceCompatibility@@', "${project.ext.sourceCompatibility}".toString())
-		line = line.replaceAll('@@targetCompatibility@@', "${project.ext.targetCompatibility}".toString())
+		line = line.replaceAll('@@sourceCompatibility@@', "${sourceCompatibility}".toString())
+		line = line.replaceAll('@@targetCompatibility@@', "${targetCompatibility}".toString())
 
 		// main source
 		if (project.hasProperty('srcMainDirectoryName')) {
@@ -204,8 +204,41 @@ ext.searchReplaceByProperties = { inputLine, replacePlaceHolders = true ->
 		if (project.hasProperty('dockerDefaultLocale')) {
 			line = line.replaceAll('@@dockerDefaultLocale@@', "${project.ext.dockerDefaultLocale}".toString())
 		}
+		if (project.hasProperty('dockerJavaOptions')) {
+			line = line.replaceAll('@@dockerJavaOptions@@', "${project.ext.dockerJavaOptions}".toString())
+		}
 		if (project.hasProperty('dockerDefaultJavaOptions')) {
 			line = line.replaceAll('@@dockerDefaultJavaOptions@@', "${project.ext.dockerDefaultJavaOptions}".toString())
+		}
+		if (project.hasProperty('dockerJavaAgent')) {
+			line = line.replaceAll('@@dockerJavaAgent@@', "${project.ext.dockerJavaAgent}".toString())
+		}
+		if (project.hasProperty('dockerProxyHost')) {
+			line = line.replaceAll('@@dockerProxyHost@@', "${project.ext.dockerProxyHost}".toString())
+		}
+		if (project.hasProperty('dockerProxyPort')) {
+			line = line.replaceAll('@@dockerProxyPort@@', "${project.ext.dockerProxyPort}".toString())
+		}
+		if (project.hasProperty('dockerNoProxyHosts')) {
+			line = line.replaceAll('@@dockerNoProxyHosts@@', "${project.ext.dockerNoProxyHosts}".toString())
+		}
+		if (project.hasProperty('dockerHttpAgent')) {
+			line = line.replaceAll('@@dockerHttpAgent@@', "${project.ext.dockerHttpAgent}".toString())
+		}
+		if (project.hasProperty('dockerKeepAlive')) {
+			line = line.replaceAll('@@dockerKeepAlive@@', "${project.ext.dockerKeepAlive}".toString())
+		}
+		if (project.hasProperty('dockerMaxConnections')) {
+			line = line.replaceAll('@@dockerMaxConnections@@', "${project.ext.dockerMaxConnections}".toString())
+		}
+		if (project.hasProperty('dockerMaxRedirects')) {
+			line = line.replaceAll('@@dockerMaxRedirects@@', "${project.ext.dockerMaxRedirects}".toString())
+		}
+		if (project.hasProperty('dockerLogLevel')) {
+			line = line.replaceAll('@@dockerLogLevel@@', "${project.ext.dockerLogLevel}".toString())
+		}
+		if (project.hasProperty('dockerJavaRunner')) {
+			line = line.replaceAll('@@dockerJavaRunner@@', "${project.ext.dockerJavaRunner}".toString())
 		}
 		if (project.hasProperty('dockerEnableAccessLog')) {
 			line = line.replaceAll('@@dockerEnableAccessLog@@', "${project.ext.dockerEnableAccessLog}".toString())
