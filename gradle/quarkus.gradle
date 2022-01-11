@@ -296,6 +296,7 @@ test {
  * project java validation
  ***************************************************************************************/
 projectValidation {
+	def quarkusResourcePath = srcMainResourcesDirectory + "/META-INF/resources"
 	if (project.getProperty('IS_NEW')) {
 		gradle.startParameter.excludedTaskNames += "build"
 	} else { // in older versions
@@ -315,7 +316,6 @@ projectValidation {
 			setCommonGradleProperty("fileName", "application.properties")
 			createFileFromTemplate("${srcMainResourcesDirectory}/${fileName}", getTemplateFile("application.properties.template")) 
 			
-			def quarkusResourcePath = srcMainResourcesDirectory + "/META-INF/resources"
 			new File(quarkusResourcePath).mkdirs()
 			createFileFromTemplate("${quarkusResourcePath}/index.html", getTemplateFile("index.html.template")) 
 
