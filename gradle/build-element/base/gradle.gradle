@@ -65,7 +65,9 @@ def hasWrapperFiles=(new File("gradle").exists() \
 						&& new File("gradle/wrapper/gradle-wrapper.properties").exists() \
 						&& new File("gradlew.").exists() \
 						&& new File("gradlew.bat").exists())
-def hasExpectedWrapperVersion="$gradleWrapperDefaultVersion".equals("$gradle.gradleVersion")
+
+logInfo("> Expected gradle wrapper version " + colorize("$gradleWrapperDefaultVersion") + colorize(INFO_LEVEL, ", found version ") + colorize("$gradle.gradleVersion") + colorize(INFO_LEVEL, "."))
+def hasExpectedWrapperVersion=(!project.hasProperty("gradleWrapperDefaultVersion") || "$gradleWrapperDefaultVersion".toString().trim().isEmpty() || "$gradleWrapperDefaultVersion".toString().trim().equals("$gradle.gradleVersion".toString().trim()))
 setCommonGradleProperty("hasExpectedWrapperVersion", hasExpectedWrapperVersion);
 
 wrapper {
