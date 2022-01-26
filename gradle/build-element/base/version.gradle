@@ -94,6 +94,7 @@ ext.readVersion = { ->
 
 	if (project.hasProperty('isReleaseUpdateVersion') && "true".equalsIgnoreCase("" + project.getProperty('isReleaseUpdateVersion')))  {
 		setCommonGradleProperty("isReleaseVersion", true)
+		setCommonGradleProperty("tagIgnoreReleaseUpdateVersionIfNoFilesChanged", false) // in case there is a release version, we don't ignore anything!		
 		setCommonGradleProperty('qualifierVersionNumber', "${project.ext.BUILD_TIMESTAMP_ID}".toString().substring(0, 14))
     }
 
