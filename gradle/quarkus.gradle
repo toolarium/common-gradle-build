@@ -121,8 +121,13 @@ ext.validateQuarkusVersion = { ->
 			versionInformation = readPropertiesFile(quarkusVersionList)
 		}
 
+		def doQuarkusUpdate = true;
+		if (project.hasProperty('isReleaseUpdateVersion') && "true".equalsIgnoreCase("" + project.getProperty('isReleaseUpdateVersion'))) {
+			doQuarkusUpdate = (project.hasProperty('quarkusReleaseUpdateVersion') && "true".equalsIgnoreCase("" + project.getProperty('quarkusReleaseUpdateVersion')));
+		}
+
 		def currentVersion = parseReleaseVersion(quarkusPluginVersion);		
-		if (currentVersion!=null) {
+		if (currentVersion!=null && doQuarkusUpdate) {
 			def verifyNewestVersion = false;
 			if (project.hasProperty('defaultQuarkusPluginVersion')) {
 				def minDefaultVersion = parseReleaseVersion(defaultQuarkusPluginVersion);
@@ -136,13 +141,21 @@ ext.validateQuarkusVersion = { ->
 								w << line.replaceAll(quarkusPluginVersion, defaultQuarkusPluginVersion) + NELINE
 							}
 						}					
-						quarkusWarningMessage += "The file " + gradlePropertiesFile + " is already modified, please verify!"
+						quarkusWarningMessage += " The file " + gradlePropertiesFile + " is already modified, please verify!"
 					} catch (Exception e) {
 						printWarn("Could not update ${gradlePropertiesFile}:" + e.getMessage())
 						copyFile(gradlePropertiesFile + ".bak", gradlePropertiesFile)
 					}
+
+					// mark changed file
+					addCommonGradlePropertyList("changedFileSet", gradlePropertiesFile)
+
+					if (project.hasProperty('isReleaseUpdateVersion') && "true".equalsIgnoreCase("" + project.getProperty('isReleaseUpdateVersion'))) {
+						printInfo("> ${quarkusWarningMessage}")
+					} else {
+						addError(quarkusWarningMessage)
+					}
 					
-					addError(quarkusWarningMessage)
 					delete gradlePropertiesFile + ".bak"
 				} else {
 					verifyNewestVersion = true
@@ -330,6 +343,15 @@ projectValidation {
 								<< "      " + colorize(HIGHLITE_LEVEL, "$startExecutable test") + "" << NELINE)
 		}
 	}
+}
+
+
+/***************************************************************************************
+ * suppress error
+ ***************************************************************************************/
+tasks.withType(GenerateModuleMetadata).configureEach {
+    // gradle v7.3.1: The value 'enforced-platform' is provided in the validation error message you got
+    suppressedValidationErrors.add('enforced-platform')
 }
 
 

@@ -167,6 +167,10 @@ setCommonGradleDefaultPropertyIfNull("changelogSupportReleaseLink", true);
 setCommonGradleDefaultPropertyIfNull("changelogSupportReleaseInfo", true);
 setCommonGradleDefaultPropertyIfNull("changelogSupportLinkInDescription", true);
 setCommonGradleDefaultPropertyIfNull("changelogSupportIdListOnEndOfTheComment", true);
+setCommonGradleDefaultPropertyIfNull("changelogDefaultType", ""); // FIXED
+setCommonGradleDefaultPropertyIfNull("changelogDefaultComment", "Small bug fixes.");
+setCommonGradleDefaultPropertyIfNull("changelogReleaseUpdateType", "SECURITY");
+setCommonGradleDefaultPropertyIfNull("changelogReleaseUpdateComment", "Security updates."); //"Security updates (" + "${project.ext.BUILD_TIMESTAMP_ID}".toString().substring(0, 14) + ")."
 
 // defines artecfacts to create
 setCommonGradleDefaultPropertyIfNull("createJar", true)
@@ -301,7 +305,7 @@ setCommonGradleDefaultPropertyIfNull("kubernetesProductConfigMapEnvironmentVaria
 /***************************************************************************************
  * toolarium changelog parser support
  ***************************************************************************************/
-setCommonGradleDefaultPropertyIfNull("toolariumChangelogParserVersion", "0.9.1")
+setCommonGradleDefaultPropertyIfNull("toolariumChangelogParserVersion", "0.9.2")
 
 
 /***************************************************************************************
@@ -437,6 +441,7 @@ setCommonGradleDefaultPropertyIfNull("toolariumDependencyCheckVersion", '6.5.0.1
 setCommonGradleDefaultPropertyIfNull("defaultQuarkusPluginVersion", '2.6.2.Final')
 //setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", '2.6.2.Final')
 setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", "${defaultQuarkusPluginVersion}")
+setCommonGradleDefaultPropertyIfNull("quarkusReleaseUpdateVersion", true)
 setCommonGradleDefaultPropertyIfNull("quarkusPlatformArtifactId", 'quarkus-universe-bom')
 setCommonGradleDefaultPropertyIfNull("quarkusPlatformGroupId", 'io.quarkus')
 setCommonGradleDefaultPropertyIfNull("quarkusPlatformVersion", "${quarkusPluginVersion}")
@@ -514,6 +519,7 @@ setCommonGradleDefaultPropertyIfNull("gradlePropertiesWarningMode", "all")
 /***************************************************************************************
  * allowedMainDirectories & allowedMainFiles
  ***************************************************************************************/
+addCommonGradlePropertyList("changedFileSet", "")
 addCommonGradlePropertyList("allowedMainDirectories", gradleBuildDirectory)
 addCommonGradlePropertyList("allowedMainDirectories", gradleDirectory)
 addCommonGradlePropertyList("allowedMainDirectories", configDirectory)
@@ -546,6 +552,10 @@ setCommonGradleDefaultPropertyIfNull("minorVersionNumber", 0)
 setCommonGradleDefaultPropertyIfNull("revisionVersionNumber", 1)
 setCommonGradleDefaultPropertyIfNull("qualifierVersionNumber", SNAPSHOT_TAG_NAME)
 setCommonGradleDefaultPropertyIfNull("isReleaseVersion", false)
+setCommonGradleDefaultPropertyIfNull("tagReleaseVersion", true)
+setCommonGradleDefaultPropertyIfNull("isReleaseUpdateVersion", false)
+setCommonGradleDefaultPropertyIfNull("tagReleaseUpdateVersion", true)
+setCommonGradleDefaultPropertyIfNull("tagIgnoreReleaseUpdateVersionIfNoFilesChanged", true)
 setCommonGradleDefaultPropertyIfNull("scmVersionNumber", '')
 
 

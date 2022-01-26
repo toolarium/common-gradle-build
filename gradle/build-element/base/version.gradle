@@ -92,6 +92,11 @@ ext.readVersion = { ->
 		}
 	}	
 
+	if (project.hasProperty('isReleaseUpdateVersion') && "true".equalsIgnoreCase("" + project.getProperty('isReleaseUpdateVersion')))  {
+		setCommonGradleProperty("isReleaseVersion", true)
+		setCommonGradleProperty('qualifierVersionNumber', "${project.ext.BUILD_TIMESTAMP_ID}".toString().substring(0, 14))
+    }
+
 	if (project.hasProperty('isReleaseVersion')) {
 		if ("true".equalsIgnoreCase("" + project.getProperty('isReleaseVersion')) && project.getProperty('qualifierVersionNumber').endsWith(SNAPSHOT_TAG_NAME)) {
 			qualifierVersionNumber=qualifierVersionNumber.replace(SNAPSHOT_TAG_NAME, "")
@@ -110,7 +115,7 @@ ext.readVersion = { ->
 
 	project.version = project.getProperty('majorVersionNumber') + "." + project.getProperty('minorVersionNumber') + "." + project.getProperty('revisionVersionNumber')
 	def qualifierVersionNumber = project.getProperty('qualifierVersionNumber')
-	if (qualifierVersionNumber !=null && !qualifierVersionNumber.isEmpty()) {
+	if (qualifierVersionNumber != null && !qualifierVersionNumber.isEmpty()) {
 		project.version = project.version + "-" +  qualifierVersionNumber
 	}
 

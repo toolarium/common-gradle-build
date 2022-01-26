@@ -30,7 +30,7 @@ buildscript {
 		//maven { url("https://oss.sonatype.org/content/repositories/snapshots") }
 	}
 	dependencies {
-		def toolariumChangelogParserVersion="0.9.1"
+		def toolariumChangelogParserVersion="0.9.2"
 		if (project.hasProperty('toolariumChangelogParserVersion')) {
 			toolariumChangelogParserVersion = project.getProperty('toolariumChangelogParserVersion')
 		}
@@ -47,9 +47,13 @@ buildscript {
 import com.github.toolarium.changelog.dto.ChangelogReleaseVersion;
 import com.github.toolarium.changelog.dto.ChangelogChangeType;
 import com.github.toolarium.changelog.ChangelogFactory;
+import com.github.toolarium.changelog.dto.Changelog;
+import com.github.toolarium.changelog.dto.ChangelogEntry;
+import com.github.toolarium.changelog.dto.ChangelogSection;
 import com.github.toolarium.changelog.config.ChangelogConfig;
 import com.github.toolarium.changelog.parser.ChangelogParseResult;
 import com.github.toolarium.changelog.validator.ValidationException;
+import jptools.util.EnumUtil;
 
 import java.nio.file.Paths;
 ext.parseReleaseVersion = { inputVersion ->
@@ -138,21 +142,87 @@ ext.validateChangelog = { inputChangelogConfig = null ->
 
 
 /** 
+ * Read changelog
+ */
+ext.readChangelog = { ->
+	def changelog = null;
+	
+	try {
+		if (!new File("${changelogFile}").exists()) {
+			changelog = new Changelog("${rootProject.name}", "${changelogDescription}")
+			logInfo("Created changelog file [" + colorize(HIGHLITE_LEVEL, changelogFile) + colorize(INFO_LEVEL, ".")); 
+		} else {
+			changelog = ChangelogFactory.getInstance().parse(Paths.get("${changelogFile}")).getChangelog();
+			logInfo("Parsed successful changelog file [" + colorize(HIGHLITE_LEVEL, changelogFile) + colorize(INFO_LEVEL, ".")); 
+		}
+		
+	} catch (IOException e) {
+		printWarn("Could not parse changelog file [" + colorize(HIGHLITE_LEVEL, changelogFile) + colorize(WARN_LEVEL, "]: " +e.getMessage())) 
+	}	
+	
+	return changelog;
+}
+
+
+/** 
  * Update the changelog
  */
-ext.updateChangelog = { inputChangelogConfig = null ->
+ext.updateChangelog = { updateChangelogType = null, updateChangelogComment = null, inputChangelogConfig = null ->
 	try {
-		def changelog = ChangelogFactory.getInstance().parse(Paths.get("${changelogFile}")).getChangelog();
-		logInfo("Parsed successful changelog file [" + colorize(HIGHLITE_LEVEL, changelogFile) + colorize(INFO_LEVEL, ".")); 
-		
+		boolean updateChangelogFile = false
+		def changelog = readChangelog()
 		def versionSection = "${project.ext.majorVersionNumber}.${project.ext.minorVersionNumber}.${project.ext.revisionVersionNumber}";
-		if (changelog.getEntry(versionSection)==null) {
-			changelog.addEntry(versionSection, null);//.addSection(ChangelogChangeType.CHANGED); //.add("");
+		def changelogEntry = changelog.getEntry(versionSection);
+		if (changelogEntry == null) {
+			changelogEntry = changelog.addEntry(versionSection, null);//.addSection(ChangelogChangeType.CHANGED); //.add("");
+			updateChangelogFile = true
+		}
+		
+		if (updateChangelogType!=null && !updateChangelogType.toString().trim().isEmpty()) {
+			try {
+				ChangelogChangeType changelogChangeType = EnumUtil.valueOf(ChangelogChangeType.class, "${updateChangelogType}".toString().trim())
+				if (changelogChangeType==null) {
+					printWarn("Could not parse changelog type [" + colorize(HIGHLITE_LEVEL, updateChangelogType) + colorize(WARN_LEVEL, "].")) 
+				} else {
+					def changelogSection = changelogEntry.getSection(changelogChangeType);
+					if (changelogSection == null) {
+						changelogSection = changelogEntry.addSection(changelogChangeType)
+						updateChangelogFile = true
+					}
 
-			def content = ChangelogFactory.getInstance().format(createChangelogConfig(inputChangelogConfig), changelog);
+					if (updateChangelogComment !=null && !"${updateChangelogComment}".toString().trim().isEmpty()) {
+						if (changelogSection.getChangeCommentList() == null || changelogSection.getChangeCommentList().isEmpty()) {
+							changelogSection.add(updateChangelogComment.toString().trim())
+							updateChangelogFile = true
+						} else {
+							def comment = "${updateChangelogComment}".toString().trim();
+							boolean found = false;
+							for (String s : changelogSection.getChangeCommentList()) {
+								if (s.trim().equals(comment.toString())) {
+									found = true;
+									break;
+								}
+							}
+							if (!found) {
+								changelogSection.add(comment)
+								updateChangelogFile = true
+							}
+						}
+					}
+				}
+			} catch (Exception e) {
+				printWarn("Could not parse changelog type [" + colorize(HIGHLITE_LEVEL, updateChangelogType) + colorize(WARN_LEVEL, "]: " +e.getMessage())) 
+			}
+		}
+	
+		if (updateChangelogFile) {
+			def content = ChangelogFactory.getInstance().format(createChangelogConfig(), changelog);
 			if (content!=null && !content.toString().isBlank()) {
 				new File("${changelogFile}").write(content)	
 			}
+			
+			// mark changed file
+			addCommonGradlePropertyList("changedFileSet", changelogFile)
 
 			printInfo("> Updated successful changelog file " + colorize(HIGHLITE_LEVEL, changelogFile) + "."); 
 		}
@@ -166,6 +236,22 @@ ext.updateChangelog = { inputChangelogConfig = null ->
  * Project validation
  ***************************************************************************************/
 projectValidation {
+	if (project.hasProperty('isReleaseUpdateVersion') && "true".equalsIgnoreCase("" + project.getProperty('isReleaseUpdateVersion')))  {
+		if (project.hasProperty('createChangelogFile') && project.getProperty('createChangelogFile')) {
+			def defaultChangelogType = ""
+			if (project.hasProperty('changelogReleaseUpdateType') && !project.getProperty('changelogReleaseUpdateType').toString().isEmpty()) {
+				defaultChangelogType = "${changelogReleaseUpdateType}";
+			}
+			
+			def defaultChangelogComment = ""
+			if (project.hasProperty('changelogReleaseUpdateComment') && !project.getProperty('changelogReleaseUpdateComment').toString().isEmpty()) {
+				defaultChangelogComment = "${changelogReleaseUpdateComment}";
+			}
+
+			updateChangelog(defaultChangelogType, defaultChangelogComment)
+		}
+	}
+
 	if (new File(changelogFile).exists() && (project.hasProperty('validateChangelogFile') && project.getProperty('validateChangelogFile'))) {
 		validateChangelog()
 	}

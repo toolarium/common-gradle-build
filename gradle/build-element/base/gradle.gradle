@@ -68,6 +68,11 @@ def hasWrapperFiles=(new File("gradle").exists() \
 
 logInfo("> Expected gradle wrapper version " + colorize("$gradleWrapperDefaultVersion") + colorize(INFO_LEVEL, ", found version ") + colorize("$gradle.gradleVersion") + colorize(INFO_LEVEL, "."))
 def hasExpectedWrapperVersion=(!project.hasProperty("gradleWrapperDefaultVersion") || "$gradleWrapperDefaultVersion".toString().trim().isEmpty() || "$gradleWrapperDefaultVersion".toString().trim().equals("$gradle.gradleVersion".toString().trim()))
+
+if (!hasExpectedWrapperVersion && project.hasProperty('isReleaseUpdateVersion') && "true".equalsIgnoreCase("" + project.getProperty('isReleaseUpdateVersion'))) {
+	printInfo("> Ignore gradle wrapper update to version " + colorize("${gradleWrapperDefaultVersion}") + ".")
+	hasExpectedWrapperVersion = true
+}
 setCommonGradleProperty("hasExpectedWrapperVersion", hasExpectedWrapperVersion);
 
 wrapper {

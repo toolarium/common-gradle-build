@@ -290,6 +290,8 @@ ext.projectInitialisation = { ->
 					<< "SOFTWARE." << NELINE
 				}
 			}
+				
+			addCommonGradlePropertyList("changedFileSet", licenseFile)
 		}
 
 		if (createChangelogFile) {
@@ -311,6 +313,8 @@ ext.projectInitialisation = { ->
 					<< "" << NELINE
 				}
 			}
+			
+			addCommonGradlePropertyList("changedFileSet", changelogFile)
 		}
 
 		if (createEditorConfigFile) {
@@ -344,6 +348,8 @@ ext.projectInitialisation = { ->
 					<< "" << NELINE
 				}
 			}
+			
+			addCommonGradlePropertyList("changedFileSet", editorConfigFile)
 		}
 
 		if (createGraldeHomeProperties) {
@@ -376,6 +382,8 @@ ext.projectInitialisation = { ->
 					w << "rootProject.name    = \'${rootProject.name}\'" << NELINE
 				}
 			}
+			
+			addCommonGradlePropertyList("changedFileSet", settingsGradleFile)
 		}
 
 		if (createGradleProperties) {
@@ -418,6 +426,8 @@ ext.projectInitialisation = { ->
 					<< "" << NELINE
 				}
 			}
+			
+			addCommonGradlePropertyList("changedFileSet", gradlePropertiesFile)
 		}
 
 		if (createBuildGradle) {
@@ -442,6 +452,8 @@ ext.projectInitialisation = { ->
 					<< "}" << NELINE
 				}
 			}
+			
+			addCommonGradlePropertyList("changedFileSet", buildGradleFile)
 		}
 
 		printLine(ERROR_LEVEL, true)

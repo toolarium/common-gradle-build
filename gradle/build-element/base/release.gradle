@@ -314,7 +314,11 @@ task checkValidReleaseEnvironment(dependsOn: ['clean']) {
 				errorMessage="${errorMessage} (common build, cb)!"
 			}
 			
-			throw new GradleException("- ${errorMessage}")		
+			if (project.hasProperty('isReleaseUpdateVersion') && "true".equalsIgnoreCase("" + project.getProperty('isReleaseUpdateVersion'))) {
+				printInfo("> Implicit update of the build environment, don't block for the release update.")
+			} else {
+				throw new GradleException("- ${errorMessage}")
+			}
 		}
 	}
 }
@@ -413,55 +417,109 @@ task releaseVerification(dependsOn: ['releasePrepare']) {
 	onlyIf { return project.hasProperty('validBuild') && project.getProperty('validBuild') }
 
 	doFirst {
-		// validate the branch name
-		def branchName = validateReleaseBranchName()
-			
-		setCommonGradleProperty("releaseBranchName", "release/$releaseName")
-		printInfo("> Prepare release branch, " + colorize(HIGHLITE_LEVEL, "$releaseBranchName") + ".")
-
-		/* create git release branch;
-			git checkout –b release/v1.0.0 master
-			update VERSION
-			git add VERSION
-			git commit
-		 */
-		def git = checkout("$releaseBranchName", true)
-		updateVersion()		
-		logInfo("Update version file " + colorize(HIGHLITE_LEVEL, "$versionFilename") + ".")
-		git.add(patterns: ["$versionFilename"])
-		git.commit(message: "Release $releaseName")
-
-		/* checkout branch to merge:
-			git checkout master
-			git merge --no-ff release/v1.0.0
-			git tag –m „Release v1.0.0“ v1.0.0
-		 */
-		printInfo("> Merge release branch " + colorize(HIGHLITE_LEVEL, "$releaseBranchName") + " into " + colorize(HIGHLITE_LEVEL, "$branchName") + ".")
-		git.checkout(branch: "$branchName")
-		git.merge(head: "$releaseBranchName", mode: "CREATE_COMMIT", message: "Merge $releaseBranchName into $branchName")
-		
-		def commitHashId = git.head().id;
-		if (commitHashId!=null && commitHashId.length() > 9) {
-			commitHashId = commitHashId.substring(0, 9)
+		def changedFileSetList = null;
+		if (project.hasProperty('changedFileSet')) {
+			changedFileSetList = new ArrayList(Arrays.asList(changedFileSet.split(", ")))
 		}
 		
-		printInfo("> Set tag " + colorize(HIGHLITE_LEVEL, "$releaseName") + " based on " + colorize(HIGHLITE_LEVEL, "$commitHashId") + ".")
-		git.tag.add(name: "$releaseName", message: "Release $releaseName", force: true)
+		def tagAndUpdate = false
+		def noTagReason = "(disabled)"
+		if (project.hasProperty('isReleaseVersion') && "true".equalsIgnoreCase("" + project.getProperty('isReleaseVersion')) && project.hasProperty('tagReleaseVersion') && "true".equalsIgnoreCase("" + project.getProperty('tagReleaseVersion'))) {
+			if (project.hasProperty('isReleaseUpdateVersion') && "true".equalsIgnoreCase("" + project.getProperty('isReleaseUpdateVersion'))) {
+				noTagReason = "on release update (disabled)"
+				tagAndUpdate = (project.hasProperty('tagReleaseUpdateVersion') && "true".equalsIgnoreCase("" + project.getProperty('tagReleaseUpdateVersion')))
+
+				// don't tag in case there are not enough changed files (exclude version and changelog)
+				if (tagAndUpdate && project.hasProperty('tagIgnoreReleaseUpdateVersionIfNoFilesChanged') && "true".equalsIgnoreCase("" + project.getProperty('tagIgnoreReleaseUpdateVersionIfNoFilesChanged'))) {
+					noTagReason = "on release update (no files to tag)"
+					if (changedFileSetList==null || changedFileSetList.isEmpty()) {
+						tagAndUpdate = false
+					} else {
+						tagAndUpdate = false
+						
+						// check if some common names are included which don't count as change
+						for (String changeFileName : changedFileSetList) {
+							if (changeFileName!=null && !changeFileName.trim().isEmpty() && new File(changeFileName).exists()) {
+								def filename = changeFileName.replace("${rootDirectory}/", "")
+								if (!tagAndUpdate && !filename.startsWith("${changelogFilename}") && !filename.startsWith("${versionFilename}")) {
+									tagAndUpdate = true
+									break;
+								}
+							}
+						}
+					}	
+				}
+			} else {
+			    tagAndUpdate = true
+			}
+		}
+
+		if (!tagAndUpdate) {
+			printInfo("> Ignore set tag " + noTagReason + ".")
+		} else {
+			// validate the branch name
+			def branchName = validateReleaseBranchName()
+			
+			setCommonGradleProperty("releaseBranchName", "release/$releaseName")
+			printInfo("> Prepare release branch, " + colorize(HIGHLITE_LEVEL, "$releaseBranchName") + ".")
+
+			/* create git release branch;
+				git checkout –b release/v1.0.0 master
+				update VERSION
+				git add VERSION
+				git commit
+			 */
+			def git = checkout("$releaseBranchName", true)
+			updateVersion()	
+			logInfo("Update version file " + colorize(HIGHLITE_LEVEL, "$versionFilename") + ".")
+			git.add(patterns: ["$versionFilename"])
+			
+			if (project.hasProperty('changedFileSet')) {
+				for (String changeFileName : changedFileSetList) {
+					if (changeFileName!=null && !changeFileName.trim().isEmpty() && new File(changeFileName).exists()) {
+						def fileName = changeFileName.replace("${rootDirectory}/", "") 
+						logInfo("Update " + colorize(HIGHLITE_LEVEL, fileName) + ".")
+						git.add(patterns: [ "$fileName" ])
+					} else {
+						printWarn("Could not update file " + colorize(HIGHLITE_LEVEL, changeFileName) + + colorize(WARN_LEVEL, "."));
+					}
+				}
+			}
+			
+			git.commit(message: "Release $releaseName")
+
+			/* checkout branch to merge:
+				git checkout master
+				git merge --no-ff release/v1.0.0
+				git tag –m „Release v1.0.0“ v1.0.0
+			 */
+			printInfo("> Merge release branch " + colorize(HIGHLITE_LEVEL, "$releaseBranchName") + " into " + colorize(HIGHLITE_LEVEL, "$branchName") + ".")
+			git.checkout(branch: "$branchName")
+			git.merge(head: "$releaseBranchName", mode: "CREATE_COMMIT", message: "Merge $releaseBranchName into $branchName")
 		
-		printInfo("> Delete release branch " + colorize(HIGHLITE_LEVEL, "$releaseBranchName") + ".")
-		git.branch.remove(names: [ releaseBranchName ], force: true)
-		git.push()
-		git.push(tags: true, force: true)
-		/* delete release-branch 
-			git branch -d release/v1.0.0
-			git push
-			git push --tags
-		*/
+			def commitHashId = git.head().id;
+			if (commitHashId!=null && commitHashId.length() > 9) {
+				commitHashId = commitHashId.substring(0, 9)
+			}
 		
-		closeGit(git)
+			printInfo("> Set tag " + colorize(HIGHLITE_LEVEL, "$releaseName") + " based on " + colorize(HIGHLITE_LEVEL, "$commitHashId") + ".")
+			git.tag.add(name: "$releaseName", message: "Release $releaseName", force: true)
 		
-		// update hash
-		project.setProperty('scmVersionNumber', getGitCommitHash())
+			printInfo("> Delete release branch " + colorize(HIGHLITE_LEVEL, "$releaseBranchName") + ".")
+			git.branch.remove(names: [ releaseBranchName ], force: true)
+			git.push()
+			git.push(tags: true, force: true)
+			/* delete release-branch
+				git branch -d release/v1.0.0
+				git push
+				git push --tags
+			*/
+		
+			closeGit(git)
+		
+			// update hash
+			project.setProperty('scmVersionNumber', getGitCommitHash())
+		}
 	}
 }	
 
@@ -513,48 +571,64 @@ if (project.hasProperty('isSnapshotVersion') && project.getProperty('isSnapshotV
 
 		doFirst {
 			updateReleaseArtefact()
-		
-			// update version file
-			if (project.hasProperty("commonGradleBuildSupportSnapshotHandling") && project.getProperty("commonGradleBuildSupportSnapshotHandling")) {
-				setCommonGradleProperty("qualifierVersionNumber", SNAPSHOT_TAG_NAME)
-			}			
-			
-			def git = openGit()
-			def previousReleaseVersionNumber = "${project.ext.majorVersionNumber}.${project.ext.minorVersionNumber}.${project.ext.revisionVersionNumber}"
-			prepareSnapReleaseVersion()
-			increaseRevisionVersion()
-			def newReleaseVersionNumber = "${project.ext.majorVersionNumber}.${project.ext.minorVersionNumber}.${project.ext.revisionVersionNumber}"			
-			printInfo("> Prepare development " + colorize(HIGHLITE_LEVEL, "${project.version}") + ".")
-			git.add(patterns: ["$versionFilename"])
 
-			// in case of changelog			
-			if (project.hasProperty('changelogUpdateFileAfterRelease') && project.getProperty('changelogUpdateFileAfterRelease')) {
-				if (project.hasProperty('createChangelogFile') && project.getProperty('createChangelogFile')) {
-					updateChangelog()			
-					git.add(patterns: ["$changelogFilename"])
-				}
-			}
-			
-			// in case of api spec
-			if (project.hasProperty('openapiUpdateFileAfterRelease') && project.getProperty('openapiUpdateFileAfterRelease')) {
-				def filesReplaced = replaceFile(srcMainApiSpecDirectory, ".yaml", previousReleaseVersionNumber, newReleaseVersionNumber, "${openapiVersionContentLineRegExp}")
-				for (File file: filesReplaced) {
-					def specFileName = "${srcMainApiSpecDirectory}/" + file.getName()
-					if (specFileName.toString().startsWith("./")) {
-						specFileName = specFileName.toString().substring(2)
+			if (project.hasProperty('isReleaseUpdateVersion') && "true".equalsIgnoreCase("" + project.getProperty('isReleaseUpdateVersion')))  {
+				// don't do anything on repository
+				logInfo("Keep current status on repository: " + colorize(HIGHLITE_LEVEL, project.version))
+				prepareSnapReleaseVersion()
+			} else {
+				// update version file
+				if (project.hasProperty("commonGradleBuildSupportSnapshotHandling") && project.getProperty("commonGradleBuildSupportSnapshotHandling")) {
+					setCommonGradleProperty("qualifierVersionNumber", SNAPSHOT_TAG_NAME)
+				}			
+				
+				def git = openGit()
+				def previousReleaseVersionNumber = "${project.ext.majorVersionNumber}.${project.ext.minorVersionNumber}.${project.ext.revisionVersionNumber}"
+				prepareSnapReleaseVersion()
+				increaseRevisionVersion()
+				def newReleaseVersionNumber = "${project.ext.majorVersionNumber}.${project.ext.minorVersionNumber}.${project.ext.revisionVersionNumber}"			
+				printInfo("> Prepare development " + colorize(HIGHLITE_LEVEL, "${project.version}") + ".")
+				git.add(patterns: ["$versionFilename"])
+
+				// in case of changelog			
+				if (project.hasProperty('changelogUpdateFileAfterRelease') && project.getProperty('changelogUpdateFileAfterRelease')) {
+					if (project.hasProperty('createChangelogFile') && project.getProperty('createChangelogFile')) {
+						def defaultChangelogType = ""
+						if (project.hasProperty('changelogDefaultType') && !project.getProperty('changelogDefaultType').toString().isEmpty()) {
+							defaultChangelogType = "${changelogDefaultType}";
+						}
+						
+						def defaultChangelogComment = ""
+						if (project.hasProperty('changelogDefaultComment') && !project.getProperty('changelogDefaultComment').toString().isEmpty()) {
+							defaultChangelogComment = "${changelogDefaultComment}";
+						}
+					
+						updateChangelog(defaultChangelogType, defaultChangelogComment)
+						git.add(patterns: ["$changelogFilename"])
 					}
-
-					printInfo("> Updated successful api-spec file " + colorize(HIGHLITE_LEVEL, file.getName()) + "."); 
-					git.add(patterns: [ "" + specFileName ])
 				}
+				
+				// in case of api spec
+				if (project.hasProperty('openapiUpdateFileAfterRelease') && project.getProperty('openapiUpdateFileAfterRelease')) {
+					def filesReplaced = replaceFile(srcMainApiSpecDirectory, ".yaml", previousReleaseVersionNumber, newReleaseVersionNumber, "${openapiVersionContentLineRegExp}")
+					for (File file: filesReplaced) {
+						def specFileName = "${srcMainApiSpecDirectory}/" + file.getName()
+						if (specFileName.toString().startsWith("./")) {
+							specFileName = specFileName.toString().substring(2)
+						}
+
+						printInfo("> Updated successful api-spec file " + colorize(HIGHLITE_LEVEL, file.getName()) + "."); 
+						git.add(patterns: [ "" + specFileName ])
+					}
+				}
+				
+				git.commit(message: "Prepare development v" + project.version)
+				git.push()
+				
+				closeGit(git)
+
+				project.setProperty('scmVersionNumber', getGitCommitHash())
 			}
-			
-			git.commit(message: "Prepare development v" + project.version)
-			git.push()
-			
-			closeGit(git)
-			
-			project.setProperty('scmVersionNumber', getGitCommitHash())
 		}
 	}
 	releaseVerification.finalizedBy('publishRelease')

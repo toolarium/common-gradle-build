@@ -51,6 +51,7 @@ ext.SUCCESS_LEVEL = 'green'
 ext.BUILD_TIMESTAMP = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(NOW)
 ext.BUILD_TIMESTAMP_SHORT = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").format(NOW)
 ext.BUILD_TIMESTAMP_SIMPLE = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(NOW)
+ext.BUILD_TIMESTAMP_ID = new java.text.SimpleDateFormat("yyyyMMddHHmmssSSS").format(NOW)
 ext.DATE = new java.text.SimpleDateFormat("yyyy-MM-dd").format(NOW)
 ext.YEAR = new java.text.SimpleDateFormat("yyyy").format(NOW)
 

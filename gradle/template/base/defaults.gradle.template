@@ -75,7 +75,10 @@ setCommonGradleProperty("licenseFile", "$commonGradleBuildHome/$licenseFilename"
 //setCommonGradleProperty("changelogSupportReleaseInfo", true);
 //setCommonGradleProperty("changelogSupportLinkInDescription", true);
 //setCommonGradleProperty("changelogSupportIdListOnEndOfTheComment", true);
-
+//setCommonGradleProperty("changelogDefaultType", ""); // FIXED
+//setCommonGradleProperty("changelogDefaultComment", "Small bug fixes.");
+//setCommonGradleProperty("changelogReleaseUpdateType", "SECURITY");
+//setCommonGradleProperty("changelogReleaseUpdateComment", "Security updates."); //"Security updates (" + "${project.ext.BUILD_TIMESTAMP_ID}".toString().substring(0, 14) + ")."
 
 
 /***************************************************************************************
@@ -203,8 +206,9 @@ setCommonGradleProperty("projectIndividualCheckstyleConfiguration", false)
 /***************************************************************************************
  * quarkus plugin version
  ***************************************************************************************/
-//setCommonGradleProperty("defaultQuarkusPluginVersion", '2.5.4.Final')
+//setCommonGradleProperty("defaultQuarkusPluginVersion", '2.6.2.Final')
 //setCommonGradleProperty("quarkusPluginVersion", "${defaultQuarkusPluginVersion}")
+//setCommonGradleProperty("quarkusReleaseUpdateVersion", true)
 
 // readiness and liveness
 //setCommonGradleProperty("kubernetesReadinessFailureThreshold", 3)
@@ -369,6 +373,14 @@ setCommonGradleProperty("projectIndividualCheckstyleConfiguration", false)
 //setCommonGradleProperty("gradlePropertiesJvmArgs", "-Xmx1g -XX:MaxHeapSize=1g -XX:MaxMetaspaceSize=256m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=${fileEncoding}")
 //setCommonGradleProperty("gradlePropertiesLogLevel", "lifecycle")
 //setCommonGradleProperty("gradlePropertiesLogLevel", "quiet")
+
+
+/***************************************************************************************
+ * version default settings
+ ***************************************************************************************/
+//setCommonGradleProperty("tagReleaseVersion", true)
+//setCommonGradleProperty("tagReleaseUpdateVersion", true)
+//setCommonGradleProperty("tagIgnoreReleaseUpdateVersionIfNoFilesChanged", true)
 
 
 /***************************************************************************************
