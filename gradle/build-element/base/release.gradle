@@ -480,8 +480,6 @@ task releaseVerification(dependsOn: ['releasePrepare']) {
 						def fileName = changeFileName.replace("${rootDirectory}/", "") 
 						logInfo("Update " + colorize(HIGHLITE_LEVEL, fileName) + ".")
 						git.add(patterns: [ "$fileName" ])
-					} else {
-						printWarn("Could not update file " + colorize(HIGHLITE_LEVEL, changeFileName) + + colorize(WARN_LEVEL, "."));
 					}
 				}
 			}
