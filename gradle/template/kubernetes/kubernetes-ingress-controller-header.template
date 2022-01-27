@@ -9,6 +9,7 @@ metadata:
   labels:
     app.@@KUBERNETES_LABEL_ID@@.ingress: @@PROJECT_NAME@@
   annotations:
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "@@KUBERNETES_INGRESS_PROXY_BUFFER_SIZE@@"
     nginx.ingress.kubernetes.io/proxy-body-size: "@@KUBERNETES_INGRESS_PROXY_BODY_SIZE@@"
     nginx.ingress.kubernetes.io/configuration-snippet: |
       sub_filter_types text/html text/html;

@@ -271,6 +271,9 @@ ext.searchReplaceByProperties = { inputLine, replacePlaceHolders = true ->
 		}
 		
 		// kubernetes / ingres
+		if (project.hasProperty('kubernetesIngressProxyBufferSize')) {
+			line = line.replaceAll('@@KUBERNETES_INGRESS_PROXY_BUFFER_SIZE@@', "${project.ext.kubernetesIngressProxyBufferSize}".toString())
+		}
 		if (project.hasProperty('kubernetesIngressProxyBodySize')) {
 			line = line.replaceAll('@@KUBERNETES_INGRESS_PROXY_BODY_SIZE@@', "${project.ext.kubernetesIngressProxyBodySize}".toString())
 		}

@@ -335,9 +335,9 @@ setCommonGradleProperty("projectIndividualCheckstyleConfiguration", false)
 //setCommonGradleProperty("kubernetesUrlRootPath", "/api")
 //setCommonGradleProperty("kubernetesUrlPath", "${kubernetesUrlRootPath}/${rootProject.name}")
 //setCommonGradleProperty("kubernetesSupportIngressNginx", true)
-//setCommonGradleProperty("kubernetesIngressProxyBodySize", "10m") 
 //setCommonGradleProperty("kubernetesControllerImage", "networking.k8s.io/v1")
 //setCommonGradleProperty("kubernetesIngressNginxVersion", "1.1.1") // see https://github.com/kubernetes/ingress-nginx
+//setCommonGradleProperty("kubernetesIngressProxyBufferSize", "8k")
 //setCommonGradleProperty("kubernetesIngressProxyBodySize", "10m")
 
 //setCommonGradleProperty("kubernetesApplicationOIDCClientId", "services")
