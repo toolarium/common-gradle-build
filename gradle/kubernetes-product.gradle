@@ -838,11 +838,15 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 						
 						if (servicePathExternal!=null && !servicePathExternal.trim().isEmpty()) {
 							servicePath = servicePathExternal
-
-							controllerContent +=  "      - path: $servicePathExternal" + NELINE
+							
+							// controller content
+							controllerContent += "      - path: $servicePathExternal" + NELINE
+							controllerContent += "        pathType: Prefix" + NELINE
 							controllerContent += "        backend:" + NELINE
-							controllerContent += "          serviceName: $serviceName" + NELINE
-							controllerContent += "          servicePort: $servicePort" + NELINE
+							controllerContent += "          service:" + NELINE
+							controllerContent += "            name: $serviceName" + NELINE
+							controllerContent += "            port:" + NELINE
+							controllerContent += "              number: $servicePort" + NELINE
 						}
 
 						logInfo("  -> Found service " + colorize(HIGHLITE_LEVEL, serviceName + ":" + servicePort) +  " -> " + colorize(HIGHLITE_LEVEL, servicePath) + ".")

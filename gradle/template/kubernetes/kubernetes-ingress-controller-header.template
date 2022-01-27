@@ -18,6 +18,7 @@ metadata:
   name: @@PROJECT_NAME@@-ingress
   namespace: @@KUBERNETES_NAMESPACE@@
 spec:
+  ingressClassName: nginx
   rules:
   - host: @@KUBERNETES_APPLICATION_HOST@@
     http:
