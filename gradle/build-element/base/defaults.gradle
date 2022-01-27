@@ -693,11 +693,11 @@ setCommonGradleDefaultPropertyIfNull("kustomizeBaseControllerConfigurationPath",
 setCommonGradleDefaultPropertyIfNull("kustomizeBaseKustomization", "kustomization.yaml")
 
 setCommonGradleDefaultPropertyIfNull("kubernetesIngresControlFilename", "$kubernetesConfigurationElementsPath/${rootProject.name}-ingress-controller.yaml")
-setCommonGradleDefaultPropertyIfNull("kubernetesControllerImage", "networking.k8s.io/v1beta1")
+setCommonGradleDefaultPropertyIfNull("kubernetesControllerImage", "networking.k8s.io/v1")
 // imgress-nginx: https://github.com/kubernetes/ingress-nginx
 setCommonGradleDefaultPropertyIfNull("kubernetesSupportIngressNginx", true)
 setCommonGradleDefaultPropertyIfNull("kubernetesDownloadIngressNginxVersion", false)
-setCommonGradleDefaultPropertyIfNull("kubernetesIngressNginxVersion", "0.44.0") // see https://github.com/kubernetes/ingress-nginx
+setCommonGradleDefaultPropertyIfNull("kubernetesIngressNginxVersion", "1.1.1") // see https://github.com/kubernetes/ingress-nginx
 setCommonGradleDefaultPropertyIfNull("kubernetesIngressUrl", "https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v${kubernetesIngressNginxVersion}/deploy/static/provider/cloud/deploy.yaml") 
 setCommonGradleDefaultPropertyIfNull("kubernetesIngressProxyBodySize", "10m") 
 
