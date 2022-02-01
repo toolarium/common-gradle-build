@@ -351,7 +351,9 @@ projectValidation {
  ***************************************************************************************/
 tasks.withType(GenerateModuleMetadata).configureEach {
     // gradle v7.3.1: The value 'enforced-platform' is provided in the validation error message you got
-    suppressedValidationErrors.add('enforced-platform')
+	if (project.hasProperty('suppressedValidationErrors')) {
+		suppressedValidationErrors.add('enforced-platform')
+	}
 }
 
 
