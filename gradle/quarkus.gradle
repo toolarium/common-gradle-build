@@ -138,7 +138,11 @@ ext.validateQuarkusVersion = { ->
 						File backFile = new File(gradlePropertiesFile + ".bak");
 						new File(gradlePropertiesFile).withWriter { w ->
 							backFile.eachLine { line ->
-								w << line.replaceAll(quarkusPluginVersion, defaultQuarkusPluginVersion) + NELINE
+							    if (!line.trim().startsWith("quarkusPluginVersion")) {
+									w << line + NELINE
+								} else {
+								    w << line.replaceAll(quarkusPluginVersion, defaultQuarkusPluginVersion) + NELINE
+								}
 							}
 						}					
 						quarkusWarningMessage += " The file " + gradlePropertiesFile + " is already modified, please verify!"
@@ -351,9 +355,9 @@ projectValidation {
  ***************************************************************************************/
 tasks.withType(GenerateModuleMetadata).configureEach {
     // gradle v7.3.1: The value 'enforced-platform' is provided in the validation error message you got
-	if (project.hasProperty('suppressedValidationErrors')) {
+	//if (project.hasProperty('suppressedValidationErrors')) {
 		suppressedValidationErrors.add('enforced-platform')
-	}
+	//}
 }
 
 

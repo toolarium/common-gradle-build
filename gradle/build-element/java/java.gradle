@@ -26,17 +26,21 @@ apply plugin: 'java'
 /***************************************************************************************
  * Java cache strategy
  ***************************************************************************************/
-configurations.all {
-	resolutionStrategy {
-		// fail eagerly on version conflict (includes transitive dependencies)
-		// e.g. multiple different versions of the same dependency (group and name are equal)
-		//failOnVersionConflict()
+configurations.all { name ->
+	if (name.toString().indexOf("quarkusDependency")>=0) { // workaround > v2.8.1.Final
+		// keep default
+	} else {
+		resolutionStrategy {
+			// fail eagerly on version conflict (includes transitive dependencies)
+			// e.g. multiple different versions of the same dependency (group and name are equal)
+			//failOnVersionConflict()
 
-		// prefer modules that are part of this build (multi-project or composite build) over external modules
-		//preferProjectModules()
+			// prefer modules that are part of this build (multi-project or composite build) over external modules
+			//preferProjectModules()
 
-		cacheDynamicVersionsFor commonGradleCacheDynamicDuration, 'seconds'
-		cacheChangingModulesFor commonGradleCacheChangingModulesDuration, 'seconds'
+			cacheDynamicVersionsFor commonGradleCacheDynamicDuration, 'seconds'
+			cacheChangingModulesFor commonGradleCacheChangingModulesDuration, 'seconds'
+		}
 	}
 }
 
