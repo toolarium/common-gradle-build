@@ -32,7 +32,7 @@ buildscript {
 		}
 	}
 	dependencies {
-		def toolariumEnumConfigurationVersion="0.9.10"
+		def toolariumEnumConfigurationVersion="1.0.0"
 		if (project.hasProperty('toolariumEnumConfigurationVersion')) {
 			toolariumEnumConfigurationVersion = project.getProperty('toolariumEnumConfigurationVersion')
 		}
