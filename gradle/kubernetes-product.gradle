@@ -340,6 +340,14 @@ ext.createApplicationInformationIndex = { ->
 		applicationInformationIndexFile.append(NELINE)
 	}
 	
+	if (new File(kubernetesProductMainResourcesPath).exists()) {
+		applicationInformationIndexFile.append(endJsonElement(2))
+		applicationInformationIndexFile.append(',' + NELINE)
+		applicationInformationIndexFile.append(startJsonElement(2))
+		applicationInformationIndexFile.append(createJsonKeyValueElement(3, "reference", kubernetesProductResourcesPathname))
+		applicationInformationIndexFile.append(NELINE)
+	}
+	
 	applicationInformationIndexFile.append(endJsonElement(1, true) + NELINE)
 	applicationInformationIndexFile.append(endJsonElement())
 }
@@ -498,6 +506,77 @@ task extractKubernetesInformation(type: Copy) {
 
 
 /****************************************************************************************
+ * Create json index file
+ ****************************************************************************************/
+ext.createJsonIndexFile = { File file ->
+	if (file == null || !file.exists() || file.getName().endsWith("index.json")) {
+	    return;
+	}
+	
+	def parentDirectoryName = file.getParent().replace('\\', '/') + "/" + file.getName()
+	logInfo("> Create directory index for " + parentDirectoryName + "...")
+
+	def directoryIndexFile = new File("$parentDirectoryName/index.json")
+	directoryIndexFile.append(startJsonElement())
+	directoryIndexFile.append(createJsonKeyValueElement(1, "name", parentDirectoryName.replace("$kubernetesApplicationInformationPath/", "")))
+	directoryIndexFile.append(',' + NELINE)
+	directoryIndexFile.append(startJsonElement(1, 'files', true))
+	
+	File[] files = file.listFiles()
+	def counter = 0
+	for (int i = 0; i < files.length; i++) {
+		if (!files[i].getName().endsWith("index.json")) {
+			if (counter>0) {
+				directoryIndexFile.append(endJsonElement(2))
+				directoryIndexFile.append(',' + NELINE)
+				directoryIndexFile.append(startJsonElement(2))
+			}
+			
+			if (files[i].isDirectory()) {
+				createJsonIndexFile(files[i]);
+			} else {
+				logInfo("Add file " + parentDirectoryName + "/"+ files[i].getName());
+			}
+
+			directoryIndexFile.append(createJsonKeyValueElement(3, "name", files[i].getName()))
+			directoryIndexFile.append(',' + NELINE)
+			directoryIndexFile.append(createJsonKeyValueElement(3, "directory", files[i].isDirectory()))
+			directoryIndexFile.append(NELINE)
+			counter++
+		}
+    }
+	
+	directoryIndexFile.append(endJsonElement(1, true) + NELINE)
+	directoryIndexFile.append(endJsonElement())
+}
+
+
+/****************************************************************************************
+ * Copy app resources if available
+ ****************************************************************************************/
+task copyAppResources(type: Copy) {
+	group = 'Build'
+	description = 'Copy app resources'
+    dependsOn configurations.kubernetes
+	onlyIf { return (new File("${kubernetesProductMainResourcesPath}").exists()) }
+
+    from "$kubernetesProductMainResourcesPath" 
+    into "$kubernetesProductResourcesPath"
+	include "$kubernetesProductMainResourcesIncludes"
+	
+	includeEmptyDirs = false
+	
+	doFirst {
+		new File("$kubernetesProductResourcesPath").mkdirs()
+	}
+	doLast {
+		printInfo("> Copy " + colorize(HIGHLITE_LEVEL, "${kubernetesProductResourcesPathname}") + " (include: " + colorize(HIGHLITE_LEVEL, "${kubernetesProductMainResourcesIncludes}") + ").")
+		createJsonIndexFile(new File("$kubernetesProductResourcesPath"))
+	}
+}
+
+
+/****************************************************************************************
  * Process kubernetes dependencies
  ****************************************************************************************/
 task processKubernetesDependencies() {
@@ -592,7 +671,7 @@ task processKubernetesDependencies() {
 /****************************************************************************************
  * Extract kubernetes artefacts
  ****************************************************************************************/
-task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extractKubernetes', 'extractKubernetesInformation', 'processKubernetesDependencies', 'prepareEnumConfigurationIndex', 'kubernetesDatabase']) {
+task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extractKubernetes', 'extractKubernetesInformation', 'copyAppResources', 'processKubernetesDependencies', 'prepareEnumConfigurationIndex', 'kubernetesDatabase']) {
 	group = 'Build'
 	description = 'Concat kubernetes dependencies'	
 
