@@ -294,7 +294,7 @@ setCommonGradleDefaultPropertyIfNull("compileJavaHome", "")
  * toolarium enum configuration support
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("hasToolariumEnumConfiguration", true)
-setCommonGradleDefaultPropertyIfNull("toolariumEnumConfigurationVersion", "1.1.4") // in kubernetes-product.gradle there is an additional dependency
+setCommonGradleDefaultPropertyIfNull("toolariumEnumConfigurationVersion", "1.1.5") // in kubernetes-product.gradle there is an additional dependency
 setCommonGradleDefaultPropertyIfNull("kubernetesProductEnvironmentVariableName", "kubernetes-environment-variables.properties")
 setCommonGradleDefaultPropertyIfNull("kubernetesProductConfigMapEnvironmentVariableName", "kubernetes-configmap-environment-variables.properties")
 setCommonGradleDefaultPropertyIfNull("kubernetesProductEnvironmentVariablePath", "kubernetes-product")
