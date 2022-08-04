@@ -54,6 +54,13 @@ RUN mkdir -p ${DEPLOYMENT_PATH} \
 # copy application
 COPY --chown=${RUNTIMEUSER} ${DEPLOYMENT_SOURCE_PATH} ${DEPLOYMENT_PATH}/
 
+# create service.properties
+#RUN echo "# service-path.properties" > ${DEPLOYMENT_PATH}/service.properties \
+#    && echo "service.name = @@PROJECT_NAME@@" >> ${DEPLOYMENT_PATH}/service.properties \
+#    && echo "service.version = @@VERSION@@" >> ${DEPLOYMENT_PATH}/service.properties \
+#    && echo "service.root-path = /" >> ${DEPLOYMENT_PATH}/service.properties \
+#    && echo "service.resources = /" >> ${DEPLOYMENT_PATH}/service.properties
+
 # set language
 ENV LANG='${DEFAULT_LOCALE}.${DEFAULT_ENCODING}' LANGUAGE='${DEFAULT_LOCALE}:${DEFAULT_LANGUAGE}'
 
