@@ -199,4 +199,21 @@ projectValidation {
 								<< "      " + colorize(HIGHLITE_LEVEL, "$startExecutable") + "" << NELINE )
 		}
 	}
+	
+	/* create service.properties
+	doLast {
+		if (project.hasProperty('createServiceProperties') && project.getProperty('createServiceProperties')) {
+			def gradleProperties = readPropertiesFile("${gradlePropertiesFile}")
+			def serviceKubernetesUrlPath = gradleProperties.getProperty("kubernetesUrlPath", "") // in case it is not defined, its empty and not available from outside the kubernetes
+			
+			new File("$gradleBuildDirectory").mkdirs()
+			def servicePathProperties = new File("${gradleBuildDirectory}/service.properties")
+			servicePathProperties.append("# service-path.properties" + NELINE)
+		    servicePathProperties.append("service.name = ${rootProject.name}" + NELINE)
+		    servicePathProperties.append("service.version = ${project.version}" + NELINE)		
+			servicePathProperties.append("service.root-path = " + dockerSubPathAccess + NELINE) // kubernetes internal root-path
+			servicePathProperties.append("service.resources = " + serviceKubernetesUrlPath + NELINE) // public url path 
+		}
+	}
+	*/
 }

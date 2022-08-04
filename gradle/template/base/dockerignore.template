@@ -5,6 +5,10 @@
 .gitignore
 .dockerignore
 
+# build report folder
+build/reports
+build/reports/**
+
 # conf folder
 conf/
 
