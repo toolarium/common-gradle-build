@@ -46,7 +46,7 @@ if (!project.hasProperty('commonGradleBuildElementPath')) {
 apply from: "${commonGradleBuildElementPath}/nodejs.gradle"
 
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/babel.config.js")
-
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/vue.config.js")
 
 /***************************************************************************************
  * project validation
