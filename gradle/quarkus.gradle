@@ -387,7 +387,7 @@ build { ->
 			def serviceKubernetesUrlPath = gradleProperties.getProperty("kubernetesUrlPath", "") // in case it is not defined, its empty and not available from outside the kubernetes
 			
 			def servicePathProperties = new File("${quarkusAppDirectory}/service.properties")
-			servicePathProperties.append("# service-path.properties" + NELINE)
+			servicePathProperties.append("# service.properties" + NELINE)
 		    servicePathProperties.append("service.name = ${rootProject.name}" + NELINE)
 		    servicePathProperties.append("service.version = ${project.version}" + NELINE)		
 			servicePathProperties.append("service.root-path = " + serviceRootPath + NELINE) // kubernetes internal root-path

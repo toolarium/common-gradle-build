@@ -208,7 +208,7 @@ projectValidation {
 			
 			new File("$gradleBuildDirectory").mkdirs()
 			def servicePathProperties = new File("${gradleBuildDirectory}/service.properties")
-			servicePathProperties.append("# service-path.properties" + NELINE)
+			servicePathProperties.append("# service.properties" + NELINE)
 		    servicePathProperties.append("service.name = ${rootProject.name}" + NELINE)
 		    servicePathProperties.append("service.version = ${project.version}" + NELINE)		
 			servicePathProperties.append("service.root-path = " + dockerSubPathAccess + NELINE) // kubernetes internal root-path
