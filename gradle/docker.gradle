@@ -107,7 +107,11 @@ if (new File("${srcKubernetesDirectory}").exists()) {
 	artifacts {
 		archives kubernetesJar
 	}
-	
+} else if (project.hasProperty('createCustomJar') && project.getProperty('createCustomJar').toString().equalsIgnoreCase("true")) {
+	apply from: "${commonGradleBuildElementPath}/java/repository.gradle"
+	apply from: "${commonGradleBuildElementPath}/java/signing.gradle"
+	apply from: "${commonGradleBuildElementPath}/java/publication.gradle"
+
 } else {
 	apply from: "${commonGradleBuildElementPath}/java/supported-repositories.gradle"
 

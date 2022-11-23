@@ -55,7 +55,7 @@ RUN mkdir -p ${DEPLOYMENT_PATH} \
 COPY --chown=${RUNTIMEUSER} ${DEPLOYMENT_SOURCE_PATH} ${DEPLOYMENT_PATH}/
 
 # create service.properties
-#RUN echo "# service-path.properties" > ${DEPLOYMENT_PATH}/service.properties \
+#RUN echo "# service.properties" > ${DEPLOYMENT_PATH}/service.properties \
 #    && echo "service.name = @@PROJECT_NAME@@" >> ${DEPLOYMENT_PATH}/service.properties \
 #    && echo "service.version = @@VERSION@@" >> ${DEPLOYMENT_PATH}/service.properties \
 #    && echo "service.root-path = /" >> ${DEPLOYMENT_PATH}/service.properties \
