@@ -21,6 +21,11 @@
 
 
 ext.projectTypeTemplatePath='docker'
+ext.createCustomJar = false
+if (project.hasProperty('createFatJar') && project.getProperty('createFatJar').toString().trim().equalsIgnoreCase("true")) {
+	ext.createCustomJar = project.getProperty('createFatJar').toString().trim().equalsIgnoreCase("true");
+}
+
 if (!project.hasProperty('commonGradleBuildUrl')) {
     ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
 }
@@ -81,6 +86,36 @@ apply from: "${commonGradleBuildElementPath}/base/gradle.gradle"
 apply from: "${commonGradleBuildElementPath}/base/run.gradle"
 apply from: "${commonGradleBuildElementPath}/base/kubernetes.gradle"
 
+
+/***************************************************************************************
+ * Build custom jar file
+ ***************************************************************************************/
+task customJar(type: Jar) { jar ->
+	group = 'Build'
+	duplicatesStrategy = 'exclude' // work around, currendly don't work "$duplicatesStrategy"
+	description = 'Assembles the kubernetes configuration into a jar file'
+	onlyIf { return (project.hasProperty('createCustomJar') && project.getProperty('createCustomJar').toString().equalsIgnoreCase("true")) }
+	
+	archiveBaseName = rootProject.name.toString().replaceAll("-docker", "")
+	
+	// define proper manifest
+	manifest {
+		attributes 	'Specification-Title'   : rootProject.name,
+					'Specification-Version' : project.version,
+					'Implementation-Title'  : rootProject.name,
+					'Implementation-Version': project.version + project.ext.scmVersionNumber,
+					'Created-By'		   	: project.ext.buildToolVersionStackMessage,
+					'Built-By'			   	: publishingUsername,
+					'Build-Timestamp'	   	: BUILD_TIMESTAMP,
+					'Build-OS'			   	: "${System.properties['os.name']} (${System.properties['os.version']}), ${System.properties['os.arch']}"
+	}
+	
+	doLast {
+		printInfo("> Create custom jar " + colorize(HIGHLITE_LEVEL,  archiveName) + ".")
+	}
+}
+
+
 if (new File("${srcKubernetesDirectory}").exists()) {
 	project.ext.set("kubernetesSupport", true)
 
@@ -107,11 +142,26 @@ if (new File("${srcKubernetesDirectory}").exists()) {
 	artifacts {
 		archives kubernetesJar
 	}
+	
+	if (project.hasProperty('createCustomJar') && project.getProperty('createCustomJar').toString().equalsIgnoreCase("true")) {
+		artifacts {
+			archives customJar
+		}
+	}
+	
 } else if (project.hasProperty('createCustomJar') && project.getProperty('createCustomJar').toString().equalsIgnoreCase("true")) {
+
 	apply from: "${commonGradleBuildElementPath}/java/repository.gradle"
 	apply from: "${commonGradleBuildElementPath}/java/signing.gradle"
 	apply from: "${commonGradleBuildElementPath}/java/publication.gradle"
 
+	/***************************************************************************************
+	 * artefacts
+	 ***************************************************************************************/
+	artifacts {
+		archives customJar
+	}
+	
 } else {
 	apply from: "${commonGradleBuildElementPath}/java/supported-repositories.gradle"
 
