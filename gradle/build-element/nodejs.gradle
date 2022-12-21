@@ -376,6 +376,16 @@ task buildFatWebJar(dependsOn: build) {  ->
 					}					
 				}
 				
+				def servicePathProperties = new File("${distWebPath}/service.properties")
+				def gradleProperties = readPropertiesFile("${gradlePropertiesFile}")
+				def serviceKubernetesUrlPath = gradleProperties.getProperty("kubernetesUrlPath", "") // in case it is not defined, its empty and not available from outside the kubernetes
+				
+				servicePathProperties.append("# service.properties" + NELINE)
+				servicePathProperties.append("service.name = ${rootProject.name}" + NELINE)
+				servicePathProperties.append("service.version = ${project.version}" + NELINE)		
+				servicePathProperties.append("service.root-path = " + dockerSubPathAccess + NELINE) // kubernetes internal root-path
+				servicePathProperties.append("service.resources = " + serviceKubernetesUrlPath + NELINE) // public url path 			
+				
 				createFileFromTemplate("${distWebPath}/${webServerRunnerPropertiesName}", getTemplateFile("${webServerRunnerPropertiesName}.template", 'nodejs'), true /*overwrite*/, true /*print*/, true /*replace*/, NELINE /*only nl*/)
 				buildFatJar("${distWebPath}", "${sourceJarFile}", "${fatJarFilename}", true)
 			}
