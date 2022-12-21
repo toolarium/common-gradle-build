@@ -469,6 +469,11 @@ setCommonGradleDefaultPropertyIfNull("nodeConfigInitFile", "$commonGradleBuildHo
 setCommonGradleDefaultPropertyIfNull("nodeFundMessage", false)
 setCommonGradleDefaultPropertyIfNull("nodeRegistry", "https://registry.npmjs.org/")
 
+setCommonGradleDefaultPropertyIfNull("webServerRunnerPackage", "com.github.toolarium")
+setCommonGradleDefaultPropertyIfNull("webServerRunnerName", "toolarium-jwebserver")
+setCommonGradleDefaultPropertyIfNull("webServerRunnerVersion", "1.0.0-SNAPSHOT")
+setCommonGradleDefaultPropertyIfNull("webServerRunnerPropertiesName", "jwebserver.properties")
+
 
 /***************************************************************************************
  * openapi plugin defaults
@@ -621,6 +626,8 @@ setCommonGradleDefaultPropertyIfNull("dockerEnableAccessLog", false)
 setCommonGradleDefaultPropertyIfNull("dockerBuildPull", "--pull --force-rm")
 setCommonGradleDefaultPropertyIfNull("dockerBuildCompress", "--compress")
 setCommonGradleDefaultPropertyIfNull("dockerBuildArgs", "") // "--build-arg "
+setCommonGradleDefaultPropertyIfNull("dockerBuildLatestTag", false)
+setCommonGradleDefaultPropertyIfNull("dockerBuildLatestTagName", "")
 setCommonGradleDefaultPropertyIfNull("dockerRepositoryHost", "")
 setCommonGradleDefaultPropertyIfNull("dockerTagPrefix", "hub.docker.com")
 setCommonGradleDefaultPropertyIfNull("dockerSnapshotRepositoryHost", "")

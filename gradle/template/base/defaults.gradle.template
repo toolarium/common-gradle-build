@@ -149,6 +149,9 @@ setCommonGradleProperty("licenseFile", "$commonGradleBuildHome/$licenseFilename"
 //setCommonGradleProperty("dockerTagPrefix", "hub.docker.com")
 //setCommonGradleProperty("dockerSnapshotRepositoryHost", "")
 //setCommonGradleProperty("dockerSnapshotTagPrefix", "")
+//setCommonGradleProperty("dockerBuildLatestTag", false)
+//setCommonGradleProperty("dockerBuildLatestTagName", "")
+
 
 // npm repository
 //setCommonGradleProperty("nodeRegistry", "https://registry.npmjs.org/")

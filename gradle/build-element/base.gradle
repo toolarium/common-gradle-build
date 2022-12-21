@@ -201,7 +201,7 @@ gradle.buildFinished { buildResult ->
 			}
 			logInfo("Common build startup time " + cbStartupTimestamp)
 		} catch (Exception e) {
-			logError("ERROR: " + e.getMessage())
+			logInfo("Could not parse timestamp: " + e.getMessage())
 			e.printStackTrace();
 		}
 	}
@@ -554,18 +554,20 @@ ext.buildFatJar = { jarLibBaseFolder = "${gradleBuildDirectory}",
 		manifestReferenceFile = "${gradleBuildDirectory}/tmp/customJar/MANIFEST.MF"
 	}
 
-	if ((includeSourceJar || !new File(manifestReferenceFile).exists()) && sourceJarFile!=null && new File(sourceJarFile).exists()) {
-		ant.unzip(src: sourceJarFile, dest: "${gradleBuildDirectory}/tmp") {
-			patternset {
-				include( name: 'META-INF/MANIFEST.MF' )
+	if (!new File(manifestReferenceFile).exists()) {
+		if ((includeSourceJar || !new File(manifestReferenceFile).exists()) && sourceJarFile!=null && new File(sourceJarFile).exists()) {
+			ant.unzip(src: sourceJarFile, dest: "${gradleBuildDirectory}/tmp") {
+				patternset {
+					include( name: 'META-INF/MANIFEST.MF' )
+				}
 			}
+			manifestReferenceFile = "${gradleBuildDirectory}/tmp/META-INF/MANIFEST.MF"
 		}
-		manifestReferenceFile = "${gradleBuildDirectory}/tmp/META-INF/MANIFEST.MF"
 	}
 	
 	ant.jar(destfile: destJarFile, manifest: manifestReferenceFile) {	
 		if (includeSourceJar && sourceJarFile!=null && new File(sourceJarFile).exists()) {
-			zipfileset(src: "$sourceJarFile") {
+			zipfileset(src: "$sourceJarFile", excludes: "**/${webServerRunnerPropertiesName}") {
 			}
 		}
 

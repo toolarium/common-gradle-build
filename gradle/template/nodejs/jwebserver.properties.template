@@ -1,0 +1,9 @@
+hostname = 
+port = 
+directory = @@DISTNAME@@
+readFromClasspath = true
+directoryListingEnabled =  
+verboseLevel = 
+#basicAuthentication =  
+#healthPath = 
+resourcePath = 

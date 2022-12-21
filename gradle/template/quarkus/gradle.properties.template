@@ -26,3 +26,6 @@ org.gradle.warning.mode  = @@GRADLE_WARNING_MODE@@
 
 # build always docker image or environment pararameter CB_BUILD_ALWAYS_DOCKER_IMAGE
 #buildAlwaysDockerImage  = true
+
+# create fat jar which contains the content
+#createFatJar             = true

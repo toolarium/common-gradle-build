@@ -850,6 +850,11 @@ ext.searchReplaceByProperties = { inputLine, replacePlaceHolders = true ->
 		if (project.hasProperty('kubernetesStartupTimeoutSeconds')) {
 			line = line.replaceAll('@@KUBERNETES_STARTUP_TIMEOUT_SECONDS@@', "${kubernetesStartupTimeoutSeconds}")
 		}
+		
+		// dist path
+		if (project.hasProperty('commonGradleBuildDistName')) {
+			line = line.replaceAll('@@DISTNAME@@', "${project.ext.commonGradleBuildDistName}".toString())
+		}						
 	}
 	
 	return line
