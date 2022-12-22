@@ -116,6 +116,19 @@ if (!project.hasProperty('hasProjectValidationExecuted')) {
 	setCommonGradleProperty('hasProjectValidationExecuted', false)
 }
 
+if (project.hasProperty('dockerSubPathAccess')) {
+	def subPath = "${dockerSubPathAccess}".toString().trim()
+	if (!subPath.toString().isEmpty()) {
+		while(subPath.toString().startsWith("/")) {
+			subPath = subPath.substring(1);
+		}
+		if (!subPath.toString().endsWith("/")) {
+			subPath = subPath + "/"
+		}
+	}
+	setCommonGradleProperty('dockerSubPathAccess', subPath)
+}
+
 tasks.matching { it != projectValidation }.all {
 	def hasAlreadyExecuted = project.hasProperty('hasProjectValidationExecuted') && project.getProperty('hasProjectValidationExecuted')
 	def found = hasAlreadyExecuted
@@ -540,12 +553,62 @@ ext.registerEndMessage = { message ->
 
 
 /***************************************************************************************
+ * Build service.properties
+ ***************************************************************************************/
+ext.buildServiceProperties = { baseFolder = "${gradleBuildDirectory}", filename = "${servicePropertiesName}", rootPath= "${dockerSubPathAccess}", inputResourcePath = null ->
+	def resourcePath = inputResourcePath
+	def resourcePathSourceFile = "unknown"
+	def resourcePathSourceProperty = "unknown"
+	if (resourcePath==null) {
+		resourcePathSourceFile = "${gradlePropertiesFile}"
+		resourcePathSourceProperty = "kubernetesUrlPath"
+
+		def gradleProperties = readPropertiesFile("${gradlePropertiesFile}")
+		resourcePath = gradleProperties.getProperty("kubernetesUrlPath", ""); // in case it is not defined, its empty and not available from outside the kubernetes
+	}
+
+	def rootPathSourceFile = "${gradlePropertiesFile}"
+	def rootPathSourceProperty = "dockerSubPathAccess"
+	if (rootPath.toString().isBlank() && resourcePath.toString().isBlank()) {
+		rootPath = "/"
+	} else {
+		rootPathSourceFile = "${srcMainResourcesDirectory}/application.properties"
+		rootPathSourceProperty = "quarkus.http.root-path"
+	}
+
+	if (!resourcePath.toString().isBlank()) {
+		def isValidPath = false
+		if (rootPath.toString().endsWith("/")) {
+			isValidPath = resourcePath.toString().startsWith(rootPath.toString())
+		} else {
+			isValidPath = resourcePath.toString().startsWith(rootPath.toString()+"/")
+		}
+		
+		if (!isValidPath) { 
+			printWarn("The " + colorize(HIGHLITE_LEVEL, "$rootPathSourceProperty = $rootPath") + colorize(WARN_LEVEL, " in ") + colorize(HIGHLITE_LEVEL, "$rootPathSourceFile") 
+			+ colorize(WARN_LEVEL, "\n    must be parent of ") + colorize(HIGHLITE_LEVEL, "$resourcePathSourceProperty = $resourcePath") + colorize(WARN_LEVEL, " in ") + colorize(HIGHLITE_LEVEL, "$resourcePathSourceFile") + colorize(WARN_LEVEL, "!"))
+		}
+	}	
+
+	if (project.hasProperty('createServiceProperties') && project.getProperty('createServiceProperties')) {
+		def servicePathProperties = new File("${baseFolder}/${filename}")
+		servicePathProperties.append("# ${filename}" + NELINE)
+		servicePathProperties.append("service.name = ${rootProject.name}" + NELINE)
+		servicePathProperties.append("service.version = ${project.version}" + NELINE)		
+		servicePathProperties.append("service.root-path = " + rootPath + NELINE)     // kubernetes internal root-path
+		servicePathProperties.append("service.resources = " + resourcePath + NELINE) // public url path 
+	}
+}
+
+
+/***************************************************************************************
  * Build a fat-jar 
  ***************************************************************************************/
 ext.buildFatJar = { jarLibBaseFolder = "${gradleBuildDirectory}",
 					sourceJarFile = "${gradleBuildDirectory}/libs/${project.name}-${project.version}.jar",
 					destJarFile = "${gradleBuildDirectory}/libs/${project.name}-${project.version}.jar",
-                    includeSourceJar = false ->					
+                    includeSourceJar = false,
+					mergeManifest = true ->
 	def manifestReferenceFile = "${gradleBuildDirectory}/tmp/jar/MANIFEST.MF"
 	if (!new File(manifestReferenceFile).exists()) {
 		manifestReferenceFile = "${gradleBuildDirectory}/tmp/kubernetesJar/MANIFEST.MF"
@@ -553,15 +616,41 @@ ext.buildFatJar = { jarLibBaseFolder = "${gradleBuildDirectory}",
 	else if (!new File(manifestReferenceFile).exists()) {
 		manifestReferenceFile = "${gradleBuildDirectory}/tmp/customJar/MANIFEST.MF"
 	}
-
-	if (!new File(manifestReferenceFile).exists()) {
-		if ((includeSourceJar || !new File(manifestReferenceFile).exists()) && sourceJarFile!=null && new File(sourceJarFile).exists()) {
-			ant.unzip(src: sourceJarFile, dest: "${gradleBuildDirectory}/tmp") {
-				patternset {
-					include( name: 'META-INF/MANIFEST.MF' )
-				}
+	
+	if (includeSourceJar && sourceJarFile!=null && new File(sourceJarFile).exists()) {
+		ant.unzip(src: sourceJarFile, dest: "${gradleBuildDirectory}/tmp") { // get source manifest file
+			patternset {
+				include( name: 'META-INF/MANIFEST.MF' )
 			}
-			manifestReferenceFile = "${gradleBuildDirectory}/tmp/META-INF/MANIFEST.MF"
+		}
+		def sourceManifestReferenceFile = "${gradleBuildDirectory}/tmp/META-INF/MANIFEST.MF"
+
+		if (new File(manifestReferenceFile).exists()) {
+			if (mergeManifest) {
+				mkdir "${gradleBuildDirectory}/tmp/merged"
+				copy {
+					from("${gradleBuildDirectory}/tmp/META-INF") { include "MANIFEST.MF" }
+					into("${gradleBuildDirectory}/tmp/merged")
+					filter {
+						String line -> line = line.replaceAll("^Specification-Title.*\$", "Specification-Title: " + rootProject.name)
+						line = line.replaceAll("^Specification-Title.*\$", "Specification-Title: " + rootProject.name)
+						line = line.replaceAll("^Specification-Version.*\$", "Specification-Version: " + project.version)
+						//line = line.replaceAll("Implementation-Title.*$", "Implementation-Title: " + rootProject.name)
+						//line = line.replaceAll("Implementation-Version.*$", "Implementation-Version: " + project.version + project.ext.scmVersionNumber)
+						//line = line.replaceAll("Created-By.*$", "Created-By: " + project.ext.buildToolVersionStackMessage)
+						line = line.replaceAll("^Built-By.*\$", "Built-By: " + publishingUsername)
+						line = line.replaceAll("^Build-Timestamp.*\$", "Build-Timestamp: " + BUILD_TIMESTAMP)
+						//line = line.replaceAll("Build-JDK.*$", "Build-JDK: " + "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})")
+						//line = line.replaceAll("Build-OS.*$", "Build-OS: " + "${System.properties['os.name']} (${System.properties['os.version']}), ${System.properties['os.arch']}")
+					}
+				}					
+				manifestReferenceFile = "${gradleBuildDirectory}/tmp/merged/MANIFEST.MF"
+			} else {
+				manifestReferenceFile  = sourceManifestReferenceFile
+			}
+			
+		} else {
+		  manifestReferenceFile  = sourceManifestReferenceFile
 		}
 	}
 	
@@ -573,6 +662,8 @@ ext.buildFatJar = { jarLibBaseFolder = "${gradleBuildDirectory}",
 
 		fileset(dir: "$jarLibBaseFolder") { 
 			include(name: '**/**.*')
+			//exclude(name: new File(destJarFile).getName())
+			//exclude(name: new File(sourceJarFile).getName())
 			//include(name: '*.jar') 
 			//include(name: '**/**.jar')
 		}

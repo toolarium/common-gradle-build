@@ -348,44 +348,15 @@ task buildFatWebJar(dependsOn: build) {  ->
 			def sourceJarFile = "$sourceJarFilePath/${sourceFilename}";
 			if (sourceFilename!=null && new File(sourceJarFile).exists()) {
 				if (new File("${commonGradleBuildDistPath}").exists()) {
-					copy { from "${commonGradleBuildDistPath}" into "${distWebPath}/${commonGradleBuildDistName}" }
-				}
-
-				def manifestReferenceFile = "${gradleBuildDirectory}/tmp/jar/MANIFEST.MF"
-				if (!new File(manifestReferenceFile).exists()) { // unzip MANIFEST if it is needed
-					ant.unzip(src: sourceJarFile, dest: "${gradleBuildDirectory}/tmp") {patternset { include(name: 'META-INF/MANIFEST.MF')}}
-					manifestReferenceFile = "${gradleBuildDirectory}/tmp/META-INF/MANIFEST.MF"
-					mkdir "${gradleBuildDirectory}/tmp/jar"
-					//new File("${gradleBuildDirectory}/tmp/META-INF").renameTo("${gradleBuildDirectory}/tmp/jar")
-					
-					copy {
-						from("${gradleBuildDirectory}/tmp/META-INF") { include "MANIFEST.MF" }
-						into("${gradleBuildDirectory}/tmp/jar")
-						filter {
-							String line -> line = line.replaceAll("^Specification-Title.*\$", "Specification-Title: " + rootProject.name)
-							line = line.replaceAll("^Specification-Title.*\$", "Specification-Title: " + rootProject.name)
-							line = line.replaceAll("^Specification-Version.*\$", "Specification-Version: " + project.version)
-							//line = line.replaceAll("Implementation-Title.*$", "Implementation-Title: " + rootProject.name)
-							//line = line.replaceAll("Implementation-Version.*$", "Implementation-Version: " + project.version + project.ext.scmVersionNumber)
-							//line = line.replaceAll("Created-By.*$", "Created-By: " + project.ext.buildToolVersionStackMessage)
-							line = line.replaceAll("^Built-By.*\$", "Built-By: " + publishingUsername)
-							line = line.replaceAll("^Build-Timestamp.*\$", "Build-Timestamp: " + BUILD_TIMESTAMP)
-							//line = line.replaceAll("Build-JDK.*$", "Build-JDK: " + "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})")
-							//line = line.replaceAll("Build-OS.*$", "Build-OS: " + "${System.properties['os.name']} (${System.properties['os.version']}), ${System.properties['os.arch']}")
-						}
-					}					
+					if (!"${dockerSubPathAccess}".toString().isBlank()) {
+						mkdir "$distWebPath/${commonGradleBuildDistName}/${dockerSubPathAccess}"
+						copy { from "${commonGradleBuildDistPath}" into "${distWebPath}/${commonGradleBuildDistName}/${dockerSubPathAccess}" }
+					} else {
+						copy { from "${commonGradleBuildDistPath}" into "${distWebPath}/${commonGradleBuildDistName}" }
+					}
 				}
 				
-				def servicePathProperties = new File("${distWebPath}/service.properties")
-				def gradleProperties = readPropertiesFile("${gradlePropertiesFile}")
-				def serviceKubernetesUrlPath = gradleProperties.getProperty("kubernetesUrlPath", "") // in case it is not defined, its empty and not available from outside the kubernetes
-				
-				servicePathProperties.append("# service.properties" + NELINE)
-				servicePathProperties.append("service.name = ${rootProject.name}" + NELINE)
-				servicePathProperties.append("service.version = ${project.version}" + NELINE)		
-				servicePathProperties.append("service.root-path = " + dockerSubPathAccess + NELINE) // kubernetes internal root-path
-				servicePathProperties.append("service.resources = " + serviceKubernetesUrlPath + NELINE) // public url path 			
-				
+				buildServiceProperties("${distWebPath}", "${servicePropertiesName}", "${dockerSubPathAccess}"); 
 				createFileFromTemplate("${distWebPath}/${webServerRunnerPropertiesName}", getTemplateFile("${webServerRunnerPropertiesName}.template", 'nodejs'), true /*overwrite*/, true /*print*/, true /*replace*/, NELINE /*only nl*/)
 				buildFatJar("${distWebPath}", "${sourceJarFile}", "${fatJarFilename}", true)
 			}

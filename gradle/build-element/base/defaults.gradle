@@ -434,6 +434,13 @@ setCommonGradleDefaultPropertyIfNull("toolariumDependencyCheckVersion", '6.5.0.1
 
 
 /***************************************************************************************
+ * general settings
+ ***************************************************************************************/
+setCommonGradleDefaultPropertyIfNull("createServiceProperties", true)
+setCommonGradleDefaultPropertyIfNull("servicePropertiesName", "toolarium-service.properties")
+
+
+/***************************************************************************************
  * quarkus plugin defaults
  ***************************************************************************************/
 // the quarkusPluginVersion is used for setup new projects where defaultQuarkusPluginVersion 
@@ -449,7 +456,6 @@ setCommonGradleDefaultPropertyIfNull("quarkusRepository", "https://repository.jb
 setCommonGradleDefaultPropertyIfNull("quarkusAppDirectory", "${gradleBuildDirectory}/quarkus-app")
 setCommonGradleDefaultPropertyIfNull("quarkusAppSubPathName", "app")
 setCommonGradleDefaultPropertyIfNull("quarkusAppJar", "quarkus-run.jar")
-setCommonGradleDefaultPropertyIfNull("createServiceProperties", true)
 setCommonGradleDefaultPropertyIfNull("updateApplicationProperties", true)
 setCommonGradleDefaultPropertyIfNull("createServiceJavaRunner", true) // re dockerJavaRunner will be taken
 setCommonGradleDefaultPropertyIfNull("createServiceJavaAgent", true) // the dockerJavaAgent will be taken
@@ -808,7 +814,6 @@ setCommonGradleDefaultPropertyIfNull("kubernetesIdmDatabasePassword", "${kuberne
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmAdminUsername", "admin") // user in sample
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmAdminPassword", "pleaseCh@nge1t") // user in sample
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmImage", "quay.io/keycloak/keycloak:${kubernetesIdmImageVersion}")
-
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmDatabaseKey", "db.database")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmDatabaseHostKey", "db.addr")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmDatabasePortKey", "db.port")

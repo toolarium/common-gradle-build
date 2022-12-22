@@ -382,16 +382,7 @@ build { ->
 
 		if (project.hasProperty('createServiceProperties') && project.getProperty('createServiceProperties')) {
 			def applicationProperties = readPropertiesFile("${srcMainResourcesDirectory}/application.properties")
-			def serviceRootPath = applicationProperties.getProperty("quarkus.http.root-path", "/api")
-			def gradleProperties = readPropertiesFile("${gradlePropertiesFile}")
-			def serviceKubernetesUrlPath = gradleProperties.getProperty("kubernetesUrlPath", "") // in case it is not defined, its empty and not available from outside the kubernetes
-			
-			def servicePathProperties = new File("${quarkusAppDirectory}/service.properties")
-			servicePathProperties.append("# service.properties" + NELINE)
-		    servicePathProperties.append("service.name = ${rootProject.name}" + NELINE)
-		    servicePathProperties.append("service.version = ${project.version}" + NELINE)		
-			servicePathProperties.append("service.root-path = " + serviceRootPath + NELINE) // kubernetes internal root-path
-			servicePathProperties.append("service.resources = " + serviceKubernetesUrlPath + NELINE) // public url path 
+			buildServiceProperties("${quarkusAppDirectory}", "${servicePropertiesName}", applicationProperties.getProperty("quarkus.http.root-path", "/api"));
 		}
 
 		/* TODO:
@@ -454,6 +445,7 @@ build { ->
 		}
 
 		if (project.hasProperty('createFatJar') && project.getProperty('createFatJar').toString().trim().equalsIgnoreCase("true")) {
+			//buildFatJar("${quarkusAppDirectory}", "${quarkusAppDirectory}/${quarkusAppJar}", "${gradleBuildDirectory}/libs/${project.name}-${project.version}.jar", true)
 			buildFatJar("${quarkusAppDirectory}")
 		}
 	}
