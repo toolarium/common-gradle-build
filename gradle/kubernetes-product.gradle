@@ -77,6 +77,7 @@ apply from: "${commonGradleBuildElementPath}/base/run.gradle"
 apply from: "${commonGradleBuildElementPath}/base/json.gradle"
 
 
+ext.fatWebClassifierContext = "$kubernetesApplicationConfigurationInformationPathname"
 
 /***************************************************************************************
  * Build kubernetes jar file
@@ -442,13 +443,13 @@ task kubernetesIdm() {
 	description = 'Creates kubernetes idm configuration'
 	dependsOn kubernetesApplicationConfig
 	onlyIf { return project.hasProperty('kubernetesSupportIdm') && project.getProperty('kubernetesSupportIdm') }
-	
+
 	doFirst {
 		def idmFile = "$kubernetesConfigurationServicesPath/${kubernetesConfigurationPathname}/${rootProject.name}-kubernetes-idm.yaml"
 		printInfo("> Create kubernetes idm configuration " + colorize(HIGHLITE_LEVEL, "${idmFile}".replace("$gradleBuildDirectory/", "")) + ".")
-		createFileFromTemplate("$idmFile", getTemplateFile('kubernetes-idm.template'), true, false)
-		createFileFromTemplate("$kubernetesConfigurationPath/${kubernetesApplicationConfigPath}/${rootProject.name}-idm-config-kubernetes-idm.yaml", getTemplateFile('kubernetes-idm-config.template'), true /*overwrite*/, false /*print*/, true /*replace*/, NELINE /*only nl*/)
-		createFileFromTemplate("$kubernetesConfigurationPath/${kubernetesApplicationConfigPath}/${rootProject.name}-idm-secret-kubernetes.yaml", getTemplateFile('kubernetes-idm-secret.template'), true /*overwrite*/, false /*print*/, true /*replace*/, NELINE /*only nl*/)
+		createFileFromTemplate("$idmFile", getTemplateFile("$kubernetesIdmTemplateFilename"), true, false)
+		createFileFromTemplate("$kubernetesConfigurationPath/${kubernetesApplicationConfigPath}/${rootProject.name}-idm-config-kubernetes-idm.yaml", getTemplateFile("$kubernetesIdmConfigTemplateFilename"), true /*overwrite*/, false /*print*/, true /*replace*/, NELINE /*only nl*/)
+		createFileFromTemplate("$kubernetesConfigurationPath/${kubernetesApplicationConfigPath}/${rootProject.name}-idm-secret-kubernetes.yaml", getTemplateFile("$kubernetesIdmSecretTemplateFilename"), true /*overwrite*/, false /*print*/, true /*replace*/, NELINE /*only nl*/)
 	}
 }
 
@@ -1042,22 +1043,6 @@ if (project.hasProperty("fatJarClassifierContext") && !project.getProperty("fatJ
 	fatJarClassifierContext = "-" + project.getProperty("fatJarClassifierContext")
 }
 
-configurations {
-	jar {
-/*  
-		withDependencies { DependencySet dependencies ->
-			printInfo dependencies
-		}
-*/		
-	}
-}
-configurations.jar {
-	transitive = false
-	
-	attributes {
-		attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage, Usage.JAVA_API))
-	}
-}
 build { ->
 	doLast {
 		def fatJarFilename = "${gradleBuildDirectory}/libs/${project.name}-${project.version}.jar"
@@ -1098,6 +1083,26 @@ build { ->
 	}
 }
 customJar.mustRunAfter("kubernetesJar")
+
+apply from: "${commonGradleBuildElementPath}/base/jar-configuration.gradle"
+ext.fatWebSubContext = "$fatWebClassifierContext" // application-information
+buildFatWebJar {  ->
+	doFirst {
+		if (project.hasProperty('createFatJar') && project.getProperty('createFatJar').toString().trim().equalsIgnoreCase("true")) {
+			def fatWebJarPathName = "web"
+			if (project.hasProperty("fatWebJarPathName") && !project.getProperty("fatWebJarPathName").toString().isEmpty()) {
+				fatWebJarPathName = project.getProperty("fatWebJarPathName")
+			}
+
+			def distWebPath = "${gradleBuildDirectory}/$fatWebJarPathName"
+            mkdir "$distWebPath"
+            mkdir "$distWebPath/${commonGradleBuildDistName}"
+			mkdir "$distWebPath/${commonGradleBuildDistName}/${fatWebSubContext}"
+			copy { from "${kubernetesApplicationInformationPath}" into "${distWebPath}/${commonGradleBuildDistName}/${fatWebSubContext}" }
+
+		}
+	}
+}
 
 
 /***************************************************************************************

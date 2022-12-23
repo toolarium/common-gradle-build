@@ -709,6 +709,10 @@ setCommonGradleDefaultPropertyIfNull("kustomizeBaseConfigConfigurationPath", "co
 setCommonGradleDefaultPropertyIfNull("kustomizeBaseControllerConfigurationPath", "controller")
 setCommonGradleDefaultPropertyIfNull("kustomizeBaseKustomization", "kustomization.yaml")
 
+setCommonGradleDefaultPropertyIfNull("kubernetesApplyCommand", "kubectl apply -f")
+setCommonGradleDefaultPropertyIfNull("kubernetesDeleteCommand", "kubectl delete")
+setCommonGradleDefaultPropertyIfNull("kubernetesInstallMessage", "This file describes the installation of the product.")
+
 setCommonGradleDefaultPropertyIfNull("kubernetesIngresControlFilename", "$kubernetesConfigurationElementsPath/${rootProject.name}-ingress-controller.yaml")
 setCommonGradleDefaultPropertyIfNull("kubernetesControllerImage", "networking.k8s.io/v1")
 // imgress-nginx: https://github.com/kubernetes/ingress-nginx
@@ -795,6 +799,9 @@ setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseMaxConnections", "10")
 
 // idm support
 setCommonGradleDefaultPropertyIfNull("kubernetesSupportIdm", true)
+setCommonGradleDefaultPropertyIfNull("kubernetesIdmTemplateFilename", "kubernetes-idm.template")
+setCommonGradleDefaultPropertyIfNull("kubernetesIdmConfigTemplateFilename", "kubernetes-idm-config.template")
+setCommonGradleDefaultPropertyIfNull("kubernetesIdmSecretTemplateFilename", "kubernetes-idm-secret.template")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmImageVersion", "12.0.2")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmUrlPath", "/auth")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmUrlProtocol", "${kubernetesApplicationPrototcol}")
@@ -844,9 +851,6 @@ setCommonGradleDefaultPropertyIfNull("kubernetesIdmDatabasePasswordFileEnvName",
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmLogLevelEnvName", "KEYCLOAK_LOGLEVEL")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmAddressForwardingEnvName", "PROXY_ADDRESS_FORWARDING")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmFrontendUrlEnvName", "KEYCLOAK_FRONTEND_URL")
-setCommonGradleDefaultPropertyIfNull("kubernetesApplyCommand", "kubectl apply -f")
-setCommonGradleDefaultPropertyIfNull("kubernetesDeleteCommand", "kubectl delete")
-setCommonGradleDefaultPropertyIfNull("kubernetesInstallMessage", "This file describes the installation of the product.")
 
 // readiness and liveness
 setCommonGradleDefaultPropertyIfNull("kubernetesReadinessFailureThreshold", 3)

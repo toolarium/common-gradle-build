@@ -305,79 +305,9 @@ ext.generatePackageJson = { outputPath = "${$rootDirectory}",
 }
 
 
+ext.fatWebSubContext = "$dockerSubPathAccess"
 apply from: "${commonGradleBuildElementPath}/base/docker.gradle"
-
-
-/***************************************************************************************
- * far jar support
- ***************************************************************************************/
-configurations {
-	jar
-}
-configurations.jar {
-	transitive = false
-
-	attributes {
-		attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage, Usage.JAVA_API))
-	}
-}
-
-
-/****************************************************************************************
- * Build fat jar
- ****************************************************************************************/
-task buildFatWebJar(dependsOn: build) {  ->
-	doLast {
-        def fatJarFilename = "${gradleBuildDirectory}/libs/${project.name}-${project.version}.jar"
-		if (project.hasProperty('createFatJar') && project.getProperty('createFatJar').toString().trim().equalsIgnoreCase("true")) {
-			printInfo("> Create java fat-jar " + colorize(HIGHLITE_LEVEL, "${fatJarFilename}".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")
-			def distWebPath = "${gradleBuildDirectory}/web"
-            mkdir "$distWebPath"
-            mkdir "$distWebPath/${commonGradleBuildDistName}"
-
-            def sourceFilename = "";
-			def sourceJarFilePath = "${gradleBuildDirectory}/libs";
-            configurations.jar.collect {
-                if (it.getName().toString().startsWith("${webServerRunnerName}".toString())) {
-                    printInfo("  -> Use lib dependency " + colorize(HIGHLITE_LEVEL, it.getName()) + "...")
-                    copyFile(""+it, "$sourceJarFilePath/" + it.getName().toString(), true)
-                    sourceFilename = it.getName().toString()
-                }
-            }
-
-			def sourceJarFile = "$sourceJarFilePath/${sourceFilename}";
-			if (sourceFilename!=null && new File(sourceJarFile).exists()) {
-				if (new File("${commonGradleBuildDistPath}").exists()) {
-					if (!"${dockerSubPathAccess}".toString().isBlank()) {
-						mkdir "$distWebPath/${commonGradleBuildDistName}/${dockerSubPathAccess}"
-						copy { from "${commonGradleBuildDistPath}" into "${distWebPath}/${commonGradleBuildDistName}/${dockerSubPathAccess}" }
-					} else {
-						copy { from "${commonGradleBuildDistPath}" into "${distWebPath}/${commonGradleBuildDistName}" }
-					}
-				}
-				
-				buildServiceProperties("${distWebPath}", "${servicePropertiesName}", "${dockerSubPathAccess}"); 
-				createFileFromTemplate("${distWebPath}/${webServerRunnerPropertiesName}", getTemplateFile("${webServerRunnerPropertiesName}.template", 'nodejs'), true /*overwrite*/, true /*print*/, true /*replace*/, NELINE /*only nl*/)
-				buildFatJar("${distWebPath}", "${sourceJarFile}", "${fatJarFilename}", true)
-			}
-        } else {
-			if (new File(fatJarFilename).exists()) {
-				delete fatJarFilename
-			}
-        }
-    }
-}
-
-if (!project.getProperty('IS_NEW')) {
-	if (project.hasProperty('createFatJar') && project.getProperty('createFatJar').toString().trim().equalsIgnoreCase("true")) {
-		logInfo("Enable build webserver fat jar.")
-		build.finalizedBy(buildFatWebJar)
-		
-		dependencies {
-			jar "${webServerRunnerPackage}:${webServerRunnerName}:${webServerRunnerVersion}"
-		}
-	}
-}
+apply from: "${commonGradleBuildElementPath}/base/jar-configuration.gradle"
 
 
 /***************************************************************************************

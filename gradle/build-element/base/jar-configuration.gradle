@@ -1,0 +1,114 @@
+/*
+ * jar-dependency.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * 
+ * This file is part of the toolarium common-gradle-build.
+ * 
+ * The common-gradle-build is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * The common-gradle-build is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+/***************************************************************************************
+ * far jar support
+ ***************************************************************************************/
+configurations {
+	jar
+/*  
+		withDependencies { DependencySet dependencies ->
+			printInfo dependencies
+		}
+*/		
+}
+configurations.jar {
+	transitive = false
+
+	attributes {
+		attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage, Usage.JAVA_API))
+	}
+}
+
+
+/****************************************************************************************
+ * Build fat jar
+ ****************************************************************************************/
+task buildFatWebJar(dependsOn: build) {  ->
+	doLast {
+
+		def fatWebClassifierContext = ""
+		if (project.hasProperty("fatWebClassifierContext") && !project.getProperty("fatWebClassifierContext").toString().isEmpty()) {
+			fatWebClassifierContext = "-" + project.getProperty("fatWebClassifierContext")
+		}
+
+		def fatWebSubContext = ""
+		if (project.hasProperty("fatWebSubContext") && !project.getProperty("fatWebSubContext").toString().isEmpty()) {
+			fatWebSubContext = project.getProperty("fatWebSubContext")
+		}
+
+		def fatWebJarPathName = "web"
+		if (project.hasProperty("fatWebJarPathName") && !project.getProperty("fatWebJarPathName").toString().isEmpty()) {
+			fatWebJarPathName = project.getProperty("fatWebJarPathName")
+		}
+
+        def fatWebFilename = "${gradleBuildDirectory}/libs/${project.name}-${project.version}${fatWebClassifierContext}.jar"
+		if (project.hasProperty('createFatJar') && project.getProperty('createFatJar').toString().trim().equalsIgnoreCase("true")) {
+			printInfo("> Create web fat-jar " + colorize(HIGHLITE_LEVEL, "${fatWebFilename}".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")
+			def distWebPath = "${gradleBuildDirectory}/$fatWebJarPathName"
+            mkdir "$distWebPath"
+            mkdir "$distWebPath/${commonGradleBuildDistName}"
+
+            def sourceFilename = "";
+			def sourceJarFilePath = "${gradleBuildDirectory}/libs";
+            configurations.jar.collect {
+                if (it.getName().toString().startsWith("${webServerRunnerName}".toString())) {
+                    printInfo("  -> Use lib dependency " + colorize(HIGHLITE_LEVEL, it.getName()) + "...")
+                    copyFile(""+it, "$sourceJarFilePath/" + it.getName().toString(), true)
+                    sourceFilename = it.getName().toString()
+                }
+            }
+
+			def sourceJarFile = "$sourceJarFilePath/${sourceFilename}";
+			if (sourceFilename!=null && new File(sourceJarFile).exists()) {
+				if (new File("${commonGradleBuildDistPath}").exists()) {
+					if (!"${fatWebSubContext}".toString().isBlank()) {
+						mkdir "$distWebPath/${commonGradleBuildDistName}/${fatWebSubContext}"
+						copy { from "${commonGradleBuildDistPath}" into "${distWebPath}/${commonGradleBuildDistName}/${fatWebSubContext}" }
+					} else {
+						copy { from "${commonGradleBuildDistPath}" into "${distWebPath}/${commonGradleBuildDistName}" }
+					}
+				}
+				
+				buildServiceProperties("${distWebPath}", "${servicePropertiesName}", "${fatWebSubContext}"); 
+				createFileFromTemplate("${distWebPath}/${webServerRunnerPropertiesName}", getTemplateFile("${webServerRunnerPropertiesName}.template", 'base'), true /*overwrite*/, true /*print*/, true /*replace*/, NELINE /*only nl*/)
+				buildFatJar("${distWebPath}", "${sourceJarFile}", "${fatWebFilename}", true)
+			}
+        } else {
+			if (new File(fatWebFilename).exists()) {
+				delete fatWebFilename
+			}
+        }
+    }
+}
+
+
+if (!project.getProperty('IS_NEW')) {
+	if (project.hasProperty('createFatJar') && project.getProperty('createFatJar').toString().trim().equalsIgnoreCase("true")) {
+		logInfo("Enable build webserver fat jar.")
+		build.finalizedBy(buildFatWebJar)
+		
+		dependencies {
+			jar "${webServerRunnerPackage}:${webServerRunnerName}:${webServerRunnerVersion}"
+		}
+	}
+}
