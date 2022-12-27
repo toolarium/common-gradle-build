@@ -124,6 +124,10 @@ ext.kubernetesConfigurationProjctPath = "${kubernetesConfigurationServicesPath}/
 artifacts {
 	archives kubernetesJar
 	archives customJar
+	
+	if (project.hasProperty('createFatJar') && project.getProperty('createFatJar').toString().trim().equalsIgnoreCase("true")) {
+		archives jar
+	}
 }
 
 

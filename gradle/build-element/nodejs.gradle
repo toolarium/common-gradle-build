@@ -112,6 +112,10 @@ artifacts {
 	if (project.hasProperty('kubernetesSupport') && project.getProperty('kubernetesSupport')) {
 		archives kubernetesJar
 	}
+	
+	if (project.hasProperty('createFatJar') && project.getProperty('createFatJar').toString().trim().equalsIgnoreCase("true")) {
+		archives jar
+	}
 }
 
 
