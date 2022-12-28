@@ -24,6 +24,10 @@
  * ResourceBundle.xls json support
  ***************************************************************************************/
 ext.commonGradleResourcebundleJsonSupport=true
+ext.createCustomJar = false
+if (project.hasProperty('createFatJar') && project.getProperty('createFatJar').toString().trim().equalsIgnoreCase("true")) {
+	ext.createCustomJar = project.getProperty('createFatJar').toString().trim().equalsIgnoreCase("true");
+}
 
 if (!ext.has('nodeBuildArguments')) {
 	ext.nodeBuildArguments = ['run', 'build', '--loglevel', 'silent']
@@ -80,6 +84,35 @@ apply from: "${commonGradleBuildElementPath}/base.gradle"
 apply from: "${commonGradleBuildElementPath}/base/gradle.gradle"
 apply from: "${commonGradleBuildElementPath}/base/run.gradle"
 apply from: "${commonGradleBuildElementPath}/base/kubernetes.gradle"
+
+
+/***************************************************************************************
+ * Build custom jar file
+ ***************************************************************************************/
+task customJar(type: Jar) { jar ->
+	group = 'Build'
+	duplicatesStrategy = 'exclude' // work around, currendly don't work "$duplicatesStrategy"
+	description = 'Assembles the kubernetes configuration into a jar file'
+	onlyIf { return (project.hasProperty('createCustomJar') && project.getProperty('createCustomJar').toString().equalsIgnoreCase("true")) }
+	
+	// define proper manifest
+	manifest {
+		attributes 	'Specification-Title'   : rootProject.name,
+					'Specification-Version' : project.version,
+					'Implementation-Title'  : rootProject.name,
+					'Implementation-Version': project.version + project.ext.scmVersionNumber,
+					'Created-By'		   	: project.ext.buildToolVersionStackMessage,
+					'Built-By'			   	: publishingUsername,
+					'Build-Timestamp'	   	: BUILD_TIMESTAMP,
+					'Build-OS'			   	: "${System.properties['os.name']} (${System.properties['os.version']}), ${System.properties['os.arch']}"
+	}
+	
+	doLast {
+		printInfo("> Create custom jar " + colorize(HIGHLITE_LEVEL,  archiveName) + ".")
+	}
+}
+
+
 apply from: "${commonGradleBuildElementPath}/java/repository.gradle"
 apply from: "${commonGradleBuildElementPath}/java/signing.gradle"
 apply from: "${commonGradleBuildElementPath}/java/publication.gradle"
@@ -103,37 +136,6 @@ addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/jsconfig.json")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/tsconfig.json")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/yarn.lock")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/manifest.json")
-
-
-/***************************************************************************************
- * Build custom jar file
- ***************************************************************************************/
-ext.createCustomJar = false
-if (project.hasProperty('createFatJar') && project.getProperty('createFatJar').toString().trim().equalsIgnoreCase("true")) {
-	ext.createCustomJar = project.getProperty('createFatJar').toString().trim().equalsIgnoreCase("true");
-}
-task customJar(type: Jar) { jar ->
-	group = 'Build'
-	duplicatesStrategy = 'exclude' // work around, currendly don't work "$duplicatesStrategy"
-	description = 'Assembles the kubernetes configuration into a jar file'
-	onlyIf { return (project.hasProperty('createCustomJar') && project.getProperty('createCustomJar').toString().equalsIgnoreCase("true")) }
-	
-	// define proper manifest
-	manifest {
-		attributes 	'Specification-Title'   : rootProject.name,
-					'Specification-Version' : project.version,
-					'Implementation-Title'  : rootProject.name,
-					'Implementation-Version': project.version + project.ext.scmVersionNumber,
-					'Created-By'		   	: project.ext.buildToolVersionStackMessage,
-					'Built-By'			   	: publishingUsername,
-					'Build-Timestamp'	   	: BUILD_TIMESTAMP,
-					'Build-OS'			   	: "${System.properties['os.name']} (${System.properties['os.version']}), ${System.properties['os.arch']}"
-	}
-	
-	doLast {
-		printInfo("> Create custom jar " + colorize(HIGHLITE_LEVEL,  archiveName) + ".")
-	}
-}
 
 
 /***************************************************************************************
