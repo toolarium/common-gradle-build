@@ -124,10 +124,6 @@ ext.kubernetesConfigurationProjctPath = "${kubernetesConfigurationServicesPath}/
 artifacts {
 	archives kubernetesJar
 	archives customJar
-	
-	if (project.hasProperty('createFatJar') && project.getProperty('createFatJar').toString().trim().equalsIgnoreCase("true")) {
-		archives jar
-	}
 }
 
 
@@ -1047,6 +1043,23 @@ if (project.hasProperty("fatJarClassifierContext") && !project.getProperty("fatJ
 	fatJarClassifierContext = "-" + project.getProperty("fatJarClassifierContext")
 }
 
+configurations {
+	jar {
+/*  
+		withDependencies { DependencySet dependencies ->
+			printInfo dependencies
+		}
+*/		
+	}
+}
+configurations.jar {
+	transitive = false
+	
+	attributes {
+		attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage, Usage.JAVA_API))
+	}
+}
+
 build { ->
 	doLast {
 		def fatJarFilename = "${gradleBuildDirectory}/libs/${project.name}-${project.version}.jar"
@@ -1069,6 +1082,14 @@ build { ->
 					hasRunner = true
 				}
 			}
+
+			def fatWebClassifierContext = ""
+			if (project.hasProperty("fatWebClassifierContext") && !project.getProperty("fatWebClassifierContext").toString().isEmpty()) {
+				fatWebClassifierContext = "-" + project.getProperty("fatWebClassifierContext")
+			}
+			printInfo("  -> Add fat-jar lib dependency " + colorize(HIGHLITE_LEVEL, "${project.name}-${project.version}${fatWebClassifierContext}.jar") + "...")
+			copyFile("${gradleBuildDirectory}/libs/${project.name}-${project.version}${fatWebClassifierContext}.jar", "${javaAppPath}/lib/${project.name}-${project.version}${fatWebClassifierContext}.jar")
+			delete "${gradleBuildDirectory}/libs/${project.name}-${project.version}${fatWebClassifierContext}.jar"
 			
 			if (new File("${srcMainResourcesDirectory}").exists()) {
 				copy { from "${srcMainResourcesDirectory}" into "${javaAppPath}" } 
@@ -1088,7 +1109,7 @@ build { ->
 }
 customJar.mustRunAfter("kubernetesJar")
 
-apply from: "${commonGradleBuildElementPath}/base/jar-configuration.gradle"
+apply from: "${commonGradleBuildElementPath}/base/webjar.gradle"
 ext.fatWebSubContext = "$fatWebClassifierContext" // application-information
 buildFatWebJar {  ->
 	doFirst {
@@ -1107,6 +1128,7 @@ buildFatWebJar {  ->
 		}
 	}
 }
+customJar.dependsOn(buildFatWebJar)
 
 
 /***************************************************************************************

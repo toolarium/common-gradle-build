@@ -315,7 +315,7 @@ task kubernetesJar(type: Jar, dependsOn: ['kubernetesConfiguration', 'prepareToo
 		}
 	}
 
-	into "application-information", {
+	into "${kubernetesApplicationConfigurationInformationPathname}", {
 		if (project.getProperty('includeApplicationInformation')) {
 			from "$kubernetesApplicationInformationPath"
 		}

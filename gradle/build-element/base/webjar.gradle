@@ -1,5 +1,5 @@
 /*
- * jar-dependency.gradle
+ * webjar.gradle
  *
  * Copyright by toolarium, all rights reserved.
  * 
@@ -21,17 +21,17 @@
 
 
 /***************************************************************************************
- * far jar support
+ * far webJar support
  ***************************************************************************************/
 configurations {
-	jar
+	webJar
 /*  
 		withDependencies { DependencySet dependencies ->
 			printInfo dependencies
 		}
 */		
 }
-configurations.jar {
+configurations.webJar {
 	transitive = false
 
 	attributes {
@@ -41,9 +41,9 @@ configurations.jar {
 
 
 /****************************************************************************************
- * Build fat jar
+ * Build fat webJar
  ****************************************************************************************/
-task buildFatWebJar(dependsOn: build) {  ->
+task buildFatWebJar {  ->
 	doLast {
 
 		def fatWebClassifierContext = ""
@@ -70,7 +70,7 @@ task buildFatWebJar(dependsOn: build) {  ->
 
             def sourceFilename = "";
 			def sourceJarFilePath = "${gradleBuildDirectory}/libs";
-            configurations.jar.collect {
+            configurations.webJar.collect {
                 if (it.getName().toString().startsWith("${webServerRunnerName}".toString())) {
                     printInfo("  -> Use lib dependency " + colorize(HIGHLITE_LEVEL, it.getName()) + "...")
                     copyFile(""+it, "$sourceJarFilePath/" + it.getName().toString(), true)
@@ -105,10 +105,9 @@ task buildFatWebJar(dependsOn: build) {  ->
 if (!project.getProperty('IS_NEW')) {
 	if (project.hasProperty('createFatJar') && project.getProperty('createFatJar').toString().trim().equalsIgnoreCase("true")) {
 		logInfo("Enable build webserver fat jar.")
-		build.finalizedBy(buildFatWebJar)
 		
 		dependencies {
-			jar "${webServerRunnerPackage}:${webServerRunnerName}:${webServerRunnerVersion}"
+			webJar "${webServerRunnerPackage}:${webServerRunnerName}:${webServerRunnerVersion}"
 		}
 	}
 }

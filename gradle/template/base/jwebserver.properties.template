@@ -1,9 +1,13 @@
+webserverName = @@PROJECT_NAME@@ v@@VERSION@@
 hostname = 
 port = 
-directory = @@DISTNAME@@
+directory = @@DISTNAME@@      
 readFromClasspath = true
 directoryListingEnabled =  
 verboseLevel = 
 #basicAuthentication =  
 #healthPath = 
-resourcePath = 
+resourcePath = @@dockerSubPathAccess@@
+#ioThreads =
+#workerThreads = 
+welcomeFiles = index.html, index.htm, default.html, default.htm, index.json
