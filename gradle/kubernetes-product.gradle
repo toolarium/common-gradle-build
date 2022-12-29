@@ -1110,7 +1110,7 @@ build { ->
 customJar.mustRunAfter("kubernetesJar")
 
 apply from: "${commonGradleBuildElementPath}/base/webjar.gradle"
-ext.fatWebSubContext = "$fatWebClassifierContext" // application-information
+ext.fatWebSubContext = "" // $fatWebClassifierContext application-information
 buildFatWebJar {  ->
 	doFirst {
 		if (project.hasProperty('createFatJar') && project.getProperty('createFatJar').toString().trim().equalsIgnoreCase("true")) {
@@ -1122,8 +1122,7 @@ buildFatWebJar {  ->
 			def distWebPath = "${gradleBuildDirectory}/$fatWebJarPathName"
             mkdir "$distWebPath"
             mkdir "$distWebPath/${commonGradleBuildDistName}"
-			mkdir "$distWebPath/${commonGradleBuildDistName}/${fatWebSubContext}"
-			copy { from "${kubernetesApplicationInformationPath}" into "${distWebPath}/${commonGradleBuildDistName}/${fatWebSubContext}" }
+			copy { from "${kubernetesApplicationInformationPath}" into "${distWebPath}/${commonGradleBuildDistName}" }
 
 		}
 	}
