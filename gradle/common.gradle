@@ -52,7 +52,7 @@ ext.readGitProjectUrl = { ->
 		}
 
 		if (result!=null && result.isEmpty()) {
-			bootStraplogInfo"> No git remote url found")
+			bootStraplogInfo("> No git remote url found")
 		} else {
 			bootStraplogInfo("> Git remote url found: $result")
 		}
