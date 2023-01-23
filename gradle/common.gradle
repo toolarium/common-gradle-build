@@ -38,8 +38,13 @@ ext.bootStraplogWarn = { message -> logger.warn bootstrapColorize('yellow', mess
  * Read the git project url
  ***************************************************************************************/
 ext.readGitProjectUrl = { ->
+	def currentRootDir = "${project.rootDir}".replace('\\', '/')
+	if (currentRootDir.endsWith('/')) {
+		currentRootDir = currentRootDir.substring(0, currentRootDir.length() -1)
+	}
+
 	def result = "";
-	File gitConfig = new File(".git/config")
+	File gitConfig = new File("$currentRootDir/.git/config")
 	if (gitConfig.exists()) {
 		gitConfig.withReader('UTF-8') { reader ->
 			def line
