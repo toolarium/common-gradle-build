@@ -35,6 +35,112 @@ ext.bootStraplogInfo = { message -> logger.info bootstrapColorize('cyan', messag
 ext.bootStraplogWarn = { message -> logger.warn bootstrapColorize('yellow', message) }
 
 /***************************************************************************************
+ * Read the git project url
+ ***************************************************************************************/
+ext.readGitProjectUrl = { ->
+	def result = "";
+	File gitConfig = new File(".git/config")
+	if (gitConfig.exists()) {
+		gitConfig.withReader('UTF-8') { reader ->
+			def line
+			while ((line = reader.readLine()) != null) {
+				def currentLine = line.toString().trim() 
+				if (!currentLine.isEmpty() && !currentLine.startsWith("#") && currentLine.startsWith("url") && currentLine.indexOf('=') > 0) {
+					result = (currentLine.split('=')[1]).toString().trim()
+				}
+			}
+		}
+
+		if (result!=null && result.isEmpty()) {
+			bootStraplogInfo"> No git remote url found")
+		} else {
+			bootStraplogInfo("> Git remote url found: $result")
+		}
+	} else {
+		bootStraplogInfo("> No git installation found.")
+	}
+						 
+	return result
+}
+
+/***************************************************************************************
+ * Read the common project config home base
+ ***************************************************************************************/
+ext.readCommonGradleBuildHomeBase = { ->
+	def result = ""
+	def userHomeDirectory = System.properties['user.home'].replace('\\', '/')
+	def homeDirectoryPath="$userHomeDirectory/.common-build/conf"
+
+	String gitProjectUrl=readGitProjectUrl()
+	File customConfigFile = new File("$homeDirectoryPath/.cb-custom-config")
+	if (customConfigFile.exists()) {
+		String fileContent = ""
+		customConfigFile.withReader('UTF-8') { reader ->
+			def line, valueLength = 0
+			while ((line = reader.readLine()) != null) {
+				def currentLine = line.toString().trim() 
+				if (!currentLine.isBlank() && !currentLine.startsWith("#") && !currentLine.startsWith("=")) {
+					String[] lineSplit = currentLine.split('=')
+					String value = ""
+					String key = lineSplit[0].trim()
+				
+					if (!key.isBlank()) {
+						if (lineSplit.length>1 && !lineSplit[1].isBlank()) {
+							value = lineSplit[1].trim()
+							bootStraplogInfo("> Found custom config entry [$key] with pattern [$value] by remote url ($gitProjectUrl).")
+							
+							if (gitProjectUrl!=null && !gitProjectUrl.isBlank() && gitProjectUrl.startsWith(value) ) {
+								if (value.length() > valueLength) {
+									bootStraplogInfo("> Choose custom config entry [$key] with pattern [$value], length $valueLength")
+									fileContent=key
+									valueLength=value.length()
+								}
+							}
+						} else {
+							bootStraplogInfo("> Found custom config entry [$key] with no pattern.")
+							if (valueLength <= 0) {
+								fileContent=key
+								bootStraplogInfo("> Choose custom config entry [$key] with no pattern.")
+							}
+						}
+					}
+				}
+			}
+		}
+
+		if (fileContent!=null && !fileContent.isEmpty()) {
+			def homeSubPath=""
+			try {
+				URL homeURL = new URL("$fileContent".toString().trim())
+				if (homeURL!=null) {					
+					homeSubPath = homeURL.getHost()
+					def port = "80";
+					if (homeURL.getPort()!=null && homeURL.getPort()>0) {
+						port = "" + homeURL.getPort();
+					} else if ("http".equals(homeURL.getProtocol())) {
+						port = "80";
+					} else if ("https".equals(homeURL.getProtocol())) {
+						port = "443";
+					} 						
+					homeSubPath="$homeSubPath@" + port;
+				}
+			} catch(Exception e) {
+			}
+			
+			if (homeSubPath!=null && !homeSubPath.isEmpty()) {
+				result = "$homeDirectoryPath/$homeSubPath"
+			}			
+		}
+	}
+
+	if (result == null || result.isEmpty()) {
+		result = userHomeDirectory + "/.gradle/common-gradle-build-home"
+	}
+	
+	 return result
+}
+
+/***************************************************************************************
  * Read last version
  ***************************************************************************************/
 ext.readLastCheckVersion = { filename ->
@@ -85,37 +191,7 @@ bootStraplogInfo("> Found common-gradle-build cache path: ${commonGradleBuildCac
 
 def commonGradleBuildHomeBase = System.getenv('COMMON_GRADLE_BUILD_HOME') 
 if (commonGradleBuildHomeBase == null || commonGradleBuildHomeBase.isEmpty()) {
-	def homeDirectoryPath="$userHomeDirectory/.common-build/conf"
-	if (new File("$homeDirectoryPath/.cb-custom-config").exists()) {
-		String fileContent = new File("$homeDirectoryPath/.cb-custom-config").getText('UTF-8')
-		if (fileContent!=null && !fileContent.isEmpty()) {			
-			def homeSubPath=""
-			try {
-				URL homeURL = new URL("$fileContent".toString().trim())
-				if (homeURL!=null) {					
-					homeSubPath = homeURL.getHost()
-					def port = "80";
-					if (homeURL.getPort()!=null && homeURL.getPort()>0) {
-						port = "" + homeURL.getPort();
-					} else if ("http".equals(homeURL.getProtocol())) {
-						port = "80";
-					} else if ("https".equals(homeURL.getProtocol())) {
-						port = "443";
-					} 						
-					homeSubPath="$homeSubPath@" + port;
-				}
-			} catch(Exception e) {
-			}
-			
-			if (homeSubPath!=null && !homeSubPath.isEmpty()) {
-				commonGradleBuildHomeBase = "$homeDirectoryPath/$homeSubPath"
-			}			
-		}
-	}
-
-	if (commonGradleBuildHomeBase == null || commonGradleBuildHomeBase.isEmpty()) {
-		commonGradleBuildHomeBase = commonGradleHomeDirectory + "/common-gradle-build-home"
-	}
+	commonGradleBuildHomeBase = readCommonGradleBuildHomeBase()
 } else {
 	commonGradleBuildHomeBase = commonGradleBuildHomeBase.replace('\\', '/')
 }
