@@ -96,7 +96,7 @@ ext.readCommonGradleBuildHomeBase = { ->
 							
 							if (gitProjectUrl!=null && !gitProjectUrl.isBlank() && gitProjectUrl.startsWith(value) ) {
 								if (value.length() > valueLength) {
-									fileContent=value
+									fileContent=key
 									valueLength=value.length()
 									bootStraplogInfo("> Choose custom config entry [$key] with pattern [$value], length $valueLength")
 								}
@@ -134,7 +134,7 @@ ext.readCommonGradleBuildHomeBase = { ->
 					} 						
 					
 					homeSubPath="$homeSubPath@" + port;
-bootStraplogInfo("8=>[$homeDirectoryPath/$homeSubPath][$urlPath]"+new File("$homeDirectoryPath/$homeSubPath" + urlPath).exists())					
+bootStraplogInfo("10=>[$homeDirectoryPath/$homeSubPath][$urlPath]"+new File("$homeDirectoryPath/$homeSubPath" + urlPath).exists())					
 					if (new File("$homeDirectoryPath/${homeSubPath}${urlPath}").exists()) {
 						homeSubPath="$homeSubPath" + urlPath;
 					}
