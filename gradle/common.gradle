@@ -134,7 +134,7 @@ ext.readCommonGradleBuildHomeBase = { ->
 					} 						
 					
 					homeSubPath="$homeSubPath@" + port;
-printInfo("3=>[$homeDirectoryPath/$homeSubPath][$urlPath]"+new File("$homeDirectoryPath/$homeSubPath" + urlPath).exists())					
+printInfo("4=>[$homeDirectoryPath/$homeSubPath][$urlPath]"+new File("$homeDirectoryPath/$homeSubPath" + urlPath).exists())					
 					if (new File("$homeDirectoryPath/${homeSubPath}${urlPath}").exists()) {
 						homeSubPath="$homeSubPath" + urlPath;
 					}
@@ -205,10 +205,12 @@ project.ext.set('commonGradleBuildCache', commonGradleBuildCache)
 bootStraplogInfo("> Found common-gradle-build cache path: ${commonGradleBuildCache}")
 
 def commonGradleBuildHomeBase = System.getenv('COMMON_GRADLE_BUILD_HOME') 
+printInfo("[5/1]"+commonGradleBuildHomeBase)
 if (commonGradleBuildHomeBase == null || commonGradleBuildHomeBase.trim().isEmpty()) {
 	commonGradleBuildHomeBase = readCommonGradleBuildHomeBase()
+printInfo("[5/2]"+commonGradleBuildHomeBase)
 } else {
-printInfo("[4]"+commonGradleBuildHomeBase)
+printInfo("[5/3]"+commonGradleBuildHomeBase)
 	commonGradleBuildHomeBase = commonGradleBuildHomeBase.replace('\\', '/')
 }
 
