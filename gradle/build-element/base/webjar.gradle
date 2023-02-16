@@ -89,7 +89,7 @@ task buildFatWebJar {  ->
 					}
 				}
 				
-				buildServiceProperties("${distWebPath}", "${servicePropertiesName}", "${fatWebSubContext}"); 
+				buildServiceProperties("${distWebPath}", "${servicePropertiesName}", "${fatWebSubContext}", "${gradlePropertiesFile}", "dockerSubPathAccess"); 
 				createFileFromTemplate("${distWebPath}/${webServerRunnerPropertiesName}", getTemplateFile("${webServerRunnerPropertiesName}.template", 'base'), true /*overwrite*/, true /*print*/, true /*replace*/, NELINE /*only nl*/)
 				buildFatJar("${distWebPath}", "${sourceJarFile}", "${fatWebFilename}", true)
 			}

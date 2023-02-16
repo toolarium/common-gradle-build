@@ -555,7 +555,7 @@ ext.registerEndMessage = { message ->
 /***************************************************************************************
  * Build service.properties
  ***************************************************************************************/
-ext.buildServiceProperties = { baseFolder = "${gradleBuildDirectory}", filename = "${servicePropertiesName}", rootPath= "${dockerSubPathAccess}", inputResourcePath = null ->
+ext.buildServiceProperties = { baseFolder = "${gradleBuildDirectory}", filename = "${servicePropertiesName}", rootPath= "${dockerSubPathAccess}", inputResourcePath = null, rootPathSourceFile, rootPathSourceProperty ->
 	def resourcePath = inputResourcePath
 	def resourcePathSourceFile = "unknown"
 	def resourcePathSourceProperty = "unknown"
@@ -567,23 +567,20 @@ ext.buildServiceProperties = { baseFolder = "${gradleBuildDirectory}", filename 
 		resourcePath = gradleProperties.getProperty("kubernetesUrlPath", ""); // in case it is not defined, its empty and not available from outside the kubernetes
 	}
 
-	def rootPathSourceFile = "${gradlePropertiesFile}"
-	def rootPathSourceProperty = "dockerSubPathAccess"
 	if (rootPath.toString().isBlank() && resourcePath.toString().isBlank()) {
 		rootPath = "/"
-	} else {
-		rootPathSourceFile = "${srcMainResourcesDirectory}/application.properties"
-		rootPathSourceProperty = "quarkus.http.root-path"
 	}
 
 	if (!resourcePath.toString().isBlank()) {
-		def isValidPath = false
-		if (rootPath.toString().endsWith("/")) {
-			isValidPath = resourcePath.toString().startsWith(rootPath.toString())
-		} else {
-			isValidPath = resourcePath.toString().startsWith(rootPath.toString()+"/")
+		def testRootPath = rootPath
+		if (resourcePath.toString().startsWith("/") && !testRootPath.toString().startsWith("/")) {
+			testRootPath = "/" + testRootPath
+		}	
+		def testResourcePath = resourcePath
+		if (!testResourcePath.toString().endsWith("/")) {
+			testResourcePath = testResourcePath + "/"
 		}
-		
+		def isValidPath = testResourcePath.toString().startsWith(testRootPath.toString())
 		if (!isValidPath) { 
 			printWarn("The " + colorize(HIGHLITE_LEVEL, "$rootPathSourceProperty = $rootPath") + colorize(WARN_LEVEL, " in ") + colorize(HIGHLITE_LEVEL, "$rootPathSourceFile") 
 			+ colorize(WARN_LEVEL, "\n    must be parent of ") + colorize(HIGHLITE_LEVEL, "$resourcePathSourceProperty = $resourcePath") + colorize(WARN_LEVEL, " in ") + colorize(HIGHLITE_LEVEL, "$resourcePathSourceFile") + colorize(WARN_LEVEL, "!"))

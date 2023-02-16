@@ -382,7 +382,7 @@ build { ->
 
 		if (project.hasProperty('createServiceProperties') && project.getProperty('createServiceProperties')) {
 			def applicationProperties = readPropertiesFile("${srcMainResourcesDirectory}/application.properties")
-			buildServiceProperties("${quarkusAppDirectory}", "${servicePropertiesName}", applicationProperties.getProperty("quarkus.http.root-path", "/api"));
+			buildServiceProperties("${quarkusAppDirectory}", "${servicePropertiesName}", applicationProperties.getProperty("quarkus.http.root-path", "/api"), "${srcMainResourcesDirectory}/application.properties", "quarkus.http.root-path");
 		}
 
 		/* TODO:
