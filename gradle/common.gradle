@@ -134,7 +134,6 @@ ext.readCommonGradleBuildHomeBase = { ->
 					} 						
 					
 					homeSubPath="$homeSubPath@" + port;
-bootStraplogInfo("10=>[$homeDirectoryPath/$homeSubPath][$urlPath]"+new File("$homeDirectoryPath/$homeSubPath" + urlPath).exists())					
 					if (new File("$homeDirectoryPath/${homeSubPath}${urlPath}").exists()) {
 						homeSubPath="$homeSubPath" + urlPath;
 					}
@@ -207,7 +206,6 @@ bootStraplogInfo("> Found common-gradle-build cache path: ${commonGradleBuildCac
 def commonGradleBuildHomeBase = System.getenv('COMMON_GRADLE_BUILD_HOME') 
 if (commonGradleBuildHomeBase == null || commonGradleBuildHomeBase.trim().isEmpty()) {
 	commonGradleBuildHomeBase = readCommonGradleBuildHomeBase()
-bootStraplogInfo("[7/2]"+commonGradleBuildHomeBase)
 } else {
 	commonGradleBuildHomeBase = commonGradleBuildHomeBase.replace('\\', '/')
 }
