@@ -119,6 +119,11 @@ ext.readCommonGradleBuildHomeBase = { ->
 				URL homeURL = new URL("$fileContent".toString().trim())
 				if (homeURL!=null) {					
 					homeSubPath = homeURL.getHost()
+					def urlPath = homeURL.getPath().replace('/', '_')
+					int idx = urlPath.indexOf('.')
+					if (idx>=0) {
+					    urlPath = urlPath.substring(0, idx)
+					}
 					def port = "80";
 					if (homeURL.getPort()!=null && homeURL.getPort()>0) {
 						port = "" + homeURL.getPort();
@@ -127,7 +132,7 @@ ext.readCommonGradleBuildHomeBase = { ->
 					} else if ("https".equals(homeURL.getProtocol())) {
 						port = "443";
 					} 						
-					homeSubPath="$homeSubPath@" + port;
+					homeSubPath="$homeSubPath@" + port + urlPath;
 				}
 			} catch(Exception e) {
 			}
