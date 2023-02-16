@@ -134,8 +134,8 @@ ext.readCommonGradleBuildHomeBase = { ->
 					} 						
 					
 					homeSubPath="$homeSubPath@" + port;
-printInfo("2=>[$homeDirectoryPath/$homeSubPath][$urlPath]"+new File("$homeSubPath" + urlPath).exists())					
-					if (new File("$homeDirectoryPath/$homeSubPath" + urlPath).exists()) {
+printInfo("3=>[$homeDirectoryPath/$homeSubPath][$urlPath]"+new File("$homeDirectoryPath/$homeSubPath" + urlPath).exists())					
+					if (new File("$homeDirectoryPath/${homeSubPath}${urlPath}").exists()) {
 						homeSubPath="$homeSubPath" + urlPath;
 					}
 				}
