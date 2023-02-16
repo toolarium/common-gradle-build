@@ -205,12 +205,12 @@ project.ext.set('commonGradleBuildCache', commonGradleBuildCache)
 bootStraplogInfo("> Found common-gradle-build cache path: ${commonGradleBuildCache}")
 
 def commonGradleBuildHomeBase = System.getenv('COMMON_GRADLE_BUILD_HOME') 
-printInfo("[5/1]"+commonGradleBuildHomeBase)
+bootStraplogInfo("[6/1]"+commonGradleBuildHomeBase)
 if (commonGradleBuildHomeBase == null || commonGradleBuildHomeBase.trim().isEmpty()) {
 	commonGradleBuildHomeBase = readCommonGradleBuildHomeBase()
-printInfo("[5/2]"+commonGradleBuildHomeBase)
+bootStraplogInfo("[6/2]"+commonGradleBuildHomeBase)
 } else {
-printInfo("[5/3]"+commonGradleBuildHomeBase)
+bootStraplogInfo("[6/3]"+commonGradleBuildHomeBase)
 	commonGradleBuildHomeBase = commonGradleBuildHomeBase.replace('\\', '/')
 }
 
