@@ -132,7 +132,11 @@ ext.readCommonGradleBuildHomeBase = { ->
 					} else if ("https".equals(homeURL.getProtocol())) {
 						port = "443";
 					} 						
-					homeSubPath="$homeSubPath@" + port + urlPath;
+					
+					homeSubPath="$homeSubPath@" + port;
+					if (new File("$homeSubPath@" + urlPath).exists()) {
+						homeSubPath="$homeSubPath@" + urlPath;
+					}
 				}
 			} catch(Exception e) {
 			}
