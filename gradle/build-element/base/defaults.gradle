@@ -487,7 +487,8 @@ setCommonGradleDefaultPropertyIfNull("webServerRunnerPropertiesName", "jwebserve
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("srcMainApiSpecDirectoryName", "api-spec")
 setCommonGradleDefaultPropertyIfNull("srcMainApiSpecDirectory", "${srcMainDirectory}/${srcMainApiSpecDirectoryName}")
-setCommonGradleDefaultPropertyIfNull("openapiPluginVersion", "5.1.1")
+setCommonGradleDefaultPropertyIfNull("defaultOpenapiPluginVersion", "6.5.0")
+setCommonGradleDefaultPropertyIfNull("openapiPluginVersion", "${defaultOpenapiPluginVersion}")
 //setCommonGradleDefaultPropertyIfNull("openapiLibrary", 'okhttp-gson')
 //setCommonGradleDefaultPropertyIfNull("openapiGeneratorName", 'java')
 // openApiInputSourceFilePattern: my-special-service-api-spec -> my-special-service -> my-special -> ^my-special.*(service|service-adapter)-api.yaml$
@@ -550,7 +551,7 @@ addCommonGradlePropertyList("allowedMainFiles", editorConfigFile)
 addCommonGradlePropertyList("allowedMainFiles", javaVersionConfigFile)
 
 // editor settings
-addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/.idea,")
+addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/.idea")
 
 if (project.hasProperty('installGradleWrapper') && project.getProperty('installGradleWrapper')) {
 	addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/gradle")
