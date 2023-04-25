@@ -11,3 +11,4 @@ resourcePath = @@dockerSubPathAccess@@
 #ioThreads =
 #workerThreads = 
 welcomeFiles = index.html, index.htm, default.html, default.htm, index.json
+supportedFileExtensions = .json
