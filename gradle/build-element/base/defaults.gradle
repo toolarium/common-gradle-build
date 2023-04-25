@@ -34,7 +34,7 @@ setCommonGradleDefaultPropertyIfNull("snakeYamlVersion", "1.29")
 setCommonGradleDefaultPropertyIfNull("grgitCoreVersion", "4.1.1")
 setCommonGradleDefaultPropertyIfNull("jsurferVersion", "1.6.3")
 setCommonGradleDefaultPropertyIfNull("semver4jVersion", "3.1.0")
-setCommonGradleDefaultPropertyIfNull("gradleWrapperDefaultVersion", "7.3.1")
+setCommonGradleDefaultPropertyIfNull("gradleWrapperDefaultVersion", "7.5.1")
 setCommonGradleDefaultPropertyIfNull("gradleHome", "$userHomeDirectory/.gradle")
 setCommonGradleDefaultPropertyIfNull("gradleHomePropertiesFile", "$gradleHome/gradle.properties")
 setCommonGradleDefaultPropertyIfNull("defaultCommonGradleBuildUrl", "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/common.gradle")
@@ -397,6 +397,7 @@ setCommonGradleDefaultPropertyIfNull("dependencyCveValidForHours", 12)
 setCommonGradleDefaultPropertyIfNull("dependencyFailOnError", true)
 setCommonGradleDefaultPropertyIfNull("dependencyCheckReportPath", "${reportsPath}/dependency-check")
 setCommonGradleDefaultPropertyIfNull("dependencyCheckReportFile", "${dependencyCheckReportPath}/dependency-check-report.json")
+setCommonGradleDefaultPropertyIfNull("dependencyCheckReportHtmlFile", "${dependencyCheckReportPath}/dependency-check-report.html")
 setCommonGradleDefaultPropertyIfNull("dependencyCheckPreparedDatabaseArchiveFile", "${gradleHome}/dependency-check-data.zip")
 setCommonGradleDefaultPropertyIfNull("dependencyCheckPreparedDatabaseArchiveUrl", "")
 
@@ -421,7 +422,7 @@ setCommonGradleDefaultPropertyIfNull("checkstyleEclipseConfigurationOverwrite", 
  * test coverage: jacoco
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("jacocoToolDefaultVersion", '0.8.7')
-setCommonGradleDefaultPropertyIfNull("jacocoXMLReport", false)
+setCommonGradleDefaultPropertyIfNull("jacocoXMLReport", true)
 setCommonGradleDefaultPropertyIfNull("jacocoCSVReport", false)
 setCommonGradleDefaultPropertyIfNull("jacocoHTMLReport", true)
 setCommonGradleDefaultPropertyIfNull("jacocoReportPath", "${reportsPath}/testcoverage")
@@ -547,6 +548,9 @@ addCommonGradlePropertyList("allowedMainFiles", settingsGradleFile)
 addCommonGradlePropertyList("allowedMainFiles", changelogFile)
 addCommonGradlePropertyList("allowedMainFiles", editorConfigFile)
 addCommonGradlePropertyList("allowedMainFiles", javaVersionConfigFile)
+
+// editor settings
+addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/.idea,")
 
 if (project.hasProperty('installGradleWrapper') && project.getProperty('installGradleWrapper')) {
 	addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/gradle")
@@ -994,4 +998,3 @@ setCommonGradleDefaultPropertyIfNull("commonGradleJavaxAnnotationVersion", "1.3.
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("commonGradleJptoolsModelGeneratorVersion", "${commonGradleJptoolsVersion}")
 setCommonGradleDefaultPropertyIfNull("commonGradleJexcelapiModelGeneratorVersion", "2.6.12")
-
