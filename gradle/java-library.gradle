@@ -50,8 +50,37 @@ setCommonGradleDefaultPropertyIfNull("srcTestJavaDirectory", "${srcTestDirectory
 dependencies {
 	if (project.hasProperty("hasToolariumEnumConfiguration") && project.getProperty("hasToolariumEnumConfiguration")) {
 		annotationProcessor "com.github.toolarium:toolarium-enum-configuration:${toolariumEnumConfigurationVersion}"
-	    //implementation 'com.github.toolarium:toolarium-enum-configuration:${toolariumEnumConfigurationVersion}'
+		//implementation "com.github.toolarium:toolarium-enum-configuration:${toolariumEnumConfigurationVersion}"
+		compileOnly "com.github.toolarium:toolarium-enum-configuration:${toolariumEnumConfigurationVersion}"
+		testImplementation "com.github.toolarium:toolarium-enum-configuration:${toolariumEnumConfigurationVersion}"
 	}
+}
+
+/* create a kubernetes jar file in case of a enum configuration definition inside a java library
+compileJava {
+    doLast  {
+        var hasToolariumEnumConfiguration = new File("$gradleBuildDirectory/classes/java/main/META-INF/toolarium-enum-configuration.json").exists()
+        if (hasToolariumEnumConfiguration) {
+            project.ext.set("kubernetesSupport", hasToolariumEnumConfiguration)
+            new File(kubernetesApplicationInformationPath).mkdirs()
+            new File(kubernetesEnumConfigurationPath).mkdirs()
+        }
+    }
+}
+jar.finalizedBy(kubernetesJar)*/
+
+
+/***************************************************************************************
+ * Create kubernetes configuration - not possible
+ ***************************************************************************************/
+kubernetesConfiguration {
+}
+
+
+/***************************************************************************************
+ * Prepare application configuration - not possible
+ ***************************************************************************************/
+prepareApplicationConfiguration {
 }
 
 

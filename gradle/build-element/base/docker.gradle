@@ -92,6 +92,7 @@ ext.execDocker = { cmd, errorMessage, failOnError = true ->
 task dockerBuild {
 	group = 'Build'
 	description = 'Create a docker image.'
+	onlyIf { return validBuild }
 
 	doLast {
 		if (!project.getProperty('IS_NEW') && checkDockerInstallation()) {
@@ -401,11 +402,11 @@ task dockerPush {
 						dockerBuildName="$dockerName"
 					}
 
-					def tagName="$dockerTagPrefix".toString().trim()
-					if (!tagName.toString().trim().isEmpty()) {
-						tagName = "${tagName}/"
+					def baseTagName="$dockerTagPrefix".toString().trim()
+					if (!baseTagName.toString().trim().isEmpty()) {
+						baseTagName = "${baseTagName}/"
 					}
-					tagName = "${tagName}$dockerBuildName"
+					tagName = "${baseTagName}$dockerBuildName"
 					
 					printInfo("> Tag docker image " + colorize(HIGHLITE_LEVEL, tagName) + ".")
 					def cmd="docker tag $dockerBuildName $tagName"
@@ -415,6 +416,26 @@ task dockerPush {
 						printInfo("> Push docker image " +colorize(HIGHLITE_LEVEL, tagName) + ".")
 						cmd="docker push $tagName"
 						exitStatus = execDocker(cmd, "Could not push image to docker host:\n    " + cmd)
+/*
+						if (project.hasProperty('dockerBuildLatestTag') && "true".equalsIgnoreCase("" + project.getProperty('dockerBuildLatestTag'))) {
+							def dockerBuildLatestName = ""
+							if( project.hasProperty("dockerBuildLatestTagName") && !project.getProperty("dockerBuildLatestTagName").toString().isEmpty() ) {
+								dockerBuildLatestName="$dockerBuildLatestTagName"
+							} else {
+								dockerBuildLatestName="${baseTagName}${rootProject.name}:" + project.getProperty('majorVersionNumber') + "." + project.getProperty('minorVersionNumber') + "." + project.getProperty('revisionVersionNumber') + ".latest"
+							}
+
+							printInfo("> Tag docker image " + colorize(HIGHLITE_LEVEL, dockerBuildLatestName) + ".")
+							def cmd="docker tag $dockerBuildName $dockerBuildLatestName"
+							exitStatus = execDocker(cmd, "Could not tag image:\n    " + cmd)
+							
+							if (exitStatus==0) {
+								printInfo("> Push docker image " +colorize(HIGHLITE_LEVEL, dockerBuildLatestName) + ".")
+								cmd="docker push $dockerBuildLatestName"
+								exitStatus = execDocker(cmd, "Could not push image to docker host:\n    " + cmd)
+							}
+						}
+*/						
 						
 						if( project.hasProperty("dockerCleanupAfterPublish") && project.getProperty("dockerCleanupAfterPublish") ) {
 							printInfo("> Remove local docker image " +colorize(HIGHLITE_LEVEL, dockerBuildName) + ".")

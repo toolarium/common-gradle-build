@@ -271,22 +271,36 @@ dependencies {
 	}
 }
 
-/*
-task collectEnumConfiguration(type: Copy) {
-	group = 'Verification'
-	description = 'Create enum configuration.'
+
+/***************************************************************************************
+ * Extract enum configurations from dependencies
+ ***************************************************************************************/
+task extractEnumConfiguration(type: Copy) {
+	group = 'Build'
+	description = 'Extract kubernetes jar file dependencies'
 
     from { // use of closure defers evaluation until execution time
-        configurations.runtime.collect { zipTree(it).matching {include "toolarium-enum-configuration\\.json"} }
+        configurations.runtimeClasspath.collect { zipTree(it).matching {include "META-INF/toolarium-enum-configuration.json"} }
     }
-  
-	rename { String fileName ->
-		fileName.replace("toolarium-enum-configuration.json", it + ".json")
+
+    eachFile { f ->
+		var parentFileName = f.file.parentFile.parentFile.name // jarFileName/META-INF/toolarium-enum-configuration.json
+		var idx = parentFileName.indexOf(".jar")
+		if (idx>0) {
+		    parentFileName = parentFileName.substring(0, idx)
+		}
+		
+		/* // parse semver version
+		String[] nameSplitVersion = parseNameWithVersion(parentFileName)
+		printInfo("=>["+nameSplitVersion[0]+"][" + nameSplitVersion[1] + "]") 
+		*/
+		f.path = f.path.replaceFirst('META-INF/', '').replaceFirst('toolarium-enum-configuration', parentFileName)
 	}
+    includeEmptyDirs false
+
     into "$kubernetesEnumConfigurationPath"
 }
-prepareToolariumEnumConfiguration.dependsOn(collectEnumConfiguration)
-*/
+prepareToolariumEnumConfiguration.dependsOn(extractEnumConfiguration)
 
 
 /***************************************************************************************

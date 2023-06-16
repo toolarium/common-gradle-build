@@ -44,8 +44,9 @@ configurations.webJar {
  * Build fat webJar
  ****************************************************************************************/
 task buildFatWebJar {  ->
-	doLast {
+	onlyIf { return validBuild }
 
+	doLast {
 		def fatWebClassifierContext = ""
 		if (project.hasProperty("fatWebClassifierContext") && !project.getProperty("fatWebClassifierContext").toString().isEmpty()) {
 			fatWebClassifierContext = "-" + project.getProperty("fatWebClassifierContext")
