@@ -406,7 +406,7 @@ task dockerPush {
 					if (!baseTagName.toString().trim().isEmpty()) {
 						baseTagName = "${baseTagName}/"
 					}
-					tagName = "${baseTagName}$dockerBuildName"
+					def tagName = "${baseTagName}$dockerBuildName"
 					
 					printInfo("> Tag docker image " + colorize(HIGHLITE_LEVEL, tagName) + ".")
 					def cmd="docker tag $dockerBuildName $tagName"
