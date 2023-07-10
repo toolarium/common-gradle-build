@@ -132,7 +132,7 @@ ext.validateQuarkusVersion = { ->
 			if (project.hasProperty('defaultQuarkusPluginVersion')) {
 				def minDefaultVersion = parseReleaseVersion(defaultQuarkusPluginVersion);
 				if (currentVersion.compareTo(minDefaultVersion) < 0) {
-					def quarkusWarningMessage = "Current quarkus version " + quarkusPluginVersion + " has to be updated to " + defaultQuarkusPluginVersion + ".";
+					def quarkusWarningMessage = "" + colorize(WARN_LEVEL, "Quarkus") + " version " + colorize(HIGHLITE_LEVEL, quarkusPluginVersion) + " has to be updated to " + colorize(HIGHLITE_LEVEL, defaultQuarkusPluginVersion) + ".";
 					try {		
 						copyFile(gradlePropertiesFile, gradlePropertiesFile + ".bak")
 						File backFile = new File(gradlePropertiesFile + ".bak");
@@ -145,7 +145,23 @@ ext.validateQuarkusVersion = { ->
 								}
 							}
 						}					
-						quarkusWarningMessage += " The file " + gradlePropertiesFile + " is already modified, please verify!"
+						
+					    quarkusWarningMessage = "" + colorize(WARN_LEVEL, "Quarkus") + " version " + colorize(HIGHLITE_LEVEL, quarkusPluginVersion) + " is automated updated to " + colorize(HIGHLITE_LEVEL, defaultQuarkusPluginVersion) + ", in gradle.properties." + (currentVersion.getMajorNumber() <= 2)+"/"+(minDefaultVersion.getMajorNumber() >= 3);
+						if (currentVersion.getMajorNumber() <= 2 && minDefaultVersion.getMajorNumber() >= 3) { // adapt automated import for migration 2.x-> 3.x the (see https://quarkus.io/blog/road-to-quarkus-3/)
+							sourceSets.main.allJava.each { file ->
+								if (file.toString().endsWith(".java") && file.text.contains("javax")) {
+									logInfo("Update file " + file + ".")
+									file.text = file.text.replaceAll("javax.ws.rs", "jakarta.ws.rs")
+									addCommonGradlePropertyList("changedFileSet", file)
+								}
+							}
+							
+							compileJava.enabled = false
+							compileTestJava.enabled = false
+							javadoc.enabled = false
+							ext.validBuild=false
+							ext.validBuildMessage="Please restart build to use the updated quarkus version!"
+						}
 					} catch (Exception e) {
 						printWarn("Could not update ${gradlePropertiesFile}:" + e.getMessage())
 						copyFile(gradlePropertiesFile + ".bak", gradlePropertiesFile)
@@ -157,7 +173,10 @@ ext.validateQuarkusVersion = { ->
 					if (project.hasProperty('isReleaseUpdateVersion') && "true".equalsIgnoreCase("" + project.getProperty('isReleaseUpdateVersion'))) {
 						printInfo("> ${quarkusWarningMessage}")
 					} else {
-						addError(quarkusWarningMessage)
+						printInfo("> ${quarkusWarningMessage}")
+						ext.validBuild=false
+						ext.validBuildMessage="Please restart build to use the updated quarkus version!"
+						//addWarn(quarkusWarningMessage)
 					}
 					
 					delete gradlePropertiesFile + ".bak"
@@ -275,30 +294,21 @@ dependencies {
 /***************************************************************************************
  * Extract enum configurations from dependencies
  ***************************************************************************************/
-task extractEnumConfiguration(type: Copy) {
+task extractEnumConfiguration() {
 	group = 'Build'
 	description = 'Extract kubernetes jar file dependencies'
 
-    from { // use of closure defers evaluation until execution time
-        configurations.runtimeClasspath.collect { zipTree(it).matching {include "META-INF/toolarium-enum-configuration.json"} }
-    }
-
-    eachFile { f ->
-		var parentFileName = f.file.parentFile.parentFile.name // jarFileName/META-INF/toolarium-enum-configuration.json
-		var idx = parentFileName.indexOf(".jar")
-		if (idx>0) {
-		    parentFileName = parentFileName.substring(0, idx)
+	doLast {
+		Set<File> files = project.configurations.runtimeClasspath.files
+		for (File file : files) {
+			if (unzip(file, "$kubernetesEnumConfigurationPath", null, "META-INF", "toolarium-enum-configuration.json").size()>0) {
+			    logInfo("Unpack " + file + "...")		
+				copyFile("$kubernetesEnumConfigurationPath/META-INF/toolarium-enum-configuration.json", "$kubernetesEnumConfigurationPath/" + file.name.replace(".jar", ".json"))
+				new File("$kubernetesEnumConfigurationPath/META-INF/toolarium-enum-configuration.json").delete()
+				new File("$kubernetesEnumConfigurationPath/META-INF").delete()
+			}
 		}
-		
-		/* // parse semver version
-		String[] nameSplitVersion = parseNameWithVersion(parentFileName)
-		printInfo("=>["+nameSplitVersion[0]+"][" + nameSplitVersion[1] + "]") 
-		*/
-		f.path = f.path.replaceFirst('META-INF/', '').replaceFirst('toolarium-enum-configuration', parentFileName)
 	}
-    includeEmptyDirs false
-
-    into "$kubernetesEnumConfigurationPath"
 }
 prepareToolariumEnumConfiguration.dependsOn(extractEnumConfiguration)
 

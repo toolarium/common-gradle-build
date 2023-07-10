@@ -342,7 +342,14 @@ ext.prepareFilename = { file ->
 /** 
  * Unzip zip file
  */
-ext.unzip = { fileZip, inputDestDir, rootZipFolderName = null ->
+ext.unzip = { fileZip, inputDestDir, rootZipFolderName = null, inputFilteredPath = null, inputFilteredFile = null ->
+	String filteredPath = inputFilteredPath
+	if (filteredPath!=null && filteredPath.replace("\\", "/").endsWith("/")) {
+		filteredPath = filteredPath.replace("\\", "/").substring(0, filteredPath.length() - 1)
+	}
+	String filteredFile = inputFilteredFile
+
+	def unzippedFiles = []
 	File rootFolder = null;
 	long countEntries = 0;
 	java.util.zip.ZipInputStream zis = new java.util.zip.ZipInputStream(new java.io.FileInputStream(fileZip));
@@ -357,24 +364,43 @@ ext.unzip = { fileZip, inputDestDir, rootZipFolderName = null ->
 				filename = filename.substring(idx+1);
 			}
 			
-			java.io.File file = new java.io.File(path + "/" + filename);
-			(new java.io.File(path)).mkdirs();
-			if (!zipEntry.isDirectory()) {
-				java.io.FileOutputStream fos = new java.io.FileOutputStream(file);
-				byte[] buffer = new byte[1024]; int len;
-				while ((len = zis.read(buffer)) > 0) {
-					fos.write(buffer, 0, len);
+			if (   (filteredPath == null || path.indexOf(filteredPath) >= 0) 
+			    && (filteredFile == null || filteredFile.equals(filename))) {
+				java.io.File file = new java.io.File(path + "/" + filename);
+				boolean created = (new java.io.File(path)).mkdirs();
+				
+				if (filteredPath!=null && !created) {
+					String[] pathSplit = path.split("/")
+					String p = pathSplit[0];
+					for (int i = 1;i < pathSplit.length; i++) {
+						p += "/" + pathSplit[i]
+						created = (new java.io.File(p)).mkdirs();
+					}
 				}
-				fos.close();
-			} else {
-				if (countEntries == 0) {
-					rootFolder = file;
+
+				if (filteredPath!=null || filteredFile!=null) {
+					logInfo("[" + fileZip + "] Extract filtered file " + file)			
 				}
+				
+				if (!zipEntry.isDirectory()) {
+					unzippedFiles.add(file)
+					java.io.FileOutputStream fos = new java.io.FileOutputStream(file);
+					byte[] buffer = new byte[1024]; int len;
+					while ((len = zis.read(buffer)) > 0) {
+						fos.write(buffer, 0, len);
+					}
+					fos.close();
+				} else {
+					if (countEntries == 0) {
+						rootFolder = file;
+					}
+				}
+				
+				file.setLastModified(zipEntry.getTime());
+				countEntries++;
 			}
 			
-			file.setLastModified(zipEntry.getTime());
 			zipEntry = zis.getNextEntry();
-			countEntries++;
 		}
 				
 		if (rootZipFolderName!=null && !rootZipFolderName.isEmpty()) {
@@ -388,6 +414,8 @@ ext.unzip = { fileZip, inputDestDir, rootZipFolderName = null ->
 		zis.closeEntry();
 		zis.close();
 	}
+	
+	return unzippedFiles;
 }
 
 

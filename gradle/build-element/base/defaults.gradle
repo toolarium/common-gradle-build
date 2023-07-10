@@ -34,7 +34,7 @@ setCommonGradleDefaultPropertyIfNull("snakeYamlVersion", "1.29")
 setCommonGradleDefaultPropertyIfNull("grgitCoreVersion", "4.1.1")
 setCommonGradleDefaultPropertyIfNull("jsurferVersion", "1.6.3")
 setCommonGradleDefaultPropertyIfNull("semver4jVersion", "3.1.0")
-setCommonGradleDefaultPropertyIfNull("gradleWrapperDefaultVersion", "7.5.1")
+setCommonGradleDefaultPropertyIfNull("gradleWrapperDefaultVersion", "8.1.1")
 setCommonGradleDefaultPropertyIfNull("gradleHome", "$userHomeDirectory/.gradle")
 setCommonGradleDefaultPropertyIfNull("gradleHomePropertiesFile", "$gradleHome/gradle.properties")
 setCommonGradleDefaultPropertyIfNull("defaultCommonGradleBuildUrl", "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/common.gradle")
@@ -406,8 +406,8 @@ setCommonGradleDefaultPropertyIfNull("dependencyCheckPreparedDatabaseArchiveUrl"
 /***************************************************************************************
  * code quality: checkstyle
  ***************************************************************************************/
-//setCommonGradleDefaultPropertyIfNull("checkstyleToolDefaultVersion", '8.37')
-setCommonGradleDefaultPropertyIfNull("checkstyleToolVersion", '8.42')
+//setCommonGradleDefaultPropertyIfNull("checkstyleToolDefaultVersion", '10.3.3')
+setCommonGradleDefaultPropertyIfNull("checkstyleToolVersion", '10.3.3')
 setCommonGradleDefaultPropertyIfNull("checkstyleMaxWarnings", 0)
 setCommonGradleDefaultPropertyIfNull("checkstyleXMLReport", false)
 setCommonGradleDefaultPropertyIfNull("checkstyleHTMLReport", true)
@@ -445,9 +445,9 @@ setCommonGradleDefaultPropertyIfNull("servicePropertiesName", "toolarium-service
  * quarkus plugin defaults
  ***************************************************************************************/
 // the quarkusPluginVersion is used for setup new projects where defaultQuarkusPluginVersion 
-// controls the used version and force for update.
-setCommonGradleDefaultPropertyIfNull("defaultQuarkusPluginVersion", '2.6.2.Final')
-//setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", '2.6.2.Final')
+// controls the used version and force for update.x
+setCommonGradleDefaultPropertyIfNull("defaultQuarkusPluginVersion", '3.1.3.Final')
+//setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", '3.1.3.Final')
 setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", "${defaultQuarkusPluginVersion}")
 setCommonGradleDefaultPropertyIfNull("quarkusReleaseUpdateVersion", true)
 setCommonGradleDefaultPropertyIfNull("quarkusPlatformArtifactId", 'quarkus-universe-bom')
@@ -487,7 +487,7 @@ setCommonGradleDefaultPropertyIfNull("webServerRunnerPropertiesName", "jwebserve
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("srcMainApiSpecDirectoryName", "api-spec")
 setCommonGradleDefaultPropertyIfNull("srcMainApiSpecDirectory", "${srcMainDirectory}/${srcMainApiSpecDirectoryName}")
-setCommonGradleDefaultPropertyIfNull("defaultOpenapiPluginVersion", "6.5.0")
+setCommonGradleDefaultPropertyIfNull("defaultOpenapiPluginVersion", "6.6.0")
 setCommonGradleDefaultPropertyIfNull("openapiPluginVersion", "${defaultOpenapiPluginVersion}")
 //setCommonGradleDefaultPropertyIfNull("openapiLibrary", 'okhttp-gson')
 //setCommonGradleDefaultPropertyIfNull("openapiGeneratorName", 'java')

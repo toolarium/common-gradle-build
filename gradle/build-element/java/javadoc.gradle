@@ -26,6 +26,7 @@
 /***************************************************************************************
  * Build javadoc jar file
  ***************************************************************************************/
+javadoc.dependsOn(jar)
 task javadocJar(type: Jar) { jar ->
 	group = 'Build'
     duplicatesStrategy = 'exclude' // work around, currendly don't work "$duplicatesStrategy"

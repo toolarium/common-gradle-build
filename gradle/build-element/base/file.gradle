@@ -318,10 +318,10 @@ ext.copyFile = { fileToCopy, fileDest, overwrite = false ->
  * filePath the file path
  * fileExtension the file extension
  * searchContext the search context
- * relacesearchContext the replacement context
+ * replacesearchContext the replacement context
  * lineSelectorRegex the line selector regular expression or null
  */
-ext.replaceFile = { filePath, fileExtension, searchContext, relacesearchContext, lineSelectorRegex = null ->
+ext.replaceFile = { filePath, fileExtension, searchContext, replacesearchContext, lineSelectorRegex = null ->
 	def filesReplaced = []
 	if (filePath==null || !new File(filePath).exists()) {
 		return filesReplaced;
@@ -348,10 +348,10 @@ ext.replaceFile = { filePath, fileExtension, searchContext, relacesearchContext,
 					def replacedLine = null;
 					if (regExp != null) {
 						if (line ==~ regExp) {
-							replacedLine = line.replace(searchContext, relacesearchContext);
+							replacedLine = line.replace(searchContext, replacesearchContext);
 						}
 					} else {
-						replacedLine = line.replace(searchContext, relacesearchContext);
+						replacedLine = line.replace(searchContext, replacesearchContext);
 					}
 
 					if (replacedLine!=null && !line.toString().equals(replacedLine)) {

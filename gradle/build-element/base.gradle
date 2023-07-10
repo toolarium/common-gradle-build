@@ -146,7 +146,6 @@ tasks.matching { it != projectValidation }.all {
 			if (project.getProperty("mainTaskProtectExclusion").getClass().isArray()) {
 				mainTaskProtectExclusion = project.getProperty("mainTaskProtectExclusion")
 			} else {
-			mainTaskProtectExclusion
 				mainTaskProtectExclusion = project.getProperty("mainTaskProtectExclusion").toString().split(",")
 			}
 		}

@@ -162,35 +162,35 @@ ext.prepareDependenciesJson = { inputFilename, outputFilename ->
  * Verify the direct dependencies
  */
 task verifyDependencies() {
-	def configurationList = []
-	def implementationList = []
-	def dependencyMap = [:]
-	project.configurations.all {
-		configurationList.add(it.name)
-
-		try {
-			it.incoming.dependencies.all { dep ->
-				def list = []
-				list = dependencyMap.get(it.name.toString())
-				if (list == null) {
-				   list = []
-				}
-				// TODO:printInfo "=>"+it.getClass().getName()
-				def dependencyVersion = ""
-				if (dep.version != null) {
-					dependencyVersion = ("" + dep.version).toString()
-				}
-				
-				validateDependency(it.name, dep.group, dep.name, dependencyVersion);
-				list.add(("" + dep.group + ":" + dep.name + ":" + dependencyVersion).toString())
-				dependencyMap.put(it.name.toString(), list)
-			}
-		} catch (Exception e) {
-			e.printStackTrace()
-		}
-	}
-	
 	doFirst {
+		def configurationList = []
+		def implementationList = []
+		def dependencyMap = [:]
+		project.configurations.all {
+			configurationList.add(it.name)
+
+			try {
+				it.incoming.dependencies.all { dep ->
+					def list = []
+					list = dependencyMap.get(it.name.toString())
+					if (list == null) {
+					   list = []
+					}
+					// TODO:printInfo "=>"+it.getClass().getName()
+					def dependencyVersion = ""
+					if (dep.version != null) {
+						dependencyVersion = ("" + dep.version).toString()
+					}
+					
+					validateDependency(it.name, dep.group, dep.name, dependencyVersion);
+					list.add(("" + dep.group + ":" + dep.name + ":" + dependencyVersion).toString())
+					dependencyMap.put(it.name.toString(), list)
+				}
+			} catch (Exception e) {
+				e.printStackTrace()
+			}
+		}
+		
 		logInfo "Configuratiin: $configurationList"
 		printInfo "> Implementation: " + dependencyMap.get("implementation")
 		printInfo "> runtimeClasspath: " + dependencyMap.get("runtimeClasspath")

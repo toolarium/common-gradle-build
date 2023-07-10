@@ -63,7 +63,7 @@ def hasWrapperFiles=(new File("gradle").exists() \
 						&& new File("gradle/wrapper").exists() \
 						&& new File("gradle/wrapper/gradle-wrapper.jar").exists() \
 						&& new File("gradle/wrapper/gradle-wrapper.properties").exists() \
-						&& new File("gradlew.").exists() \
+						&& new File("gradlew").exists() \
 						&& new File("gradlew.bat").exists())
 
 logInfo("> Expected gradle wrapper version " + colorize("$gradleWrapperDefaultVersion") + colorize(INFO_LEVEL, ", found version ") + colorize("$gradle.gradleVersion") + colorize(INFO_LEVEL, "."))
@@ -83,6 +83,16 @@ wrapper {
 		if (!gradleWrapperinstalled) {
 			gradleWrapperinstalled = true
 			printInfo("> Installed gradle wrapper version " + colorize(readGradleWrapperVersion()))
+			
+			if (project.hasProperty('initScmWithNewFiles') && project.getProperty('initScmWithNewFiles')) {
+				Set result = new TreeSet()
+				result.add("gradle/wrapper/gradle-wrapper.jar")
+				result.add("gradle/wrapper/gradle-wrapper.properties")
+				result.add("gradlew")
+				result.add("gradlew.bat")
+				addGit(result)
+				//commitGit("Update gradle wrapper to version " + readGradleWrapperVersion())
+			}
 		}
 	}
 }

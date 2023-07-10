@@ -28,7 +28,7 @@ buildscript {
 		maven { url "https://repo1.maven.org/maven2" }
 	}
 	dependencies {
-		def openapiPluginVersion="6.5.0"
+		def openapiPluginVersion="6.6.0"
 		if (project.hasProperty('openapiPluginVersion')) {
 			openapiPluginVersion = project.getProperty('openapiPluginVersion')
 		}
@@ -88,6 +88,67 @@ setCommonGradleProperty('createSrcTestJavaDirectory', false)
 setCommonGradleProperty('createSrcMainResourcesDirectory', false)
 setCommonGradleProperty('createSrcTestResourcesDirectory', false)
 
+
+/***************************************************************************************
+ * Validate the openapi version
+ ***************************************************************************************/
+ext.validateOpenapiVersion = { ->
+
+	try {
+		def doOpenapiUpdate = true;
+		if (project.hasProperty('isReleaseUpdateVersion') && "true".equalsIgnoreCase("" + project.getProperty('isReleaseUpdateVersion'))) {
+			doOpenapiUpdate = false;
+		}
+
+		def currentVersion = parseReleaseVersion("${openapiPluginVersion}");		
+		if (currentVersion!=null && doOpenapiUpdate) {
+			if (project.hasProperty('defaultOpenapiPluginVersion')) {
+				def minDefaultVersion = parseReleaseVersion("${defaultOpenapiPluginVersion}");
+				if (currentVersion.compareTo(minDefaultVersion) < 0) {
+					def openapiWarningMessage = "" + colorize(WARN_LEVEL, "OpenAPI-Plugin") + " version " + colorize(HIGHLITE_LEVEL, openapiPluginVersion) + " has to be updated to " + colorize(HIGHLITE_LEVEL, defaultOpenapiPluginVersion) + ".";
+					
+					try {		
+						copyFile(gradlePropertiesFile, gradlePropertiesFile + ".bak")
+						File backFile = new File(gradlePropertiesFile + ".bak");
+						new File(gradlePropertiesFile).withWriter { w ->
+							backFile.eachLine { line ->
+							    if (!line.trim().startsWith("openapiPluginVersion")) {
+									w << line + NELINE
+								} else {
+									w << line.replaceAll(openapiPluginVersion, defaultOpenapiPluginVersion) + NELINE
+								}
+							}
+						}					
+						
+					    openapiWarningMessage = "" + colorize(WARN_LEVEL, "OpenAPI-Plugin") + " version " + colorize(HIGHLITE_LEVEL, openapiPluginVersion) + " is automated updated to " + colorize(HIGHLITE_LEVEL, defaultOpenapiPluginVersion) + ", in gradle.properties.";
+					} catch (Exception e) {
+						printWarn("Could not update ${gradlePropertiesFile}:" + e.getMessage())
+						copyFile(gradlePropertiesFile + ".bak", gradlePropertiesFile)
+					}
+
+					// mark changed file
+					addCommonGradlePropertyList("changedFileSet", gradlePropertiesFile)
+
+					if (project.hasProperty('isReleaseUpdateVersion') && "true".equalsIgnoreCase("" + project.getProperty('isReleaseUpdateVersion'))) {
+						printInfo("> ${openapiWarningMessage}")
+					} else {
+						printInfo("> ${openapiWarningMessage}")
+						
+						ext.validBuild=false
+						ext.validBuildMessage="Please restart build to use the updated OpenAPI-Plugin version!"
+					}
+					
+					delete gradlePropertiesFile + ".bak"
+				} else {
+					logInfo("Current OpenAPI-Plugin version " + openapiPluginVersion + " is compliant with " + defaultOpenapiPluginVersion + ".")
+				}
+			}
+		}
+	} catch (Exception e) {
+		printWarn("Could not check openapi version: " + e.getMessage())
+	}
+}
+
 /*
 task parseAll {
 	def parsedfile = (new XmlParser()).parse("d:/myfile.xml")
@@ -134,6 +195,8 @@ task generatePetStore3(type: org.openapitools.generator.gradle.plugin.tasks.Gene
  * define the openapi generator settings
  ***************************************************************************************/
 task openApiProcess {
+	validateOpenapiVersion()
+	
 	if (validBuild) {
 		// create common gradle build java source path
 		createCommonGradleBuildSourcesPath()
@@ -324,7 +387,9 @@ if (!project.getProperty('IS_NEW')) {
 createMeateInfFiles {
 	doLast {
 		// create empty beans.xml in META-INF
-		new File("$commonGradleResourcebundleOutputPath/META-INF/beans.xml").createNewFile()
+		if (new File("$commonGradleResourcebundleOutputPath/META-INF/").exists()) {
+			new File("$commonGradleResourcebundleOutputPath/META-INF/beans.xml").createNewFile()
+		}
 	}
 }
 

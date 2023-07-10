@@ -493,50 +493,46 @@ task extractKubernetes(type: Copy) {
 /****************************************************************************************
  * Extract service information artefacts
  ****************************************************************************************/
-task extractKubernetesInformation(type: Copy) {
+task extractKubernetesInformation() {
 	group = 'Build'
 	description = 'Extract kubernetes jar file dependencies'
     dependsOn configurations.kubernetes
-    duplicatesStrategy = 'exclude' // work around, currendly don't work "$duplicatesStrategy"
 
-    from { // use of closure defers evaluation until execution time
-        configurations.kubernetes.collect { zipTree(it).matching {include "${kubernetesApplicationConfigurationInformationPathname}/**"} }
-    }
+	doLast {
+		def kubernetesInformationMap=[:]
+		def kubernetesSourceInformationMap=[:]
+		new File("$gradleBuildDirectory").mkdirs()
+		
+		Set<File> files = project.configurations.kubernetes.files
+		for (File file : files) {
+			String[] sourceNameWithVersion = parseNameWithVersion(file.name.replace(".jar", "").replace("-kubernetes", ""))
+			var sourceFileName = sourceNameWithVersion[0] + ":" + sourceNameWithVersion[1]
 
-	def kubernetesInformationMap=[:]
-	def kubernetesSourceInformationMap=[:]
-    eachFile { f ->
-		var sourceFileName = f.file.parentFile.parentFile.parentFile.name
-		var idx = sourceFileName.lastIndexOf(".jar_")
-		String[] sourceNameWithVersion = parseNameWithVersion(sourceFileName.substring(0, idx).replace("-kubernetes", ""))
-		String[] dependencyNameWithVersion = parseNameWithVersion(f.file.name.replace(".json", ""))
-		sourceFileName = sourceNameWithVersion[0] + ":" + sourceNameWithVersion[1] + " -> " + dependencyNameWithVersion[0] + ":" + dependencyNameWithVersion[1]
-		
-		var parentFileName = "${kubernetesApplicationConfigurationInformationPathname}/" + f.file.parentFile.name
-		var fileName = f.file.name 
-		idx = fileName.indexOf(".json")
-		if (idx>0) {
-		    fileName = fileName.substring(0, idx)
-		}
-		
-		// parse semver version
-		String[] nameSplitVersion = parseNameWithVersion(fileName)
-		if (nameSplitVersion.length > 1 && nameSplitVersion[1] != null && !nameSplitVersion[1].isBlank()) {
-			var baseName = "${parentFileName}/" + nameSplitVersion[0]
-			if (kubernetesInformationMap[baseName]==null) {
-				kubernetesInformationMap[baseName] = nameSplitVersion[1]
-				kubernetesSourceInformationMap[baseName] = sourceFileName
-			} else if (!kubernetesInformationMap[baseName].equals(nameSplitVersion[1])) {
-				def message = "Configuration conflict! The dependency " + nameSplitVersion[0] + " exist in different versions " + nameSplitVersion[1] + " and " + kubernetesInformationMap[baseName] + ", please resolve:\n" + "    - " + sourceFileName + "\n" + "    - " + kubernetesSourceInformationMap[baseName]
-				printWarn(message) 
-				addError(message)
+			logInfo("Unpack " + file + " -> " + sourceFileName + "...")		
+			for (File f : unzip(file, "$gradleBuildDirectory", null, "${kubernetesApplicationConfigurationInformationPathname}")) {
+				logInfo("Process file " + f)	
+
+				if (f.toString().replace("\\", "/").indexOf("/toolarium-enum-configuration/")>0) {
+					// parse semver version
+					String[] nameSplitVersion = parseNameWithVersion(f.name.replace(".json", ""))
+					if (nameSplitVersion.length > 1 && nameSplitVersion[1] != null && !nameSplitVersion[1].isBlank()) {
+						var baseName = nameSplitVersion[0]
+						if (kubernetesInformationMap[baseName]==null) {
+							kubernetesInformationMap[baseName] = nameSplitVersion[1]
+							kubernetesSourceInformationMap[baseName] = sourceFileName
+						} else if (!kubernetesInformationMap[baseName].equals(nameSplitVersion[1])) {
+							def message = "Configuration conflict! The dependency " + nameSplitVersion[0] + " exist in different versions " + nameSplitVersion[1] + " and " + kubernetesInformationMap[baseName] + ", please resolve:\n" + "    - " + sourceFileName + "\n" + "    - " + kubernetesSourceInformationMap[baseName]
+							printWarn(message) 
+							addError(message)
+						}
+						
+						copyFile(f.toString(), f.toString().replaceFirst("-" + nameSplitVersion[1], ""))
+						f.delete()
+					}
+				}
 			}
-			
-            f.name = f.name.replaceFirst("-" + nameSplitVersion[1], "") // remove version from file
 		}
 	}
-
-    into "$gradleBuildDirectory"
 }
 
 
@@ -1128,7 +1124,9 @@ build { ->
 			if (new File("${srcMainResourcesDirectory}").exists()) {
 				copy { from "${srcMainResourcesDirectory}" into "${javaAppPath}" } 
 			}
-			
+
+			copyFile("${kubernetesProductEnvironmentVariableFilename}", "${javaAppPath}/${kubernetesProductEnvironmentVariableName}", true)
+
 			if (!hasRunner) {
 				addError("No fat-jar runner found, expected ${jarRunnerFile}!")
 			} else if (counter==0) {

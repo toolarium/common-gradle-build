@@ -32,7 +32,7 @@ buildscript {
 		}
     }
     dependencies {
-		def toolariumDependencyCheckVersion="6.5.2.1"
+		def toolariumDependencyCheckVersion="8.3.1"
 		if (project.hasProperty('toolariumDependencyCheckVersion')) {
 			toolariumDependencyCheckVersion = project.getProperty('toolariumDependencyCheckVersion')
 		}
@@ -40,7 +40,7 @@ buildscript {
 		logInfo("toolarium dependency-check version: " + colorize(HIGHLITE_LEVEL, toolariumDependencyCheckVersion) + colorize(INFO_LEVEL, ".")); 
         classpath "org.owasp:dependency-check-gradle:${toolariumDependencyCheckVersion}"
 
-		def jsurferVersion="1.6.3"
+		def jsurferVersion="1.6.4"
 		if (project.hasProperty('jsurferVersion')) {
 			jsurferVersion = project.getProperty('jsurferVersion')
 		}

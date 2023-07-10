@@ -68,6 +68,9 @@ apply from: "${commonGradleBuildElementPath}/base/docker.gradle"
  * excludes
  ***************************************************************************************/
 if (project.tasks.findByName('shadowJar')) {
+	shadowJar.dependsOn(distZip)
+	shadowJar.dependsOn(distTar)
+	
 	// exclude a file from Shadow Jar
 	shadowJar {
 		// allo service files
@@ -92,9 +95,9 @@ if (project.tasks.findByName('shadowJar')) {
 		exclude "META-INF/VERSION"
 		
 		if( project.hasProperty('javaApplicationShadowClassifier') ) {
-			classifier = project.getProperty('javaApplicationShadowClassifier')
+			archiveClassifier = project.getProperty('javaApplicationShadowClassifier')
 		} else {
-			classifier = 'runner'
+			archiveClassifier = 'runner'
 		}
 		
 		doLast {
