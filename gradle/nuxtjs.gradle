@@ -38,6 +38,10 @@ if (!project.hasProperty('commonGradleBuildElementPath')) {
 
 // nuxt.config.js
 def nuxtConfig="${project.rootDir}".replace('\\', '/')+"/$nuxtConfig"
+if (!new File(nuxtConfig).exists()) {
+	nuxtConfig = nuxtConfig.replace(".js", ".ts") // nuxt.config.ts
+}
+
 if (new File(nuxtConfig).exists()) {
 	new File(nuxtConfig).withReader('UTF-8') { reader ->
 		def line
@@ -121,7 +125,12 @@ addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/pages")
 addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/plugins")
 addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/static")
 addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/store")
+addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/composables")
+addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/public")
+addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/server")
+addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/.npmrc")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/nuxt.config.js")
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/nuxt.config.ts")
 
 
 /***************************************************************************************
