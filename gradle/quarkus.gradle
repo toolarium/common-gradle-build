@@ -166,6 +166,13 @@ ext.validateQuarkusVersion = { ->
 									addCommonGradlePropertyList("changedFileSet", file)
 								}
 							}
+							sourceSets.test.allJava.each { file ->
+								if (file.toString().endsWith(".java") && file.text.contains("javax")) {
+									logInfo("Update file " + file + ".")
+									file.text = file.text.replaceAll("javax.", "jakarta.")
+									addCommonGradlePropertyList("changedFileSet", file)
+								}
+							}
 
 							compileJava.enabled = false
 							compileTestJava.enabled = false
