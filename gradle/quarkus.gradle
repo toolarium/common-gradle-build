@@ -146,16 +146,27 @@ ext.validateQuarkusVersion = { ->
 							}
 						}					
 						
-					    quarkusWarningMessage = "" + colorize(WARN_LEVEL, "Quarkus") + " version " + colorize(HIGHLITE_LEVEL, quarkusPluginVersion) + " is automated updated to " + colorize(HIGHLITE_LEVEL, defaultQuarkusPluginVersion) + ", in gradle.properties." + (currentVersion.getMajorNumber() <= 2)+"/"+(minDefaultVersion.getMajorNumber() >= 3);
-						if (currentVersion.getMajorNumber() <= 2 && minDefaultVersion.getMajorNumber() >= 3) { // adapt automated import for migration 2.x-> 3.x the (see https://quarkus.io/blog/road-to-quarkus-3/)
+					    quarkusWarningMessage = "" + colorize(WARN_LEVEL, "Quarkus") + " version " + colorize(HIGHLITE_LEVEL, quarkusPluginVersion) + " is automated updated to " + colorize(HIGHLITE_LEVEL, defaultQuarkusPluginVersion) + ", in gradle.properties.";
+						if (currentVersion.getMajorNumber() <= 2 && minDefaultVersion.getMajorNumber() >= 3) {    // adapt automated import for migration 2.x-> 3.x the (see https://quarkus.io/blog/road-to-quarkus-3/)
 							sourceSets.main.allJava.each { file ->
 								if (file.toString().endsWith(".java") && file.text.contains("javax")) {
 									logInfo("Update file " + file + ".")
+									file.text = file.text.replaceAll("javax.", "jakarta.")
+									/*
+									file.text = file.text.replaceAll("javax.annotation", "jakarta.annotation")    // jakarta.annotation, jakarta.annotation.security, jakarta.annotation.sql
+									file.text = file.text.replaceAll("javax.decorator", "jakarta.decorator")      // jakarta.decorator
+									file.text = file.text.replaceAll("javax.enterprise", "jakarta.enterprise")    // jakarta.enterprise.context, jakarta.enterprise.context.control, jakarta.enterprise.context.spi, jakarta.enterprise.event, jakarta.enterprise.inject, jakarta.enterprise.inject.build.compatible.spi, jakarta.enterprise.inject.literal, jakarta.enterprise.inject.se, jakarta.enterprise.inject.spi, jakarta.enterprise.inject.spi.configurator, jakarta.enterprise.lang.model, jakarta.enterprise.lang.model.declarations, jakarta.enterprise.lang.model.types, jakarta.enterprise.util	
+									file.text = file.text.replaceAll("javax.inject", "jakarta.inject")            // jakarta.inject
+									file.text = file.text.replaceAll("javax.interceptor", "jakarta.interceptor")  // jakarta.interceptor
+									file.text = file.text.replaceAll("javax.json", "jakarta.json")                // jakarta.json
 									file.text = file.text.replaceAll("javax.ws.rs", "jakarta.ws.rs")
+									file.text = file.text.replaceAll("javax.persistence", "jakarta.persistence")
+									file.text = file.text.replaceAll("javax.transaction", "jakarta.transaction")
+									*/
 									addCommonGradlePropertyList("changedFileSet", file)
 								}
 							}
-							
+
 							compileJava.enabled = false
 							compileTestJava.enabled = false
 							javadoc.enabled = false
