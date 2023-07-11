@@ -123,6 +123,15 @@ ext.searchReplaceByProperties = { inputLine, replacePlaceHolders = true ->
 		if (project.hasProperty('commonGradleJavaxAnnotationVersion')) {
 			line = line.replaceAll('@@commonGradleJavaxAnnotationVersion@@', "${project.ext.commonGradleJavaxAnnotationVersion}".toString())
 		}
+		if (project.hasProperty('commonGradleJakartaAnnotationVersion')) {
+			line = line.replaceAll('@@commonGradleJakartaAnnotationVersion@@', "${project.ext.commonGradleJakartaAnnotationVersion}".toString())
+		}
+		if (project.hasProperty('commonGradleJakartaValidtionVersion')) {
+			line = line.replaceAll('@@commonGradleJakartaValidtionVersion@@', "${project.ext.commonGradleJakartaValidtionVersion}".toString())
+		}
+		if (project.hasProperty('commonGradleJakartaWsRSApiVersion')) {
+			line = line.replaceAll('@@commonGradleJakartaWsRSApiVersion@@', "${project.ext.commonGradleJakartaWsRSApiVersion}".toString())
+		}
 
 		if (project.hasProperty('testDependencyVersion')) {
 			line = line.replaceAll('@@testDependencyVersion@@', "${project.ext.testDependencyVersion}".toString())
