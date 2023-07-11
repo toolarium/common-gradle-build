@@ -487,7 +487,7 @@ setCommonGradleDefaultPropertyIfNull("webServerRunnerPropertiesName", "jwebserve
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("srcMainApiSpecDirectoryName", "api-spec")
 setCommonGradleDefaultPropertyIfNull("srcMainApiSpecDirectory", "${srcMainDirectory}/${srcMainApiSpecDirectoryName}")
-setCommonGradleDefaultPropertyIfNull("defaultOpenapiPluginVersion", "6.6.0")
+setCommonGradleDefaultPropertyIfNull("defaultOpenapiPluginVersion", "6.5.0")
 setCommonGradleDefaultPropertyIfNull("openapiPluginVersion", "${defaultOpenapiPluginVersion}")
 //setCommonGradleDefaultPropertyIfNull("openapiLibrary", 'okhttp-gson')
 //setCommonGradleDefaultPropertyIfNull("openapiGeneratorName", 'java')
@@ -973,6 +973,16 @@ setCommonGradleDefaultPropertyIfNull("referenceSheetHasNoSubFolder", "false")
 
 setCommonGradleDefaultPropertyIfNull("commonGradleResourcebundleJsonSupport", false)
 setCommonGradleDefaultPropertyIfNull("commonGradleConfigResourcebundleMaxMemory", "512m")
+
+
+/***************************************************************************************
+ * elastic
+ ***************************************************************************************/
+setCommonGradleDefaultPropertyIfNull("esElasticsearchVersion", "8.8.2")
+setCommonGradleDefaultPropertyIfNull("esElasticsearchClusterName", "elastic")
+setCommonGradleDefaultPropertyIfNull("esElasticsearchReplicas", "${kubernetesReplicas}")
+setCommonGradleDefaultPropertyIfNull("esElasticsearchStorageSize", "3Gi")
+setCommonGradleDefaultPropertyIfNull("esElasticsearchStorageClassName", "standard")
 
 
 /***************************************************************************************

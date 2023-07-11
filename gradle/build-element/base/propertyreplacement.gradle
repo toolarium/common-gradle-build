@@ -851,6 +851,23 @@ ext.searchReplaceByProperties = { inputLine, replacePlaceHolders = true ->
 			line = line.replaceAll('@@KUBERNETES_STARTUP_TIMEOUT_SECONDS@@', "${kubernetesStartupTimeoutSeconds}")
 		}
 		
+		// elastic
+		if (project.hasProperty('esElasticsearchVersion')) {
+			line = line.replaceAll('@@ES_ELASTICSEARCH_VERSION@@', "${esElasticsearchVersion}")
+		}
+		if (project.hasProperty('esElasticsearchClusterName')) {
+			line = line.replaceAll('@@ES_ELASTICSEARCH_CLUSTER_NAME@@', "${esElasticsearchClusterName}")
+		}
+		if (project.hasProperty('esElasticsearchReplicas')) {
+			line = line.replaceAll('@@ES_ELASTICSEARCH_REPLICAS@@', "${esElasticsearchReplicas}")
+		}
+		if (project.hasProperty('esElasticsearchStorageSize')) {
+			line = line.replaceAll('@@ES_ELASTICSEARCH_STORAGE_SIZE@@', "${esElasticsearchStorageSize}")
+		}
+		if (project.hasProperty('esElasticsearchStorageClassName')) {
+			line = line.replaceAll('@@ES_ELASTICSEARCH_STORAGE_CLASS_NAME@@', "${esElasticsearchStorageClassName}")
+		}
+		
 		// dist path
 		if (project.hasProperty('commonGradleBuildDistName')) {
 			line = line.replaceAll('@@DISTNAME@@', "${project.ext.commonGradleBuildDistName}".toString())

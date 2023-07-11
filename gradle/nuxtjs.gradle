@@ -128,9 +128,9 @@ addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/store")
 addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/composables")
 addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/public")
 addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/server")
-addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/.npmrc")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/nuxt.config.js")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/nuxt.config.ts")
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.npmrc")
 
 
 /***************************************************************************************
