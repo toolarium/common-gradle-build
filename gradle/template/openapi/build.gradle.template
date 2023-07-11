@@ -17,14 +17,14 @@ apply from: "@@COMMON_GRADLE_BUILD_URL@@"
 dependencies {
     // see https://docs.gradle.org/current/userguide/java_library_plugin.html
 
-
-    // javax annotation
-    implementation 'javax.annotation:javax.annotation-api:@@commonGradleJavaxAnnotationVersion@@'
+    // jakarta annotation
+    implementation 'jakarta.annotation:jakarta.annotation-api:@@commonGradleJakartaAnnotationVersion@@'
     implementation 'com.fasterxml.jackson.core:jackson-annotations:@@commonGradleJacksonAnnotationVersion@@'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:@@commonGradleJacksonAnnotationVersion@@'
 
     // validation
-    implementation 'javax.validation:validation-api:@@commonGradleJavaxValidtionVersion@@'
+    implementation 'jakarta.validation:jakarta.validation-api:@@commonGradleJakartaValidtionVersion@@'
 
-    // javax ws rs api
-    implementation 'javax.ws.rs:javax.ws.rs-api:@@commonGradleJavaxWsRSApiVersion@@'
+    // jakarta ws rs api
+    implementation 'jakarta.ws.rs:jakarta.ws.rs-api:@@commonGradleJakartaWsRSApiVersion@@'
 }

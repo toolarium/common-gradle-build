@@ -500,6 +500,7 @@ setCommonGradleDefaultPropertyIfNull("openapiVersionContentLineRegExp", "^.+vers
 setCommonGradleDefaultPropertyIfNull("openapiUpdateFileAfterRelease", true)
 setCommonGradleDefaultPropertyIfNull("openapiGeneratorName", 'jaxrs-spec')
 setCommonGradleDefaultPropertyIfNull("openapiLibrary", 'quarkus')
+setCommonGradleDefaultPropertyIfNull("openapiUseJakartaEe", 'true')
 setCommonGradleDefaultPropertyIfNull("openapiDocs", true)
 setCommonGradleDefaultPropertyIfNull("openapiTests", true)
 setCommonGradleDefaultPropertyIfNull("openapiModelDocs", false)
@@ -1000,8 +1001,11 @@ setCommonGradleDefaultPropertyIfNull("commonGradleLogbackVersion", "1.2.3")
 setCommonGradleDefaultPropertyIfNull("commonGradleJptoolsVersion", "1.7.7")
 setCommonGradleDefaultPropertyIfNull("commonGradleJavaxValidtionVersion", "2.0.1.Final")
 setCommonGradleDefaultPropertyIfNull("commonGradleJavaxWsRSApiVersion", "2.1.1")
-setCommonGradleDefaultPropertyIfNull("commonGradleJacksonAnnotationVersion", "2.11.2")
+setCommonGradleDefaultPropertyIfNull("commonGradleJacksonAnnotationVersion", "2.15.2")
 setCommonGradleDefaultPropertyIfNull("commonGradleJavaxAnnotationVersion", "1.3.2")
+setCommonGradleDefaultPropertyIfNull("commonGradleJakartaAnnotationVersion", "2.1.1")
+setCommonGradleDefaultPropertyIfNull("commonGradleJakartaValidtionVersion", "3.0.2")
+setCommonGradleDefaultPropertyIfNull("commonGradleJakartaWsRSApiVersion", "3.1.0")
 
 
 /***************************************************************************************
