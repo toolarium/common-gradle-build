@@ -96,8 +96,6 @@ task customJar(type: Jar) { jar ->
 	description = 'Assembles the kubernetes configuration into a jar file'
 	onlyIf { return (project.hasProperty('createCustomJar') && project.getProperty('createCustomJar').toString().equalsIgnoreCase("true")) }
 	
-	archiveBaseName = rootProject.name.toString().replaceAll("-docker", "")
-	
 	// define proper manifest
 	manifest {
 		attributes 	'Specification-Title'   : rootProject.name,
@@ -111,7 +109,8 @@ task customJar(type: Jar) { jar ->
 	}
 	
 	doLast {
-		printInfo("> Create custom jar " + colorize(HIGHLITE_LEVEL,  archiveName) + ".")
+		def filename = prepareFilename(jar.archivePath.getPath())
+		printInfo("> Create custom jar " + colorize(HIGHLITE_LEVEL, filename) + ".")
 	}
 }
 
