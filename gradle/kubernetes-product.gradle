@@ -1092,7 +1092,7 @@ configurations.jar {
 
 build { ->
 	doLast {
-		def fatJarFilename = "${gradleBuildDirectory}/libs/${project.name}-${project.version}.jar"
+		def fatJarFilename = "${gradleDistributionDirectory}/${project.name}-${project.version}.jar"
 		if (validBuild && project.hasProperty('createFatJar') && project.getProperty('createFatJar').toString().trim().equalsIgnoreCase("true")) {
 			printInfo("> Create java fat-jar " + colorize(HIGHLITE_LEVEL, "${fatJarFilename}".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")
 			setCommonGradleDefaultPropertyIfNull('jarRunnerFile', "${project.name}-${project.version}${fatJarClassifierContext}.jar");

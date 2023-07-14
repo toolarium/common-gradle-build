@@ -188,6 +188,8 @@ setCommonGradleDefaultPropertyIfNull("configPackageArchiveClassifier", "config")
 
 // build directory
 setCommonGradleDefaultPropertyIfNull("gradleBuildDirectory", "$rootDirectory/build")
+setCommonGradleDefaultPropertyIfNull("gradleDistributionDirectoryName", "distributions")
+setCommonGradleDefaultPropertyIfNull("gradleDistributionDirectory", "$gradleBuildDirectory/$gradleDistributionDirectoryName")
 
 // .gradle directory
 setCommonGradleDefaultPropertyIfNull("gradleDirectory", "$rootDirectory/.gradle")
