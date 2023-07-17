@@ -127,15 +127,28 @@ if (project.hasProperty('generatedCommonGradleBuildSources') && !project.getProp
 	def generatedCommonGradleBuildSources = project.getProperty('generatedCommonGradleBuildSources');
 	def mainDirectoryName = project.getProperty('srcMainDirectoryName')
 	sourceSets.main.java.srcDirs += "${generatedCommonGradleBuildSources}/java/${mainDirectoryName}"
-	logInfo("Set source set to " + colorize(HIGHLITE_LEVEL, sourceSets.main.java.srcDirs))
+	logInfo("Set source set main to " + colorize(HIGHLITE_LEVEL, sourceSets.main.java.srcDirs))
 
 	def size = sourceSets.main.resources.srcDirs.size()
 	if (size>0 && supportMultipleResourceFolder) {
 		sourceSets.main.resources.srcDirs += "${generatedCommonGradleBuildSources}/resources/${mainDirectoryName}"
-		logInfo("Set resources set to " + colorize(HIGHLITE_LEVEL, sourceSets.main.resources.srcDirs))
+		logInfo("Set resources set main to " + colorize(HIGHLITE_LEVEL, sourceSets.main.resources.srcDirs))
 	} else {
 		//ext.generatedCommonGradleBuildSources=sourceSets.main.resources.srcDirs.iterator().next()
 		//def count = new File("${generatedCommonGradleBuildSources}/resources/${mainDirectoryName}").listFiles().count { it.name ==~ /.*s/ }
+	}
+
+	def testDirectoryName = project.getProperty('srcTestDirectoryName')
+	sourceSets.test.java.srcDirs += "${generatedCommonGradleBuildSources}/java/${testDirectoryName}"
+	logInfo("Set source set test to " + colorize(HIGHLITE_LEVEL, sourceSets.test.java.srcDirs))
+
+	size = sourceSets.test.resources.srcDirs.size()
+	if (size>0 && supportMultipleResourceFolder) {
+		sourceSets.test.resources.srcDirs += "${generatedCommonGradleBuildSources}/resources/${testDirectoryName}"
+		logInfo("Set resources set test to " + colorize(HIGHLITE_LEVEL, sourceSets.test.resources.srcDirs))
+	} else {
+		//ext.generatedCommonGradleBuildSources=sourceSets.test.resources.srcDirs.iterator().next()
+		//def count = new File("${generatedCommonGradleBuildSources}/resources/${testDirectoryName}").listFiles().count { it.name ==~ /.*s/ }
 	}
 }
 
@@ -250,7 +263,7 @@ ext.createGenerateCommonGradleBuildJavaSourcePath = { ->
 	generatedCommonGradleBuildJavaSources += "/" + mainDirectoryName
 	new File(generatedCommonGradleBuildJavaSources).mkdirs()
 	setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBuildJavaSources", generatedCommonGradleBuildJavaSources)
-	logInfo("Generate java source directory is [" + colorize(HIGHLITE_LEVEL, generatedCommonGradleBuildJavaSources) + colorize(INFO_LEVEL, "]"))
+	logInfo("Generate java main source directory is [" + colorize(HIGHLITE_LEVEL, generatedCommonGradleBuildJavaSources) + colorize(INFO_LEVEL, "]"))
 
 	def generatedCommonGradleBuildResourcesSources = project.getProperty('generatedCommonGradleBuildSources');
 	generatedCommonGradleBuildResourcesSources += "/resources"
@@ -258,10 +271,27 @@ ext.createGenerateCommonGradleBuildJavaSourcePath = { ->
 	generatedCommonGradleBuildResourcesSources += "/" + mainDirectoryName
 	new File(generatedCommonGradleBuildResourcesSources).mkdirs()
 	setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBuildResourcesSources", generatedCommonGradleBuildResourcesSources)
-	logInfo("Generate resources source directory is [" + colorize(HIGHLITE_LEVEL, generatedCommonGradleBuildResourcesSources) + colorize(INFO_LEVEL, "]"))
+	logInfo("Generate resources main source directory is [" + colorize(HIGHLITE_LEVEL, generatedCommonGradleBuildResourcesSources) + colorize(INFO_LEVEL, "]"))
+
+	def testDirectoryName = project.getProperty('srcTestDirectoryName')
+	def generatedCommonGradleBuildJavaTestSources = project.getProperty('generatedCommonGradleBuildSources');
+	new File(generatedCommonGradleBuildJavaTestSources).mkdirs()
+	generatedCommonGradleBuildJavaTestSources += "/java"
+	new File(generatedCommonGradleBuildJavaTestSources).mkdirs()
+	generatedCommonGradleBuildJavaTestSources += "/" + testDirectoryName
+	new File(generatedCommonGradleBuildJavaTestSources).mkdirs()
+	setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBuildJavaTestSources", generatedCommonGradleBuildJavaTestSources)
+	logInfo("Generate java test source directory is [" + colorize(HIGHLITE_LEVEL, generatedCommonGradleBuildJavaTestSources) + colorize(INFO_LEVEL, "]"))
+
+	def generatedCommonGradleBuildResourcesTestSources = project.getProperty('generatedCommonGradleBuildSources');
+	generatedCommonGradleBuildResourcesTestSources += "/resources"
+	new File(generatedCommonGradleBuildResourcesTestSources).mkdirs()
+	generatedCommonGradleBuildResourcesTestSources += "/" + testDirectoryName
+	new File(generatedCommonGradleBuildResourcesTestSources).mkdirs()
+	setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBuildResourcesTestSources", generatedCommonGradleBuildResourcesTestSources)
+	logInfo("Generate resources test source directory is [" + colorize(HIGHLITE_LEVEL, generatedCommonGradleBuildResourcesTestSources) + colorize(INFO_LEVEL, "]"))
 
 	// create path in generated source
 	def generatedCommonGradleBuildJavaSourcPath = createPackagePath(generatedCommonGradleBuildJavaSources, projectRootPackageName)
 	setCommonGradleDefaultPropertyIfNull("generatedCommonGradleBuildJavaSourcPath", generatedCommonGradleBuildJavaSourcPath)
 }
-
