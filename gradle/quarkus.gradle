@@ -353,7 +353,7 @@ tasks.withType(JavaCompile) {
 		def javaSourceFile = "${packagePath}/${runTimeDefaultsConfigSourceName}.java"
 		if (!new File(javaSourceFile).exists()) {
 			if (!createFileFromTemplate(javaSourceFile, getTemplateFile("${runTimeDefaultsConfigSourceName}.template"), true, false)) {
-				printInfo("Create " + colorize(HIGHLITE_LEVEL, "${packageName}.${runTimeDefaultsConfigSourceName}") + colorize(INFO_LEVEL, " with default values."))
+				logInfo("Create " + colorize(HIGHLITE_LEVEL, "${packageName}.${runTimeDefaultsConfigSourceName}") + colorize(INFO_LEVEL, " with default values."))
 				new File(javaSourceFile).withWriter { w ->
 					w << "package ${packageName};" << NELINE \
 						<< "" << NELINE \
