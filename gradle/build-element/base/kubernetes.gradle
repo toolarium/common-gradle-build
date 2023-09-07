@@ -71,23 +71,25 @@ ext.execKubernetes = { cmd, errorMessage ->
  * Replace namespace
  ***************************************************************************************/
 ext.replaceNamespace = { line, namespace -> 
-	def preparedLine = line;
-	def namespaceTag = "namespace:"
-	if (namespace!=null && !namespace.toString().trim().isEmpty()) {
-		int idx = preparedLine.indexOf(namespaceTag)
-		if (idx>0) {
-			def i = idx + namespaceTag.length()
-			def rest = preparedLine.substring(i + 1).trim()
-			preparedLine = preparedLine.substring(0, i)	
-			preparedLine = "${preparedLine} ${namespace}"
-			idx = rest.indexOf(" ")
-			if (idx>0) {
-				preparedLine = "${preparedLine}${rest.substring(idx)}" 
-			}
-		}
+    def preparedLine = line;
+    def namespaceTag = "namespace:"
+    if (namespace!=null && !namespace.toString().trim().isEmpty()) {
+        int idx = preparedLine.indexOf(namespaceTag)
+        if (idx>0) {
+            def i = idx + namespaceTag.length()
+            def preparedLineRightTrimed = preparedLine.replaceAll("\\s+\$", "");
+            if (i + 1 <= preparedLineRightTrimed.length()) {
+                def rest = preparedLine.substring(i + 1).trim()
+                preparedLine = preparedLine.substring(0, i)
+                preparedLine = "${preparedLine} ${namespace}"
+                idx = rest.indexOf(" ")
+                if (idx>0) {
+                    preparedLine = "${preparedLine}${rest.substring(idx)}" 
+                }
+            }
+        }
 	}
-	
-	return preparedLine
+    return preparedLine
 }
 
 
