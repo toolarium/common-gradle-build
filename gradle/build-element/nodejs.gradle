@@ -347,7 +347,18 @@ ext.fatWebSubContext = "$dockerSubPathAccess"
 apply from: "${commonGradleBuildElementPath}/base/docker.gradle"
 apply from: "${commonGradleBuildElementPath}/base/webjar.gradle"
 
-
+buildFatWebJar {  ->
+	doLast {
+		if (project.hasProperty('createFatJar') && project.getProperty('createFatJar').toString().trim().equalsIgnoreCase("true")) {
+			def fatWebClassifierContext = ""
+			if (project.hasProperty("fatWebClassifierContext") && !project.getProperty("fatWebClassifierContext").toString().isEmpty()) {
+				fatWebClassifierContext = "-" + project.getProperty("fatWebClassifierContext")
+			}
+			def fatWebFilename = "${gradleBuildDirectory}/libs/${project.name}-${project.version}${fatWebClassifierContext}.jar"
+			copyFile(fatWebFilename, "${gradleDistributionDirectory}/${project.name}-${project.version}${fatWebClassifierContext}.jar", true)
+		}
+	}
+}
 buildFatWebJar.mustRunAfter(customJar)
 build.finalizedBy(buildFatWebJar)
 
