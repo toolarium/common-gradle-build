@@ -462,6 +462,7 @@ setCommonGradleDefaultPropertyIfNull("quarkusAppJar", "quarkus-run.jar")
 setCommonGradleDefaultPropertyIfNull("updateApplicationProperties", true)
 setCommonGradleDefaultPropertyIfNull("createServiceJavaRunner", true) // re dockerJavaRunner will be taken
 setCommonGradleDefaultPropertyIfNull("createServiceJavaAgent", true) // the dockerJavaAgent will be taken
+setCommonGradleDefaultPropertyIfNull("enablePatchRunTimeDefaultsConfigSource", true)
 
 
 /***************************************************************************************

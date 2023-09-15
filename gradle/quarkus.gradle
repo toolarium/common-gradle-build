@@ -130,6 +130,10 @@ ext.validateQuarkusVersion = { ->
 		if (currentVersion!=null && doQuarkusUpdate) {
 			def verifyNewestVersion = false;
 			if (project.hasProperty('defaultQuarkusPluginVersion')) {
+				if (currentVersion.getMajorNumber() <= 2) {
+					setCommonGradleProperty("enablePatchRunTimeDefaultsConfigSource", false)
+				}
+
 				def minDefaultVersion = parseReleaseVersion(defaultQuarkusPluginVersion);
 				if (currentVersion.compareTo(minDefaultVersion) < 0) {
 					def quarkusWarningMessage = "" + colorize(WARN_LEVEL, "Quarkus") + " version " + colorize(HIGHLITE_LEVEL, quarkusPluginVersion) + " has to be updated to " + colorize(HIGHLITE_LEVEL, defaultQuarkusPluginVersion) + ".";
@@ -334,65 +338,72 @@ prepareToolariumEnumConfiguration.dependsOn(extractEnumConfiguration)
 /***************************************************************************************
  * Create and patch quarkus classes
  ***************************************************************************************/
-def runTimeDefaultsConfigSourceName="RunTimeDefaultsConfigSource"
+setCommonGradleDefaultPropertyIfNull("runTimeDefaultsConfigSourceName", "RunTimeDefaultsConfigSource")
 tasks.withType(JavaCompile) {
 	doFirst {
-		// create common gradle build java source path
-		createGenerateCommonGradleBuildJavaSourcePath()
-	
-		def packageName = "io.quarkus.runtime.generated"
-		def generatedCommonGradleBuildJavaSources = project.getProperty('generatedCommonGradleBuildJavaSources');
-		def generatedCommonGradleBuildJavaTestSources = project.getProperty('generatedCommonGradleBuildJavaTestSources');
-		def packagePath
-		if (generatedCommonGradleBuildJavaSources.endsWith(destinationDir.getName())) {
-			packagePath = createPackagePath(generatedCommonGradleBuildJavaSources, packageName.replace('.', '/'))
-		} else if (generatedCommonGradleBuildJavaTestSources.endsWith(destinationDir.getName())) {
-			packagePath = createPackagePath(generatedCommonGradleBuildJavaTestSources, packageName.replace('.', '/'))
-		}
+	    def runTimeDefaultsConfigSourceName = project.getProperty("runTimeDefaultsConfigSourceName")
+		if ("true".toString().equalsIgnoreCase(project.getProperty("enablePatchRunTimeDefaultsConfigSource").toString()) && runTimeDefaultsConfigSourceName!=null && !runTimeDefaultsConfigSourceName.toString().trim().isEmpty()) {
+		    logInfo("Create " + runTimeDefaultsConfigSourceName + "...")		
+			
+			// create common gradle build java source path
+			createGenerateCommonGradleBuildJavaSourcePath()
 		
-		def javaSourceFile = "${packagePath}/${runTimeDefaultsConfigSourceName}.java"
-		if (!new File(javaSourceFile).exists()) {
-			if (!createFileFromTemplate(javaSourceFile, getTemplateFile("${runTimeDefaultsConfigSourceName}.template"), true, false)) {
-				logInfo("Create " + colorize(HIGHLITE_LEVEL, "${packageName}.${runTimeDefaultsConfigSourceName}") + colorize(INFO_LEVEL, " with default values."))
-				new File(javaSourceFile).withWriter { w ->
-					w << "package ${packageName};" << NELINE \
-						<< "" << NELINE \
-						<< "import java.util.HashMap;" << NELINE \
-						<< "import java.util.Map;" << NELINE \
-						<< "import io.quarkus.runtime.configuration.DefaultsConfigSource;" << NELINE \
-						<< "" << NELINE \
-						<< "public final class ${runTimeDefaultsConfigSourceName} extends DefaultsConfigSource {" << NELINE \
-						<< "    static final Map<String, String> properties;" << NELINE \
-						<< "    static {" << NELINE \
-						<< "        properties = new HashMap<String, String>();" << NELINE \
-						<< "        properties.put(\"platform.quarkus.native.builder-image\", \"mandrel\");" << NELINE \
-						<< "        properties.put(\"quarkus.log.filter.\\\"io.netty.resolver.HostsFileParser\\\".if-starts-with\", \"Failed to load and parse hosts file\");" << NELINE \
-						<< "        properties.put(\"quarkus.log.filter.\\\"io.vertx.core.impl.ContextImpl\\\".if-starts-with\", \"You have disabled TCCL checks\");" << NELINE \
-						<< "        properties.put(\"quarkus.log.category.\\\"io.vertx.core.http.impl.Http1xServerRequest\\\".level\", \"OFF\");" << NELINE \
-						<< "        properties.put(\"quarkus.log.filter.\\\"io.netty.resolver.dns.DnsServerAddressStreamProviders\\\".if-starts-with\", \"Can not find io.netty.resolver.dns.macos.MacOSDnsServerAddressStreamProvider in the classpath\");" << NELINE \
-						<< "        properties.put(\"quarkus.log.console.darken\", \"0\");" << NELINE \
-						<< "        properties.put(\"quarkus.log.filter.\\\"io.netty.util.internal.PlatformDependent0\\\".if-starts-with\", \"direct buffer constructor,jdk.internal.misc.Unsafe,sun.misc.Unsafe\");" << NELINE \
-						<< "        properties.put(\"quarkus.log.filter.\\\"org.jboss.threads\\\".if-starts-with\", \"JBoss Threads version\");" << NELINE \
-						<< "        properties.put(\"quarkus.log.filter.\\\"org.jboss.resteasy.resteasy_jaxrs.i18n\\\".if-starts-with\", \"RESTEASY002225\");" << NELINE \
-						<< "        properties.put(\"quarkus.log.category.\\\"io.vertx.core.impl.ContextImpl\\\".level\", \"ERROR\");" << NELINE \
-						<< "        properties.put(\"quarkus.log.filter.\\\"io.netty.resolver.dns.DnsServerAddressStreamProviders\\\".target-level\", \"WARN\");" << NELINE \
-						<< "        properties.put(\"quarkus.log.filter.\\\"io.netty.util.internal.PlatformDependent0\\\".target-level\", \"TRACE\");" << NELINE \
-						//<< "        properties.put("quarkus.rest-client.\\\"org.acme.rest.client.ExtensionsService\\\".url\", \"https://stage.code.quarkus.io/api\");" << NELINE \
-						//<< "        properties.put(\"quarkus.profile\", \"prod\");" << NELINE \
-						<< "        properties.put(\"term\", \"xterm-256color\");" << NELINE \
-						<< "        properties.put(\"colorterm\", \"truecolor\");" << NELINE \
-						<< "        properties.put(\"xmodifiers\", \"@im=ibus\");" << NELINE \
-						<< "        properties.put(\"gdm.lang\", \"en_US\");" << NELINE \
-						<< "        properties.put(\"windowid\", \"92289429\");" << NELINE \
-						<< "    }" << NELINE \
-						<< "" << NELINE \
-						<< "    public ${runTimeDefaultsConfigSourceName}() {" << NELINE \
-						<< "        super(${runTimeDefaultsConfigSourceName}.properties, \"RunTime Defaults\", -2147483548);" << NELINE \
-						<< "    }" << NELINE \
-						<< "}" << NELINE \
-						<< "" << NELINE
-				}			
+			def packageName = "io.quarkus.runtime.generated"
+			def generatedCommonGradleBuildJavaSources = project.getProperty('generatedCommonGradleBuildJavaSources');
+			def generatedCommonGradleBuildJavaTestSources = project.getProperty('generatedCommonGradleBuildJavaTestSources');
+			def packagePath
+			if (generatedCommonGradleBuildJavaSources.endsWith(destinationDir.getName())) {
+				packagePath = createPackagePath(generatedCommonGradleBuildJavaSources, packageName.replace('.', '/'))
+			} else if (generatedCommonGradleBuildJavaTestSources.endsWith(destinationDir.getName())) {
+				packagePath = createPackagePath(generatedCommonGradleBuildJavaTestSources, packageName.replace('.', '/'))
 			}
+			
+			def javaSourceFile = "${packagePath}/${runTimeDefaultsConfigSourceName}.java"
+			if (!new File(javaSourceFile).exists()) {
+				if (!createFileFromTemplate(javaSourceFile, getTemplateFile("${runTimeDefaultsConfigSourceName}.template"), true, false)) {
+					logInfo("Create " + colorize(HIGHLITE_LEVEL, "${packageName}.${runTimeDefaultsConfigSourceName}") + colorize(INFO_LEVEL, " with default values."))
+					new File(javaSourceFile).withWriter { w ->
+						w << "package ${packageName};" << NELINE \
+							<< "" << NELINE \
+							<< "import java.util.HashMap;" << NELINE \
+							<< "import java.util.Map;" << NELINE \
+							<< "import io.quarkus.runtime.configuration.DefaultsConfigSource;" << NELINE \
+							<< "" << NELINE \
+							<< "public final class ${runTimeDefaultsConfigSourceName} extends DefaultsConfigSource {" << NELINE \
+							<< "    static final Map<String, String> properties;" << NELINE \
+							<< "    static {" << NELINE \
+							<< "        properties = new HashMap<String, String>();" << NELINE \
+							<< "        properties.put(\"platform.quarkus.native.builder-image\", \"mandrel\");" << NELINE \
+							<< "        properties.put(\"quarkus.log.filter.\\\"io.netty.resolver.HostsFileParser\\\".if-starts-with\", \"Failed to load and parse hosts file\");" << NELINE \
+							<< "        properties.put(\"quarkus.log.filter.\\\"io.vertx.core.impl.ContextImpl\\\".if-starts-with\", \"You have disabled TCCL checks\");" << NELINE \
+							<< "        properties.put(\"quarkus.log.category.\\\"io.vertx.core.http.impl.Http1xServerRequest\\\".level\", \"OFF\");" << NELINE \
+							<< "        properties.put(\"quarkus.log.filter.\\\"io.netty.resolver.dns.DnsServerAddressStreamProviders\\\".if-starts-with\", \"Can not find io.netty.resolver.dns.macos.MacOSDnsServerAddressStreamProvider in the classpath\");" << NELINE \
+							<< "        properties.put(\"quarkus.log.console.darken\", \"0\");" << NELINE \
+							<< "        properties.put(\"quarkus.log.filter.\\\"io.netty.util.internal.PlatformDependent0\\\".if-starts-with\", \"direct buffer constructor,jdk.internal.misc.Unsafe,sun.misc.Unsafe\");" << NELINE \
+							<< "        properties.put(\"quarkus.log.filter.\\\"org.jboss.threads\\\".if-starts-with\", \"JBoss Threads version\");" << NELINE \
+							<< "        properties.put(\"quarkus.log.filter.\\\"org.jboss.resteasy.resteasy_jaxrs.i18n\\\".if-starts-with\", \"RESTEASY002225\");" << NELINE \
+							<< "        properties.put(\"quarkus.log.category.\\\"io.vertx.core.impl.ContextImpl\\\".level\", \"ERROR\");" << NELINE \
+							<< "        properties.put(\"quarkus.log.filter.\\\"io.netty.resolver.dns.DnsServerAddressStreamProviders\\\".target-level\", \"WARN\");" << NELINE \
+							<< "        properties.put(\"quarkus.log.filter.\\\"io.netty.util.internal.PlatformDependent0\\\".target-level\", \"TRACE\");" << NELINE \
+							//<< "        properties.put("quarkus.rest-client.\\\"org.acme.rest.client.ExtensionsService\\\".url\", \"https://stage.code.quarkus.io/api\");" << NELINE \
+							//<< "        properties.put(\"quarkus.profile\", \"prod\");" << NELINE \
+							<< "        properties.put(\"term\", \"xterm-256color\");" << NELINE \
+							<< "        properties.put(\"colorterm\", \"truecolor\");" << NELINE \
+							<< "        properties.put(\"xmodifiers\", \"@im=ibus\");" << NELINE \
+							<< "        properties.put(\"gdm.lang\", \"en_US\");" << NELINE \
+							<< "        properties.put(\"windowid\", \"92289429\");" << NELINE \
+							<< "    }" << NELINE \
+							<< "" << NELINE \
+							<< "    public ${runTimeDefaultsConfigSourceName}() {" << NELINE \
+							<< "        super(${runTimeDefaultsConfigSourceName}.properties, \"RunTime Defaults\", -2147483548);" << NELINE \
+							<< "    }" << NELINE \
+							<< "}" << NELINE \
+							<< "" << NELINE
+					}			
+				}
+			}
+		} else {
+		    logInfo("Ignore RunTimeDefaultsConfigSource.")		
 		}
 	}
 }
