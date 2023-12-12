@@ -378,6 +378,7 @@ if (initTesting) {
 			} else {
 				setCommonGradleDefaultPropertyIfNull("testImplementationDependency", "org.junit.jupiter:junit-jupiter-api:${testDependencyVersion}")
 				setCommonGradleDefaultPropertyIfNull("testRuntimeOnlyDependency", "org.junit.jupiter:junit-jupiter-engine:${testDependencyVersion}")
+				setCommonGradleDefaultPropertyIfNull("testRuntimeOnlyPlatformLauncher", "org.junit.platform:junit-platform-launcher")
 			}
 		}
 	}
@@ -811,7 +812,7 @@ setCommonGradleDefaultPropertyIfNull("kubernetesSupportIdm", true)
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmTemplateFilename", "kubernetes-idm.template")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmConfigTemplateFilename", "kubernetes-idm-config.template")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmSecretTemplateFilename", "kubernetes-idm-secret.template")
-setCommonGradleDefaultPropertyIfNull("kubernetesIdmImageVersion", "12.0.2")
+setCommonGradleDefaultPropertyIfNull("kubernetesIdmImageVersion", "21.1.0")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmUrlPath", "/auth")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmUrlProtocol", "${kubernetesApplicationPrototcol}")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmFrontendUrl", "${kubernetesIdmUrlProtocol}${kubernetesApplicationHost}${kubernetesIdmUrlPath}")

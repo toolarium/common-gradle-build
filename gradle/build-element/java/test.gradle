@@ -85,5 +85,9 @@ dependencies {
 		if (project.hasProperty('testRuntimeOnlyDependency') && !testRuntimeOnlyDependency.isEmpty()) {		
 			testRuntimeOnly "${testRuntimeOnlyDependency}"
 		}
+		
+		if (project.hasProperty('testRuntimeOnlyPlatformLauncher') && !testRuntimeOnlyPlatformLauncher.isEmpty()) {		
+			testRuntimeOnly "${testRuntimeOnlyPlatformLauncher}"
+		}
 	}
 }
