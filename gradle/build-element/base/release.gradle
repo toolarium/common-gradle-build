@@ -561,7 +561,9 @@ if (project.hasProperty('isSnapshotVersion') && project.getProperty('isSnapshotV
 		}
 	}
 	
-	release.mustRunAfter('build')
+	if (project.hasProperty('taskNameBeforeReleaseArtefacts')) {
+		release.mustRunAfter("${taskNameBeforeReleaseArtefacts}") // e.g.: build or dockerBuild
+	}
 	release.finalizedBy('publishRelease')
 } else { 
 	task release(dependsOn: ['releaseVerification']) {
@@ -631,7 +633,9 @@ if (project.hasProperty('isSnapshotVersion') && project.getProperty('isSnapshotV
 			}
 		}
 	}
-	
-    releaseVerification.mustRunAfter('build')
+
+	if (project.hasProperty('taskNameBeforeReleaseArtefacts')) {
+		releaseVerification.mustRunAfter("${taskNameBeforeReleaseArtefacts}") // e.g.: build or dockerBuild
+	}
     releaseVerification.finalizedBy('publishRelease')
 }

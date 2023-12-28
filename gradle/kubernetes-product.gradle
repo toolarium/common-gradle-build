@@ -20,6 +20,7 @@
  */
 ext.projectTypeTemplatePath='kubernetes'
 ext.includeApplicationInformation=false
+ext.taskNameBeforeReleaseArtefacts='buildFatWebJar'
 
 ext.createCustomJar = false
 if (project.hasProperty('createFatJar') && project.getProperty('createFatJar').toString().trim().equalsIgnoreCase("true")) {
@@ -1061,6 +1062,7 @@ defaultTasks 'clean', 'projectValidation', 'build'
 if (project.hasProperty('kubernetesProductInformationSupport') && project.getProperty('kubernetesProductInformationSupport')) {
 	build.finalizedBy('dockerBuild')
 	publish.finalizedBy('dockerPush')
+	setCommonGradleProperty("taskNameBeforeReleaseArtefacts", "dockerBuild")
 }
 
 

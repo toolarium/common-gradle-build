@@ -117,6 +117,7 @@ setCommonGradleDefaultPropertyIfNull("commonGradleConfigPath", "${commonGradleBu
 
 // release properties
 //setCommonGradleDefaultPropertyIfNull("releaseBaseDirectory", "")
+setCommonGradleDefaultPropertyIfNull("taskNameBeforeReleaseArtefacts", "build")
 setCommonGradleDefaultPropertyIfNull("copyReleaseArtefactInformation", true)
 setCommonGradleDefaultPropertyIfNull("releaseAddComponentIdIntoReleasePath", true)
 setCommonGradleDefaultPropertyIfNull("commonGradleBuildValidateReleaseArtefact", true)

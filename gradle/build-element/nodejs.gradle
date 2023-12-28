@@ -25,6 +25,7 @@
  ***************************************************************************************/
 ext.commonGradleResourcebundleJsonSupport=true
 ext.createCustomJar = false
+ext.taskNameBeforeReleaseArtefacts='buildFatWebJar'
 if (project.hasProperty('createFatJar') && project.getProperty('createFatJar').toString().trim().equalsIgnoreCase("true")) {
 	ext.createCustomJar = project.getProperty('createFatJar').toString().trim().equalsIgnoreCase("true");
 }
