@@ -61,7 +61,7 @@ if (!project.hasProperty("dockerDeploymentSourcePath")) {
 	project.ext.set("dockerDeploymentSourcePath", "build/libs/${jarRunnerFile}")
 }
 
-apply from: "${commonGradleBuildElementPath}/base/docker.gradle"
+apply from: "${commonGradleBuildElementPath}/base/container.gradle"
 
 
 /***************************************************************************************

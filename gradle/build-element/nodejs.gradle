@@ -347,7 +347,7 @@ ext.generatePackageJson = { outputPath = "${$rootDirectory}",
 
 
 ext.fatWebSubContext = "$dockerSubPathAccess"
-apply from: "${commonGradleBuildElementPath}/base/docker.gradle"
+apply from: "${commonGradleBuildElementPath}/base/container.gradle"
 apply from: "${commonGradleBuildElementPath}/base/webjar.gradle"
 
 buildFatWebJar {  ->

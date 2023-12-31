@@ -273,7 +273,7 @@ ext.updateApplicationProperties = { inputFile = "${srcMainResourcesDirectory}/ap
  ***************************************************************************************/
 apply from: "${commonGradleBuildUrl}/java-library.gradle"
 apply from: "${commonGradleBuildElementPath}/base/run.gradle"
-apply from: "${commonGradleBuildElementPath}/base/docker.gradle"
+apply from: "${commonGradleBuildElementPath}/base/container.gradle"
 setCommonGradleProperty("createLogbackConfig", false)
 
 

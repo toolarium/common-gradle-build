@@ -73,7 +73,7 @@ if (project.hasProperty("targetStatic") && project.getProperty("targetStatic")) 
 		project.ext.set("dockerDeploymentSourcePath", 'dist')
 	}
 	
-	// set to empty string to not generate dockerIgnoreFile (see base/docker.gradle)
+	// set to empty string to not generate dockerIgnoreFile (see base/container.gradle)
 	project.ext.dockerIgnoreFile=""
 	//	ext.nodeBuildArguments = ['run', 'generate', '--loglevel', 'silly']
 	ext.nodeBuildArguments = ['run', 'generate', '--loglevel', 'silent']

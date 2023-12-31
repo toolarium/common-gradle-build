@@ -1,5 +1,5 @@
 /*
- * docker.gradle
+ * container.gradle
  *
  * Copyright by toolarium, all rights reserved.
  * 
@@ -21,12 +21,13 @@
 
 
 /***************************************************************************************
- * Check if docker installation is ready to use
+ * Check if container installation is ready to use
  ***************************************************************************************/
 //setCommonGradleDefaultPropertyIfNull("dockerFileTemplateName", "Dockerfile-node.properties.template")
 setCommonGradleDefaultPropertyIfNull("dockerFileTemplateName", "Dockerfile.properties.template")
 setCommonGradleDefaultPropertyIfNull("IS_NEW_SRC_FOLDER", false)
 setCommonGradleDefaultPropertyIfNull("createApplicationConfigFile", false)
+setCommonGradleDefaultPropertyIfNull("containerCmd", "nerdctl")
 
 ext.dockerInstallationValidated=false
 ext.dockerInstallationCommandAvailable=false
@@ -35,24 +36,31 @@ ext.checkDockerInstallation = { ->
 	if (!dockerInstallationValidated) {
 		dockerInstallationValidated=true
 		def stdout = new StringBuilder()
-		def exitStatus = execCommand("docker --version", -1, stdout, stdout)
+		def exitStatus = execCommand("${containerCmd} --version", -1, stdout, stdout)
+		if (exitStatus!=0) {
+			stdout = new StringBuilder()
+			exitStatus = execCommand("docker --version", -1, stdout, stdout)
+			if (exitStatus!=0) {
+				setCommonGradleProperty("containerCmd", "docker")
+			}
+		}
 		dockerInstallationCommandAvailable=(exitStatus==0)
 		
 		if (dockerInstallationCommandAvailable) {
-			logInfo("Docker installation is available.")
+			logInfo("Container installation is available.")
 			
-			exitStatus = execCommand("docker info")
+			exitStatus = execCommand("${containerCmd} info")
 			dockerInstallationAvailable=(exitStatus==0)
 
 			if (dockerInstallationAvailable) {
-				logInfo("Docker installation is ready.")
+				logInfo("Container installation is ready.")
 			} else {
 				setCommonGradleProperty("errorMessagePrefix", "")
-				addError("Docker installation is not ready.")
+				addError("Container installation is not ready.")
 			}
 		} else {
 			setCommonGradleProperty("errorMessagePrefix", "")
-			addError("Missing docker installation.")
+			addError("Missing container installation.")
 		}
 	}
 	
@@ -61,7 +69,7 @@ ext.checkDockerInstallation = { ->
 
 
 /***************************************************************************************
- * Execute docker command
+ * Execute container command
  ***************************************************************************************/
 ext.execDocker = { cmd, errorMessage, failOnError = true ->
 	def sout = new StringBuilder(), serr = new StringBuilder()				
@@ -87,11 +95,11 @@ ext.execDocker = { cmd, errorMessage, failOnError = true ->
 
 
 /***************************************************************************************
- * docker build task
+ * container build task
  ***************************************************************************************/
 task dockerBuild {
 	group = 'Build'
-	description = 'Create a docker image.'
+	description = 'Create a container image.'
 	onlyIf { return validBuild }
 
 	doLast {
@@ -189,20 +197,20 @@ task dockerBuild {
 				tempDockerFile = cbProjectRootDir + "/" + tempDockerFile.substring(2)
 			}
 				
-			printInfo("> Create docker image " + colorize(HIGHLITE_LEVEL,  dockerBuildName) + " (${dockerSourceMessage} dockerfile).")
+			printInfo("> Create container image " + colorize(HIGHLITE_LEVEL,  dockerBuildName) + " (${dockerSourceMessage} dockerfile).")
 			logInfo("Use dockerfile [" +colorize(HIGHLITE_LEVEL,  dockerBuildName) + colorize(INFO_LEVEL, "]."))
 			
-			def cmd="docker build -t ${dockerBuildName} ${dockerBuildPull} ${dockerBuildCompress}"
+			def cmd="${containerCmd} build -t ${dockerBuildName} ${dockerBuildPull} ${dockerBuildCompress}"
 			if (!"${dockerBuildArgs}".toString().trim().isEmpty()) {
 				cmd="$cmd ${dockerBuildArgs}"
 			}
 			cmd="$cmd -f ${tempDockerFile} $cbProjectRootDir"
 			
-			def exitStatus = execDocker(cmd, "Could not build docker image:\n    " + cmd)
+			def exitStatus = execDocker(cmd, "Could not build container image:\n    " + cmd)
 			if (exitStatus==0) {
 				if( project.hasProperty("dockerCleanupAfterBuild") && project.getProperty("dockerCleanupAfterBuild") ) {
-					printInfo("> Remove docker image " +colorize(HIGHLITE_LEVEL, dockerBuildName) + ".")
-					cmd="docker image remove $dockerBuildName"
+					printInfo("> Remove container image " +colorize(HIGHLITE_LEVEL, dockerBuildName) + ".")
+					cmd="${containerCmd} image remove $dockerBuildName"
 					exitStatus = execDocker(cmd, "Could not remove project tag:\n    " + cmd, false)
 				}
 			}
@@ -214,11 +222,11 @@ task dockerBuild {
 			}
 
 			def dockerRemoveImageIdList = []
-			cmd="docker image ls ${rootProject.name}"
+			cmd="${containerCmd} image ls ${rootProject.name}"
 			def sout = new StringBuilder()
 			exitStatus = execCommand(cmd, -1, sout, sout)
 			if (exitStatus>0) {
-				def message = "Could not read docker images:\n    " + colorize(HIGHLITE_LEVEL, cmd) + ":"
+				def message = "Could not read container images:\n    " + colorize(HIGHLITE_LEVEL, cmd) + ":"
 				if (sout!=null && !sout.toString().isEmpty()) {
 					message = "${message}" + sout.toString()
 				}
@@ -249,7 +257,7 @@ task dockerBuild {
 						} else {
 							def sizeIdx = lineSplit.length -1
 							if ("${project.version}".toString().equals(lineSplit[tagIndex])) {
-								printInfo("> Docker images id " + colorize(HIGHLITE_LEVEL, lineSplit[imageIndex]) + ": " + colorize(HIGHLITE_LEVEL, lineSplit[sizeIdx]))
+								printInfo("> Container images id " + colorize(HIGHLITE_LEVEL, lineSplit[imageIndex]) + ": " + colorize(HIGHLITE_LEVEL, lineSplit[sizeIdx]))
 							} else {
 							def duration = 1
 								try {
@@ -272,7 +280,7 @@ task dockerBuild {
 								}
 							
 								logInfo("Found different tag " + colorize(HIGHLITE_LEVEL, lineSplit[tagIndex]) 
-										+ colorize(INFO_LEVEL,", docker images id ") + colorize(HIGHLITE_LEVEL, lineSplit[imageIndex]) + colorize(INFO_LEVEL, ": ") 
+										+ colorize(INFO_LEVEL,", container images id ") + colorize(HIGHLITE_LEVEL, lineSplit[imageIndex]) + colorize(INFO_LEVEL, ": ") 
 										+ colorize(HIGHLITE_LEVEL, lineSplit[sizeIdx]) + colorize(INFO_LEVEL, " (age ") + colorize(HIGHLITE_LEVEL, duration) + colorize(INFO_LEVEL, "s)"))
 										
 								if (!dockerRemoveImageIdList.contains(lineSplit[imageIndex])) {
@@ -290,11 +298,11 @@ task dockerBuild {
 			if (project.hasProperty("dockerRemoveDanglingImages") && project.getProperty("dockerRemoveDanglingImages")) {
 				printInfo("> Remove all dangling images...")
 				sout = new StringBuilder()
-				exitStatus = execCommand("docker images -f 'dangling=true' -q", -1, sout, null)
+				exitStatus = execCommand("${containerCmd} images -f 'dangling=true' -q", -1, sout, null)
 				if (exitStatus==0) {
 					sout.eachLine {line, count ->
 						logInfo("Remove dangling image ${line}...")
-						cmd="docker rmi -f ${line}"
+						cmd="${containerCmd} rmi -f ${line}"
 						execDocker(cmd, "Could not prune dangling image (${line}):\n    " + cmd, false)
 					}
 				}
@@ -305,16 +313,16 @@ task dockerBuild {
 				def diff = dockerRemoveImageIdList.size() - dockerMaxNumberOfImages + 1
 				if (diff>0) {
 					def previousImageId = ""
-					printInfo("> Remove $diff previous docker image(s) - max $dockerMaxNumberOfImages versions:")
+					printInfo("> Remove $diff previous container image(s) - max $dockerMaxNumberOfImages versions:")
 					for (int i = 0; i<diff; i++) {
 						def imageId = dockerRemoveImageIdList.removeLast()
-						cmd="docker rmi -f $imageId"
+						cmd="${containerCmd} rmi -f $imageId"
 						sout = new StringBuilder()
 						exitStatus = execCommand(cmd, -1, sout, sout)
 						if (exitStatus>0) {
-							printInfo("  - Could not remove docker image " + colorize(HIGHLITE_LEVEL, imageId) + "!")
+							printInfo("  - Could not remove container image " + colorize(HIGHLITE_LEVEL, imageId) + "!")
 						} else {
-							printInfo("  - Delete docker image " + colorize(HIGHLITE_LEVEL, imageId) + ".")
+							printInfo("  - Delete container image " + colorize(HIGHLITE_LEVEL, imageId) + ".")
 						}
 					}
 				}
@@ -325,11 +333,11 @@ task dockerBuild {
 
 
 /***************************************************************************************
- * docker build task
+ * container build task
  ***************************************************************************************/
 task dockerRun {
 	group = 'Build'
-	description = 'Run a docker image.'
+	description = 'Run a container image.'
     dependsOn dockerBuild 
 
 	doLast {
@@ -339,10 +347,10 @@ task dockerRun {
 				dockerBuildName="$dockerName"
 			}
 			
-			printInfo("> Run docker image " +colorize(HIGHLITE_LEVEL,  dockerBuildName) + ".")
-			def cmd="docker run $dockerBuildName --rm".toString()
+			printInfo("> Run container image " +colorize(HIGHLITE_LEVEL,  dockerBuildName) + ".")
+			def cmd="${containerCmd} run $dockerBuildName --rm".toString()
 			printLine()
-			def exitStatus = execDocker(cmd, "Could not run docker image:\n    " + cmd)
+			def exitStatus = execDocker(cmd, "Could not run container image:\n    " + cmd)
 			logInfo("Ended with status code: " +colorize(HIGHLITE_LEVEL, exitStatus) + colorize(INFO_LEVEL, "."))
 			printLine(HIGHLITE_LEVEL, true, " exit " + exitStatus + "")
 		}
@@ -355,7 +363,7 @@ task dockerRun {
  ***************************************************************************************/
 task dockerPush {
 	group = 'Build'
-	description = 'Pusha docker image.'
+	description = 'Pusha container image.'
     dependsOn dockerBuild 
 	onlyIf { return project.hasProperty('validBuild') && project.getProperty('validBuild') }
 
@@ -368,14 +376,14 @@ task dockerPush {
 				dockerTagPrefix=project.getProperty('dockerSnapshotTagPrefix')
 				
 				if ("${dockerDeployRepositoryHost}".toString().isEmpty()) {
-					logInfo("Can't push docker image because of empty repository setting dockerSnapshotRepositoryHost.")
+					logInfo("Can't push container image because of empty repository setting dockerSnapshotRepositoryHost.")
 				} 
 			} else {
 				dockerDeployRepositoryHost=project.getProperty('dockerRepositoryHost')
 				dockerTagPrefix=project.getProperty('dockerTagPrefix')
 				
 				if ("${dockerDeployRepositoryHost}".toString().isEmpty()) {
-					logInfo("Can't push docker image because of empty repository setting dockerRepositoryHost.")
+					logInfo("Can't push container image because of empty repository setting dockerRepositoryHost.")
 				} 
 			}
 
@@ -386,14 +394,14 @@ task dockerPush {
 				def loginFirst=((project.hasProperty('dockerRepositoryUser') && !project.getProperty('dockerRepositoryUser').toString().isEmpty())
 								 && (project.hasProperty('dockerRepositoryPassword') && !project.getProperty('dockerRepositoryPassword').toString().isEmpty()))
 				if (loginFirst) {
-					printInfo("> Login docker host: " +colorize(HIGHLITE_LEVEL,  dockerDeployRepositoryHost) + ".")
-					def cmd="docker login --username " + project.getProperty('dockerRepositoryUser') + " --password"
+					printInfo("> Login container host: " +colorize(HIGHLITE_LEVEL,  dockerDeployRepositoryHost) + ".")
+					def cmd="${containerCmd} login --username " + project.getProperty('dockerRepositoryUser') + " --password"
 					
 					def cmdDockerDeployRepositoryHost = dockerDeployRepositoryHost
 					if ("$cmdDockerDeployRepositoryHost".toString().startsWith("https://hub.docker.com")) {
 					    cmdDockerDeployRepositoryHost = "" // in case it's dockerhub just ignore the repository host because it don't work stable on windows
 					}
-					exitStatus = execDocker("$cmd " + project.getProperty('dockerRepositoryPassword') + " $cmdDockerDeployRepositoryHost", "Could not login into docker host:\n    " + cmd + " ... $dockerDeployRepositoryHost")
+					exitStatus = execDocker("$cmd " + project.getProperty('dockerRepositoryPassword') + " $cmdDockerDeployRepositoryHost", "Could not login into container host:\n    " + cmd + " ... $dockerDeployRepositoryHost")
 				} 
 				
 				if (exitStatus==0) {
@@ -408,14 +416,14 @@ task dockerPush {
 					}
 					def tagName = "${baseTagName}$dockerBuildName"
 					
-					printInfo("> Tag docker image " + colorize(HIGHLITE_LEVEL, tagName) + ".")
-					def cmd="docker tag $dockerBuildName $tagName"
+					printInfo("> Tag container image " + colorize(HIGHLITE_LEVEL, tagName) + ".")
+					def cmd="${containerCmd} tag $dockerBuildName $tagName"
 					exitStatus = execDocker(cmd, "Could not tag image:\n    " + cmd)
 					
 					if (exitStatus==0) {
-						printInfo("> Push docker image " +colorize(HIGHLITE_LEVEL, tagName) + ".")
-						cmd="docker push $tagName"
-						exitStatus = execDocker(cmd, "Could not push image to docker host:\n    " + cmd)
+						printInfo("> Push container image " +colorize(HIGHLITE_LEVEL, tagName) + ".")
+						cmd="${containerCmd} push $tagName"
+						exitStatus = execDocker(cmd, "Could not push image to container host:\n    " + cmd)
 /*
 						if (project.hasProperty('dockerBuildLatestTag') && "true".equalsIgnoreCase("" + project.getProperty('dockerBuildLatestTag'))) {
 							def dockerBuildLatestName = ""
@@ -425,25 +433,25 @@ task dockerPush {
 								dockerBuildLatestName="${baseTagName}${rootProject.name}:" + project.getProperty('majorVersionNumber') + "." + project.getProperty('minorVersionNumber') + "." + project.getProperty('revisionVersionNumber') + ".latest"
 							}
 
-							printInfo("> Tag docker image " + colorize(HIGHLITE_LEVEL, dockerBuildLatestName) + ".")
-							def cmd="docker tag $dockerBuildName $dockerBuildLatestName"
+							printInfo("> Tag container image " + colorize(HIGHLITE_LEVEL, dockerBuildLatestName) + ".")
+							def cmd="${containerCmd} tag $dockerBuildName $dockerBuildLatestName"
 							exitStatus = execDocker(cmd, "Could not tag image:\n    " + cmd)
 							
 							if (exitStatus==0) {
-								printInfo("> Push docker image " +colorize(HIGHLITE_LEVEL, dockerBuildLatestName) + ".")
-								cmd="docker push $dockerBuildLatestName"
-								exitStatus = execDocker(cmd, "Could not push image to docker host:\n    " + cmd)
+								printInfo("> Push container image " +colorize(HIGHLITE_LEVEL, dockerBuildLatestName) + ".")
+								cmd="${containerCmd} push $dockerBuildLatestName"
+								exitStatus = execDocker(cmd, "Could not push image to container host:\n    " + cmd)
 							}
 						}
 */						
 						
 						if( project.hasProperty("dockerCleanupAfterPublish") && project.getProperty("dockerCleanupAfterPublish") ) {
-							printInfo("> Remove local docker image " +colorize(HIGHLITE_LEVEL, dockerBuildName) + ".")
-							cmd="docker image remove $dockerBuildName"
+							printInfo("> Remove local container image " +colorize(HIGHLITE_LEVEL, dockerBuildName) + ".")
+							cmd="${containerCmd} image remove $dockerBuildName"
 							exitStatus = execDocker(cmd, "Could not remove project tag:\n    " + cmd, false)
 
-							printInfo("> Remove local docker image " +colorize(HIGHLITE_LEVEL, tagName) + ".")
-							cmd="docker image remove $tagName"
+							printInfo("> Remove local container image " +colorize(HIGHLITE_LEVEL, tagName) + ".")
+							cmd="${containerCmd} image remove $tagName"
 							exitStatus = execDocker(cmd, "Could not remove repository tag:\n    " + cmd, false)
 						}
 					}
