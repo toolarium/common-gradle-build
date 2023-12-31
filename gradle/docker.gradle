@@ -41,21 +41,11 @@ apply from: "${commonGradleBuildUrl}/container.gradle"
  ***************************************************************************************/
 projectValidation {
 	doFirst {
-		if (project.getProperty('IS_NEW')) {
-			new File(srcDockerDirectory).mkdirs()
-			new File(srcKubernetesDirectory).mkdirs()
-			
-			createFileFromTemplate("$dockerFileTemplate", getTemplateFile("$dockerFileTemplateName"), true, true, false /* keep template*/)
-			createFileFromTemplate("$dockerIgnoreFile", getTemplateFile('dockerignore.template'))
+		printWarn("Please change dependency from docker.gradle to container.gradle!")
 		
-			// generate git files if necessary
-			if (project.hasProperty('initScmForNewProjects') && project.getProperty('initScmForNewProjects')) {
-				createGitFiles(true)
-			}
-
-			registerEndMessage("" << NELINE \
-								<< "  To get started, got to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
-								<< "      " + colorize(HIGHLITE_LEVEL, "$startExecutable") + "" << NELINE )
+		def failOnError = ("true".equalsIgnoreCase("" + project.getProperty('isReleaseVersion')));
+		if (failOnError) {
+			addError("Please change dependency from docker.gradle to container.gradle!")
 		}
 	}
 }

@@ -18,11 +18,11 @@ dependencies {
     // see https://docs.gradle.org/current/userguide/java_library_plugin.html
 
     // logging
-    implementation 'org.slf4j:slf4j-api:@@commonGradleSlf4jApiVersion@@'
+    implementation "org.slf4j:slf4j-api:${commonGradleSlf4jApiVersion}"
 
     // utilities    
-    //implementation "net.sf.jptools:jptools:@@commonGradleJptoolsVersion@@"
-    //implementation "net.sf.jptools:jptools:@@commonGradleJptoolsVersion@@:slf4j-redirect"
+    //implementation "net.sf.jptools:jptools:${commonGradleJptoolsVersion}"
+    //implementation "net.sf.jptools:jptools:${commonGradleJptoolsVersion}:slf4j-redirect"
 
     // resteasy
     implementation 'io.quarkus:quarkus-resteasy-jackson'

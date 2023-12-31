@@ -1,0 +1,53 @@
+/*
+ * sonar.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * 
+ * This file is part of the toolarium common-gradle-build.
+ * 
+ * The common-gradle-build is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * The common-gradle-build is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+ */
+ 
+buildscript {
+	repositories {
+        gradlePluginPortal()
+	}
+	dependencies {
+		def sonarVersion="4.4.1.3373" //"3.5.0.2730" //
+		if (project.hasProperty('sonarVersion')) {
+			sonarVersion = project.getProperty('sonarVersion')
+		}
+	
+		logInfo("sonar version: " + colorize(HIGHLITE_LEVEL, sonarVersion) + colorize(INFO_LEVEL, ".")); 
+		classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:${sonarVersion}" // https://repo.maven.apache.org/maven2/org/sonarsource/scanner/gradle/sonarqube-gradle-plugin/3.3/
+	}
+}
+
+org.sonarqube.gradle.SonarQubePlugin p = new org.sonarqube.gradle.SonarQubePlugin()
+p.apply(project);
+
+// 1) start server: nerdctl run -d --name sonarqube -p 9000:9000 -p 9092:9092 sonarqube
+// 2) create a token
+// 3) execute scan: cb "-Dsonar.host.url=http://localhost:9000" "-Dsonar.token=sqa_173ca9fa64921f797b29d1b7a853246b9c7eea54" sonar
+
+sonarqube {
+    properties {
+		property "sonar.sourceEncoding", "UTF-8"
+		property "sonar.dependencyCheck.htmlReportPath", "${dependencyCheckReportHtmlFile}"
+		property "sonar.dependencyCheck.jsonReportPath", "${dependencyCheckReportFile}"
+		property "sonar.java.coveragePlugin", "jacoco"
+        property "sonar.jacoco.reportPath", "${jacocoReportPath}"
+        property "sonar.junit.reportPath", "${junitReportPath}" //"${gradleBuildDirectory}/test-results/test"
+    }
+}

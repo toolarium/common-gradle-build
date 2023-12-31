@@ -28,6 +28,7 @@ if (!project.hasProperty('commonGradleBuildElementPath')) {
 	ext.commonGradleBuildElementPath="${commonGradleBuildUrl}/build-element"
 }
 apply from: "${commonGradleBuildElementPath}/java-base.gradle"
+apply from: "${commonGradleBuildElementPath}/base/sonar.gradle"
 
 
 /***************************************************************************************

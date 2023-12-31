@@ -13,5 +13,5 @@ apply from: "@@COMMON_GRADLE_BUILD_URL@@"
 dependencies {
     // see https://docs.gradle.org/current/userguide/java_library_plugin.html
 
-    // e.g.: implementation 'net.sf.jptools:jptools:@@commonGradleJptoolsVersion@@'
+    // e.g.: implementation "net.sf.jptools:jptools:${commonGradleJptoolsVersion}"
 }

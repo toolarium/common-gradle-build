@@ -18,13 +18,13 @@ dependencies {
     // see https://docs.gradle.org/current/userguide/java_library_plugin.html
 
     // jakarta annotation
-    implementation 'jakarta.annotation:jakarta.annotation-api:@@commonGradleJakartaAnnotationVersion@@'
-    implementation 'com.fasterxml.jackson.core:jackson-annotations:@@commonGradleJacksonAnnotationVersion@@'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:@@commonGradleJacksonAnnotationVersion@@'
+    implementation "jakarta.annotation:jakarta.annotation-api:${commonGradleJakartaAnnotationVersion}"
+    implementation "com.fasterxml.jackson.core:jackson-annotations:${commonGradleJacksonAnnotationVersion}"
+    implementation "com.fasterxml.jackson.core:jackson-databind:${commonGradleJacksonAnnotationVersion}"
 
     // validation
-    implementation 'jakarta.validation:jakarta.validation-api:@@commonGradleJakartaValidtionVersion@@'
+    implementation "jakarta.validation:jakarta.validation-api:${commonGradleJakartaValidtionVersion}"
 
     // jakarta ws rs api
-    implementation 'jakarta.ws.rs:jakarta.ws.rs-api:@@commonGradleJakartaWsRSApiVersion@@'
+    implementation "jakarta.ws.rs:jakarta.ws.rs-api:{commonGradleJakartaWsRSApiVersion}"
 }

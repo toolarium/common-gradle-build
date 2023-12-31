@@ -33,6 +33,16 @@ test {
 		useJUnitPlatform()
 	}
 
+    reports {
+		if (useJUnit) {		
+			junitXml {
+				//outputPerTestCase = true // defaults to false
+				//mergeReruns = true // defaults to false
+				outputLocation = new File("${junitReportPath}".toString())
+			}		
+		}
+    }
+	
 	if (initTesting) {
 		systemProperty "file.encoding", "${fileEncoding}"
 		

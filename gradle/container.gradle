@@ -95,6 +95,7 @@ task customJar(type: Jar) { jar ->
 	duplicatesStrategy = 'exclude' // work around, currendly don't work "$duplicatesStrategy"
 	description = 'Assembles the kubernetes configuration into a jar file'
 	onlyIf { return (project.hasProperty('createCustomJar') && project.getProperty('createCustomJar').toString().equalsIgnoreCase("true")) }
+	dependsOn htmlDependencyReport, dependencyReport
 	
 	// define proper manifest
 	manifest {
