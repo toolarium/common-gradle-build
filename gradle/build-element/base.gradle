@@ -107,7 +107,12 @@ apply from: "${commonGradleBuildElementPath}/base/resourcebundle.gradle"
  * dependency check
  ***************************************************************************************/
 apply from: "${commonGradleBuildElementPath}/base/dependencies.gradle"
-apply from: "${commonGradleBuildElementPath}/base/dependency-check.gradle"
+
+try {
+	apply from: "${commonGradleBuildElementPath}/base/dependency-check.gradle"
+} catch (Exception e) {
+	printWarn("Ignore dependency-check.gradle");
+}
 
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

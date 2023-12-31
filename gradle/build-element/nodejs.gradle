@@ -267,7 +267,9 @@ if (!project.getProperty('IS_NEW')) {
 	npmInstall.args = ['--loglevel', 'silent']
 
 	// run after first build
-    dependencyCheckAnalyze.dependsOn npmBuild
+	if (project.tasks.findByName('dependencyCheckAnalyze')) {
+		dependencyCheckAnalyze.dependsOn npmBuild
+	}
 
 	// if there was never an initialisation add dependencies
 	if (!new File("$nodeConfigInitFile").exists()) {

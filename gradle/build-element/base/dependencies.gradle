@@ -39,6 +39,63 @@ logInfo("Load white- and blacklist dependencies (" + colorize(HIGHLITE_LEVEL, co
 Properties whitelistDependencies = readPropertiesFile(commonGradleConfigWhitelistDependenciesPath)
 Properties blacklistDependencies = readPropertiesFile(commonGradleConfigBlacklistDependenciesPath)
 
+
+/***************************************************************************************
+ * Get a dependency version
+ ***************************************************************************************/
+ext.getDependencyVersion = { configurationName, groupName, name ->
+    def libDef = project.configurations.getByName(configurationName).allDependencies.matching {
+       it.group.equals(groupName) && it.name.equals(name)
+    }
+
+	return libDef[0].version;
+}
+
+
+/***************************************************************************************
+ * Validate a dependency version
+ ***************************************************************************************/
+ext.validateDependencyVersion = { configurationName, dependencyName ->
+    int idx = dependencyName.indexOf(":")
+    if (idx>0) {
+        int lastIdx = dependencyName.indexOf(":", idx+1)
+        if (lastIdx>(idx+2) && dependencyName.indexOf(":", lastIdx+1)<0) {
+            return validateDependencyVersionByGroupAndName(configurationName, dependencyName.substring(0, idx), dependencyName.substring(idx+1, lastIdx), dependencyName.substring(lastIdx+1))
+        } else {
+            addError("Could not validate dependency ${dependencyName}!")
+        }
+    } else {
+        addError("Could not validate dependency ${dependencyName}!")
+    }
+}
+
+
+/***************************************************************************************
+ * Validate a dependency version by group and name
+ ***************************************************************************************/
+ext.validateDependencyVersionByGroupAndName = { configurationName, groupName, name, expectedVersion ->
+    boolean isValid = false
+    def versionToCheck = getDependencyVersion(configurationName, groupName, name)
+	if (!isCompliantVersion("${expectedVersion}", "${versionToCheck}")) {
+        //printInfo("> Dependency " + colorize(HIGHLITE_LEVEL, groupName + ":" + name + ":" + versionToCheck) + NELINE + "    must be updated to at least version " + colorize(HIGHLITE_LEVEL, expectedVersion) + " to be compatible!")
+        printWarn("Dependency " + colorize(HIGHLITE_LEVEL, groupName + ":" + name + ":" + versionToCheck) + NELINE + colorize(WARN_LEVEL, "    must be updated to at least version ") + colorize(HIGHLITE_LEVEL, expectedVersion) + colorize(WARN_LEVEL, " to be compatible!"))
+    } else {
+        isValid = true
+    }
+
+	if (project.hasProperty('isReleaseUpdateVersion') && "true".equalsIgnoreCase("" + project.getProperty('isReleaseUpdateVersion'))) {
+		ext.validBuild=false
+		ext.validBuildMessage="Incompatible dependency: " + groupName + ":" + name + " -> " + versionToCheck + " < " + expectedVersion + "!"
+        //addError("Incompatible dependency: " + groupName + ":" + name + " -> " + versionToCheck + " < " + expectedVersion + "!")
+    }
+
+	return isValid;
+}
+
+
+/***************************************************************************************
+ * Get the version expression
+ ***************************************************************************************/
 ext.getVersionExpression = { Properties properties, sourceName, dependencyGroupName, dependencyName ->
 	def versionExpression = properties.getProperty(("" + dependencyGroupName).toString())
 	if (versionExpression!=null && !versionExpression.toString().trim().isEmpty()) {
@@ -66,6 +123,10 @@ ext.getVersionExpression = { Properties properties, sourceName, dependencyGroupN
 	return null
 }
 
+
+/***************************************************************************************
+ * Validate a dependency
+ ***************************************************************************************/
 def dependencyReportedMap = [:]
 ext.validateDependency = { sourceName, dependencyGroupName, dependencyName, dependencyVersion ->
 	if (dependencyVersion == null) {
@@ -113,7 +174,6 @@ ext.validateDependency = { sourceName, dependencyGroupName, dependencyName, depe
 	
 	return true
 }
-
 
 
 /** 

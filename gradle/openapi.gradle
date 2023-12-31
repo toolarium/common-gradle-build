@@ -18,7 +18,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
  */
-def openapiPluginVersion="6.5.0"
+def openapiPluginVersion="7.2.0"
 if (project.hasProperty('openapiPluginVersion')) {
 	openapiPluginVersion = project.getProperty('openapiPluginVersion')
 }
@@ -94,6 +94,7 @@ setCommonGradleProperty('createSrcTestResourcesDirectory', false)
  ***************************************************************************************/
 ext.validateOpenapiVersion = { ->
 
+	boolean printOpenAPIVersion = true;
 	try {
 		def doOpenapiUpdate = true;
 		if (project.hasProperty('isReleaseUpdateVersion') && "true".equalsIgnoreCase("" + project.getProperty('isReleaseUpdateVersion'))) {
@@ -105,6 +106,7 @@ ext.validateOpenapiVersion = { ->
 			if (project.hasProperty('defaultOpenapiPluginVersion')) {
 				def minDefaultVersion = parseReleaseVersion("${defaultOpenapiPluginVersion}");
 				if (currentVersion.compareTo(minDefaultVersion) < 0) {
+					printOpenAPIVersion = false
 					def openapiWarningMessage = "" + colorize(WARN_LEVEL, "OpenAPI-Plugin") + " version " + colorize(HIGHLITE_LEVEL, openapiPluginVersion) + " has to be updated to " + colorize(HIGHLITE_LEVEL, defaultOpenapiPluginVersion) + ".";
 					
 					try {		
@@ -147,6 +149,11 @@ ext.validateOpenapiVersion = { ->
 	} catch (Exception e) {
 		printWarn("Could not check openapi version: " + e.getMessage())
 	}
+	
+	if (printOpenAPIVersion) {
+		printInfo("> " + colorize(HIGHLITE_LEVEL, "OpenAPI-Plugin") + " version " + colorize(HIGHLITE_LEVEL, openapiPluginVersion) + ".");
+	}
+
 }
 
 /*

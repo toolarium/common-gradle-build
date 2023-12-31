@@ -56,18 +56,24 @@ p.apply(project);
 
 dependencyCheck {
     autoUpdate = project.getProperty('dependencyAutoUpdate') // true
-    cveValidForHours = project.getProperty('dependencyCveValidForHours') // 12
     formats = ['HTML', 'JSON']
 	//format='ALL'
 	outputDirectory = "$dependencyCheckReportPath"
     //junitFailOnCVSS = 0
     //failBuildOnCVSS = 11
     failOnError = project.getProperty('dependencyFailOnError') // true
+	skipConfigurations = ['checkstyle', 'jacocoAnt']
 	
 	analyzers {
 	    assemblyEnabled = false
 	}
 	
+	hostedSuppressions {
+        validForHours = project.getProperty('dependencyCveValidForHours') // 12
+	}
+	nvd {
+        validForHours = project.getProperty('dependencyCveValidForHours') // 12
+	}
     //suppressionFile
 }
 

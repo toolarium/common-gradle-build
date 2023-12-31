@@ -34,7 +34,7 @@ setCommonGradleDefaultPropertyIfNull("snakeYamlVersion", "1.29")
 setCommonGradleDefaultPropertyIfNull("grgitCoreVersion", "4.1.1")
 setCommonGradleDefaultPropertyIfNull("jsurferVersion", "1.6.3")
 setCommonGradleDefaultPropertyIfNull("semver4jVersion", "3.1.0")
-setCommonGradleDefaultPropertyIfNull("gradleWrapperDefaultVersion", "8.1.1")
+setCommonGradleDefaultPropertyIfNull("gradleWrapperDefaultVersion", "8.5")
 setCommonGradleDefaultPropertyIfNull("gradleHome", "$userHomeDirectory/.gradle")
 setCommonGradleDefaultPropertyIfNull("gradleHomePropertiesFile", "$gradleHome/gradle.properties")
 setCommonGradleDefaultPropertyIfNull("defaultCommonGradleBuildUrl", "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/common.gradle")
@@ -370,7 +370,7 @@ setCommonGradleDefaultPropertyIfNull("testMaxHeapSize", "512m")
 
 if (initTesting) {
 	if (useJUnit) {
-		setCommonGradleDefaultPropertyIfNull("testDependencyVersion", "5.7.1")
+		setCommonGradleDefaultPropertyIfNull("testDependencyVersion", "5.10.1")
 
 		if (testDependencyVersion!=null && !testDependencyVersion.isEmpty()) {
 			if (testDependencyVersion.startsWith("4.")) {
@@ -425,7 +425,7 @@ setCommonGradleDefaultPropertyIfNull("checkstyleEclipseConfigurationOverwrite", 
 /***************************************************************************************
  * test coverage: jacoco
  ***************************************************************************************/
-setCommonGradleDefaultPropertyIfNull("jacocoToolDefaultVersion", '0.8.7')
+setCommonGradleDefaultPropertyIfNull("jacocoToolDefaultVersion", '0.8.9')
 setCommonGradleDefaultPropertyIfNull("jacocoXMLReport", true)
 setCommonGradleDefaultPropertyIfNull("jacocoCSVReport", false)
 setCommonGradleDefaultPropertyIfNull("jacocoHTMLReport", true)
@@ -433,9 +433,9 @@ setCommonGradleDefaultPropertyIfNull("jacocoReportPath", "${reportsPath}/testcov
 
 
 /***************************************************************************************
- * dependency-check
+ * dependency-check: https://plugins.gradle.org/plugin/org.owasp.dependencycheck
  ***************************************************************************************/
-setCommonGradleDefaultPropertyIfNull("toolariumDependencyCheckVersion", '6.5.0.1')
+setCommonGradleDefaultPropertyIfNull("toolariumDependencyCheckVersion", '9.0.6')  
 
 
 /***************************************************************************************
@@ -450,8 +450,8 @@ setCommonGradleDefaultPropertyIfNull("servicePropertiesName", "toolarium-service
  ***************************************************************************************/
 // the quarkusPluginVersion is used for setup new projects where defaultQuarkusPluginVersion 
 // controls the used version and force for update.x
-setCommonGradleDefaultPropertyIfNull("defaultQuarkusPluginVersion", '3.1.3.Final')
-//setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", '3.1.3.Final')
+setCommonGradleDefaultPropertyIfNull("defaultQuarkusPluginVersion", '3.2.9.Final')
+//setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", '3.2.9.Final')
 setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", "${defaultQuarkusPluginVersion}")
 setCommonGradleDefaultPropertyIfNull("quarkusReleaseUpdateVersion", true)
 setCommonGradleDefaultPropertyIfNull("quarkusPlatformArtifactId", 'quarkus-universe-bom')
@@ -492,7 +492,7 @@ setCommonGradleDefaultPropertyIfNull("webServerRunnerPropertiesName", "jwebserve
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("srcMainApiSpecDirectoryName", "api-spec")
 setCommonGradleDefaultPropertyIfNull("srcMainApiSpecDirectory", "${srcMainDirectory}/${srcMainApiSpecDirectoryName}")
-setCommonGradleDefaultPropertyIfNull("defaultOpenapiPluginVersion", "6.5.0")
+setCommonGradleDefaultPropertyIfNull("defaultOpenapiPluginVersion", "7.2.0")
 setCommonGradleDefaultPropertyIfNull("openapiPluginVersion", "${defaultOpenapiPluginVersion}")
 //setCommonGradleDefaultPropertyIfNull("openapiLibrary", 'okhttp-gson')
 //setCommonGradleDefaultPropertyIfNull("openapiGeneratorName", 'java')
@@ -729,7 +729,7 @@ setCommonGradleDefaultPropertyIfNull("kubernetesControllerImage", "networking.k8
 // imgress-nginx: https://github.com/kubernetes/ingress-nginx
 setCommonGradleDefaultPropertyIfNull("kubernetesSupportIngressNginx", true)
 setCommonGradleDefaultPropertyIfNull("kubernetesDownloadIngressNginxVersion", false)
-setCommonGradleDefaultPropertyIfNull("kubernetesIngressNginxVersion", "1.1.1") // see https://github.com/kubernetes/ingress-nginx
+setCommonGradleDefaultPropertyIfNull("kubernetesIngressNginxVersion", "1.9.5") // see https://github.com/kubernetes/ingress-nginx
 setCommonGradleDefaultPropertyIfNull("kubernetesIngressUrl", "https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v${kubernetesIngressNginxVersion}/deploy/static/provider/cloud/deploy.yaml") 
 setCommonGradleDefaultPropertyIfNull("kubernetesIngressProxyBufferSize", "8k") 
 setCommonGradleDefaultPropertyIfNull("kubernetesIngressProxyBodySize", "10m") 
@@ -813,7 +813,7 @@ setCommonGradleDefaultPropertyIfNull("kubernetesSupportIdm", true)
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmTemplateFilename", "kubernetes-idm.template")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmConfigTemplateFilename", "kubernetes-idm-config.template")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmSecretTemplateFilename", "kubernetes-idm-secret.template")
-setCommonGradleDefaultPropertyIfNull("kubernetesIdmImageVersion", "21.1.0")
+setCommonGradleDefaultPropertyIfNull("kubernetesIdmImageVersion", "23.0.3")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmUrlPath", "/auth")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmUrlProtocol", "${kubernetesApplicationPrototcol}")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmFrontendUrl", "${kubernetesIdmUrlProtocol}${kubernetesApplicationHost}${kubernetesIdmUrlPath}")
@@ -1001,12 +1001,12 @@ setCommonGradleDefaultPropertyIfNull("commonGradleConfigBlacklistDependenciesNam
 /***************************************************************************************
  * library version used in templates
  ***************************************************************************************/
-setCommonGradleDefaultPropertyIfNull("commonGradleSlf4jApiVersion", "1.7.30")
-setCommonGradleDefaultPropertyIfNull("commonGradleLogbackVersion", "1.2.3")
-setCommonGradleDefaultPropertyIfNull("commonGradleJptoolsVersion", "1.7.7")
+setCommonGradleDefaultPropertyIfNull("commonGradleSlf4jApiVersion", "2.0.10")
+setCommonGradleDefaultPropertyIfNull("commonGradleLogbackVersion", "1.4.6")
+setCommonGradleDefaultPropertyIfNull("commonGradleJptoolsVersion", "1.7.10")
 setCommonGradleDefaultPropertyIfNull("commonGradleJavaxValidtionVersion", "2.0.1.Final")
 setCommonGradleDefaultPropertyIfNull("commonGradleJavaxWsRSApiVersion", "2.1.1")
-setCommonGradleDefaultPropertyIfNull("commonGradleJacksonAnnotationVersion", "2.15.2")
+setCommonGradleDefaultPropertyIfNull("commonGradleJacksonAnnotationVersion", "2.16.1")
 setCommonGradleDefaultPropertyIfNull("commonGradleJavaxAnnotationVersion", "1.3.2")
 setCommonGradleDefaultPropertyIfNull("commonGradleJakartaAnnotationVersion", "2.1.1")
 setCommonGradleDefaultPropertyIfNull("commonGradleJakartaValidtionVersion", "3.0.2")
@@ -1018,3 +1018,6 @@ setCommonGradleDefaultPropertyIfNull("commonGradleJakartaWsRSApiVersion", "3.1.0
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("commonGradleJptoolsModelGeneratorVersion", "${commonGradleJptoolsVersion}")
 setCommonGradleDefaultPropertyIfNull("commonGradleJexcelapiModelGeneratorVersion", "2.6.12")
+
+
+

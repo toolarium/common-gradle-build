@@ -82,6 +82,8 @@ project.ext.set("useJUnit", false)
 ext.validateQuarkusVersion = { ->
 
 	Properties versionInformation = new Properties();
+	boolean printQuarkusVersion = true;
+	
 	try {
 		def quarkusVersionList = "$commonGradleBuildCache/quarkus-versions.properties";
 		def loadVersionList = false
@@ -136,6 +138,7 @@ ext.validateQuarkusVersion = { ->
 
 				def minDefaultVersion = parseReleaseVersion(defaultQuarkusPluginVersion);
 				if (currentVersion.compareTo(minDefaultVersion) < 0) {
+					printQuarkusVersion = false
 					def quarkusWarningMessage = "" + colorize(WARN_LEVEL, "Quarkus") + " version " + colorize(HIGHLITE_LEVEL, quarkusPluginVersion) + " has to be updated to " + colorize(HIGHLITE_LEVEL, defaultQuarkusPluginVersion) + ".";
 					try {		
 						copyFile(gradlePropertiesFile, gradlePropertiesFile + ".bak")
@@ -220,6 +223,10 @@ ext.validateQuarkusVersion = { ->
 		}
 	} catch (Exception e) {
 		printWarn("Could not check quarlus version: " + e.getMessage())
+	}
+	
+	if (printQuarkusVersion) {
+		printInfo("> " + colorize(HIGHLITE_LEVEL, "Quarkus") + " version " + colorize(HIGHLITE_LEVEL, quarkusPluginVersion) + ".");
 	}
 	
 	return versionInformation;
