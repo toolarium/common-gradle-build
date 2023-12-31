@@ -21,12 +21,19 @@
 
 
 ext.projectTypeTemplatePath='docker'
+if (!project.hasProperty('commonGradleBuildUrl')) {
+    ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
+}
+
+if (!project.hasProperty('commonGradleBuildElementPath')) {
+	ext.commonGradleBuildElementPath="${commonGradleBuildUrl}/build-element"
+}
 
 
 /***************************************************************************************
  * Dependencies
  ***************************************************************************************/
-apply from: "${commonGradleBuildElementPath}/container.gradle"
+apply from: "${commonGradleBuildUrl}/container.gradle"
 
 
 /***************************************************************************************
