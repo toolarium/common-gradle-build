@@ -19,7 +19,6 @@
  * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 apply from: "${commonGradleBuildElementPath}/base/json.gradle"
 
 
@@ -250,10 +249,11 @@ task verifyDependencies() {
 				e.printStackTrace()
 			}
 		}
-		
 		logInfo "Configuratiin: $configurationList"
 		printInfo "> Implementation: " + dependencyMap.get("implementation")
-		printInfo "> runtimeClasspath: " + dependencyMap.get("runtimeClasspath")
+		printInfo "> RuntimeClasspath: " + dependencyMap.get("runtimeClasspath")
+		printInfo "> CompileOnly: " + dependencyMap.get("compileOnly")
+		//printInfo "> Keys: " + dependencyMap.keySet()
 	}
 }
 
@@ -269,7 +269,7 @@ if (!project.getProperty('IS_NEW') && project.hasProperty('dependencyHTMLReport'
 }
 
 htmlDependencyReport {
-	reports.html.destination = file("$dependenciesReportPath")
+	reports.html.outputLocation = file("$dependenciesReportPath")
 	
     doLast {
 	    // prepare dependency json
