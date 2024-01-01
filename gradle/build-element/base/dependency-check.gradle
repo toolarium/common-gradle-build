@@ -60,7 +60,7 @@ dependencyCheck {
 	//format='ALL'
 	outputDirectory = "$dependencyCheckReportPath"
     //junitFailOnCVSS = 0
-    //failBuildOnCVSS = 11
+	failBuildOnCVSS = project.getProperty('failBuildOnCVSS') // default 11	
     failOnError = project.getProperty('dependencyFailOnError') // true
 	skipConfigurations = ['checkstyle', 'jacocoAnt']
 	

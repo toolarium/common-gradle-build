@@ -1,27 +1,34 @@
 /***************************************************************************************
  * Maven credentials
  ***************************************************************************************/
-mavenUsername =
-mavenPassword =
+mavenUsername=
+mavenPassword=
 
 
 /***************************************************************************************
  * Signing credentials
  ***************************************************************************************/
-signing.keyId =
-signing.password =
-signing.secretKeyRingFile =
+signing.keyId=
+signing.password=
+signing.secretKeyRingFile=
 
 
 /***************************************************************************************
  * Publishing information, by default the mavenUser or os user will be used
  ***************************************************************************************/
-publishingUsername =
-publishingMail =
+publishingUsername=
+publishingMail=
 
 
 /***************************************************************************************
  * Define the docker repository credentials
  ***************************************************************************************/
-dockerRepositoryUser =
-dockerRepositoryPassword = 
+dockerRepositoryUser=
+dockerRepositoryPassword= 
+
+
+/***************************************************************************************
+ * Define the sonarqube url and credentials
+ ***************************************************************************************/
+sonarHostUrl=http://localhost:9000
+sonarToken=

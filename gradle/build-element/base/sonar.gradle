@@ -19,12 +19,27 @@
  * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
  */
  
+ /* Short description:
+   1) start server: nerdctl run -d --name sonarqube -p 9000:9000 -p 9092:9092 sonarqube
+   2) create a token
+   3) execute scan: cb "-Dsonar.host.url=http://localhost:9000" "-Dsonar.token=..." sonar
+
+   set config to gradle.properties in the home directory windows: %USERPROFILE%\.gradle\gradle.properties, linux %HOME/.gradle/gradle.properties
+   sonar.host.url=http://localhost:9000
+   sonar.token=...
+ 
+   restart:
+   >nerdctl stop sonarqube
+   >nerdctl start sonarqube
+   >cb sonar
+*/
+ 
 buildscript {
 	repositories {
         gradlePluginPortal()
 	}
 	dependencies {
-		def sonarVersion="4.4.1.3373" //"3.5.0.2730" //
+		def sonarVersion="4.4.1.3373" //"3.5.0.2730" --> version from https://plugins.gradle.org/plugin/org.sonarqube
 		if (project.hasProperty('sonarVersion')) {
 			sonarVersion = project.getProperty('sonarVersion')
 		}
@@ -34,20 +49,55 @@ buildscript {
 	}
 }
 
-org.sonarqube.gradle.SonarQubePlugin p = new org.sonarqube.gradle.SonarQubePlugin()
-p.apply(project);
 
-// 1) start server: nerdctl run -d --name sonarqube -p 9000:9000 -p 9092:9092 sonarqube
-// 2) create a token
-// 3) execute scan: cb "-Dsonar.host.url=http://localhost:9000" "-Dsonar.token=sqa_173ca9fa64921f797b29d1b7a853246b9c7eea54" sonar
+/***************************************************************************************
+ * sonar configuration
+ ***************************************************************************************/
+ if (project.hasProperty("sonarEnabled") && "true".toString().equalsIgnoreCase(project.getProperty("sonarEnabled").toString())) {
+	// Init plugin
+	org.sonarqube.gradle.SonarQubePlugin p = new org.sonarqube.gradle.SonarQubePlugin()
+	p.apply(project);
+	sonar {
+		properties {
+			if (project.hasProperty('sonarHostUrl') && !project.getProperty('sonarHostUrl').toString().trim().isEmpty()) {
+				property "sonar.host.url", project.getProperty('sonarHostUrl').toString().trim()
+			}
+			if (project.hasProperty('sonarToken') && !project.getProperty('sonarToken').toString().trim().isEmpty()) {
+				property "sonar.token", project.getProperty('sonarToken').toString().trim()
+			}
+			
+			property "sonar.sourceEncoding", "${fileEncoding}"
+			property "sonar.dependencyCheck.htmlReportPath", "${dependencyCheckReportHtmlFile}"
+			property "sonar.dependencyCheck.jsonReportPath", "${dependencyCheckReportFile}"
+			property "sonar.java.coveragePlugin", "jacoco"
+			property "sonar.jacoco.reportPath", "${jacocoReportPath}"
+			property "sonar.junit.reportPath", "${junitReportPath}" //"${gradleBuildDirectory}/test-results/test"
+		}
+	}
 
-sonarqube {
-    properties {
-		property "sonar.sourceEncoding", "UTF-8"
-		property "sonar.dependencyCheck.htmlReportPath", "${dependencyCheckReportHtmlFile}"
-		property "sonar.dependencyCheck.jsonReportPath", "${dependencyCheckReportFile}"
-		property "sonar.java.coveragePlugin", "jacoco"
-        property "sonar.jacoco.reportPath", "${jacocoReportPath}"
-        property "sonar.junit.reportPath", "${junitReportPath}" //"${gradleBuildDirectory}/test-results/test"
-    }
+
+	/***************************************************************************************
+	 * Pritn sonar info
+	 ***************************************************************************************/
+	task sonarInfo {
+		group = 'Build'
+		description = 'Call sonar.'
+		onlyIf { return validBuild }
+
+		doLast {
+			if (project.hasProperty('sonarHostUrl') && !project.getProperty('sonarHostUrl').toString().trim().isEmpty()) {
+				printInfo("> Call Sonar " + colorize(HIGHLITE_LEVEL, sonarHostUrl) + "..."); 
+			} else {
+				printInfo("> Call Sonar...")
+			}
+		}
+	}
+	project.tasks["sonar"].dependsOn sonarInfo
+	
+	if (project.tasks.findByName('release')) {
+		project.tasks["release"].dependsOn sonarInfo
+		
+		if ("true".equalsIgnoreCase("" + project.getProperty('isReleaseVersion'))) {
+		}
+	}
 }

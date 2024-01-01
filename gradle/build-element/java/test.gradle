@@ -29,6 +29,9 @@ compileTestJava.dependsOn("jar")
  * Test
  ***************************************************************************************/
 test {
+	environment.remove("GRGIT_USER")
+	environment.remove("GRGIT_PASS")
+	
 	if (useJUnit) {
 		useJUnitPlatform()
 	}

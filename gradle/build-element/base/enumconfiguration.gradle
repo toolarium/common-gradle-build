@@ -32,11 +32,10 @@ buildscript {
 		}
 	}
 	dependencies {
-		def toolariumEnumConfigurationVersion="1.1.6"
+		def toolariumEnumConfigurationVersion="1.1.8"
 		if (project.hasProperty('toolariumEnumConfigurationVersion')) {
 			toolariumEnumConfigurationVersion = project.getProperty('toolariumEnumConfigurationVersion')
 		}
-
 		logInfo("toolarium enum-configuration version: " + colorize(HIGHLITE_LEVEL, toolariumEnumConfigurationVersion) + colorize(INFO_LEVEL, ".")); 
 		classpath "com.github.toolarium:toolarium-enum-configuration:${toolariumEnumConfigurationVersion}"
 	}

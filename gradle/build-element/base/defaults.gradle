@@ -34,7 +34,6 @@ setCommonGradleDefaultPropertyIfNull("snakeYamlVersion", "1.29")
 setCommonGradleDefaultPropertyIfNull("grgitCoreVersion", "4.1.1")
 setCommonGradleDefaultPropertyIfNull("jsurferVersion", "1.6.3")
 setCommonGradleDefaultPropertyIfNull("semver4jVersion", "3.1.0")
-setCommonGradleDefaultPropertyIfNull("sonarVersion", "4.4.1.3373")
 setCommonGradleDefaultPropertyIfNull("gradleWrapperDefaultVersion", "8.5")
 setCommonGradleDefaultPropertyIfNull("gradleHome", "$userHomeDirectory/.gradle")
 setCommonGradleDefaultPropertyIfNull("gradleHomePropertiesFile", "$gradleHome/gradle.properties")
@@ -298,7 +297,7 @@ setCommonGradleDefaultPropertyIfNull("compileJavaHome", "")
  * toolarium enum configuration support
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("hasToolariumEnumConfiguration", true)
-setCommonGradleDefaultPropertyIfNull("toolariumEnumConfigurationVersion", "1.1.6") // in kubernetes-product.gradle there is an additional dependency
+setCommonGradleDefaultPropertyIfNull("toolariumEnumConfigurationVersion", "1.1.8") // in kubernetes-product.gradle there is an additional dependency
 setCommonGradleDefaultPropertyIfNull("kubernetesProductEnvironmentVariableName", "kubernetes-environment-variables.properties")
 setCommonGradleDefaultPropertyIfNull("kubernetesProductConfigMapEnvironmentVariableName", "kubernetes-configmap-environment-variables.properties")
 setCommonGradleDefaultPropertyIfNull("kubernetesProductEnvironmentVariablePath", "kubernetes-product")
@@ -371,7 +370,7 @@ setCommonGradleDefaultPropertyIfNull("testMaxHeapSize", "512m")
 
 if (initTesting) {
 	if (useJUnit) {
-		setCommonGradleDefaultPropertyIfNull("testDependencyVersion", "5.10.1")
+		setCommonGradleDefaultPropertyIfNull("testDependencyVersion", "5.7.2") // 5.10.1
 
 		if (testDependencyVersion!=null && !testDependencyVersion.isEmpty()) {
 			if (testDependencyVersion.startsWith("4.")) {
@@ -438,6 +437,14 @@ setCommonGradleDefaultPropertyIfNull("jacocoReportPath", "${reportsPath}/testcov
  * dependency-check: https://plugins.gradle.org/plugin/org.owasp.dependencycheck
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("toolariumDependencyCheckVersion", '9.0.6')  
+setCommonGradleDefaultPropertyIfNull("failBuildOnCVSS", 7)  
+
+
+/***************************************************************************************
+ * sonar
+ ***************************************************************************************/
+setCommonGradleDefaultPropertyIfNull("sonarEnabled", false)
+setCommonGradleDefaultPropertyIfNull("sonarVersion", "4.4.1.3373")
 
 
 /***************************************************************************************
@@ -1009,7 +1016,7 @@ setCommonGradleDefaultPropertyIfNull("commonGradleLogbackVersion", "1.4.14")
 setCommonGradleDefaultPropertyIfNull("commonGradleJptoolsVersion", "1.7.10")
 setCommonGradleDefaultPropertyIfNull("commonGradleJavaxValidtionVersion", "2.0.1.Final")
 setCommonGradleDefaultPropertyIfNull("commonGradleJavaxWsRSApiVersion", "2.1.1")
-setCommonGradleDefaultPropertyIfNull("commonGradleJacksonAnnotationVersion", "2.16.1")
+setCommonGradleDefaultPropertyIfNull("commonGradleJacksonAnnotationVersion", "2.15.3")
 setCommonGradleDefaultPropertyIfNull("commonGradleJavaxAnnotationVersion", "1.3.2")
 setCommonGradleDefaultPropertyIfNull("commonGradleJakartaAnnotationVersion", "2.1.1")
 setCommonGradleDefaultPropertyIfNull("commonGradleJakartaValidtionVersion", "3.0.2")
