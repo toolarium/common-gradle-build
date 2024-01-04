@@ -363,7 +363,14 @@ buildFatWebJar {  ->
 	}
 }
 buildFatWebJar.mustRunAfter(customJar)
-build.finalizedBy(buildFatWebJar)
+if (project.tasks.findByName('npmBuild')) {
+	buildFatWebJar.mustRunAfter("npmBuild")
+	npmInstall.finalizedBy(buildFatWebJar)
+} else {
+	build.finalizedBy(buildFatWebJar)
+}
+buildFatWebJar.mustRunAfter(build)
+
 
 /***************************************************************************************
  * Build sources jar file

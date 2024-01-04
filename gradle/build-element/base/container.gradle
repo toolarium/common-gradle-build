@@ -37,15 +37,20 @@ ext.checkDockerInstallation = { ->
 		dockerInstallationValidated=true
 		def stdout = new StringBuilder()
 		def exitStatus = execCommand("${containerCmd} --version", -1, stdout, stdout)
+		if (exitStatus==0) {
+			exitStatus = execCommand("${containerCmd} info")
+		}
+
 		if (exitStatus!=0) {
 			stdout = new StringBuilder()
 			exitStatus = execCommand("docker --version", -1, stdout, stdout)
-			if (exitStatus!=0) {
+			if (exitStatus==0) {
 				setCommonGradleProperty("containerCmd", "docker")
 				setCommonGradleProperty("dockerBuildPull", "--pull --force-rm")
 				setCommonGradleProperty("dockerBuildCompress", "--compress")
 			}
 		}
+		logInfo("Use ${containerCmd} as container build tool.")
 		dockerInstallationCommandAvailable=(exitStatus==0)
 		
 		if (dockerInstallationCommandAvailable) {
@@ -55,10 +60,10 @@ ext.checkDockerInstallation = { ->
 			dockerInstallationAvailable=(exitStatus==0)
 
 			if (dockerInstallationAvailable) {
-				logInfo("Container installation is ready.")
+				logInfo("Container installation is ready (${containerCmd}).")
 			} else {
 				setCommonGradleProperty("errorMessagePrefix", "")
-				addError("Container installation is not ready.")
+				addError("Container installation is not ready (${containerCmd}).")
 			}
 		} else {
 			setCommonGradleProperty("errorMessagePrefix", "")
@@ -163,7 +168,7 @@ task dockerBuild {
 			} else if (supportProjectDockerfile && localFileExist) {
 				if (localDockerFileExist) {
 					// create from local file
-					printInfo("> Prepare dockerfile from " +colorize(HIGHLITE_LEVEL,  dockerFile) + ".")
+					printInfo("> Prepare dockerfile from " + colorize(HIGHLITE_LEVEL,  dockerFile) + ".")
 					dockerSourceMessage="project"
 					copyFile("$dockerFile", "$tempDockerFile")
 				} else {
@@ -472,7 +477,11 @@ task dockerPush {
  ***************************************************************************************/
 projectValidation {
 	if (project.tasks.findByName('build')) {
-		dockerBuild.dependsOn build
+		dockerBuild.dependsOn("build") // e.g.: build or buildFatWebJar
+		if (!"dockerBuild".toString().equals("${taskNameBeforeReleaseArtefacts}".toString())) {
+			dockerBuild.mustRunAfter("build")
+			dockerBuild.mustRunAfter("${taskNameBeforeReleaseArtefacts}") // e.g.: build or dockerBuild
+		}
 
 		if (!project.getProperty('IS_NEW')) {
 			def buildAlwaysDockerImageEnv=System.getenv('CB_BUILD_ALWAYS_DOCKER_IMAGE')
