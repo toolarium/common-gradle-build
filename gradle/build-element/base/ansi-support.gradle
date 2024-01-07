@@ -18,18 +18,44 @@
  * You should have received a copy of the GNU General Public License
  * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
  */
-
  
+ buildscript {
+	repositories {
+        if (Integer.valueOf(gradle.gradleVersion.toString().split('\\.')[0])<7) {
+			jcenter()
+		} else {
+			mavenCentral()
+			maven {
+				url "https://mvnrepository.com/artifact"
+			}
+		}
+	}
+	dependencies {
+		def toolarimAnsi="0.8.0"
+		if (project.hasProperty('toolarimAnsi')) {
+			toolarimAnsi = project.getProperty('toolarimAnsi')
+		}
+		//logInfo("toolarim ansi version: ${toolarimAnsi}.")); 
+		classpath "com.github.toolarium:toolarium-ansi:${toolarimAnsi}"
+	}
+}
+
+
 /**
  * Detect ansi support
  */
+import com.github.toolarium.ansi.AnsiColor;
+ext.ansiColor = AnsiColor.AUTO;
 ext.detectANSISupport = { ->
     if ((ext.has("org.gradle.console") && "plain".equalsIgnoreCase(ext.get("org.gradle.console").toString().trim())) || (project.hasProperty("org.gradle.console") && "plain".equalsIgnoreCase(project.getProperty("org.gradle.console").toString().trim()))) {
         project.ext.set("termColors", TermColors.NONE.toString())
+        project.ext.set("ansiColortermColors", TermColors.NONE.toString())
+		//ext.ansiColor = AnsiColor.OFF;
     } else {
-        if (!project.ext.has("termColors") || project.ext.get("termColors").toString().isEmpty()) {
-            project.ext.set("termColors", selectTermColorsSupport().toString())
-	    }
+		if (!project.ext.has("termColors") || project.ext.get("termColors").toString().isEmpty()) {
+			//logInfo("Support ansi color!")
+			project.ext.set("termColors", selectTermColorsSupport().toString())
+		}
     }
 	
     return !("NONE".equals(project.ext.get("termColors")));
@@ -55,7 +81,7 @@ import static org.gradle.internal.logging.text.StyledTextOutput.Style;
 ext.selectTermColorsSupport = { ->
 	// consoles built in to some IDEs/Editors support color, but always cause System.console() to return null
 	if (isIntellijConsole()) {
-		return TermColors.ANSI16
+		return TermColors.ANSI16;
 	}		
 	
 	if (isRunningInEclipe()) {

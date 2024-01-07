@@ -397,15 +397,45 @@ setCommonGradleDefaultPropertyIfNull("junitReportPath", "${reportsPath}/junit")
 setCommonGradleDefaultPropertyIfNull("dependenciesReportPath", "${reportsPath}/dependencies")
 setCommonGradleDefaultPropertyIfNull("dependenciesFile", "${reportsPath}/dependencies/dependencies.json")
 
-setCommonGradleDefaultPropertyIfNull("dependencyAutoUpdate", true)
-setCommonGradleDefaultPropertyIfNull("dependencyCveValidForHours", 12)
-setCommonGradleDefaultPropertyIfNull("dependencyFailOnError", true)
+
+/***************************************************************************************
+ * dependency-check: https://plugins.gradle.org/plugin/org.owasp.dependencycheck
+ ***************************************************************************************/
+setCommonGradleDefaultPropertyIfNull("toolariumDependencyCheckVersion", '9.0.6')  
+setCommonGradleDefaultPropertyIfNull("dependencyCheckFailBuildOnCVSS", 11) // 7  
+setCommonGradleDefaultPropertyIfNull("dependencyCheckAutoUpdate", true)
+setCommonGradleDefaultPropertyIfNull("dependencyCheckCveValidForHours", 12)
+setCommonGradleDefaultPropertyIfNull("dependencyCheckFailOnError", true)
 setCommonGradleDefaultPropertyIfNull("dependencyCheckReportPath", "${reportsPath}/dependency-check")
 setCommonGradleDefaultPropertyIfNull("dependencyCheckReportFile", "${dependencyCheckReportPath}/dependency-check-report.json")
 setCommonGradleDefaultPropertyIfNull("dependencyCheckReportHtmlFile", "${dependencyCheckReportPath}/dependency-check-report.html")
 setCommonGradleDefaultPropertyIfNull("dependencyCheckPreparedDatabaseArchiveFile", "${gradleHome}/dependency-check-data.zip")
 setCommonGradleDefaultPropertyIfNull("dependencyCheckPreparedDatabaseArchiveUrl", "")
 
+// report
+setCommonGradleDefaultPropertyIfNull("dependencyCheckReportMaxTextLen", "72")
+setCommonGradleDefaultPropertyIfNull("dependencyCheckReportEnableReason", "false")
+setCommonGradleDefaultPropertyIfNull("dependencyCheckReportEnableUrl", "false")
+setCommonGradleDefaultPropertyIfNull("dependencyCheckReportEnableConfidence", "false")
+setCommonGradleDefaultPropertyIfNull("dependencyCheckReportArtifactColor", "${HIGHLITE_LEVEL}")
+setCommonGradleDefaultPropertyIfNull("dependencyCheckReportArtifactBgColor", null)
+setCommonGradleDefaultPropertyIfNull("dependencyCheckReportConfigurationColor", "${TITLE_LEVEL}")
+setCommonGradleDefaultPropertyIfNull("dependencyCheckReportConfigurationBgColor", null)
+setCommonGradleDefaultPropertyIfNull("dependencyCheckConfidenceColor", "LIGHT_RED")
+setCommonGradleDefaultPropertyIfNull("dependencyCheckConfidenceBgColor", null)
+setCommonGradleDefaultPropertyIfNull("dependencyCheckReportSeverityColor", "LIGHT_RED")
+setCommonGradleDefaultPropertyIfNull("dependencyCheckReportSeverityBgColor", null)
+setCommonGradleDefaultPropertyIfNull("dependencyCheckReportCveColor", "WHITE")
+setCommonGradleDefaultPropertyIfNull("dependencyCheckReportCveBgColor", "RED")
+setCommonGradleDefaultPropertyIfNull("dependencyCheckReportIncludedByColor", "LIGHT_YELLOW")
+setCommonGradleDefaultPropertyIfNull("dependencyCheckReportIncludedByBgColor", null)
+setCommonGradleDefaultPropertyIfNull("dependencyCheckReportEndExcludingVersionColor", "WHITE")
+setCommonGradleDefaultPropertyIfNull("dependencyCheckReportEndExcludingVersionBgColor", null)
+setCommonGradleDefaultPropertyIfNull("dependencyCheckReportUrlColor", "LIGHT_BLUE")
+setCommonGradleDefaultPropertyIfNull("dependencyCheckReportUrlBgColor", null)
+setCommonGradleDefaultPropertyIfNull("dependencyCheckReportReasonColor", "LIGHT_GREEN")
+setCommonGradleDefaultPropertyIfNull("dependencyCheckReportReasonBgColor", null)
+setCommonGradleDefaultPropertyIfNull("dependencyCheckReportFilter", "api, implementation, runtimeOnly, runtimeClasspath")
 
 
 /***************************************************************************************
@@ -431,13 +461,6 @@ setCommonGradleDefaultPropertyIfNull("jacocoXMLReport", true)
 setCommonGradleDefaultPropertyIfNull("jacocoCSVReport", false)
 setCommonGradleDefaultPropertyIfNull("jacocoHTMLReport", true)
 setCommonGradleDefaultPropertyIfNull("jacocoReportPath", "${reportsPath}/testcoverage")
-
-
-/***************************************************************************************
- * dependency-check: https://plugins.gradle.org/plugin/org.owasp.dependencycheck
- ***************************************************************************************/
-setCommonGradleDefaultPropertyIfNull("toolariumDependencyCheckVersion", '9.0.6')  
-setCommonGradleDefaultPropertyIfNull("failBuildOnCVSS", 7)  
 
 
 /***************************************************************************************

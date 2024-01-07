@@ -40,12 +40,12 @@ buildscript {
 		logInfo("toolarium dependency-check version: " + colorize(HIGHLITE_LEVEL, toolariumDependencyCheckVersion) + colorize(INFO_LEVEL, ".")); 
         classpath "org.owasp:dependency-check-gradle:${toolariumDependencyCheckVersion}"
 
-		def jsurferVersion="1.6.4"
-		if (project.hasProperty('jsurferVersion')) {
-			jsurferVersion = project.getProperty('jsurferVersion')
+		def toolariumDependencyCeckUtilVersion="0.9.0"
+		if (project.hasProperty('toolariumDependencyCeckUtilVersion')) {
+			toolariumDependencyCeckUtilVersion = project.getProperty('toolariumDependencyCeckUtilVersion')
 		}
-		logInfo("jsurfer version: " + colorize(HIGHLITE_LEVEL, jsurferVersion) + colorize(INFO_LEVEL, ".")); 
-		classpath "com.github.jsurfer:jsurfer-fastjson:${jsurferVersion}"
+		logInfo("toolarium-dependency-check-util version: " + colorize(HIGHLITE_LEVEL, toolariumDependencyCeckUtilVersion) + colorize(INFO_LEVEL, ".")); 
+		classpath "com.github.toolarium:toolarium-dependency-check-util:${toolariumDependencyCeckUtilVersion}"
     }
 }
 
@@ -55,13 +55,13 @@ org.owasp.dependencycheck.gradle.DependencyCheckPlugin p = new org.owasp.depende
 p.apply(project);
 
 dependencyCheck {
-    autoUpdate = project.getProperty('dependencyAutoUpdate') // true
-    formats = ['HTML', 'JSON']
+    autoUpdate = project.getProperty('dependencyCheckAutoUpdate') // true
+    formats = ['HTML', 'JSON'] // , 'CSV
 	//format='ALL'
 	outputDirectory = "$dependencyCheckReportPath"
     //junitFailOnCVSS = 0
-	failBuildOnCVSS = project.getProperty('failBuildOnCVSS') // default 11	
-    failOnError = project.getProperty('dependencyFailOnError') // true
+	failBuildOnCVSS = project.getProperty('dependencyCheckFailBuildOnCVSS') // default 11	
+    failOnError = project.getProperty('dependencyCheckFailOnError') // true
 	skipConfigurations = ['checkstyle', 'jacocoAnt']
 	
 	analyzers {
@@ -69,10 +69,10 @@ dependencyCheck {
 	}
 	
 	hostedSuppressions {
-        validForHours = project.getProperty('dependencyCveValidForHours') // 12
+        validForHours = project.getProperty('dependencyCheckCveValidForHours') // 12
 	}
 	nvd {
-        validForHours = project.getProperty('dependencyCveValidForHours') // 12
+        validForHours = project.getProperty('dependencyCheckCveValidForHours') // 12
 	}
     //suppressionFile
 }
@@ -81,22 +81,80 @@ dependencyCheck {
 /***************************************************************************************
  * Get dependencyCheck
  ***************************************************************************************/
+import com.github.toolarium.ansi.AnsiColor;
+import com.github.toolarium.ansi.color.BackgroundColor;
+import com.github.toolarium.ansi.color.ForegroundColor;
+import com.github.toolarium.dependency.check.DependencyCheckUtil;
+import com.github.toolarium.dependency.check.model.DependecyCheckResult;
+import com.github.toolarium.dependency.check.report.format.VulnerabilityReportFormatterFactory;
+import com.github.toolarium.dependency.check.report.format.impl.AnsiStringVulnerabilityReportFormatter
+import com.github.toolarium.common.util.EnumUtil;
+
 dependencyCheckAnalyze {
-	project.getLogging().captureStandardError(LogLevel.INFO);
-	project.getLogging().captureStandardOutput(LogLevel.INFO);
-	
+	//logging.captureStandardOutput LogLevel.INFO
+	//logging.captureStandardError LogLevel.INFO
+
     doFirst {
-	     logInfo("Check dependency vulnerabilities...")
+	     printInfo("> Check dependency vulnerabilities...")
 		 new File("$dependencyCheckReportPath").mkdirs()
 	}
+
 	doLast {
 		File file = new File("$dependencyCheckReportPath/dependency-check-report.html")
 		if (file.exists()) {
- 		     file.renameTo(new java.io.File(dependencyCheckReportPath, "index.html"))
+ 		    file.renameTo(new java.io.File(dependencyCheckReportPath, "index.html"))
+		}
+
+		File fileJson = new File("$dependencyCheckReportPath/dependency-check-report.json")
+		if (fileJson.exists()) {
+		
+			AnsiColor ansiColor = AnsiColor.AUTO;
+		    if (detectANSISupport()) {
+				ansiColor = AnsiColor.ON;
+			} else {
+				ansiColor = AnsiColor.OFF;
+			}
+
+			//AnsiColor ansiColor = ext.ansiColor;
+			DependecyCheckResult dependecyCheckResult = DependencyCheckUtil.getInstance().readFile(fileJson);
+			DependencyCheckUtil.getInstance()
+			DependencyCheckUtil
+			AnsiStringVulnerabilityReportFormatter f = VulnerabilityReportFormatterFactory.getInstance().getStringFormatter(ansiColor);
+			f.setMaxTextLen(Integer.parseInt("${dependencyCheckReportMaxTextLen}")); //72
+			f.setEnableReason(Boolean.parseBoolean("${dependencyCheckReportEnableReason}"));
+			f.setEnableUrl(Boolean.parseBoolean("${dependencyCheckReportEnableUrl}"));
+			f.setEnableConfidence(Boolean.parseBoolean("${dependencyCheckReportEnableConfidence}"));
+			f.setArtifactColor("${dependencyCheckReportArtifactColor}".toString() /*ForegroundColor.CYAN.name()*/, "${dependencyCheckReportArtifactBgColor}");
+			f.setConfigurationColor("${dependencyCheckReportConfigurationColor}".toString() /*ForegroundColor.YELLOW.name()*/, "{dependencyCheckReportConfigurationBgColor}");
+			f.setConfidenceColor("${dependencyCheckConfidenceColor}".toString() /*ForegroundColor.LIGHT_RED.name()*/, "${dependencyCheckConfidenceBgColor}");
+	        f.setSeverityColor("${dependencyCheckReportSeverityColor}".toString() /*ForegroundColor.LIGHT_RED.name()*/, "${dependencyCheckReportSeverityBgColor}");
+			f.setCveColor("${dependencyCheckReportCveColor}".toString() /*ForegroundColor.WHITE.name()*/, "${dependencyCheckReportCveBgColor}" /*BackgroundColor.RED.name()*/);
+			f.setIncludedByColor("${dependencyCheckReportIncludedByColor}".toString() /*ForegroundColor.LIGHT_YELLOW.name()*/, "${dependencyCheckReportIncludedByBgColor}");
+			f.setEndExcludingVersionColor("${dependencyCheckReportEndExcludingVersionColor}".toString() /*ForegroundColor.WHITE.name()*/, "${dependencyCheckReportEndExcludingVersionBgColor}");
+			f.setUrlColor("${dependencyCheckReportUrlColor}".toString() /*ForegroundColor.LIGHT_BLUE.name()*/, "${dependencyCheckReportUrlBgColor}");
+			f.setReasonColor("${dependencyCheckReportReasonColor}".toString() /*ForegroundColor.LIGHT_GREEN.name()*/, "${dependencyCheckReportReasonBgColor}");
+
+			String[] filter = null;
+			if (project.hasProperty('dependencyCheckReportFilter')) {
+				filter = "${dependencyCheckReportFilter}".split(",");
+				for (int i = 0; i<filter.length; i++) {
+					filter[i] = filter[i].trim();
+				}
+			}
+			String result = "";
+			for (String s : DependencyCheckUtil.getInstance().formatVulneabilityReport(dependecyCheckResult, f, filter /*"api", "implementation", "runtimeOnly", "runtimeClasspath"*/)) {
+				result += s;
+			}
+
+			printInfo(NELINE + result);
 		}
 	}
 }
 
+
+/***************************************************************************************
+ * Update dependencyCheck
+ ***************************************************************************************
 setCommonGradleProperty('dependencyCheckIsReadyToUpdate', false)
 if (!new File("$gradleHome/dependency-check-data").exists()) {
 	def fileZip = new File("${dependencyCheckPreparedDatabaseArchiveFile}")
@@ -118,6 +176,7 @@ if (!new File("$gradleHome/dependency-check-data").exists()) {
 		unzip(fileZip, "$gradleHome", null)
 	}
 }
+*/
 
 
 /***************************************************************************************
@@ -125,53 +184,4 @@ if (!new File("$gradleHome/dependency-check-data").exists()) {
  ***************************************************************************************/
 if (!project.getProperty('IS_NEW') && project.hasProperty("dependencyCheckEnabled") && "true".toString().equalsIgnoreCase(project.getProperty("dependencyCheckEnabled").toString())) {
     projectValidation.finalizedBy("dependencyCheckAnalyze")	
-}
-
-
-import org.jsfr.json.ValueBox;
-import java.util.Collection;
-
-task verifyDependencies2() {
-
-    doLast {
-	    // prepare dependency json
-		prepareDependenciesJson("${dependenciesReportPath}/root.js", "${dependenciesFile}")
-		if (new File("${dependenciesFile}").exists()) {
-			// parse json
-			org.jsfr.json.Collector dependencyCollector = org.jsfr.json.JsonSurferFastJson.INSTANCE.collector(new java.io.FileInputStream("${dependenciesFile}"));
-			ValueBox<Collection<String>> names = dependencyCollector.collectAll('$.project.configurations[*].name'.toString(), String.class);
-			ValueBox<Collection<String>> implementationDependencies = dependencyCollector.collectAll("\$.project.configurations[?(@.name=='implementation')].dependencies[*].name".toString(), String.class);
-			ValueBox<Collection<String>> runtimeDependencies = dependencyCollector.collectAll("\$.project.configurations[?(@.name=='runtimeClasspath')].dependencies[*].name".toString(), String.class);
-			dependencyCollector.exec();
-			logInfo("Dependency sections: [" + colorize(HIGHLITE_LEVEL, names.get()) + colorize(INFO_LEVEL, "].")); 
-			printInfo("===>"+implementationDependencies.get())
-			printInfo("===>"+runtimeDependencies.get())
-		}
-		
-		/*
-		if (new File("${dependencyCheckReportFile}").exists()) {
-				org.jsfr.json.Collector dependencyCheckReportCollector = org.jsfr.json.JsonSurferFastJson.INSTANCE.collector(new java.io.FileInputStream("${dependencyCheckReportFile}"));
-		//$.store.book[?(@.price < 10 || @.category && @.isbn && @.price>10)].volumes[?(@.chapter == 1)]
-				//ValueBox<Collection<String>> vulnarabilityDependencies = dependencyCheckReportCollector.collectAll("\$.dependencies[?(@.projectReferences[?(@.* =='" + name + ":implementation')])].name".toString(), String.class);
-				//def s = "\$.dependencies[?(@.projectReferences[*])].fileName".toString();
-				def s = "\$.dependencies[?(@.projectReferences[?(@ == '" + rootProject.name + ":runtimeClasspath')])].fileName".toString();
-		//		def s = "\$.dependencies[?(@.projectReferences[*]['" + rootProject.name + ":runtimeClasspath'])].fileName".toString();
-		//		          $.dependencies[?(@.projectReferences[*]['htmlDependencyReport:implementation'])].name
-				printInfo("===>"+s)
-				ValueBox<Collection<String>> vulnarabilityDependencies = dependencyCheckReportCollector.collectAll(s, String.class);
-				
-				//['author','title']
-				dependencyCheckReportCollector.exec();
-				printInfo("===>"+vulnarabilityDependencies.get())
-		}
-		*/
-
-		/*
-		java.util.Map<String, Object> obj = readJsonFile("${dependenciesFile}")
-		obj = obj.get("project");
-		printInfo("==>"+obj.keySet())
-		obj = obj.get("configurations");
-		printInfo("==>"+obj.keySet())
-		*/
-	}
 }
