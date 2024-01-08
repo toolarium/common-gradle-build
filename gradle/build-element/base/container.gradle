@@ -36,9 +36,15 @@ ext.checkDockerInstallation = { ->
 	if (!dockerInstallationValidated) {
 		dockerInstallationValidated=true
 		def stdout = new StringBuilder()
-		def exitStatus = execCommand("${containerCmd} --version", -1, stdout, stdout)
-		if (exitStatus==0) {
-			exitStatus = execCommand("${containerCmd} info")
+
+		def exitStatus = -1
+		try { 
+			exitStatus = execCommand("${containerCmd} --version", -1, stdout, stdout)
+			if (exitStatus==0) {
+				exitStatus = execCommand("${containerCmd} info")
+			}
+		} catch(Exception e) {
+			// NOP
 		}
 
 		if (exitStatus!=0) {

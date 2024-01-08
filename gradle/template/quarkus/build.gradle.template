@@ -39,6 +39,7 @@ dependencies {
 
     // database driver
     //implementation 'io.quarkus:quarkus-jdbc-postgresql'
+    //implementation 'io.quarkus:quarkus-jdbc-oracle'
 
     // liquibase support
     //implementation 'io.quarkus:quarkus-liquibase'
