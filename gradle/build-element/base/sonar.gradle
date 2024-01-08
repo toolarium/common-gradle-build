@@ -53,7 +53,8 @@ buildscript {
 /***************************************************************************************
  * sonar configuration
  ***************************************************************************************/
- if (project.hasProperty("sonarEnabled") && "true".toString().equalsIgnoreCase(project.getProperty("sonarEnabled").toString())) {
+if (!project.getProperty('IS_NEW') && project.hasProperty("sonarEnabled") && "true".toString().equalsIgnoreCase(project.getProperty("sonarEnabled").toString())) {
+
 	// Init plugin
 	org.sonarqube.gradle.SonarQubePlugin p = new org.sonarqube.gradle.SonarQubePlugin()
 	p.apply(project);
@@ -82,9 +83,8 @@ buildscript {
 	task sonarInfo {
 		group = 'Build'
 		description = 'Call sonar.'
-		onlyIf { return validBuild }
 
-		doLast {
+		doFirst {
 			if (project.hasProperty('sonarHostUrl') && !project.getProperty('sonarHostUrl').toString().trim().isEmpty()) {
 				printInfo("> Call Sonar " + colorize(HIGHLITE_LEVEL, sonarHostUrl) + "..."); 
 			} else {
@@ -92,12 +92,22 @@ buildscript {
 			}
 		}
 	}
-	project.tasks["sonar"].dependsOn sonarInfo
+	project.tasks["sonar"].dependsOn(sonarInfo)
 	
+	
+	/***************************************************************************************
+	 * define project dependency
+	 ***************************************************************************************/
+	projectValidation.finalizedBy("sonar")	
+
+	if (project.hasProperty("dependencyCheckEnabled") && "true".toString().equalsIgnoreCase(project.getProperty("dependencyCheckEnabled").toString())) {
+		project.tasks["sonar"].mustRunAfter("dependencyCheckAnalyze")
+	} else {
+		project.tasks["sonar"].mustRunAfter("build")
+	}
+	project.tasks["sonar"].mustRunAfter("build")
+
 	if (project.tasks.findByName('release')) {
-		project.tasks["release"].dependsOn sonarInfo
-		
-		if ("true".equalsIgnoreCase("" + project.getProperty('isReleaseVersion'))) {
-		}
+		project.tasks["release"].dependsOn("sonar")
 	}
 }

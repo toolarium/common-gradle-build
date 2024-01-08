@@ -421,9 +421,9 @@ setCommonGradleDefaultPropertyIfNull("dependencyCheckReportArtifactColor", "${HI
 setCommonGradleDefaultPropertyIfNull("dependencyCheckReportArtifactBgColor", null)
 setCommonGradleDefaultPropertyIfNull("dependencyCheckReportConfigurationColor", "${TITLE_LEVEL}")
 setCommonGradleDefaultPropertyIfNull("dependencyCheckReportConfigurationBgColor", null)
-setCommonGradleDefaultPropertyIfNull("dependencyCheckConfidenceColor", "LIGHT_RED")
+setCommonGradleDefaultPropertyIfNull("dependencyCheckConfidenceColor", "${TITLE_LEVEL}") //"LIGHT_RED"
 setCommonGradleDefaultPropertyIfNull("dependencyCheckConfidenceBgColor", null)
-setCommonGradleDefaultPropertyIfNull("dependencyCheckReportSeverityColor", "LIGHT_RED")
+setCommonGradleDefaultPropertyIfNull("dependencyCheckReportSeverityColor", "${TITLE_LEVEL}")
 setCommonGradleDefaultPropertyIfNull("dependencyCheckReportSeverityBgColor", null)
 setCommonGradleDefaultPropertyIfNull("dependencyCheckReportCveColor", "WHITE")
 setCommonGradleDefaultPropertyIfNull("dependencyCheckReportCveBgColor", "RED")
@@ -433,7 +433,7 @@ setCommonGradleDefaultPropertyIfNull("dependencyCheckReportEndExcludingVersionCo
 setCommonGradleDefaultPropertyIfNull("dependencyCheckReportEndExcludingVersionBgColor", null)
 setCommonGradleDefaultPropertyIfNull("dependencyCheckReportUrlColor", "LIGHT_BLUE")
 setCommonGradleDefaultPropertyIfNull("dependencyCheckReportUrlBgColor", null)
-setCommonGradleDefaultPropertyIfNull("dependencyCheckReportReasonColor", "LIGHT_GREEN")
+setCommonGradleDefaultPropertyIfNull("dependencyCheckReportReasonColor", "GREEN") // LIGHT_GRAY
 setCommonGradleDefaultPropertyIfNull("dependencyCheckReportReasonBgColor", null)
 setCommonGradleDefaultPropertyIfNull("dependencyCheckReportFilter", "api, implementation, runtimeOnly, runtimeClasspath")
 

@@ -29,6 +29,8 @@ buildscript {
 				url "https://mvnrepository.com/artifact"
 				
 			}
+			maven { url("https://oss.sonatype.org/content/repositories/snapshots") }
+			
 		}
     }
     dependencies {
@@ -40,7 +42,7 @@ buildscript {
 		logInfo("toolarium dependency-check version: " + colorize(HIGHLITE_LEVEL, toolariumDependencyCheckVersion) + colorize(INFO_LEVEL, ".")); 
         classpath "org.owasp:dependency-check-gradle:${toolariumDependencyCheckVersion}"
 
-		def toolariumDependencyCeckUtilVersion="0.9.0"
+		def toolariumDependencyCeckUtilVersion="1.0.0"
 		if (project.hasProperty('toolariumDependencyCeckUtilVersion')) {
 			toolariumDependencyCeckUtilVersion = project.getProperty('toolariumDependencyCeckUtilVersion')
 		}
@@ -84,15 +86,51 @@ dependencyCheck {
 import com.github.toolarium.ansi.AnsiColor;
 import com.github.toolarium.ansi.color.BackgroundColor;
 import com.github.toolarium.ansi.color.ForegroundColor;
+import com.github.toolarium.common.util.EnumUtil;
 import com.github.toolarium.dependency.check.DependencyCheckUtil;
 import com.github.toolarium.dependency.check.model.DependecyCheckResult;
 import com.github.toolarium.dependency.check.report.format.VulnerabilityReportFormatterFactory;
 import com.github.toolarium.dependency.check.report.format.impl.AnsiStringVulnerabilityReportFormatter
-import com.github.toolarium.common.util.EnumUtil;
+import com.github.toolarium.dependency.check.report.VulnerabilityReport;
+import com.github.toolarium.dependency.check.report.Vulnerability;
+
 
 dependencyCheckAnalyze {
 	//logging.captureStandardOutput LogLevel.INFO
 	//logging.captureStandardError LogLevel.INFO
+
+	AnsiColor ansiColor = AnsiColor.AUTO;
+	if (detectANSISupport()) {
+		ansiColor = AnsiColor.ON;
+	} else {
+		ansiColor = AnsiColor.OFF;
+	}
+	
+	AnsiStringVulnerabilityReportFormatter f = VulnerabilityReportFormatterFactory.getInstance().getStringFormatter(ansiColor);
+	f.setEnableReason(Boolean.parseBoolean("${dependencyCheckReportEnableReason}"));
+	//f.setEnableDependencyUrl(Boolean.parseBoolean("${dependencyCheckReportEnableUrl}"));
+	f.setEnableVulnerabilityUrl(Boolean.parseBoolean("${dependencyCheckReportEnableUrl}"));
+	f.setEnableConfidence(Boolean.parseBoolean("${dependencyCheckReportEnableConfidence}"));
+	f.setMaxTextLen(Integer.parseInt("${dependencyCheckReportMaxTextLen}")); //72
+	f.setArtifactColor("${dependencyCheckReportArtifactColor}".toString() /*ForegroundColor.CYAN.name()*/, "${dependencyCheckReportArtifactBgColor}");
+	f.setConfigurationColor("${dependencyCheckReportConfigurationColor}".toString() /*ForegroundColor.YELLOW.name()*/, "{dependencyCheckReportConfigurationBgColor}");
+	f.setConfidenceColor("${dependencyCheckConfidenceColor}".toString() /*ForegroundColor.LIGHT_RED.name()*/, "${dependencyCheckConfidenceBgColor}");
+	f.setSeverityColor("${dependencyCheckReportSeverityColor}".toString() /*ForegroundColor.LIGHT_RED.name()*/, "${dependencyCheckReportSeverityBgColor}");
+	f.setCveColor("${dependencyCheckReportCveColor}".toString() /*ForegroundColor.WHITE.name()*/, "${dependencyCheckReportCveBgColor}" /*BackgroundColor.RED.name()*/);
+	f.setIncludedByColor("${dependencyCheckReportIncludedByColor}".toString() /*ForegroundColor.LIGHT_YELLOW.name()*/, "${dependencyCheckReportIncludedByBgColor}");
+	f.setEndExcludingVersionColor("${dependencyCheckReportEndExcludingVersionColor}".toString() /*ForegroundColor.WHITE.name()*/, "${dependencyCheckReportEndExcludingVersionBgColor}");
+	f.setReasonColor("${dependencyCheckReportReasonColor}".toString() /*ForegroundColor.LIGHT_GREEN.name()*/, "${dependencyCheckReportReasonBgColor}");
+	f.setUrlColor("${dependencyCheckReportUrlColor}".toString() /*ForegroundColor.LIGHT_GRAY.name()*/, "${dependencyCheckReportUrlBgColor}");
+	f.setConfigurationStart(" " + "${LOGPREFIX}".toString().trim());
+	//f.setEntryStart("+");
+
+	// in case of snapshot print all necessary information
+	if (project.ext.isSnapshotVersion) {
+		f.setEnableReason(true);
+		//f.setEnableDependencyUrl(true);
+		f.setEnableVulnerabilityUrl(true);
+		f.setEnableConfidence(true);
+	}
 
     doFirst {
 	     printInfo("> Check dependency vulnerabilities...")
@@ -107,33 +145,6 @@ dependencyCheckAnalyze {
 
 		File fileJson = new File("$dependencyCheckReportPath/dependency-check-report.json")
 		if (fileJson.exists()) {
-		
-			AnsiColor ansiColor = AnsiColor.AUTO;
-		    if (detectANSISupport()) {
-				ansiColor = AnsiColor.ON;
-			} else {
-				ansiColor = AnsiColor.OFF;
-			}
-
-			//AnsiColor ansiColor = ext.ansiColor;
-			DependecyCheckResult dependecyCheckResult = DependencyCheckUtil.getInstance().readFile(fileJson);
-			DependencyCheckUtil.getInstance()
-			DependencyCheckUtil
-			AnsiStringVulnerabilityReportFormatter f = VulnerabilityReportFormatterFactory.getInstance().getStringFormatter(ansiColor);
-			f.setMaxTextLen(Integer.parseInt("${dependencyCheckReportMaxTextLen}")); //72
-			f.setEnableReason(Boolean.parseBoolean("${dependencyCheckReportEnableReason}"));
-			f.setEnableUrl(Boolean.parseBoolean("${dependencyCheckReportEnableUrl}"));
-			f.setEnableConfidence(Boolean.parseBoolean("${dependencyCheckReportEnableConfidence}"));
-			f.setArtifactColor("${dependencyCheckReportArtifactColor}".toString() /*ForegroundColor.CYAN.name()*/, "${dependencyCheckReportArtifactBgColor}");
-			f.setConfigurationColor("${dependencyCheckReportConfigurationColor}".toString() /*ForegroundColor.YELLOW.name()*/, "{dependencyCheckReportConfigurationBgColor}");
-			f.setConfidenceColor("${dependencyCheckConfidenceColor}".toString() /*ForegroundColor.LIGHT_RED.name()*/, "${dependencyCheckConfidenceBgColor}");
-	        f.setSeverityColor("${dependencyCheckReportSeverityColor}".toString() /*ForegroundColor.LIGHT_RED.name()*/, "${dependencyCheckReportSeverityBgColor}");
-			f.setCveColor("${dependencyCheckReportCveColor}".toString() /*ForegroundColor.WHITE.name()*/, "${dependencyCheckReportCveBgColor}" /*BackgroundColor.RED.name()*/);
-			f.setIncludedByColor("${dependencyCheckReportIncludedByColor}".toString() /*ForegroundColor.LIGHT_YELLOW.name()*/, "${dependencyCheckReportIncludedByBgColor}");
-			f.setEndExcludingVersionColor("${dependencyCheckReportEndExcludingVersionColor}".toString() /*ForegroundColor.WHITE.name()*/, "${dependencyCheckReportEndExcludingVersionBgColor}");
-			f.setUrlColor("${dependencyCheckReportUrlColor}".toString() /*ForegroundColor.LIGHT_BLUE.name()*/, "${dependencyCheckReportUrlBgColor}");
-			f.setReasonColor("${dependencyCheckReportReasonColor}".toString() /*ForegroundColor.LIGHT_GREEN.name()*/, "${dependencyCheckReportReasonBgColor}");
-
 			String[] filter = null;
 			if (project.hasProperty('dependencyCheckReportFilter')) {
 				filter = "${dependencyCheckReportFilter}".split(",");
@@ -141,12 +152,22 @@ dependencyCheckAnalyze {
 					filter[i] = filter[i].trim();
 				}
 			}
+
+			DependecyCheckResult dependecyCheckResult = DependencyCheckUtil.getInstance().readFile(fileJson);
+			VulnerabilityReport vulnerabilityReport = DependencyCheckUtil.getInstance().toVulnerabilityReport(dependecyCheckResult);
+			Vulnerability mostCrititcalVulnerability = vulnerabilityReport.getMostCrititcalVulnerability();
 			String result = "";
-			for (String s : DependencyCheckUtil.getInstance().formatVulneabilityReport(dependecyCheckResult, f, filter /*"api", "implementation", "runtimeOnly", "runtimeClasspath"*/)) {
+			for (String s : DependencyCheckUtil.getInstance().formatVulneabilityReport(vulnerabilityReport, f, filter /*"api", "implementation", "runtimeOnly", "runtimeClasspath"*/)) {
 				result += s;
 			}
-
 			printInfo(NELINE + result);
+			
+			// TODO: fail if max level is reached
+			mostCrititcalVulnerability.getScore();
+			mostCrititcalVulnerability.getCve();
+			mostCrititcalVulnerability.getConfidence();
+			mostCrititcalVulnerability.getSeverity();
+			mostCrititcalVulnerability.getSource();
 		}
 	}
 }
@@ -180,8 +201,13 @@ if (!new File("$gradleHome/dependency-check-data").exists()) {
 
 
 /***************************************************************************************
- * project java validation
+ * define project dependency
  ***************************************************************************************/
 if (!project.getProperty('IS_NEW') && project.hasProperty("dependencyCheckEnabled") && "true".toString().equalsIgnoreCase(project.getProperty("dependencyCheckEnabled").toString())) {
-    projectValidation.finalizedBy("dependencyCheckAnalyze")	
+	projectValidation.finalizedBy("dependencyCheckAnalyze")	
+	dependencyCheckAnalyze.mustRunAfter("build")
+
+	if (project.tasks.findByName('release')) {
+		project.tasks["release"].dependsOn(dependencyCheckAnalyze)
+	}
 }
