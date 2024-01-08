@@ -128,9 +128,16 @@ addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/store")
 addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/composables")
 addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/public")
 addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/server")
+addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/.nuxt")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/nuxt.config.js")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/nuxt.config.ts")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.npmrc")
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/app.vue")
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/nuxt.config.js")
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/nuxt.config.ts")
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/tailwind.config.js")
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/tailwind.config.ts")
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/prettier.config.js")
 
 
 /***************************************************************************************
