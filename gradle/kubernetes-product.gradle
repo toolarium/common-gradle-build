@@ -1162,6 +1162,8 @@ buildFatWebJar {  ->
 	}
 }
 customJar.dependsOn(buildFatWebJar)
+build.dependsOn(customJar)
+buildFatWebJar.dependsOn(kubernetesJar)
 
 
 /***************************************************************************************
