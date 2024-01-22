@@ -45,6 +45,11 @@ spec:
         - containerPort: @@DOCKER_EXPOSE_PORT@@
         resources: {}
         env:
+        - name: @@KUBERNETES_DATABASE_KIND_ENV_NAME@@
+          valueFrom:
+            configMapKeyRef:
+                name: @@KUBERNETES_APPLICATION_CONFIG_NAME@@
+                key: @@KUBERNETES_DATABASE_KIND_KEY@@
         - name: @@KUBERNETES_DATABASE_JDBC_URL_ENV_NAME@@
           valueFrom:
             configMapKeyRef:

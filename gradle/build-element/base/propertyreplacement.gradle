@@ -286,10 +286,16 @@ ext.searchReplaceByProperties = { inputLine, replacePlaceHolders = true ->
 		if (project.hasProperty('kubernetesIngressProxyBodySize')) {
 			line = line.replaceAll('@@KUBERNETES_INGRESS_PROXY_BODY_SIZE@@', "${project.ext.kubernetesIngressProxyBodySize}".toString())
 		}
-		
+        
 		// kubernetes / application.properties environment variable names
 		if (project.hasProperty('kubernetesDatabaseKind')) {
 			line = line.replaceAll('@@KUBERNETES_DATABASE_KIND@@', "${project.ext.kubernetesDatabaseKind}".toString())
+		}
+		if (project.hasProperty('kubernetesDatabaseKindEnvName')) {
+			line = line.replaceAll('@@KUBERNETES_DATABASE_KIND_ENV_NAME@@', "${project.ext.kubernetesDatabaseKindEnvName}".toString())
+		}
+		if (project.hasProperty('kubernetesDatabaseKindKey')) {
+			line = line.replaceAll('@@KUBERNETES_DATABASE_KIND_KEY@@', "${project.ext.kubernetesDatabaseKindKey}".toString())
 		}
 		if (project.hasProperty('kubernetesDatabaseJdbcUrlEnvName')) {
 			line = line.replaceAll('@@KUBERNETES_DATABASE_JDBC_URL_ENV_NAME@@', "${project.ext.kubernetesDatabaseJdbcUrlEnvName}".toString())

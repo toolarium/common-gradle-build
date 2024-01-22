@@ -770,7 +770,8 @@ setCommonGradleDefaultPropertyIfNull("kubernetesIngressProxyBodySize", "10m")
 setCommonGradleDefaultPropertyIfNull("kubernetesFileAdditionalContent", "")
 
 // kubernetes / application.properties environment variable names
-setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseKind", "DATABASE_KIND")
+setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseKindKey", "database.kind")
+setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseKindEnvName", "DATABASE_KIND")
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseJdbcUrlEnvName", "DATABASE_JDBC_URL")
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseMaxSizieEnvName", "DATABASE_JDBC_MAXSIZE")
 setCommonGradleDefaultPropertyIfNull("kubernetesDatabaseUsernameEnvName", "DATABASE_USERNAME")
