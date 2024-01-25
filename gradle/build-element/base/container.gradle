@@ -29,6 +29,8 @@ setCommonGradleDefaultPropertyIfNull("IS_NEW_SRC_FOLDER", false)
 setCommonGradleDefaultPropertyIfNull("createApplicationConfigFile", false)
 setCommonGradleDefaultPropertyIfNull("containerCmd", "nerdctl")
 
+ext.dockerExecuteAsScript=false
+ext.dockerExecuteNotAsAbsolutePath=false
 ext.dockerInstallationValidated=false
 ext.dockerInstallationCommandAvailable=false
 ext.dockerInstallationAvailable=false
@@ -54,6 +56,13 @@ ext.checkDockerInstallation = { ->
 				setCommonGradleProperty("containerCmd", "docker")
 				setCommonGradleProperty("dockerBuildPull", "--pull --force-rm")
 				setCommonGradleProperty("dockerBuildCompress", "--compress")
+			}
+		} else {
+			// use nerdctl -> check if there is a linux environment: in version 1.12 there is an issue with absolute path
+			if ("linux".equals(getOsName())) {
+				logInfo("Use docker file from build path for build.")
+				dockerExecuteNotAsAbsolutePath=true
+				dockerExecuteAsScript=true
 			}
 		}
 		logInfo("Use ${containerCmd} as container build tool.")
@@ -217,8 +226,47 @@ task dockerBuild {
 			if (!"${dockerBuildArgs}".toString().trim().isEmpty()) {
 				cmd="$cmd ${dockerBuildArgs}"
 			}
-			cmd="$cmd -f ${tempDockerFile} $cbProjectRootDir"
+	
+			// in case docker or nerdctl has issues to reference absolute path referenced file, e.g. nerdctl v1.12
+			def localName = "dockerfile"
+			def execPath=""
+			def idx = tempDockerFile.lastIndexOf("/")
+			if (idx>0) {
+				execPath = tempDockerFile.substring(0, idx);
+				localName = tempDockerFile.substring(idx)
+			}
 			
+			if(dockerExecuteNotAsAbsolutePath) {
+				copyFile("$tempDockerFile", "$cbProjectRootDir/build/$localName")
+				new File("$tempDockerFile").delete()
+				tempDockerFile="$cbProjectRootDir/build/$localName"
+			}
+		
+			def tempDockerFileScript = ""
+			if (dockerExecuteAsScript) {
+				tempDockerFileScript = execPath + "/" + localName
+				if ("windows" == getOsName()) {
+					tempDockerFileScript = "${tempDockerFileScript}.bat"
+					new File(tempDockerFileScript).text = """
+cd $execPath
+$cmd -f ${tempDockerFile} $cbProjectRootDir
+"""
+				} else {
+					tempDockerFileScript = "${tempDockerFileScript}.sh"
+					new File(tempDockerFileScript).text = """
+#!/bin/sh
+cd $execPath
+$cmd -f ${tempDockerFile} $cbProjectRootDir
+"""
+					def sout = new StringBuilder(), serr = new StringBuilder()
+					def exitStatus = execCommand("chmod +x $tempDockerFileScript", -1, sout, serr)
+				}
+
+				cmd="$tempDockerFileScript"
+			} else {
+				cmd="$cmd -f ${tempDockerFile} $cbProjectRootDir"
+			}
+		
 			def exitStatus = execDocker(cmd, "Could not build container image:\n    " + cmd)
 			if (exitStatus==0) {
 				if( project.hasProperty("dockerCleanupAfterBuild") && project.getProperty("dockerCleanupAfterBuild") ) {
@@ -229,16 +277,20 @@ task dockerBuild {
 			}
 			
 			new File("$tempDockerFile").delete()
+			if (dockerExecuteAsScript && !"$tempDockerFileScript".toString().isEmpty()) {
+				new File("$tempDockerFileScript").delete()
+			}
+			
 			if (deleteDockerIgnoreFile) {
 				logInfo("Remove dockerignore " +colorize(HIGHLITE_LEVEL, dockerIgnoreFile) + ".")
 				new File("$dockerIgnoreFile").delete()
 			}
 
 			def dockerRemoveImageIdList = []
-			cmd="${containerCmd} image ls ${rootProject.name}"
+			cmd="${containerCmd} image ls ${rootProject.name}:${project.version}"
 			def sout = new StringBuilder()
 			exitStatus = execCommand(cmd, -1, sout, sout)
-			if (exitStatus>0) {
+			if (exitStatus!=0) {
 				def message = "Could not read container images:\n    " + colorize(HIGHLITE_LEVEL, cmd) + ":"
 				if (sout!=null && !sout.toString().isEmpty()) {
 					message = "${message}" + sout.toString()
@@ -246,7 +298,7 @@ task dockerBuild {
 				logInfo(message)
 			} else {
 				try {
-					def tagIndex, imageIndex, createdIndex, sizeIndex
+					int tagIndex, imageIndex, createdIndex, sizeIndex
 					def readHeader = false
 					sout.eachLine {line, count ->
 						line = line.replace("IMAGE ID", "IMAGE_ID")
@@ -263,14 +315,26 @@ task dockerBuild {
 										createdIndex = i
 									} else if ("SIZE".equals(lineSplit[i])) {
 										sizeIndex = i
-									}									
+									}
 								}
 							}
 							readHeader = true
 						} else {
 							def sizeIdx = lineSplit.length -1
 							if ("${project.version}".toString().equals(lineSplit[tagIndex])) {
-								printInfo("> Container images id " + colorize(HIGHLITE_LEVEL, lineSplit[imageIndex]) + ": " + colorize(HIGHLITE_LEVEL, lineSplit[sizeIdx]))
+								def sizeStr = lineSplit[sizeIdx]
+							    if (!Character.isDigit(sizeStr.toString().charAt(0))) {
+									sizeStr = lineSplit[sizeIdx - 1] + " " + sizeStr
+								} else {
+									for (int i = 0; i<sizeStr.length(); i++) {
+										if (!Character.isDigit(sizeStr.toString().charAt(i))) {
+											sizeStr = sizeStr.substring(0, i) + " " + sizeStr.substring(i)
+											break;
+										}
+									}
+								}
+							
+								printInfo("> Container images id " + colorize(HIGHLITE_LEVEL, lineSplit[imageIndex]) + ": " + colorize(HIGHLITE_LEVEL, sizeStr))
 							} else {
 							def duration = 1
 								try {
