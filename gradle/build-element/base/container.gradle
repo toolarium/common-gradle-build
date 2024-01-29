@@ -286,7 +286,7 @@ $cmd -f ${tempDockerFile} $cbProjectRootDir
 				new File("$dockerIgnoreFile").delete()
 			}
 
-			cmd="${containerCmd} image ls ${rootProject.name}:${project.version} --format 'json'"
+			cmd="${containerCmd} image ls ${rootProject.name}:${project.version} --format json"
 			def sout = new StringBuilder()
 			exitStatus = execCommand(cmd, -1, sout, sout)
 			if (exitStatus!=0) {
