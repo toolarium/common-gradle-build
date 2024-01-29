@@ -258,6 +258,9 @@ ext.searchReplaceByProperties = { inputLine, replacePlaceHolders = true ->
 		if (project.hasProperty('dockerRepositoryHost')) {
 			line = line.replaceAll('@@DOCKER_REPOSITORY_HOST@@', "${project.ext.dockerRepositoryHost}".toString())
 		}
+		if (project.hasProperty('dockerTagPrefix')) {
+			line = line.replaceAll('@@DOCKER_TAG_PREFIX@@', "${project.ext.dockerTagPrefix}".toString())
+		}
 		
 		// kubernetes
 		if (project.hasProperty('kubernetesLabelId')) {

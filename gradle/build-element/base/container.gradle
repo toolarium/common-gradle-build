@@ -286,8 +286,7 @@ $cmd -f ${tempDockerFile} $cbProjectRootDir
 				new File("$dockerIgnoreFile").delete()
 			}
 
-			def dockerRemoveImageIdList = []
-			cmd="${containerCmd} image ls ${rootProject.name}:${project.version}"
+			cmd="${containerCmd} image ls ${rootProject.name}:${project.version} --format 'json'"
 			def sout = new StringBuilder()
 			exitStatus = execCommand(cmd, -1, sout, sout)
 			if (exitStatus!=0) {
@@ -298,74 +297,18 @@ $cmd -f ${tempDockerFile} $cbProjectRootDir
 				logInfo(message)
 			} else {
 				try {
-					int tagIndex, imageIndex, createdIndex, sizeIndex
-					def readHeader = false
-					sout.eachLine {line, count ->
-						line = line.replace("IMAGE ID", "IMAGE_ID")
-						
-						def lineSplit = line.split(/\s+/)
-						if (!readHeader) {
-							for (int i = 0; i<lineSplit.length; i++) {
-								if (lineSplit[i]!=null && !lineSplit[i].toString().isEmpty()) {
-									if ("TAG".equals(lineSplit[i])) {
-										tagIndex = i
-									} else if ("IMAGE_ID".equals(lineSplit[i])) {
-										imageIndex = i
-									} else if ("CREATED".equals(lineSplit[i])) {
-										createdIndex = i
-									} else if ("SIZE".equals(lineSplit[i])) {
-										sizeIndex = i
-									}
-								}
-							}
-							readHeader = true
-						} else {
-							def sizeIdx = lineSplit.length -1
-							if ("${project.version}".toString().equals(lineSplit[tagIndex])) {
-								def sizeStr = lineSplit[sizeIdx]
-							    if (!Character.isDigit(sizeStr.toString().charAt(0))) {
-									sizeStr = lineSplit[sizeIdx - 1] + " " + sizeStr
-								} else {
-									for (int i = 0; i<sizeStr.length(); i++) {
-										if (!Character.isDigit(sizeStr.toString().charAt(i))) {
-											sizeStr = sizeStr.substring(0, i) + " " + sizeStr.substring(i)
-											break;
-										}
-									}
-								}
-							
-								printInfo("> Container images id " + colorize(HIGHLITE_LEVEL, lineSplit[imageIndex]) + ": " + colorize(HIGHLITE_LEVEL, sizeStr))
-							} else {
-							def duration = 1
-								try {
-									duration = Integer.valueOf(lineSplit[createdIndex])
-								} catch(Exception e ) {
-								}
-
-								if (lineSplit[createdIndex+1].toString().startsWith("minute")) {
-									duration = duration * 60
-								} else if (lineSplit[createdIndex+1].toString().startsWith("hour")) {
-									duration = duration * 60 * 60
-								} else if (lineSplit[createdIndex+1].toString().startsWith("day")) {
-									duration = duration * 60 * 60 * 24 
-								} else if (lineSplit[createdIndex+1].toString().startsWith("week")) {
-									duration = duration * 60 * 60 * 24 * 7
-								} else if (lineSplit[createdIndex+1].toString().startsWith("month")) {
-									duration = duration * 60 * 60 * 24 * 30
-								} else if (lineSplit[createdIndex+1].toString().startsWith("year")) {
-									duration = duration * 60 * 60 * 24 * 365
-								}
-							
-								logInfo("Found different tag " + colorize(HIGHLITE_LEVEL, lineSplit[tagIndex]) 
-										+ colorize(INFO_LEVEL,", container images id ") + colorize(HIGHLITE_LEVEL, lineSplit[imageIndex]) + colorize(INFO_LEVEL, ": ") 
-										+ colorize(HIGHLITE_LEVEL, lineSplit[sizeIdx]) + colorize(INFO_LEVEL, " (age ") + colorize(HIGHLITE_LEVEL, duration) + colorize(INFO_LEVEL, "s)"))
-										
-								if (!dockerRemoveImageIdList.contains(lineSplit[imageIndex])) {
-									dockerRemoveImageIdList.add(lineSplit[imageIndex])
-								}
-							}
+					def images = new groovy.json.JsonSlurper().parseText(sout.toString())
+					//images.get("CreatedAt") // "2024-01-25 13:31:36 +0100 CET"
+					
+					def sizeStr = images.get("Size")
+					for (int i = 0; i<sizeStr.length(); i++) {
+						def ch = sizeStr.toString().charAt(i)
+						if (!Character.isDigit(ch) && !".".equals("" + ch) && !("" + ch).toString().trim().isEmpty()) {
+							sizeStr = sizeStr.substring(0, i) + " " + sizeStr.substring(i)
+							break;
 						}
-					}	
+					}
+					printInfo("> Container images id " + colorize(HIGHLITE_LEVEL, "" + images.get("ID")) + ": " + colorize(HIGHLITE_LEVEL, sizeStr))
 				} catch (Exception e) {
 					printWarn("Could not add artefact depdendency: " + e.getMessage())
 					throw e
@@ -381,26 +324,6 @@ $cmd -f ${tempDockerFile} $cbProjectRootDir
 						logInfo("Remove dangling image ${line}...")
 						cmd="${containerCmd} rmi -f ${line}"
 						execDocker(cmd, "Could not prune dangling image (${line}):\n    " + cmd, false)
-					}
-				}
-			}
-			
-			if (project.hasProperty("dockerRemovePreviousVersionImages") && project.getProperty("dockerRemovePreviousVersionImages")) {
-				def dockerMaxNumberOfImages = project.getProperty('dockerMaxNumberOfImages')
-				def diff = dockerRemoveImageIdList.size() - dockerMaxNumberOfImages + 1
-				if (diff>0) {
-					def previousImageId = ""
-					printInfo("> Remove $diff previous container image(s) - max $dockerMaxNumberOfImages versions:")
-					for (int i = 0; i<diff; i++) {
-						def imageId = dockerRemoveImageIdList.removeLast()
-						cmd="${containerCmd} rmi -f $imageId"
-						sout = new StringBuilder()
-						exitStatus = execCommand(cmd, -1, sout, sout)
-						if (exitStatus>0) {
-							printInfo("  - Could not remove container image " + colorize(HIGHLITE_LEVEL, imageId) + "!")
-						} else {
-							printInfo("  - Delete container image " + colorize(HIGHLITE_LEVEL, imageId) + ".")
-						}
 					}
 				}
 			}

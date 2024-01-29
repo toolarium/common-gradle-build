@@ -654,8 +654,6 @@ setCommonGradleDefaultPropertyIfNull("dockerGroup", "appgroup")
 setCommonGradleDefaultPropertyIfNull("dockerTimezone", "" + java.util.TimeZone.getDefault().getID())
 setCommonGradleDefaultPropertyIfNull("dockerSubPathAccess", "")
 setCommonGradleDefaultPropertyIfNull("dockerRemoveDanglingImages", true)
-setCommonGradleDefaultPropertyIfNull("dockerRemovePreviousVersionImages", true)
-setCommonGradleDefaultPropertyIfNull("dockerMaxNumberOfImages", 2) // keep max 2 versions / tags of same image
 setCommonGradleDefaultPropertyIfNull("dockerDefaultEncoding", "${fileEncoding}")
 setCommonGradleDefaultPropertyIfNull("dockerDefaultLanguage", "en")
 setCommonGradleDefaultPropertyIfNull("dockerDefaultLocale", "${dockerDefaultLanguage}_US")
