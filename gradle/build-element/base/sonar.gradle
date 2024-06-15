@@ -21,12 +21,13 @@
  
  /* Short description:
    1) start server: nerdctl run -d --name sonarqube -p 9000:9000 -p 9092:9092 sonarqube
+   2) browser http://127.0.0.1:9000
    2) create a token
-   3) execute scan: cb "-Dsonar.host.url=http://localhost:9000" "-Dsonar.token=..." sonar
+   3) execute scan: cb "-PsonarEnabled=true" "-Dsonar.host.url=http://127.0.0.1:9000" "-Dsonar.token=sqa_..." sonar
 
    set config to gradle.properties in the home directory windows: %USERPROFILE%\.gradle\gradle.properties, linux %HOME/.gradle/gradle.properties
-   sonar.host.url=http://localhost:9000
-   sonar.token=...
+   sonar.host.url=http://127.0.0.1:9000
+   sonar.token=sqa_...
  
    restart:
    >nerdctl stop sonarqube

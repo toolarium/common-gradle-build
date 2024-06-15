@@ -249,5 +249,5 @@ ext.parseNameWithVersion = { nameWithVersion ->
 		fileVersion = parseVersion(ps[ps.length - 2] + "-" + ps[ps.length - 1])
 	}
 	
-	return new String[] { fileName, fileVersion };
+	return [ fileName, fileVersion ].toArray();
 }

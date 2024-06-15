@@ -297,7 +297,7 @@ setCommonGradleDefaultPropertyIfNull("compileJavaHome", "")
  * toolarium enum configuration support
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("hasToolariumEnumConfiguration", true)
-setCommonGradleDefaultPropertyIfNull("toolariumEnumConfigurationVersion", "1.1.8") // in kubernetes-product.gradle there is an additional dependency
+setCommonGradleDefaultPropertyIfNull("toolariumEnumConfigurationVersion", "1.1.9") // in kubernetes-product.gradle there is an additional dependency
 setCommonGradleDefaultPropertyIfNull("kubernetesProductEnvironmentVariableName", "kubernetes-environment-variables.properties")
 setCommonGradleDefaultPropertyIfNull("kubernetesProductConfigMapEnvironmentVariableName", "kubernetes-configmap-environment-variables.properties")
 setCommonGradleDefaultPropertyIfNull("kubernetesProductEnvironmentVariablePath", "kubernetes-product")
@@ -482,8 +482,8 @@ setCommonGradleDefaultPropertyIfNull("servicePropertiesName", "toolarium-service
  ***************************************************************************************/
 // the quarkusPluginVersion is used for setup new projects where defaultQuarkusPluginVersion 
 // controls the used version and force for update.x
-setCommonGradleDefaultPropertyIfNull("defaultQuarkusPluginVersion", '3.2.9.Final')
-//setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", '3.2.9.Final')
+setCommonGradleDefaultPropertyIfNull("defaultQuarkusPluginVersion", '3.5.3')
+//setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", '3.5.3')
 setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", "${defaultQuarkusPluginVersion}")
 setCommonGradleDefaultPropertyIfNull("quarkusReleaseUpdateVersion", true)
 setCommonGradleDefaultPropertyIfNull("quarkusPlatformArtifactId", 'quarkus-universe-bom')

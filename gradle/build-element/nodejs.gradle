@@ -136,8 +136,11 @@ addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.prettierignore"
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/jest.config.js")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/jsconfig.json")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/tsconfig.json")
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/tsconfig.node.json")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/yarn.lock")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/manifest.json")
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/vite.config.ts")
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.env")
 
 
 /***************************************************************************************
@@ -433,4 +436,37 @@ task distJar(type: Jar, dependsOn: build) { jar ->
 			printInfo("> Created package " + colorize(HIGHLITE_LEVEL, filename) + ".")
 		}
 	}
+}
+
+
+/***************************************************************************************
+ * Parse npm dependencies
+ ***************************************************************************************/
+ext.parseNpmDependencyVersion = { versionFile="$rootDirectory/package.json", packageName ->
+    File packageJsonFile = new File(versionFile)
+    if (packageJsonFile.exists()) {
+        def packageJsonContent = readJsonFile(packageJsonFile)
+
+        for (Object o : packageJsonContent.get("dependencies")) {
+            if (o.toString().startsWith("${packageName}=")) { // nuxt
+                def split = o.toString().split("=")
+                if (split!=null && split.length > 0) {
+                    String versionToParse=split[1]
+                    int start = 0
+                    for (; start<versionToParse.length(); start++) {
+                        if (Character.isDigit(versionToParse.charAt(start))) {
+                            break;
+                        }
+                    }
+                    if (start>0) {
+                        versionToParse=versionToParse.substring(start)
+                    }
+
+                    return versionToParse
+                }
+            }
+        }
+    }
+	
+	return null
 }

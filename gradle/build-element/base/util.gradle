@@ -340,6 +340,55 @@ ext.prepareFilename = { file ->
 
 
 /** 
+ * Download and extract the npm package
+ */
+ext.getNpmPackage =  { npmPackageName, destDir, extract = true -> 
+	def stdout = new StringBuilder()
+	def stderr = new StringBuilder()
+
+	new File(destDir).mkdirs()
+	def exitStatus = execCommand("npm pack $npmPackageName", -1, stdout, stderr, destDir)
+	if (exitStatus==0) {
+		def tarFile = false
+		def packageName = ("" + stdout.toString()).replace("\n", "").replace("\r", "")			
+		def comnpression = "none" // none, gzip, xz and bzip2
+		if (packageName.toLowerCase().endsWith(".tar")) {
+			tarFile = true;
+		} else if (packageName.toLowerCase().endsWith(".tar.gz") || packageName.toLowerCase().endsWith(".tgz")) {
+			comnpression = "gzip"
+			tarFile = true;
+		} else if (packageName.toLowerCase().endsWith(".bz2") || packageName.toLowerCase().endsWith(".tbz2")) {
+			comnpression = "bzip2"
+			tarFile = packageName.toLowerCase().endsWith(".tbz2");
+		} else if (packageName.toLowerCase().endsWith(".xz") || packageName.toLowerCase().endsWith(".txz")) {
+			comnpression = "xz"
+			tarFile = packageName.toLowerCase().endsWith(".txz");
+		} else if (packageName.toLowerCase().endsWith(".gz")) {
+			comnpression = "gzip"
+		}
+
+		if (extract) {
+			logDebug("Extract file " + colorize(HIGHLITE_LEVEL, "$destDir/$packageName"))
+			if (tarFile) {
+				ant.untar(src: "$destDir/$packageName", dest: "$destDir", compression: comnpression) {}
+			} else {
+				ant.unzip(src: "$destDir/$packageName", dest: "$destDir", compression: comnpression) {}
+			}
+			
+			logDebug("Delete file " + colorize(HIGHLITE_LEVEL, "$destDir/$packageName"))
+			delete "$destDir/$packageName"
+			return destDir
+		} else {
+			return "$destDir/$packageName";
+		}
+	} else {
+		printWarn("Could not download and extract $npmPackageName: \n" + stdout.toString() + "\n" + stderr.toString())
+		return "";
+	}	
+}
+
+
+/** 
  * Unzip zip file
  */
 ext.unzip = { fileZip, inputDestDir, rootZipFolderName = null, inputFilteredPath = null, inputFilteredFile = null ->

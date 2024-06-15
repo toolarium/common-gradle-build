@@ -1157,7 +1157,6 @@ buildFatWebJar {  ->
             mkdir "$distWebPath"
             mkdir "$distWebPath/${commonGradleBuildDistName}"
 			copy { from "${kubernetesApplicationInformationPath}" into "${distWebPath}/${commonGradleBuildDistName}" }
-
 		}
 	}
 }

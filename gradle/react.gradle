@@ -1,5 +1,5 @@
 /*
- * nuxtjs.gradle
+ * react.gradle
  *
  * Copyright by toolarium, all rights reserved.
  * 
@@ -26,7 +26,7 @@
 ext.initResourceBundle=true
 ext.commonGradleResourcebundleJsonSupport=true
 ext.commonGradleResourcebundleOutputPath='static/locales'
-ext.nuxtConfig="nuxt.config.js"
+ext.reactConfig="react.config.js"
 
 if (!project.hasProperty('commonGradleBuildUrl')) {
     ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
@@ -36,35 +36,10 @@ if (!project.hasProperty('commonGradleBuildElementPath')) {
 	ext.commonGradleBuildElementPath="${commonGradleBuildUrl}/build-element"
 }
 
-// nuxt.config.js
-def nuxtConfig="${project.rootDir}".replace('\\', '/')+"/$nuxtConfig"
-if (!new File(nuxtConfig).exists()) {
-	nuxtConfig = nuxtConfig.replace(".js", ".ts") // nuxt.config.ts
+if (!project.hasProperty("targetStatic")) {
+	project.ext.set("targetStatic", project.ext.set("forceStaticTarget"))
 }
 
-if (new File(nuxtConfig).exists()) {
-	new File(nuxtConfig).withReader('UTF-8') { reader ->
-		def line
-		while ((line = reader.readLine()) != null) { 
-			if (line.toString().length()>0) {
-				def idx = line.indexOf("//")
-				if (idx>=0) {
-					line = line.substring(0, idx)
-				}
-
-				idx = line.indexOf("target:");
-				if (idx>=0) {			
-					def val = line.substring(idx + 7).split(',')
-					if (val!=null && val.length>0 && val[0]!=null) {
-						project.ext.set("targetStatic", "static".equalsIgnoreCase(val[0].toString().replace("'", " ").trim()))
-					}
-				}
-			}
-		}
-	}	
-}
-
-// set docker image standards
 if (project.hasProperty("targetStatic") && project.getProperty("targetStatic")) {
 	if (!project.hasProperty("dockerImage")) {
 		project.ext.set("dockerImage", "nginx:alpine")
@@ -96,89 +71,20 @@ if (project.hasProperty("targetStatic") && project.getProperty("targetStatic")) 
  ***************************************************************************************/
 apply from: "${commonGradleBuildElementPath}/nodejs.gradle"
 
-def nuxtPackageVersion = parseNpmDependencyVersion("$rootDirectory/package.json", "nuxt")
-if (!project.hasProperty("targetStatic") || !project.getProperty("targetStatic")) {
-	if (project.hasProperty("forceStaticTarget") && project.getProperty("forceStaticTarget")) {
-
-		if (new File(nuxtConfig).exists()) {
-			def content = new File(nuxtConfig).text
-			if (project.getProperty('IS_NEW')) {
-				if (nuxtPackageVersion != null && isCompliantVersion(">=3", nuxtPackageVersion)) { // >= v3
-					int idx = content.indexOf("defineNuxtConfig");
-					if (idx>0) {
-						def methodStartIdx = content.indexOf("{", idx);
-						if (methodStartIdx>=0) {
-							methodStartIdx++
-
-							// loop through possible parameters
-							def paramIdxStart = methodStartIdx
-							def paramIdxEnd = methodStartIdx
-							paramIdxStart = content.indexOf("(", paramIdxStart + 1);
-							while (paramIdxStart>=0) {
-								paramIdxEnd = content.indexOf(")", paramIdxStart + 1);
-								paramIdxStart = content.indexOf("(", paramIdxEnd + 1);
-							}
-
-							def methodEndIdx = content.indexOf(")", paramIdxEnd + 1);
-							def newContent = content.substring(0, methodStartIdx)
-							newContent += NELINE + "  target: 'static'," + NELINE
-							newContent += "" + NELINE
-							newContent += "  nitro: {" + NELINE
-							newContent += "        output: {" + NELINE
-							newContent += "            publicDir: require('path').join(__dirname, 'dist')," + NELINE
-							newContent += "        }," + NELINE
-							newContent += "  }," + NELINE
-							newContent += content.substring(methodStartIdx)
-							printInfo("> Update nuxt config file, enabled static build (" + colorize(HIGHLITE_LEVEL, getFilename(nuxtConfig)) + ").")
-							new File(nuxtConfig).text = newContent
-						}
-					} else {
-						addError("Expected static target, please update the $nuxtConfig: target: 'static'")
-					}
-				} else {
-					def f = new File(nuxtConfig)
-					def lines = f.readLines()
-					lines = lines.plus(1, "  target: 'static'," + NELINE)
-					f.text = lines.join(NELINE)
-					printInfo("> Update nuxt config file, enabled static build (" + colorize(HIGHLITE_LEVEL, getFilename(nuxtConfig)) + ").")
-				}
-			} else {
-				addError("Expected static target, please update the $nuxtConfig: target: 'static'")
-			}
-		}
-	}
-}	
+def reactPackageVersion = parseNpmDependencyVersion("$rootDirectory/package.json", "react")
+//if (reactPackageVersion != null && isCompliantVersion(">=18", reactPackageVersion)) { // >= v3
+//}
 
 
 /***************************************************************************************
  * common nuxt.js dirctories and files
  ***************************************************************************************/
-if (nuxtPackageVersion != null && isCompliantVersion(">=3", nuxtPackageVersion)) { // >= v3
-	addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/.output")
-} else {
-	addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/.nuxt") // needed for nuxt v2
-}
-addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/assets")
-addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/components")
-addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/layouts")
-addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/middleware")
-addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/pages")
-addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/plugins")
-addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/static")
-addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/store")
-addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/composables")
 addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/public")
-addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/server")
-addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/.nuxt")
-addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/nuxt.config.js")
-addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/nuxt.config.ts")
-addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.npmrc")
-addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/app.vue")
-addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/nuxt.config.js")
-addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/nuxt.config.ts")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/tailwind.config.js")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/tailwind.config.ts")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/prettier.config.js")
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.eslintrc.cjs")
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/index.html")
 
 
 /***************************************************************************************
@@ -218,7 +124,7 @@ projectValidation {
 								<< "  To build (equivalent to 'npm run build'), got to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
 								<< "      " + colorize(HIGHLITE_LEVEL, "$startExecutable") + "" << NELINE \
 								<< "" << NELINE \
-								<< "  To test (equivalent to 'npm run test'), got to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
+								<< "  To test (equivalent to 'npm test'), got to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
 								<< "      " + colorize(HIGHLITE_LEVEL, "$startExecutable test") + "" << NELINE \
 								<< "" << NELINE \
 								<< "  For TypeScript users, see: " + colorize(HIGHLITE_LEVEL, "https://typescript.nuxtjs.org/cookbook/components/") + "" << NELINE)
@@ -285,8 +191,6 @@ if (!project.getProperty('IS_NEW')) {
 					}
 				}
 			}
-			
-			delete "$commonGradleBuildDistPath/README.md"
 		}
 	}
 }
