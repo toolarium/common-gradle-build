@@ -25,8 +25,7 @@
  ***************************************************************************************/
 ext.initResourceBundle=true
 ext.commonGradleResourcebundleJsonSupport=true
-ext.commonGradleResourcebundleOutputPath='static/locales'
-ext.reactConfig="react.config.js"
+ext.commonGradleResourcebundleOutputPath='public/locales'
 
 if (!project.hasProperty('commonGradleBuildUrl')) {
     ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
@@ -36,8 +35,13 @@ if (!project.hasProperty('commonGradleBuildElementPath')) {
 	ext.commonGradleBuildElementPath="${commonGradleBuildUrl}/build-element"
 }
 
+ext.forceStaticTarget=true
 if (!project.hasProperty("targetStatic")) {
-	project.ext.set("targetStatic", project.ext.set("forceStaticTarget"))
+	if (project.hasProperty("forceStaticTarget")) {
+		project.ext.set("targetStatic", project.ext.get("forceStaticTarget"))
+	} else {
+		project.ext.set("targetStatic", false)
+	}
 }
 
 if (project.hasProperty("targetStatic") && project.getProperty("targetStatic")) {
@@ -45,13 +49,12 @@ if (project.hasProperty("targetStatic") && project.getProperty("targetStatic")) 
 		project.ext.set("dockerImage", "nginx:alpine")
 	}
 	if (!project.hasProperty("dockerDeploymentSourcePath")) {
-		project.ext.set("dockerDeploymentSourcePath", 'dist')
+		project.ext.set("dockerDeploymentSourcePath", 'build')
 	}
 	
 	// set to empty string to not generate dockerIgnoreFile (see base/container.gradle)
 	project.ext.dockerIgnoreFile=""
-	//	ext.nodeBuildArguments = ['run', 'generate', '--loglevel', 'silly']
-	ext.nodeBuildArguments = ['run', 'generate', '--loglevel', 'silent']
+	ext.nodeBuildArguments = ['run', 'build', '--loglevel', 'silent']
 	
 } else {
 	if (!project.hasProperty("dockerImage")) {
@@ -74,6 +77,29 @@ apply from: "${commonGradleBuildElementPath}/nodejs.gradle"
 def reactPackageVersion = parseNpmDependencyVersion("$rootDirectory/package.json", "react")
 //if (reactPackageVersion != null && isCompliantVersion(">=18", reactPackageVersion)) { // >= v3
 //}
+
+def packageJson="$rootDirectory/package.json"
+if (new File(packageJson).exists()) {
+	def content = new File(packageJson).text
+	if (!content.contains("\"homepage\":")) {
+		printInfo("> Update " + colorize(HIGHLITE_LEVEL, getFilename("package.json")) + " to set homepage " + colorize(HIGHLITE_LEVEL, getFilename(dockerDeploymentSourcePath)) + ".")
+	
+		def newContent = ""
+		String[] splitData = content.split(NELINE);
+		for (String eachSplit : splitData) {
+			newContent += eachSplit + NELINE
+			
+			def p = "$dockerDeploymentSourcePath"
+			if (!p.endsWith("/")) {
+				p += "/"
+			}
+			if (eachSplit.contains("\"version\":")) {
+				newContent += "  \"homepage\": \"/$p\"," + NELINE
+			}
+		}
+		new File(packageJson).text = newContent
+	}
+}
 
 
 /***************************************************************************************
