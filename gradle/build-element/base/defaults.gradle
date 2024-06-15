@@ -482,7 +482,7 @@ setCommonGradleDefaultPropertyIfNull("servicePropertiesName", "toolarium-service
  ***************************************************************************************/
 // the quarkusPluginVersion is used for setup new projects where defaultQuarkusPluginVersion 
 // controls the used version and force for update.x
-setCommonGradleDefaultPropertyIfNull("defaultQuarkusPluginVersion", '3.5.3')
+setCommonGradleDefaultPropertyIfNull("defaultQuarkusPluginVersion", '3.6.9')
 //setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", '3.5.3')
 setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", "${defaultQuarkusPluginVersion}")
 setCommonGradleDefaultPropertyIfNull("quarkusReleaseUpdateVersion", true)
@@ -496,7 +496,7 @@ setCommonGradleDefaultPropertyIfNull("quarkusAppJar", "quarkus-run.jar")
 setCommonGradleDefaultPropertyIfNull("updateApplicationProperties", true)
 setCommonGradleDefaultPropertyIfNull("createServiceJavaRunner", true) // re dockerJavaRunner will be taken
 setCommonGradleDefaultPropertyIfNull("createServiceJavaAgent", true) // the dockerJavaAgent will be taken
-setCommonGradleDefaultPropertyIfNull("enablePatchRunTimeDefaultsConfigSource", true)
+setCommonGradleDefaultPropertyIfNull("enablePatchRunTimeDefaultsConfigSource", false)
 
 
 /***************************************************************************************
@@ -989,7 +989,7 @@ addCommonGradlePropertyList("allowedKubernetesTemplateProjects", "")
 /***************************************************************************************
  * nuxt
  ***************************************************************************************/
-setCommonGradleDefaultPropertyIfNull("forceStaticTarget", false)
+setCommonGradleDefaultPropertyIfNull("forceStaticTarget", true)
 setCommonGradleDefaultPropertyIfNull("generateTypescriptVersionFile", true)
 setCommonGradleDefaultPropertyIfNull("typescriptVersionFile", "${srcDirectory}/${generatedCommonGradleSubfolderName}/version.ts")
 setCommonGradleDefaultPropertyIfNull("commonGradleBuildDistName", "dist")

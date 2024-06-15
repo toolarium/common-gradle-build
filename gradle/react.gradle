@@ -26,6 +26,7 @@
 ext.initResourceBundle=true
 ext.commonGradleResourcebundleJsonSupport=true
 ext.commonGradleResourcebundleOutputPath='public/locales'
+ext.reactEnvFileName='.env'
 
 if (!project.hasProperty('commonGradleBuildUrl')) {
     ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
@@ -49,7 +50,7 @@ if (project.hasProperty("targetStatic") && project.getProperty("targetStatic")) 
 		project.ext.set("dockerImage", "nginx:alpine")
 	}
 	if (!project.hasProperty("dockerDeploymentSourcePath")) {
-		project.ext.set("dockerDeploymentSourcePath", 'build')
+		project.ext.set("dockerDeploymentSourcePath", 'dist')
 	}
 	
 	// set to empty string to not generate dockerIgnoreFile (see base/container.gradle)
@@ -74,6 +75,18 @@ if (project.hasProperty("targetStatic") && project.getProperty("targetStatic")) 
  ***************************************************************************************/
 apply from: "${commonGradleBuildElementPath}/nodejs.gradle"
 
+def reactEnvFile = "$rootDirectory/$reactEnvFileName"
+if (!new File(reactEnvFile).exists()) {
+	printInfo("> Create " + colorize(HIGHLITE_LEVEL, reactEnvFileName) + " to set build path.")
+	new File(reactEnvFile).text = "# .env" + NELINE + "BUILD_PATH='./${dockerDeploymentSourcePath}'" + NELINE
+} else {
+	def content = new File(reactEnvFile).text
+	if (!content.contains("BUILD_PATH")) {
+		printInfo("> Update " + colorize(HIGHLITE_LEVEL, reactEnvFileName) + " to set build path.")
+		new File(reactEnvFile).text = content + NELINE + "BUILD_PATH='./${dockerDeploymentSourcePath}'" + NELINE
+	}
+}
+
 def reactPackageVersion = parseNpmDependencyVersion("$rootDirectory/package.json", "react")
 //if (reactPackageVersion != null && isCompliantVersion(">=18", reactPackageVersion)) { // >= v3
 //}
@@ -81,20 +94,30 @@ def reactPackageVersion = parseNpmDependencyVersion("$rootDirectory/package.json
 def packageJson="$rootDirectory/package.json"
 if (new File(packageJson).exists()) {
 	def content = new File(packageJson).text
-	if (!content.contains("\"homepage\":")) {
-		printInfo("> Update " + colorize(HIGHLITE_LEVEL, getFilename("package.json")) + " to set homepage " + colorize(HIGHLITE_LEVEL, getFilename(dockerDeploymentSourcePath)) + ".")
+	def p = "$dockerSubPathAccess"
+	if (!p.startsWith("/")) {
+		p = "/" + p
+	}
+	if (!p.endsWith("/")) {
+		p += "/"
+	}
+	
+	if (!content.contains("\"homepage\": \"$p\",")) {
+		def add = (!content.contains("\"homepage\":"))
 	
 		def newContent = ""
 		String[] splitData = content.split(NELINE);
 		for (String eachSplit : splitData) {
-			newContent += eachSplit + NELINE
-			
-			def p = "$dockerDeploymentSourcePath"
-			if (!p.endsWith("/")) {
-				p += "/"
+			if (!add && eachSplit.contains("\"homepage\":")) {
+				printInfo("> Update " + colorize(HIGHLITE_LEVEL, getFilename("package.json")) + " to set homepage " + colorize(HIGHLITE_LEVEL, getFilename(dockerDeploymentSourcePath)+p) + ".")
+				newContent += "  \"homepage\": \"$p\"," + NELINE
+			} else {
+    			newContent += eachSplit + NELINE
 			}
-			if (eachSplit.contains("\"version\":")) {
-				newContent += "  \"homepage\": \"/$p\"," + NELINE
+
+			if (add && eachSplit.contains("\"version\":")) {
+				printInfo("> Add " + colorize(HIGHLITE_LEVEL, getFilename("package.json")) + " to set homepage " + colorize(HIGHLITE_LEVEL, getFilename(dockerDeploymentSourcePath)+p) + ".")
+				newContent += "  \"homepage\": \"$p\"," + NELINE
 			}
 		}
 		new File(packageJson).text = newContent
@@ -103,7 +126,7 @@ if (new File(packageJson).exists()) {
 
 
 /***************************************************************************************
- * common nuxt.js dirctories and files
+ * common react dirctories and files
  ***************************************************************************************/
 addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/public")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/tailwind.config.js")
