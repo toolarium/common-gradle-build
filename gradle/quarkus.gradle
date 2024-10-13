@@ -55,7 +55,7 @@ if (!project.hasProperty('commonGradleBuildElementPath')) {
 
 // set docker image standards
 if (!project.hasProperty("dockerImage")) {
-	project.ext.set("dockerImage", "adoptopenjdk/openjdk11:alpine-jre")
+	project.ext.set("dockerImage", "eclipse-temurin:21-jre-alpine") // previous: adoptopenjdk/openjdk11:alpine-jre
 }
 if (!project.hasProperty("dockerJavaOptions")) {
 	//project.ext.set("dockerJavaOptions", "-Djava.security.egd=file:/dev/./urandom")
@@ -512,19 +512,15 @@ build { ->
 			buildServiceProperties("${quarkusAppDirectory}", "${servicePropertiesName}", applicationProperties.getProperty("quarkus.http.root-path", "/api"), "${srcMainResourcesDirectory}/application.properties", "quarkus.http.root-path");
 		}
 
-		/* TODO:
 		if (project.hasProperty('createServiceJavaRunner') && project.getProperty('createServiceJavaRunner')) {
-		//copyFile()
-		  //  createFileFromTemplate()
-		  //	createFileFromTemplate("${dockerJavaRunner}", "${dockerJavaRunner}") = { inputFilename, inputTemplateFilename, 
+			project.ext.set("dockerFileTemplateName", 'Dockerfile-java-runner.template')
+			copyFile("${commonGradleTemplateQuarkusPath}/${dockerJavaRunner}", "${quarkusAppDirectory}/${dockerJavaRunner}")
 
-	      //	def servicePathProperties = new File("${quarkusAppDirectory}/${dockerJavaRunner}")
+			if (project.hasProperty('createServiceJavaAgent') && project.getProperty('createServiceJavaAgent') && project.getProperty('dockerJavaAgent')!=null && !project.getProperty('dockerJavaAgent').toString().trim().isEmpty()) {
+				// TODO:
+				copyFile("${commonGradleTemplateQuarkusPath}/${dockerJavaAgent}", "${quarkusAppDirectory}/${dockerJavaAgent}")
+			}
 		}
-
-		if (project.hasProperty('createServiceJavaAgent') && project.getProperty('createServiceJavaAgent')) {
-			def servicePathProperties = new File("${quarkusAppDirectory}/${dockerJavaAgent}")
-		}
-		*/
 		
 		if (project.hasProperty('updateApplicationProperties') && project.getProperty('updateApplicationProperties')) {
 			def jarFilename = "${quarkusAppDirectory}/${quarkusAppSubPathName}/${project.name}-${project.version}.jar"

@@ -140,6 +140,7 @@ addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/tsconfig.node.js
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/yarn.lock")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/manifest.json")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/vite.config.ts")
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/commitlint.config.ts")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.env")
 
 

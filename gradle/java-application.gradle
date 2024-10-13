@@ -38,7 +38,7 @@ if (!project.hasProperty('commonGradleBuildElementPath')) {
 
 // set docker image standards
 if (!project.hasProperty("dockerImage")) {
-	project.ext.set("dockerImage", "adoptopenjdk/openjdk11:alpine-jre")
+	project.ext.set("dockerImage", "eclipse-temurin:21-jre-alpine") // previous: adoptopenjdk/openjdk11:alpine-jre
 }
 if (!project.hasProperty("dockerJavaOptions")) {
 	project.ext.set("dockerJavaOptions", "-Djava.security.egd=file:/dev/./urandom")

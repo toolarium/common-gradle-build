@@ -209,7 +209,7 @@ ext.createContainerImageFileList = { fileContent ->
 /****************************************************************************************
  * Create a service information overview
  ****************************************************************************************/
-ext.createProductServiceInfo = { serviceMap ->
+ext.createProductServiceInfo = { urlMap, serviceMap, serviceImageMap ->
 	new File("$kubernetesApplicationInformationPath").mkdirs()
 
 	def productServicesFilePath = new File("$kubernetesApplicationInformationPath/" + kubernetesProductServicesPathname)
@@ -255,6 +255,65 @@ ext.createProductServiceInfo = { serviceMap ->
 	
 	productServicesFile.append(endJsonElement(1, true) + NELINE)
 	productServicesFile.append(endJsonElement())
+
+	// readme 
+	def productServicesReadmeFile = new File("$kubernetesApplicationInformationPath/README.MD")
+	productServicesReadmeFile.append("# ${productName}" + NELINE)
+	productServicesReadmeFile.append("$copyrightText")
+	productServicesReadmeFile.append(" (${project.ext.scmVersionNumber})" + NELINE)
+	productServicesReadmeFile.append("" + NELINE)
+	if (!"${project.ext.licenseText}".toString().trim().isEmpty()) {
+		productServicesReadmeFile.append("${project.ext.licenseText}" + NELINE)
+	}
+	
+	productServicesReadmeFile.append("" + NELINE)
+	productServicesReadmeFile.append("## Services External Accessible" + NELINE)
+
+	def serviceAccessList = [] 
+	serviceMap.each() { k, v -> serviceAccessList << v }
+	serviceAccessList.sort()
+	productServicesReadmeFile.withWriterAppend{ out ->
+		serviceAccessList.each {
+			if (it!=null && !it.isEmpty()) {
+				def imageName = serviceImageMap[urlMap[it]]
+				def version = ""
+
+				if (imageName!=null) {
+					def imageNameSplit = imageName.split(':')
+					if (imageNameSplit!=null && imageNameSplit.length>1) {
+						version = imageNameSplit[1]
+					}
+ 				}
+				out.println "- **" + it + "** -> " + urlMap[it] + " " + version
+			}
+		}
+	}
+
+	productServicesReadmeFile.append("" + NELINE)
+	productServicesReadmeFile.append("## Services" + NELINE)
+
+	def servicesList = [] 
+	serviceMap.each() { k, v -> servicesList << k }
+	servicesList.sort()
+	productServicesReadmeFile.withWriterAppend { out ->
+		servicesList.each {
+			if (it!=null && !it.isEmpty()) {
+				def imageName = serviceImageMap[it]
+				def version = ""
+
+				if (imageName!=null) {
+					def imageNameSplit = imageName.split(':')
+					if (imageNameSplit!=null && imageNameSplit.length>1) {
+						version = imageNameSplit[1]
+					}
+				}
+
+				out.println "- **" + it + "** " + version + ", image: *" + imageName + "*"
+			}
+		}
+	}
+	productServicesReadmeFile.append("" + NELINE)
+	productServicesReadmeFile.append("---" + NELINE)
 }
 
 
@@ -267,12 +326,15 @@ ext.createJsonServiceInfo = { urlMap, serviceMap, serviceNamespace, serviceName,
 	def productServicesFilePath = new File("$kubernetesApplicationInformationPath/" + kubernetesProductServicesPathname)
 	productServicesFilePath.mkdir()
 	def productInfoFile = new File("$productServicesFilePath/${serviceName}.json")
-	def serviceNameUsePath = urlMap[servicePathExternal] 
-	if (serviceNameUsePath == null) {
-		urlMap[servicePathExternal] = serviceName
-	} else {
-		//printWarn("WARNING: Service url path conflict with services ${serviceNameUsePath} and ${serviceName}!")
-		addError("WARNING: External service url path conflict with services ${serviceNameUsePath} and ${serviceName}!")
+	def serviceNameUsePath = urlMap[servicePathExternal]
+
+	if (servicePathExternal!=null && !servicePathExternal.isEmpty()) { 
+		if (serviceNameUsePath == null || serviceNameUsePath.isEmpty()) {
+			urlMap[servicePathExternal] = serviceName
+		} else {
+			//printWarn("WARNING: Service url path conflict with services ${serviceNameUsePath} and ${serviceName}!")
+			addError("WARNING: External service url path conflict with services ${serviceNameUsePath} and ${serviceName}, both are using path: [$servicePathExternal]!")
+		}
 	}
 
 	serviceMap[serviceName] = servicePathExternal
@@ -787,10 +849,11 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 		// process all service definitions and select information
 		def countFiles = 0
 		def serviceMap=[:]
+		def serviceImageMap=[:]
+		def urlMap =  [:]
 		new File("$kubernetesConfigurationServicesPath/${kubernetesConfigurationPathname}").eachFileRecurse (groovy.io.FileType.FILES) { file ->
 			printInfo("  -> Add kubernetes dependency " + colorize(HIGHLITE_LEVEL, file.getName()) + "...")
 
-			def urlMap =  [:]
 			def labelsList =  []
 			def annotationsList =  []
 			def serviceName = ""
@@ -944,6 +1007,7 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 					countFiles++
 					
 					if (serviceName!=null && !serviceName.trim().isEmpty() && servicePort!=null && !servicePort.trim().isEmpty()) {
+						serviceImageMap[serviceName] = imageName
 						servicePathInternal = servicePathInternal + ":" + servicePort + servicePathExternal
 						def servicePath = servicePathInternal
 						
@@ -988,7 +1052,7 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 
 		if (project.hasProperty('kubernetesProductInformationSupport') && project.getProperty('kubernetesProductInformationSupport')) {
 			// create product service information
-			createProductServiceInfo(serviceMap)
+			createProductServiceInfo(urlMap, serviceMap, serviceImageMap)
 		}
 	
 		// create application information service index

@@ -297,7 +297,7 @@ setCommonGradleDefaultPropertyIfNull("compileJavaHome", "")
  * toolarium enum configuration support
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("hasToolariumEnumConfiguration", true)
-setCommonGradleDefaultPropertyIfNull("toolariumEnumConfigurationVersion", "1.1.8") // in kubernetes-product.gradle there is an additional dependency
+setCommonGradleDefaultPropertyIfNull("toolariumEnumConfigurationVersion", "1.2.0") // in kubernetes-product.gradle there is an additional dependency
 setCommonGradleDefaultPropertyIfNull("kubernetesProductEnvironmentVariableName", "kubernetes-environment-variables.properties")
 setCommonGradleDefaultPropertyIfNull("kubernetesProductConfigMapEnvironmentVariableName", "kubernetes-configmap-environment-variables.properties")
 setCommonGradleDefaultPropertyIfNull("kubernetesProductEnvironmentVariablePath", "kubernetes-product")
@@ -326,14 +326,14 @@ if (Integer.valueOf(gradle.gradleVersion.toString().split('\\.')[0])<7) {
     setCommonGradleDefaultPropertyIfNull("allowJCenterRepository", false)
     setCommonGradleDefaultPropertyIfNull("allowMavenCenterRepository", true)
 }
-setCommonGradleDefaultPropertyIfNull("mavenPublishUrl", "https://oss.sonatype.org/service/local/staging/deploy/maven2") // by sonatype you deploy to staging, after go to -> https://oss.sonatype.org/#stagingRepositories -> close
+setCommonGradleDefaultPropertyIfNull("mavenPublishUrl", "https://oss.sonatype.org/service/local/staging/deploy/maven2") // or https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/
 setCommonGradleDefaultPropertyIfNull("mavenRepositoryUrl", "https://oss.sonatype.org/content/repositories/public")
 setCommonGradleDefaultPropertyIfNull("allowMavenRepository", false)
 setCommonGradleDefaultPropertyIfNull("mavenStagingPublishUrl", "https://oss.sonatype.org/service/local/staging/deploy/maven2")
 setCommonGradleDefaultPropertyIfNull("mavenStagingRepositoryUrl", "https://oss.sonatype.org/content/repositories/staging")
 setCommonGradleDefaultPropertyIfNull("allowMavenStagingRepository", false)
-setCommonGradleDefaultPropertyIfNull("mavenSnapshotPublishUrl", "https://oss.sonatype.org/content/repositories/snapshots")
-setCommonGradleDefaultPropertyIfNull("mavenSnapshotRepositoryUrl", "https://oss.sonatype.org/content/repositories/snapshots")
+setCommonGradleDefaultPropertyIfNull("mavenSnapshotPublishUrl", "https://oss.sonatype.org/content/repositories/snapshots") // or https://s01.oss.sonatype.org/content/repositories/snapshots
+setCommonGradleDefaultPropertyIfNull("mavenSnapshotRepositoryUrl", "https://oss.sonatype.org/content/repositories/snapshots") // or https://s01.oss.sonatype.org/content/repositories/snapshots
 setCommonGradleDefaultPropertyIfNull("allowMavenSnapshotRepository", true)
 
 
@@ -483,7 +483,7 @@ setCommonGradleDefaultPropertyIfNull("servicePropertiesName", "toolarium-service
 // the quarkusPluginVersion is used for setup new projects where defaultQuarkusPluginVersion 
 // controls the used version and force for update.x
 setCommonGradleDefaultPropertyIfNull("defaultQuarkusPluginVersion", '3.6.9')
-//setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", '3.5.3')
+//setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", '3.6.9')
 setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", "${defaultQuarkusPluginVersion}")
 setCommonGradleDefaultPropertyIfNull("quarkusReleaseUpdateVersion", true)
 setCommonGradleDefaultPropertyIfNull("quarkusPlatformArtifactId", 'quarkus-universe-bom')
@@ -494,8 +494,8 @@ setCommonGradleDefaultPropertyIfNull("quarkusAppDirectory", "${gradleBuildDirect
 setCommonGradleDefaultPropertyIfNull("quarkusAppSubPathName", "app")
 setCommonGradleDefaultPropertyIfNull("quarkusAppJar", "quarkus-run.jar")
 setCommonGradleDefaultPropertyIfNull("updateApplicationProperties", true)
-setCommonGradleDefaultPropertyIfNull("createServiceJavaRunner", true) // re dockerJavaRunner will be taken
-setCommonGradleDefaultPropertyIfNull("createServiceJavaAgent", true) // the dockerJavaAgent will be taken
+setCommonGradleDefaultPropertyIfNull("createServiceJavaRunner", true) // the dockerJavaRunner will be taken
+setCommonGradleDefaultPropertyIfNull("createServiceJavaAgent", false) // the dockerJavaAgent will be taken
 setCommonGradleDefaultPropertyIfNull("enablePatchRunTimeDefaultsConfigSource", false)
 
 
@@ -515,7 +515,7 @@ setCommonGradleDefaultPropertyIfNull("nodeRegistry", "https://registry.npmjs.org
 
 setCommonGradleDefaultPropertyIfNull("webServerRunnerPackage", "com.github.toolarium")
 setCommonGradleDefaultPropertyIfNull("webServerRunnerName", "toolarium-jwebserver")
-setCommonGradleDefaultPropertyIfNull("webServerRunnerVersion", "1.1.5")
+setCommonGradleDefaultPropertyIfNull("webServerRunnerVersion", "1.2.0")
 setCommonGradleDefaultPropertyIfNull("webServerRunnerPropertiesName", "jwebserver.properties")
 
 
@@ -668,7 +668,7 @@ setCommonGradleDefaultPropertyIfNull("dockerKeepAlive", "")
 setCommonGradleDefaultPropertyIfNull("dockerMaxConnections", "")
 setCommonGradleDefaultPropertyIfNull("dockerMaxRedirects", "")
 setCommonGradleDefaultPropertyIfNull("dockerLogLevel", "")
-setCommonGradleDefaultPropertyIfNull("dockerJavaRunner", "java-runner")
+setCommonGradleDefaultPropertyIfNull("dockerJavaRunner", "java-runner.sh")
 setCommonGradleDefaultPropertyIfNull("dockerEnableAccessLog", false)
 setCommonGradleDefaultPropertyIfNull("containerCmd", "nerdctl") // docker: docker
 setCommonGradleDefaultPropertyIfNull("dockerBuildPull", "") // docker: --pull --force-rm
@@ -689,6 +689,9 @@ setCommonGradleDefaultPropertyIfNull("dockerPullImageCommand", "docker pull")
 if (!"$dockerIgnoreFile".toString().isEmpty()) {
 	addCommonGradlePropertyList("allowedMainFiles", "$dockerIgnoreFile")
 }
+
+addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/.vscode")
+addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/.idea")
 
 // define the projects which are allowed to have a local Dockerfile.template
 setCommonGradleDefaultPropertyIfNull("dockerSupportProjectTemplateList", false)
@@ -1033,9 +1036,9 @@ setCommonGradleDefaultPropertyIfNull("commonGradleConfigBlacklistDependenciesNam
 /***************************************************************************************
  * library version used in templates
  ***************************************************************************************/
-setCommonGradleDefaultPropertyIfNull("commonGradleSlf4jApiVersion", "2.0.10")
-setCommonGradleDefaultPropertyIfNull("commonGradleLogbackVersion", "1.4.14")
-setCommonGradleDefaultPropertyIfNull("commonGradleJptoolsVersion", "1.7.10")
+setCommonGradleDefaultPropertyIfNull("commonGradleSlf4jApiVersion", "2.0.13")
+setCommonGradleDefaultPropertyIfNull("commonGradleLogbackVersion", "1.5.6")
+setCommonGradleDefaultPropertyIfNull("commonGradleJptoolsVersion", "1.7.11")
 setCommonGradleDefaultPropertyIfNull("commonGradleJavaxValidtionVersion", "2.0.1.Final")
 setCommonGradleDefaultPropertyIfNull("commonGradleJavaxWsRSApiVersion", "2.1.1")
 setCommonGradleDefaultPropertyIfNull("commonGradleJacksonAnnotationVersion", "2.15.3")
@@ -1050,3 +1053,4 @@ setCommonGradleDefaultPropertyIfNull("commonGradleJakartaWsRSApiVersion", "3.1.0
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("commonGradleJptoolsModelGeneratorVersion", "${commonGradleJptoolsVersion}")
 setCommonGradleDefaultPropertyIfNull("commonGradleJexcelapiModelGeneratorVersion", "2.6.12")
+setCommonGradleDefaultPropertyIfNull("commonGradleApachePoiVersion", "3.9")

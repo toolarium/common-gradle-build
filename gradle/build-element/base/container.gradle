@@ -219,7 +219,7 @@ task dockerBuild {
 				tempDockerFile = cbProjectRootDir + "/" + tempDockerFile.substring(2)
 			}
 				
-			printInfo("> Create container image " + colorize(HIGHLITE_LEVEL,  dockerBuildName) + " (${dockerSourceMessage} dockerfile).")
+			printInfo("> Create container image " + colorize(HIGHLITE_LEVEL,  dockerBuildName) + " (${dockerSourceMessage} dockerfile)")
 			logInfo("Use dockerfile [" +colorize(HIGHLITE_LEVEL,  dockerBuildName) + colorize(INFO_LEVEL, "]."))
 			
 			def cmd="${containerCmd} build -t ${dockerBuildName} ${dockerBuildPull} ${dockerBuildCompress}"
@@ -308,7 +308,7 @@ $cmd -f ${tempDockerFile} $cbProjectRootDir
 							break;
 						}
 					}
-					printInfo("> Container images id " + colorize(HIGHLITE_LEVEL, "" + images.get("ID")) + ": " + colorize(HIGHLITE_LEVEL, sizeStr))
+					printInfo("> Container images id " + colorize(HIGHLITE_LEVEL, "" + images.get("ID")) + ": " + colorize(HIGHLITE_LEVEL, sizeStr) + " (base:" + colorize(HIGHLITE_LEVEL,  dockerImage) + ")")
 				} catch (Exception e) {
 					printWarn("Could not add artefact depdendency: " + e.getMessage())
 					throw e

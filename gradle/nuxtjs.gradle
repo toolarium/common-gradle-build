@@ -97,6 +97,10 @@ if (project.hasProperty("targetStatic") && project.getProperty("targetStatic")) 
 apply from: "${commonGradleBuildElementPath}/nodejs.gradle"
 
 def nuxtPackageVersion = parseNpmDependencyVersion("$rootDirectory/package.json", "nuxt")
+if (nuxtPackageVersion != null && isCompliantVersion(">=3", nuxtPackageVersion)) { // >= v3
+	ext.commonGradleResourcebundleOutputPath='public/locales'
+}
+
 if (!project.hasProperty("targetStatic") || !project.getProperty("targetStatic")) {
 	if (project.hasProperty("forceStaticTarget") && project.getProperty("forceStaticTarget")) {
 
@@ -159,6 +163,7 @@ if (nuxtPackageVersion != null && isCompliantVersion(">=3", nuxtPackageVersion))
 	addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/.nuxt") // needed for nuxt v2
 }
 addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/assets")
+addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/common")
 addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/components")
 addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/layouts")
 addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/middleware")
@@ -166,6 +171,7 @@ addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/pages")
 addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/plugins")
 addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/static")
 addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/store")
+addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/stores")
 addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/composables")
 addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/public")
 addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/server")
@@ -179,6 +185,11 @@ addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/nuxt.config.ts")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/tailwind.config.js")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/tailwind.config.ts")
 addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/prettier.config.js")
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.env.local")
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/eslint.config.mjs")
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/eslint.config.js")
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/eslint.config.cjs")
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/app.config.ts")
 
 
 /***************************************************************************************

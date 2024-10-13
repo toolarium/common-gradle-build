@@ -7,9 +7,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: @@GROUP_ID@@-@@PROJECT_NAME@@
+    app: @@PROJECT_NAME@@
     version: "@@VERSION@@"
-    app.@@KUBERNETES_LABEL_ID@@/name: @@GROUP_ID@@-@@PROJECT_NAME@@
+    app.@@KUBERNETES_LABEL_ID@@/name: @@PROJECT_NAME@@
     app.@@KUBERNETES_LABEL_ID@@/instance: @@PROJECT_NAME@@
     app.@@KUBERNETES_LABEL_ID@@/version: "@@VERSION@@"
     app.@@KUBERNETES_LABEL_ID@@/component: @@PROJECT_TYPE@@
@@ -27,14 +27,14 @@ spec:
   replicas: @@KUBERNETES_REPLICAS@@
   selector:
     matchLabels:
-      app: @@GROUP_ID@@-@@PROJECT_NAME@@
+      app: @@PROJECT_NAME@@
       version: "@@VERSION@@"
       app.@@KUBERNETES_LABEL_ID@@/instance: @@PROJECT_NAME@@
   strategy: {}
   template:
     metadata:
       labels:
-        app: @@GROUP_ID@@-@@PROJECT_NAME@@
+        app: @@PROJECT_NAME@@
         version: "@@VERSION@@"
         app.@@KUBERNETES_LABEL_ID@@/instance: @@PROJECT_NAME@@
     spec:

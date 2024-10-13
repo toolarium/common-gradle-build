@@ -29,6 +29,7 @@ task modelGeneratorDependency {
 	
 	def commonGradleJptoolsModelGeneratorVersion=project.getProperty('commonGradleJptoolsModelGeneratorVersion')
 	def commonGradleJexcelapiModelGeneratorVersion=project.getProperty('commonGradleJexcelapiModelGeneratorVersion')
+	def commonGradleApachePoiVersion=project.getProperty('commonGradleApachePoiVersion')
 	configurations {
 		modelGenerator
     }
@@ -37,5 +38,7 @@ task modelGeneratorDependency {
 		modelGenerator("net.sourceforge.jexcelapi:jxl:" + commonGradleJexcelapiModelGeneratorVersion) {
 			exclude group: 'log4j'
 		}
+		modelGenerator("org.apache.poi:poi:" + commonGradleApachePoiVersion)
+		modelGenerator("org.apache.poi:poi-ooxml:" + commonGradleApachePoiVersion)
 	}
 }
