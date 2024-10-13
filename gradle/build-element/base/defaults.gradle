@@ -1004,7 +1004,7 @@ setCommonGradleDefaultPropertyIfNull("commonGradleBuildDistPath", "${rootDirecto
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("initResourceBundle", false)
 setCommonGradleDefaultPropertyIfNull("hasResourceBundle", false)
-setCommonGradleDefaultPropertyIfNull("commonGradleConfigResourcebundleName", "Resourcebundle.xls")
+setCommonGradleDefaultPropertyIfNull("commonGradleConfigResourcebundleName", "Resourcebundle.xlsx")
 setCommonGradleDefaultPropertyIfNull("commonGradleConfigResourcebundlePath", "${configDirectory}/${commonGradleConfigResourcebundleName}")
 setCommonGradleDefaultPropertyIfNull("commonGradleResourcebundleOutputPath", "${generatedCommonGradleBuildSources}/resources/main")
 setCommonGradleDefaultPropertyIfNull("commonGradleResourcebundleOutputNamePrefix", "resourcebundle")
