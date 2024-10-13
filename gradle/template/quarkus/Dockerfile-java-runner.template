@@ -1,0 +1,88 @@
+#########################################################################
+#
+# Dockerfile
+#
+# Copyright by @@LICENSE_ORGANISATION@@, all rights reserved.
+# @@LICENSE@@
+#
+#########################################################################
+
+FROM @@dockerImage@@
+
+# define build settings
+ARG EXPOSE_PORT="@@dockerExposePort@@"
+ARG RUNTIMEUSER="@@dockerUser@@"
+ARG TIMEZONE="@@dockerTimezone@@"
+ARG DEPLOYMENT_SOURCE_PATH="@@dockerDeploymentSourcePath@@"
+ARG DEPLOYMENT_PATH=/deployment
+ARG DEFAULT_ENCODING="@@dockerDefaultEncoding@@"
+ARG DEFAULT_LOCALE="@@dockerDefaultLocale@@"
+ARG DEFAULT_LANGUAGE="@@dockerDefaultLanguage@@"
+ARG proxyHost="@@dockerProxyHost@@"
+ARG proxyPort="@@dockerProxyPort@@"
+ARG nonProxyHosts="@@dockerNoProxyHosts@@"
+ARG JAVA_AGENT="@@dockerJavaAgent@@"
+ARG httpAgent="@@dockerHttpAgent@@"
+ARG keepAlive="@@dockerKeepAlive@@"
+ARG maxConnections="@@dockerMaxConnections@@"
+ARG maxRedirects="@@dockerMaxRedirects@@"
+ARG logLevel="@@dockerLogLevel@@"
+ARG JAVA_OPTIONS="@@dockerJavaOptions@@"
+
+# set meta data
+LABEL vendor="@@LICENSE_ORGANISATION@@" \
+    group-id="@@GROUP_ID@@" \
+    component-id="@@COMPONENT_ID@@" \
+    description="@@DESCRIPTION@@" \
+    url="@@URL@@" \
+    license="@@LICENSE@@" \
+    version="@@VERSION@@" \
+    is-release-version="@@IS_RELEASE_VERSION@@" \
+    build-timestamp="@@BUILD_TIMESTAMP_SHORT@@"
+
+# set user
+RUN adduser -D ${RUNTIMEUSER}
+
+# update and set timezone
+RUN apk --no-cache -U upgrade \
+    && apk --no-cache add tzdata \
+    && cp "/usr/share/zoneinfo/${TIMEZONE}" /etc/localtime \
+    && echo "${TIMEZONE}" > /etc/timezone
+
+# create path and set permissions for user
+RUN mkdir -p ${DEPLOYMENT_PATH} \
+    && chown -R ${RUNTIMEUSER} ${DEPLOYMENT_PATH} \
+    && chmod -R 755 ${DEPLOYMENT_PATH} \
+    && chmod -R g=u ${DEPLOYMENT_PATH}
+
+# copy application
+COPY --chown=${RUNTIMEUSER} build/quarkus-app/ ${DEPLOYMENT_PATH}/
+RUN chmod -R 755 ${DEPLOYMENT_PATH}/@@dockerJavaRunner@@
+
+# set language
+ENV LANG="\"${DEFAULT_LOCALE}.${DEFAULT_ENCODING}\" LANGUAGE=\"${DEFAULT_LOCALE}:${DEFAULT_LANGUAGE}\""
+
+ENV EXPOSE_PORT="${EXPOSE_PORT}"
+# define JAVA_OPTIONS; with can be used to display the heap size: -XshowSettings:vm
+ENV javaOptions="${JAVA_OPTIONS}"
+ENV proxyHost="${PROXY_HOST}"
+ENV proxyPort="${PROXY_PORT}"
+ENV nonProxyHosts="${NO_PROXY_HOSTS}"
+ENV httpAgent="${HTTP_AGENT}"
+ENV keepAlive="${KEEP_ALIVE}"
+ENV maxConnections="${MAX_CONNECTIONS}"
+ENV maxRedirects="${MAX_REDIRECTS}"
+ENV logLevel="${LOG_LEVEL}"
+
+# expose port
+EXPOSE ${EXPOSE_PORT}
+
+# switch RUNTIMEUSER
+USER ${RUNTIMEUSER}
+
+# change working path
+WORKDIR ${DEPLOYMENT_PATH}
+
+# start service
+#ENTRYPOINT [ "java", "-jar", "/deployment/quarkus-run.jar" ]
+ENTRYPOINT /deployment/@@dockerJavaRunner@@ --jar /deployment/quarkus-run.jar
