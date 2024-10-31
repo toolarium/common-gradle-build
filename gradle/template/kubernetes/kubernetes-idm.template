@@ -54,28 +54,28 @@ spec:
         - name: @@KUBERNETES_IDM_DATABASE_VENDOR_ENV_NAME@@
           valueFrom:
             configMapKeyRef:
-                name: @@KUBERNETES_IDM_CONFIG_NAME@@
-                key: @@KUBERNETES_IDM_DATABASE_VENNDOR_KEY@@
+              name: @@KUBERNETES_IDM_CONFIG_NAME@@
+              key: @@KUBERNETES_IDM_DATABASE_VENNDOR_KEY@@
         - name: @@KUBERNETES_IDM_DATABASE_HOST_ENV_NAME@@
           valueFrom:
             configMapKeyRef:
-                name: @@KUBERNETES_IDM_CONFIG_NAME@@
-                key: @@KUBERNETES_IDM_DATABASE_HOST_KEY@@
+              name: @@KUBERNETES_IDM_CONFIG_NAME@@
+              key: @@KUBERNETES_IDM_DATABASE_HOST_KEY@@
         - name: @@KUBERNETES_IDM_DATABASE_PORT_ENV_NAME@@
           valueFrom:
             configMapKeyRef:
-                name: @@KUBERNETES_IDM_CONFIG_NAME@@
-                key: @@KUBERNETES_IDM_DATABASE_PORT_KEY@@
+              name: @@KUBERNETES_IDM_CONFIG_NAME@@
+              key: @@KUBERNETES_IDM_DATABASE_PORT_KEY@@
         - name: @@KUBERNETES_IDM_DATABASE_ENV_NAME@@
           valueFrom:
             configMapKeyRef:
-                name: @@KUBERNETES_IDM_CONFIG_NAME@@
-                key: @@KUBERNETES_IDM_DATABASE_KEY@@
+              name: @@KUBERNETES_IDM_CONFIG_NAME@@
+              key: @@KUBERNETES_IDM_DATABASE_KEY@@
         - name: @@KUBERNETES_IDM_DATABASESCHEMA_ENV_NAME@@
           valueFrom:
             configMapKeyRef:
-                name: @@KUBERNETES_IDM_CONFIG_NAME@@
-                key: @@KUBERNETES_IDM_DATABASESCHEMA_KEY@@
+              name: @@KUBERNETES_IDM_CONFIG_NAME@@
+              key: @@KUBERNETES_IDM_DATABASESCHEMA_KEY@@
         - name: @@KUBERNETES_IDM_DATABASE_USER_FILE_ENV_NAME@@
           value: /etc/secret/@@KUBERNETES_IDM_DATABASE_USERNAME_KEY@@
         - name: @@KUBERNETES_IDM_DATABASE_PASSWORD_FILE_ENV_NAME@@
@@ -83,18 +83,18 @@ spec:
         - name: @@KUBERNETES_IDM_LOG_LEVEL_ENV_NAME@@
           valueFrom:
             configMapKeyRef:
-                name: @@KUBERNETES_IDM_CONFIG_NAME@@
-                key: @@KUBERNETES_IDM_LOG_LEVEL_KEY@@
+              name: @@KUBERNETES_IDM_CONFIG_NAME@@
+              key: @@KUBERNETES_IDM_LOG_LEVEL_KEY@@
         - name: @@KUBERNETES_IDM_ADDRESS_FORWARING_ENV_NAME@@
           valueFrom:
             configMapKeyRef:
-                name: @@KUBERNETES_IDM_CONFIG_NAME@@
-                key: @@KUBERNETES_IDM_ADDRESS_FORWARDING_KEY@@
+              name: @@KUBERNETES_IDM_CONFIG_NAME@@
+              key: @@KUBERNETES_IDM_ADDRESS_FORWARDING_KEY@@
         - name: @@KUBERNETES_IDM_FRONTEND_URL_ENV_NAME@@
           valueFrom:
             configMapKeyRef:
-                name: @@KUBERNETES_IDM_CONFIG_NAME@@
-                key: @@KUBERNETES_IDM_FRONTEND_URL_KEY@@
+              name: @@KUBERNETES_IDM_CONFIG_NAME@@
+              key: @@KUBERNETES_IDM_FRONTEND_URL_KEY@@
         - name: JGROUPS_DISCOVERY_PROTOCOL
           value: dns.DNS_PING
         - name: JGROUPS_DISCOVERY_PROPERTIES

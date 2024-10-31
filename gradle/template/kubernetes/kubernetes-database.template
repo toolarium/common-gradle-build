@@ -77,28 +77,28 @@ spec:
         - name: APP_USER_NAME
           valueFrom:
             secretKeyRef:
-                name: @@KUBERNETES_DATABASE_SECRET_NAME@@
-                key: @@KUBERNETES_DATABASE_USERNAME_KEY@@
+              name: @@KUBERNETES_DATABASE_SECRET_NAME@@
+              key: @@KUBERNETES_DATABASE_USERNAME_KEY@@
         - name: APP_USER_PASSWORD
           valueFrom:
             secretKeyRef:
-                name: @@KUBERNETES_DATABASE_SECRET_NAME@@
-                key: @@KUBERNETES_DATABASE_PASSWORD_KEY@@
+              name: @@KUBERNETES_DATABASE_SECRET_NAME@@
+              key: @@KUBERNETES_DATABASE_PASSWORD_KEY@@
         - name: IDM_USER_NAME
           valueFrom:
             secretKeyRef:
-                name: @@KUBERNETES_IDM_SECRET_NAME@@
-                key: @@KUBERNETES_IDM_DATABASE_USERNAME_KEY@@
+              name: @@KUBERNETES_IDM_SECRET_NAME@@
+              key: @@KUBERNETES_IDM_DATABASE_USERNAME_KEY@@
         - name: IDM_USER_PASSWORD
           valueFrom:
             secretKeyRef:
-                name: @@KUBERNETES_IDM_SECRET_NAME@@
-                key: @@KUBERNETES_IDM_DATABASE_PASSWORD_KEY@@
+              name: @@KUBERNETES_IDM_SECRET_NAME@@
+              key: @@KUBERNETES_IDM_DATABASE_PASSWORD_KEY@@
         - name: IDM_SCHEMA
           valueFrom:
             configMapKeyRef:
-                name: @@KUBERNETES_IDM_CONFIG_NAME@@
-                key: @@KUBERNETES_IDM_DATABASESCHEMA_KEY@@
+              name: @@KUBERNETES_IDM_CONFIG_NAME@@
+              key: @@KUBERNETES_IDM_DATABASESCHEMA_KEY@@
         volumeMounts:
         - mountPath: @@KUBERNETES_DATABASE_MOUNT_PATH@@
           name: @@KUBERNETES_DATABASE_VOLUME_NAME@@
