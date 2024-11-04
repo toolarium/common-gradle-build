@@ -45,6 +45,33 @@ ext.decodeBase64 = { encodedData, propertyCheckName = "" ->
 
 
 /** 
+ * Split a string by lentgh
+ */
+ext.splitAsListByLength = { splitString = "", partLength ->
+    if (splitString == null) {
+        return null;
+    }
+
+    if (partLength <= 0 || splitString.length() <= partLength) {
+        return List.of(splitString);
+    }
+
+    int len = splitString.length();
+    int nparts = (len + partLength - 1) / partLength;
+    List<String> result = new ArrayList<String>(nparts);
+
+    int offset = 0;
+    for (int i = 0; i < nparts; i++) {
+        result.add(splitString.substring(offset, Math.min(offset + partLength, len)));
+        offset += partLength;
+    }
+	
+    return result;
+}
+
+
+
+/** 
  * Add an error. The build will fail at the end.
  */
 ext.addError = { message ->

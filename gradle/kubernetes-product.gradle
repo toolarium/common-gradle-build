@@ -718,7 +718,17 @@ task processKubernetesDependencies() {
 								if (properties!=null) {
 									properties.each { prop, val ->
 										tempFile.append("        - name: " + prop + NELINE)
-										tempFile.append("          value: \"" + val + "\"" + NELINE)
+										
+										def maxLineLength = 150;
+										if (val.length() > maxLineLength) {
+											tempFile.append("          value: >" + NELINE)
+											def valList = splitAsListByLength("\"" + val + "\"", maxLineLength)
+											for (int i = 0; i<valList.size(); i++) {
+											    tempFile.append("            " + valList[i] + NELINE)
+											}
+										} else {
+											tempFile.append("          value: \"" + val + "\"" + NELINE)
+										}
 									}
 								}
 								
