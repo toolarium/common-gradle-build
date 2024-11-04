@@ -719,8 +719,8 @@ task processKubernetesDependencies() {
 									properties.each { prop, val ->
 										tempFile.append("        - name: " + prop + NELINE)
 										
-										def maxLineLength = 150;
-										if (val.length() > maxLineLength) {
+										def maxLineLength = parseInteger("$kubernetesProductConfigMapEnvironmentMaxLength", 150, "kubernetesProductConfigMapEnvironmentMaxLength");
+										if (maxLineLength > 0 && val.length() > maxLineLength) {
 											tempFile.append("          value: >" + NELINE)
 											def valList = splitAsListByLength("\"" + val + "\"", maxLineLength)
 											for (int i = 0; i<valList.size(); i++) {

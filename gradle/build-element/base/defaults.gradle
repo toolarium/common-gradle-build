@@ -298,11 +298,6 @@ setCommonGradleDefaultPropertyIfNull("compileJavaHome", "")
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("hasToolariumEnumConfiguration", true)
 setCommonGradleDefaultPropertyIfNull("toolariumEnumConfigurationVersion", "1.2.0") // in kubernetes-product.gradle there is an additional dependency
-setCommonGradleDefaultPropertyIfNull("kubernetesProductEnvironmentVariableName", "kubernetes-environment-variables.properties")
-setCommonGradleDefaultPropertyIfNull("kubernetesProductConfigMapEnvironmentVariableName", "kubernetes-configmap-environment-variables.properties")
-setCommonGradleDefaultPropertyIfNull("kubernetesProductEnvironmentVariablePath", "kubernetes-product")
-setCommonGradleDefaultPropertyIfNull("kubernetesProductEnvironmentVariableFilename", "${gradleBuildDirectory}/${kubernetesProductEnvironmentVariablePath}/${kubernetesProductEnvironmentVariableName}")
-setCommonGradleDefaultPropertyIfNull("kubernetesProductConfigMapEnvironmentVariableFilename", "${gradleBuildDirectory}/${kubernetesProductEnvironmentVariablePath}/${kubernetesProductConfigMapEnvironmentVariableName}")
 
 
 /***************************************************************************************
@@ -715,6 +710,13 @@ if (project.hasProperty('projectGroupId') && !project.getProperty('projectGroupI
 	setCommonGradleDefaultPropertyIfNull("kubernetesLabelId", "my.application")
 	setCommonGradleDefaultPropertyIfNull("kubernetesNamespace", "my-application")
 }
+
+setCommonGradleDefaultPropertyIfNull("kubernetesProductEnvironmentVariableName", "kubernetes-environment-variables.properties")
+setCommonGradleDefaultPropertyIfNull("kubernetesProductConfigMapEnvironmentVariableName", "kubernetes-configmap-environment-variables.properties")
+setCommonGradleDefaultPropertyIfNull("kubernetesProductEnvironmentVariablePath", "kubernetes-product")
+setCommonGradleDefaultPropertyIfNull("kubernetesProductEnvironmentVariableFilename", "${gradleBuildDirectory}/${kubernetesProductEnvironmentVariablePath}/${kubernetesProductEnvironmentVariableName}")
+setCommonGradleDefaultPropertyIfNull("kubernetesProductConfigMapEnvironmentVariableFilename", "${gradleBuildDirectory}/${kubernetesProductEnvironmentVariablePath}/${kubernetesProductConfigMapEnvironmentVariableName}")
+setCommonGradleDefaultPropertyIfNull("kubernetesProductConfigMapEnvironmentMaxLength", "150")
 
 setCommonGradleDefaultPropertyIfNull("kubernetesApplicationHost", "${rootProject.name}.local")
 setCommonGradleDefaultPropertyIfNull("kubernetesApplicationPrototcol", "http://")
