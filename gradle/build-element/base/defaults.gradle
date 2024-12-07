@@ -358,6 +358,7 @@ if (!project.hasProperty('mavenPassword')) {
  * testing
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("initTesting", true)
+setCommonGradleDefaultPropertyIfNull("testEnableDynamicAgentLoading", true)
 setCommonGradleDefaultPropertyIfNull("useJUnit", true)
 setCommonGradleDefaultPropertyIfNull("showStandardStreams", false)
 setCommonGradleDefaultPropertyIfNull("testMinHeapSize", "128m")
