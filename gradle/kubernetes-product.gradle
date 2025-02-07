@@ -721,11 +721,12 @@ task processKubernetesDependencies() {
 										
 										def maxLineLength = parseInteger("$kubernetesProductConfigMapEnvironmentMaxLength", 150, "kubernetesProductConfigMapEnvironmentMaxLength");
 										if (maxLineLength > 0 && val.length() > maxLineLength) {
-											tempFile.append("          value: >" + NELINE)
+											tempFile.append("          value: " + NELINE)
 											def valList = splitAsListByLength("\"" + val + "\"", maxLineLength)
-											for (int i = 0; i<valList.size(); i++) {
-											    tempFile.append("            " + valList[i] + NELINE)
+											for (int i = 0; i<valList.size()-1; i++) {
+											    tempFile.append("            " + valList[i] + "\\" + NELINE)
 											}
+											tempFile.append("            " + valList[valList.size()-1] + NELINE)
 										} else {
 											tempFile.append("          value: \"" + val + "\"" + NELINE)
 										}

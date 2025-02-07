@@ -111,7 +111,7 @@ apply from: "${commonGradleBuildElementPath}/base/dependencies.gradle"
 try {
 	apply from: "${commonGradleBuildElementPath}/base/dependency-check.gradle"
 } catch (Exception e) {
-	printWarn("Ignore dependency-check.gradle");
+	printWarn("Ignore dependency-check.gradle!");
 }
 
 

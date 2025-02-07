@@ -27,30 +27,28 @@ buildscript {
 			mavenCentral()
 			maven {
 				url "https://mvnrepository.com/artifact"
-				
 			}
 			maven { url("https://oss.sonatype.org/content/repositories/snapshots") }
-			
+			gradlePluginPortal()
 		}
     }
     dependencies {
-		def toolariumDependencyCheckVersion="8.3.1"
+		def toolariumDependencyCheckVersion="12.0.1"
 		if (project.hasProperty('toolariumDependencyCheckVersion')) {
 			toolariumDependencyCheckVersion = project.getProperty('toolariumDependencyCheckVersion')
 		}
 	
 		logInfo("toolarium dependency-check version: " + colorize(HIGHLITE_LEVEL, toolariumDependencyCheckVersion) + colorize(INFO_LEVEL, ".")); 
         classpath "org.owasp:dependency-check-gradle:${toolariumDependencyCheckVersion}"
-
-		def toolariumDependencyCeckUtilVersion="1.0.0"
-		if (project.hasProperty('toolariumDependencyCeckUtilVersion')) {
-			toolariumDependencyCeckUtilVersion = project.getProperty('toolariumDependencyCeckUtilVersion')
+		
+		def toolariumDependencyCheckUtilVersion="1.0.2"
+		if (project.hasProperty('toolariumDependencyCheckUtilVersion')) {
+			toolariumDependencyCheckUtilVersion = project.getProperty('toolariumDependencyCheckUtilVersion')
 		}
-		logInfo("toolarium-dependency-check-util version: " + colorize(HIGHLITE_LEVEL, toolariumDependencyCeckUtilVersion) + colorize(INFO_LEVEL, ".")); 
-		classpath "com.github.toolarium:toolarium-dependency-check-util:${toolariumDependencyCeckUtilVersion}"
+		logInfo("toolarium-dependency-check-util version: " + colorize(HIGHLITE_LEVEL, toolariumDependencyCheckUtilVersion) + colorize(INFO_LEVEL, ".")); 
+		classpath "com.github.toolarium:toolarium-dependency-check-util:${toolariumDependencyCheckUtilVersion}"
     }
 }
-
 
 import org.owasp.dependencycheck.gradle.DependencyCheckPlugin;
 org.owasp.dependencycheck.gradle.DependencyCheckPlugin p = new org.owasp.dependencycheck.gradle.DependencyCheckPlugin()
@@ -152,22 +150,36 @@ dependencyCheckAnalyze {
 					filter[i] = filter[i].trim();
 				}
 			}
-
-			DependecyCheckResult dependecyCheckResult = DependencyCheckUtil.getInstance().readFile(fileJson);
-			VulnerabilityReport vulnerabilityReport = DependencyCheckUtil.getInstance().toVulnerabilityReport(dependecyCheckResult);
-			Vulnerability mostCrititcalVulnerability = vulnerabilityReport.getMostCrititcalVulnerability();
-			String result = "";
-			for (String s : DependencyCheckUtil.getInstance().formatVulneabilityReport(vulnerabilityReport, f, filter /*"api", "implementation", "runtimeOnly", "runtimeClasspath"*/)) {
-				result += s;
+		
+			try {
+				DependecyCheckResult dependecyCheckResult = DependencyCheckUtil.getInstance().readFile(fileJson);
+				DependecyCheckResult simplifiedDependecyCheckResult = DependencyCheckUtil.getInstance().filter(DependencyCheckUtil.getInstance().simplify(dependecyCheckResult));
+				VulnerabilityReport vulnerabilityReport = DependencyCheckUtil.getInstance().toVulnerabilityReport(simplifiedDependecyCheckResult);
+				String result = "";
+				for (String s : DependencyCheckUtil.getInstance().formatVulneabilityReport(vulnerabilityReport, f, filter /*"api", "implementation", "runtimeOnly", "runtimeClasspath"*/)) {
+					result += s;
+				}
+				
+				if (result!=null && !result.isEmpty()) {
+					printInfo(NELINE + result);
+					
+					/*
+					// TODO: fail if max level is reached
+					Vulnerability mostCrititcalVulnerability = vulnerabilityReport.getMostCrititcalVulnerability();
+					mostCrititcalVulnerability.getScore();
+					mostCrititcalVulnerability.getCve();
+					mostCrititcalVulnerability.getConfidence();
+					mostCrititcalVulnerability.getSeverity();
+					mostCrititcalVulnerability.getSource();
+					*/
+					
+					addError("Vulnerability in dependency found!");
+				}
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				printWarn("Could not validate dependencies: " + ex.getMessage()); 
+				//addError("Could not validate dependencies!");
 			}
-			printInfo(NELINE + result);
-			
-			// TODO: fail if max level is reached
-			mostCrititcalVulnerability.getScore();
-			mostCrititcalVulnerability.getCve();
-			mostCrititcalVulnerability.getConfidence();
-			mostCrititcalVulnerability.getSeverity();
-			mostCrititcalVulnerability.getSource();
 		}
 	}
 }
