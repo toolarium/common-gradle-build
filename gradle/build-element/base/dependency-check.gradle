@@ -91,7 +91,7 @@ import com.github.toolarium.dependency.check.report.format.VulnerabilityReportFo
 import com.github.toolarium.dependency.check.report.format.impl.AnsiStringVulnerabilityReportFormatter
 import com.github.toolarium.dependency.check.report.VulnerabilityReport;
 import com.github.toolarium.dependency.check.report.Vulnerability;
-
+import com.github.toolarium.dependency.check.formatter.IDependencyCheckFormatter.DependencyFilter;
 
 dependencyCheckAnalyze {
 	//logging.captureStandardOutput LogLevel.INFO
@@ -154,7 +154,7 @@ dependencyCheckAnalyze {
 			try {
 				DependecyCheckResult dependecyCheckResult = DependencyCheckUtil.getInstance().readFile(fileJson);
 				DependecyCheckResult simplifiedDependecyCheckResult = DependencyCheckUtil.getInstance().filter(DependencyCheckUtil.getInstance().simplify(dependecyCheckResult));
-				VulnerabilityReport vulnerabilityReport = DependencyCheckUtil.getInstance().toVulnerabilityReport(simplifiedDependecyCheckResult);
+				VulnerabilityReport vulnerabilityReport = DependencyCheckUtil.getInstance().toVulnerabilityReport(simplifiedDependecyCheckResult, DependencyFilter.DIRECT);
 				String result = "";
 				for (String s : DependencyCheckUtil.getInstance().formatVulneabilityReport(vulnerabilityReport, f, filter /*"api", "implementation", "runtimeOnly", "runtimeClasspath"*/)) {
 					result += s;
