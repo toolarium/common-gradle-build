@@ -511,7 +511,7 @@ setCommonGradleDefaultPropertyIfNull("nodeRegistry", "https://registry.npmjs.org
 
 setCommonGradleDefaultPropertyIfNull("webServerRunnerPackage", "com.github.toolarium")
 setCommonGradleDefaultPropertyIfNull("webServerRunnerName", "toolarium-jwebserver")
-setCommonGradleDefaultPropertyIfNull("webServerRunnerVersion", "1.2.6")
+setCommonGradleDefaultPropertyIfNull("webServerRunnerVersion", "1.2.7")
 setCommonGradleDefaultPropertyIfNull("webServerRunnerPropertiesName", "jwebserver.properties")
 setCommonGradleDefaultPropertyIfNull("resolveParentResourceIfNotFound", "")
 
