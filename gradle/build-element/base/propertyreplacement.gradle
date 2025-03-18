@@ -890,6 +890,11 @@ ext.searchReplaceByProperties = { inputLine, replacePlaceHolders = true ->
 		if (project.hasProperty('commonGradleBuildDistName')) {
 			line = line.replaceAll('@@DISTNAME@@', "${project.ext.commonGradleBuildDistName}".toString())
 		}						
+
+		// jwebserver
+		if (project.hasProperty('resolveParentResourceIfNotFound')) {
+			line = line.replaceAll('@@resolveParentResourceIfNotFound@@', "${project.ext.resolveParentResourceIfNotFound}".toString())
+		}
 	}
 	
 	return line

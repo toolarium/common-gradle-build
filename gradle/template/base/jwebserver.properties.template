@@ -5,6 +5,7 @@ securePort =
 directory = @@DISTNAME@@      
 readFromClasspath = true
 directoryListingEnabled =  
+resolveParentResourceIfNotFound = @@resolveParentResourceIfNotFound@@
 verboseLevel = 
 #basicAuthentication =  
 #healthPath = 

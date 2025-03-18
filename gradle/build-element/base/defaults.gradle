@@ -511,8 +511,9 @@ setCommonGradleDefaultPropertyIfNull("nodeRegistry", "https://registry.npmjs.org
 
 setCommonGradleDefaultPropertyIfNull("webServerRunnerPackage", "com.github.toolarium")
 setCommonGradleDefaultPropertyIfNull("webServerRunnerName", "toolarium-jwebserver")
-setCommonGradleDefaultPropertyIfNull("webServerRunnerVersion", "1.2.0")
+setCommonGradleDefaultPropertyIfNull("webServerRunnerVersion", "1.2.6")
 setCommonGradleDefaultPropertyIfNull("webServerRunnerPropertiesName", "jwebserver.properties")
+setCommonGradleDefaultPropertyIfNull("resolveParentResourceIfNotFound", "")
 
 
 /***************************************************************************************
@@ -1039,8 +1040,8 @@ setCommonGradleDefaultPropertyIfNull("commonGradleConfigBlacklistDependenciesNam
 /***************************************************************************************
  * library version used in templates
  ***************************************************************************************/
-setCommonGradleDefaultPropertyIfNull("commonGradleSlf4jApiVersion", "2.0.13")
-setCommonGradleDefaultPropertyIfNull("commonGradleLogbackVersion", "1.5.6")
+setCommonGradleDefaultPropertyIfNull("commonGradleSlf4jApiVersion", "2.0.17")
+setCommonGradleDefaultPropertyIfNull("commonGradleLogbackVersion", "1.5.17")
 setCommonGradleDefaultPropertyIfNull("commonGradleJptoolsVersion", "1.7.12")
 setCommonGradleDefaultPropertyIfNull("commonGradleJavaxValidtionVersion", "2.0.1.Final")
 setCommonGradleDefaultPropertyIfNull("commonGradleJavaxWsRSApiVersion", "2.1.1")
