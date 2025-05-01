@@ -34,7 +34,7 @@ setCommonGradleDefaultPropertyIfNull("snakeYamlVersion", "1.29")
 setCommonGradleDefaultPropertyIfNull("grgitCoreVersion", "4.1.1")
 setCommonGradleDefaultPropertyIfNull("jsurferVersion", "1.6.3")
 setCommonGradleDefaultPropertyIfNull("semver4jVersion", "3.1.0")
-setCommonGradleDefaultPropertyIfNull("gradleWrapperDefaultVersion", "8.5")
+setCommonGradleDefaultPropertyIfNull("gradleWrapperDefaultVersion", "8.13")
 setCommonGradleDefaultPropertyIfNull("gradleHome", "$userHomeDirectory/.gradle")
 setCommonGradleDefaultPropertyIfNull("gradleHomePropertiesFile", "$gradleHome/gradle.properties")
 setCommonGradleDefaultPropertyIfNull("defaultCommonGradleBuildUrl", "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/common.gradle")
@@ -391,8 +391,8 @@ setCommonGradleDefaultPropertyIfNull("dependencyHTMLReport", true)
 setCommonGradleDefaultPropertyIfNull("reportsPath", "${buildDir}/reports")
 setCommonGradleDefaultPropertyIfNull("junitReportPath", "${reportsPath}/junit")
 setCommonGradleDefaultPropertyIfNull("dependenciesReportPath", "${reportsPath}/dependencies")
-setCommonGradleDefaultPropertyIfNull("dependenciesFile", "${reportsPath}/dependencies/dependencies.json")
-
+setCommonGradleDefaultPropertyIfNull("dependenciesReport", "${dependenciesReportPath}/dependencies.txt")
+setCommonGradleDefaultPropertyIfNull("dependenciesFile", "${dependenciesReportPath}/dependencies.json")
 
 /***************************************************************************************
  * dependency-check: https://plugins.gradle.org/plugin/org.owasp.dependencycheck
@@ -478,7 +478,7 @@ setCommonGradleDefaultPropertyIfNull("servicePropertiesName", "toolarium-service
  ***************************************************************************************/
 // the quarkusPluginVersion is used for setup new projects where defaultQuarkusPluginVersion 
 // controls the used version and force for update.x
-setCommonGradleDefaultPropertyIfNull("defaultQuarkusPluginVersion", '3.6.9')
+setCommonGradleDefaultPropertyIfNull("defaultQuarkusPluginVersion", '3.20.0')
 //setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", '3.6.9')
 setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", "${defaultQuarkusPluginVersion}")
 setCommonGradleDefaultPropertyIfNull("quarkusReleaseUpdateVersion", true)
@@ -504,7 +504,7 @@ setCommonGradleDefaultPropertyIfNull("javaApplicationShadowClassifier", "")
 /***************************************************************************************
  * node plugin defaults
  ***************************************************************************************/
-setCommonGradleDefaultPropertyIfNull("nodePluginVersion", '2.2.4')
+setCommonGradleDefaultPropertyIfNull("nodePluginVersion", '7.1.0')
 setCommonGradleDefaultPropertyIfNull("nodeConfigInitFile", "$commonGradleBuildHome/.node-config-initialized")
 setCommonGradleDefaultPropertyIfNull("nodeFundMessage", false)
 setCommonGradleDefaultPropertyIfNull("nodeRegistry", "https://registry.npmjs.org/")

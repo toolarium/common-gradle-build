@@ -1,0 +1,156 @@
+/*
+ * dependencies-json.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * 
+ * This file is part of the toolarium common-gradle-build.
+ * 
+ * The common-gradle-build is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * The common-gradle-build is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+apply from: "${commonGradleBuildElementPath}/base/json.gradle"
+
+
+/****************************************************************************************
+ * Export request dependency 
+ ****************************************************************************************/
+task exportRequestDepndency {
+    doLast { 
+        def jsonOutput = "["
+        
+        configurations.compileClasspath.incoming.getResolutionResult().getAllDependencies().each { depResult  ->
+        jsonOutput += "\n{\"compileClasspath\": ["
+            jsonOutput += "{\"from\":\"" + depResult.getFrom() + "\"," + "\"requested\":\"" + depResult.getRequested() + "\"},"
+        }
+        if (jsonOutput[-1] == ',') {
+            jsonOutput = jsonOutput[0..-2]
+        }        
+        jsonOutput += "]}"
+        
+        jsonOutput += ",\n{\"runtimeClasspath\": ["
+        configurations.runtimeClasspath.incoming.getResolutionResult().getAllDependencies().each { depResult  ->
+            jsonOutput += "{\"from\":\"" + depResult.getFrom() + "\"," + "\"requested\":\"" + depResult.getRequested() + "\"},"
+        }
+        if (jsonOutput[-1] == ',') {
+            jsonOutput = jsonOutput[0..-2]
+        }
+        jsonOutput += "]}"
+        
+        jsonOutput += ",\n{\"testCompileClasspath\": ["
+        configurations.testCompileClasspath.incoming.getResolutionResult().getAllDependencies().each { depResult  ->
+            jsonOutput += "{\"from\":\"" + depResult.getFrom() + "\"," + "\"requested\":\"" + depResult.getRequested() + "\"},"
+        }
+        if (jsonOutput[-1] == ',') {
+            jsonOutput = jsonOutput[0..-2]
+        }
+        jsonOutput += "]}"
+        
+        jsonOutput += ",\n{\"testRuntimeClasspath\": ["
+        configurations.testRuntimeClasspath.incoming.getResolutionResult().getAllDependencies().each { depResult  ->
+            jsonOutput += "{\"from\":\"" + depResult.getFrom() + "\"," + "\"requested\":\"" + depResult.getRequested() + "\"},"
+        }
+        if (jsonOutput[-1] == ',') {
+            jsonOutput = jsonOutput[0..-2]
+        }        
+        jsonOutput += "]}"
+        
+        jsonOutput += "\n]"
+        println jsonOutput
+    }
+}
+
+
+/****************************************************************************************
+ * Export dependency as json
+ ****************************************************************************************/
+ext.exportResolvedDependency = { runtimeDependency, dep ->
+    def jsonOutputResult = ""
+    def dependencyChildType = "runtime"
+    if (!runtimeDependency) {
+        dependencyChildType = "compile"
+    }
+
+    def addToJson 
+    addToJson = { resolvedDep -> 
+        jsonOutputResult += "\n{"
+        jsonOutputResult += "\"groupId\":\"${resolvedDep.module.id.group}\",\"artifactId\":\"${resolvedDep.module.id.name}\",\"version\":\"${resolvedDep.module.id.version}\",\"file\":\"${resolvedDep.getModuleArtifacts()[0].file.toString().replace('\\', '/')}\""
+        jsonOutputResult += ",\"dependencies\":["
+        if (resolvedDep.children.size()!=0) {
+            resolvedDep.children.each { childResolvedDep ->
+                if (resolvedDep in childResolvedDep.getParents() && (childResolvedDep.getConfiguration() == "$dependencyChildType" /*'runtime'|| childResolvedDep.getConfiguration() == 'compile'*/)) {
+                    addToJson(childResolvedDep)
+                }
+            }
+            
+            if (jsonOutputResult[-1] == ',') {
+                jsonOutputResult = jsonOutputResult[0..-2]
+            }
+        }
+          
+        jsonOutputResult += "]},"
+    }
+       
+    addToJson(dep)
+    return jsonOutputResult
+}
+
+
+/****************************************************************************************
+ * Export dependency tree as json
+ ****************************************************************************************/
+task exportDependency {
+    doLast {
+        def jsonOutput = "["
+        
+        jsonOutput += "\n{\"compileClasspath\": ["
+        configurations.compileClasspath.resolvedConfiguration.firstLevelModuleDependencies.each { dep ->
+            jsonOutput += exportResolvedDependency(false, dep)
+        }
+        if (jsonOutput[-1] == ',') {
+            jsonOutput = jsonOutput[0..-2]
+        }        
+        jsonOutput += "]}"
+        
+        jsonOutput += ",\n{\"runtimeClasspath\": ["
+        configurations.runtimeClasspath.resolvedConfiguration.firstLevelModuleDependencies.each { dep ->
+            jsonOutput += exportResolvedDependency(true, dep)
+        }
+        if (jsonOutput[-1] == ',') {
+            jsonOutput = jsonOutput[0..-2]
+        }
+        jsonOutput += "]}"
+        
+        jsonOutput += ",\n{\"testCompileClasspath\": ["
+        configurations.testCompileClasspath.resolvedConfiguration.firstLevelModuleDependencies.each { dep ->
+            jsonOutput += exportResolvedDependency(false, dep)
+        }
+        if (jsonOutput[-1] == ',') {
+            jsonOutput = jsonOutput[0..-2]
+        }
+        jsonOutput += "]}"
+        
+        jsonOutput += ",\n{\"testRuntimeClasspath\": ["
+        configurations.testRuntimeClasspath.resolvedConfiguration.firstLevelModuleDependencies.each { dep ->
+            jsonOutput += exportResolvedDependency(true, dep)
+        }
+        if (jsonOutput[-1] == ',') {
+            jsonOutput = jsonOutput[0..-2]
+        }        
+        jsonOutput += "]}"
+        
+        jsonOutput += "\n]"
+
+        println jsonOutput
+    }
+}

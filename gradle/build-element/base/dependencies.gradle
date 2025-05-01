@@ -262,14 +262,29 @@ task verifyDependencies() {
  * project validation
  ***************************************************************************************/
 if (!project.getProperty('IS_NEW') && project.hasProperty('dependencyTextReport') && project.getProperty('dependencyTextReport')) {
-    projectValidation.finalizedBy("dependencyReport")	
+    projectValidation.finalizedBy("dependencyReport")
 }
 if (!project.getProperty('IS_NEW') && project.hasProperty('dependencyHTMLReport') && project.getProperty('dependencyHTMLReport')) {
     projectValidation.finalizedBy("htmlDependencyReport")
 }
 
+dependencyReport {
+	try {
+		outputFile = file("$dependenciesReport")
+	} catch (Exception e) {
+		logDebug("Could not set outputfile [$dependenciesReport]: " + e.getMessage())
+	}
+}
+
 htmlDependencyReport {
 	reports.html.outputLocation = file("$dependenciesReportPath")
+	
+	// gradle 8.13 set new outputFile attribute
+	try {
+		outputFile = file("$dependenciesReport")
+	} catch (Exception e) {
+		logDebug("Could not set outputfile [$dependenciesReport]: " + e.getMessage())
+	}
 	
     doLast {
 	    // prepare dependency json
