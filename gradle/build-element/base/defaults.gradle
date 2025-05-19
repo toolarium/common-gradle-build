@@ -294,6 +294,21 @@ setCommonGradleDefaultPropertyIfNull("compileJavaHome", "")
 
 
 /***************************************************************************************
+ * version default settings
+ ***************************************************************************************/
+setCommonGradleDefaultPropertyIfNull("majorVersionNumber", 0)
+setCommonGradleDefaultPropertyIfNull("minorVersionNumber", 0)
+setCommonGradleDefaultPropertyIfNull("revisionVersionNumber", 1)
+setCommonGradleDefaultPropertyIfNull("qualifierVersionNumber", SNAPSHOT_TAG_NAME)
+setCommonGradleDefaultPropertyIfNull("isReleaseVersion", false)
+setCommonGradleDefaultPropertyIfNull("tagReleaseVersion", true)
+setCommonGradleDefaultPropertyIfNull("isReleaseUpdateVersion", false)
+setCommonGradleDefaultPropertyIfNull("tagReleaseUpdateVersion", true)
+setCommonGradleDefaultPropertyIfNull("tagIgnoreReleaseUpdateVersionIfNoFilesChanged", true)
+setCommonGradleDefaultPropertyIfNull("scmVersionNumber", '')
+
+
+/***************************************************************************************
  * toolarium enum configuration support
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("hasToolariumEnumConfiguration", true)
@@ -309,8 +324,14 @@ setCommonGradleDefaultPropertyIfNull("toolariumChangelogParserVersion", "1.0.0")
 /***************************************************************************************
  * repository settings
  ***************************************************************************************/
-setCommonGradleDefaultPropertyIfNull("commonGradleCacheDynamicDuration", 10*60)
-setCommonGradleDefaultPropertyIfNull("commonGradleCacheChangingModulesDuration", 0)
+if ("true".equalsIgnoreCase("" + project.getProperty('isReleaseVersion'))) {
+	setCommonGradleDefaultPropertyIfNull("commonGradleCacheDynamicDuration", 10*60) // To change how long Gradle will cache the resolved version for a dynamic version
+	setCommonGradleDefaultPropertyIfNull("commonGradleCacheChangingModulesDuration", 0) // To change how long Gradle will cache the metadata and artifacts for a changing module
+} else {
+	setCommonGradleDefaultPropertyIfNull("commonGradleCacheDynamicDuration", 0) // To change how long Gradle will cache the resolved version for a dynamic version
+	setCommonGradleDefaultPropertyIfNull("commonGradleCacheChangingModulesDuration", 0) // To change how long Gradle will cache the metadata and artifacts for a changing module
+}
+
 setCommonGradleDefaultPropertyIfNull("allowMavenCentralRepository", true)
 setCommonGradleDefaultPropertyIfNull("allowGoogleRepository", true)
 
@@ -593,21 +614,6 @@ if (project.hasProperty('installGradleWrapper') && project.getProperty('installG
 	addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/gradlew")
 	addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/gradlew.bat")
 }
-
-
-/***************************************************************************************
- * version default settings
- ***************************************************************************************/
-setCommonGradleDefaultPropertyIfNull("majorVersionNumber", 0)
-setCommonGradleDefaultPropertyIfNull("minorVersionNumber", 0)
-setCommonGradleDefaultPropertyIfNull("revisionVersionNumber", 1)
-setCommonGradleDefaultPropertyIfNull("qualifierVersionNumber", SNAPSHOT_TAG_NAME)
-setCommonGradleDefaultPropertyIfNull("isReleaseVersion", false)
-setCommonGradleDefaultPropertyIfNull("tagReleaseVersion", true)
-setCommonGradleDefaultPropertyIfNull("isReleaseUpdateVersion", false)
-setCommonGradleDefaultPropertyIfNull("tagReleaseUpdateVersion", true)
-setCommonGradleDefaultPropertyIfNull("tagIgnoreReleaseUpdateVersionIfNoFilesChanged", true)
-setCommonGradleDefaultPropertyIfNull("scmVersionNumber", '')
 
 
 /***************************************************************************************

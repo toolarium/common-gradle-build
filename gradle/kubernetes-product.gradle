@@ -1202,7 +1202,9 @@ build { ->
 				copy { from "${srcMainResourcesDirectory}" into "${javaAppPath}" } 
 			}
 
-			copyFile("${kubernetesProductEnvironmentVariableFilename}", "${javaAppPath}/${kubernetesProductEnvironmentVariableName}", true)
+			if (new File("${kubernetesProductEnvironmentVariableFilename}").exists()) {
+				copyFile("${kubernetesProductEnvironmentVariableFilename}", "${javaAppPath}/${kubernetesProductEnvironmentVariableName}", true)
+			}
 
 			if (!hasRunner) {
 				addError("No fat-jar runner found, expected ${jarRunnerFile}!")

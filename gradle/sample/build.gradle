@@ -1,4 +1,5 @@
-apply from: "https://git.io/JfDQT"
+apply from: "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/common.gradle"
+// or apply from: "https://git.io/JfDQT"
 
 
 /***************************************************************************************
