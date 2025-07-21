@@ -348,8 +348,8 @@ setCommonGradleDefaultPropertyIfNull("allowMavenRepository", false)
 setCommonGradleDefaultPropertyIfNull("mavenStagingPublishUrl", "https://oss.sonatype.org/service/local/staging/deploy/maven2")
 setCommonGradleDefaultPropertyIfNull("mavenStagingRepositoryUrl", "https://oss.sonatype.org/content/repositories/staging")
 setCommonGradleDefaultPropertyIfNull("allowMavenStagingRepository", false)
-setCommonGradleDefaultPropertyIfNull("mavenSnapshotPublishUrl", "https://oss.sonatype.org/content/repositories/snapshots") // or https://s01.oss.sonatype.org/content/repositories/snapshots
-setCommonGradleDefaultPropertyIfNull("mavenSnapshotRepositoryUrl", "https://oss.sonatype.org/content/repositories/snapshots") // or https://s01.oss.sonatype.org/content/repositories/snapshots
+setCommonGradleDefaultPropertyIfNull("mavenSnapshotPublishUrl", "https://central.sonatype.com/repository/maven-snapshots") // https://oss.sonatype.org/content/repositories/snapshots or https://s01.oss.sonatype.org/content/repositories/snapshots
+setCommonGradleDefaultPropertyIfNull("mavenSnapshotRepositoryUrl", "https://central.sonatype.com/repository/maven-snapshots") // https://oss.sonatype.org/content/repositories/snapshots or https://s01.oss.sonatype.org/content/repositories/snapshots
 setCommonGradleDefaultPropertyIfNull("allowMavenSnapshotRepository", true)
 
 
@@ -656,6 +656,7 @@ setCommonGradleDefaultPropertyIfNull("dockerUser", "appuser")
 setCommonGradleDefaultPropertyIfNull("dockerGroup", "appgroup")
 setCommonGradleDefaultPropertyIfNull("dockerTimezone", "" + java.util.TimeZone.getDefault().getID())
 setCommonGradleDefaultPropertyIfNull("dockerSubPathAccess", "")
+setCommonGradleDefaultPropertyIfNull("dockerScriptPath", "$scriptsConfigurationPath")
 setCommonGradleDefaultPropertyIfNull("dockerRemoveDanglingImages", true)
 setCommonGradleDefaultPropertyIfNull("dockerDefaultEncoding", "${fileEncoding}")
 setCommonGradleDefaultPropertyIfNull("dockerDefaultLanguage", "en")

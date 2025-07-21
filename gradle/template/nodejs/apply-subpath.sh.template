@@ -1,0 +1,85 @@
+#!/bin/sh
+
+#########################################################################
+#
+# apply-subpath.sh
+#
+# Copyright by toolarium, all rights reserved.
+#
+# This file is part of the toolarium common-gradle-build.
+#
+# The common-build is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# The common-build is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+#
+#########################################################################
+
+CB_LINE="----------------------------------------------------------------------------------------"
+CB_LINEHEADER=".: "
+#dockerSubPathAccess=$(echo "@@dockerSubPathAccess@@" | grep -v "@" | sed -E 's:^/*::; s:/*$::')
+
+echo "$CB_LINE"
+[ -z "$DEPLOYMENT_DIR" ] && DEPLOYMENT_DIR="/deployment"
+! [ -d "$DEPLOYMENT_DIR" ] && echo "${CB_LINEHEADER}Skip apply subpath, no $DEPLOYMENT_DIR directory found!" && echo "$CB_LINE" && exit 0
+
+# find base subdirectory (not files or symlinks), ignore . and ..
+subdirs=$(find "$DEPLOYMENT_DIR" -mindepth 1 -maxdepth 1 -type d 2>dev/null)
+sourceSubdir=$(basename "$subdirs" | sed -E 's:^/*::; s:/*$::')
+[ -z "$sourceSubdir" ] && echo "${CB_LINEHEADER}Skip apply subpath, no source subdirectory found." && echo "$CB_LINE" && exit 0
+
+# if we have a configuration file, take path form there: runtimeUrlPath={where the resources are located}, kubernetesUrlPath={where the access is granted from}
+[ -r "/opt/toolarium-service.properties" ] && kubernetesUrlPath=$(cat /opt/toolarium-service.properties | grep service.root-path | uniq | awk -F= '{print $2}' | sed 's/ //g' | sed -E 's:^/*::; s:/*$::')
+[ -r "/opt/toolarium-service.properties" ] && runtimeUrlPath=$(cat /opt/toolarium-service.properties | grep service.resources | uniq | awk -F= '{print $2}' | sed 's/ //g' | sed -E 's:^/*::; s:/*$::')
+[ -z  "$kubernetesUrlPath" ] && kubernetesUrlPath=$sourceSubdir
+[ -z  "$runtimeUrlPath" ] && runtimeUrlPath=$sourceSubdir
+
+targetSubpath=$runtimeUrlPath
+if [ -z "$SUBPATH" ]; then
+    replaceTo=$targetSubpath
+    echo "${CB_LINEHEADER}No specific subpath defined as SUBPATH environment variable, use default $targetSubpath"
+else
+    targetSubpath=$(echo "$SUBPATH" | sed -E 's:^/*::; s:/*$::')
+    replaceTo=$targetSubpath/$runtimeUrlPath
+    echo "${CB_LINEHEADER}Specific subpath set as environment variable, use $targetSubpath"
+fi
+[ "$sourceSubdir" = "$targetSubpath" ] && echo "$CB_LINE" && exit 0
+sourceConfigSubdir=$sourceSubdir
+
+# 1) in case of a subpath inside the container looks differently than the runtimeUrlPath, e.g. __mypath__ -> mypath and move if a SUBPATH is defined to the proper place
+if ! [ "$sourceSubdir" = "$runtimeUrlPath" ]; then 
+    echo "${CB_LINEHEADER}Apply container subpath from $sourceSubdir -> $runtimeUrlPath..."
+    mv -f $DEPLOYMENT_DIR/$sourceSubdir $DEPLOYMENT_DIR/$runtimeUrlPath
+    sourceSubdir=$runtimeUrlPath
+fi
+if ! [ "$sourceSubdir" = "$targetSubpath" ]; then
+    echo "${CB_LINEHEADER}Apply subpath from $sourceSubdir -> $replaceTo"
+    mkdir -p "$DEPLOYMENT_DIR/$targetSubpath"
+    mv -f $DEPLOYMENT_DIR/$sourceSubdir $DEPLOYMENT_DIR/$targetSubpath
+fi
+
+# 2) apply replacements in static resources, except locales
+echo "${CB_LINEHEADER}Apply source files path from $sourceConfigSubdir -> $replaceTo (in $DEPLOYMENT_DIR/$targetSubpath)..."
+find "$DEPLOYMENT_DIR/$targetSubpath" -type d -name locales -prune -o -type f -print | while read -r file; do
+    sed -i "s|api/$sourceConfigSubdir|__PROTECTED__|g" "$file"
+    sed -i "s|$sourceConfigSubdir|$replaceTo|g" "$file"
+    sed -i "s|__PROTECTED__|api/$sourceConfigSubdir|g" "$file"
+done
+
+# 3 apply replacements in nginx conf, e.g. location / { try_files $uri myui/index.html /myui/index.html =404; }
+echo "${CB_LINEHEADER}Apply nginx replacement path from $sourceConfigSubdir -> $replaceTo"
+
+# avoid sed temp file
+[ -z "$NGINX_CONF_DIR" ] && NGINX_CONF_DIR="/etc/nginx/conf.d/"
+TEMP_SED=$(sed "s|$sourceConfigSubdir|$replaceTo|g" "$NGINX_CONF_DIR/default.conf")
+echo "$TEMP_SED" > $NGINX_CONF_DIR/default.conf
+unset TEMP_SED
+echo "$CB_LINE"

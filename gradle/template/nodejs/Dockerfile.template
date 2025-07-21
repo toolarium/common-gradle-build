@@ -15,6 +15,7 @@ ARG RUNTIMEUSER="@@dockerUser@@"
 ARG TIMEZONE="@@dockerTimezone@@"
 ARG DEPLOYMENT_SOURCE_PATH="@@dockerDeploymentSourcePath@@"
 ARG DEPLOYMENT_SUBPATH="@@dockerSubPathAccess@@"
+ARG DEPLOYMENT_SCRIPT_PATH="@@dockerScriptPath@@"
 ARG DEPLOYMENT_PATH=/deployment/
 ARG DEFAULT_ENCODING="@@dockerDefaultEncoding@@"
 ARG DEFAULT_LOCALE="@@dockerDefaultLocale@@"
@@ -49,6 +50,8 @@ RUN mkdir -p ${DEPLOYMENT_PATH}${DEPLOYMENT_SUBPATH} \
     && chown -R ${RUNTIMEUSER} ${DEPLOYMENT_PATH}${DEPLOYMENT_SUBPATH} \
     && chmod -R 755 ${DEPLOYMENT_PATH}${DEPLOYMENT_SUBPATH} \
     && chmod -R g=u ${DEPLOYMENT_PATH}${DEPLOYMENT_SUBPATH} \
+    && chown -R ${RUNTIMEUSER} ${DEPLOYMENT_PATH} \
+    && chgrp -R ${RUNTIMEUSER} ${DEPLOYMENT_PATH} \
     && chown -R ${RUNTIMEUSER} /var/cache/nginx \
     && chmod -R g=u /var/cache/nginx \
     && chown -R ${RUNTIMEUSER} /var/log/nginx \
@@ -64,9 +67,10 @@ RUN cp /etc/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf.org \
   root $DEPLOYMENT_PATH;\n \
   index index.html index.html;\n \
   location / {\n \
-     try_files \$uri ${DEPLOYMENT_SUBPATH}index.html /${DEPLOYMENT_SUBPATH}index.html =404;\n \
+    try_files \$uri ${DEPLOYMENT_SUBPATH}index.html /${DEPLOYMENT_SUBPATH}index.html =404;\n \
   }\n \
-}" > /etc/nginx/conf.d/default.conf
+}" > /etc/nginx/conf.d/default.conf \
+  && chown ${RUNTIMEUSER} /etc/nginx/conf.d/default.conf
 
 # comment user directive because we run as non root user
 RUN cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.org \
@@ -74,6 +78,12 @@ RUN cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.org \
 
 # copy the application
 COPY --chown=${RUNTIMEUSER} ${DEPLOYMENT_SOURCE_PATH} ${DEPLOYMENT_PATH}${DEPLOYMENT_SUBPATH}
+
+# copy apply-subpath script
+COPY ${DEPLOYMENT_SCRIPT_PATH}/apply-subpath.sh /docker-entrypoint.d/05-apply-subpath.sh
+
+# copyd serivce properties
+COPY ${DEPLOYMENT_SCRIPT_PATH}/*.properties /opt
 
 # set language
 ENV LANG='${DEFAULT_LOCALE}.${DEFAULT_ENCODING}' LANGUAGE='${DEFAULT_LOCALE}:${DEFAULT_LANGUAGE}'

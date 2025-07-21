@@ -70,6 +70,18 @@ if (!project.hasProperty("createSourceJar")) {
 if (!project.hasProperty("createJavadocJar")) {
 	project.ext.set("createJavadocJar", false)
 }
+if (project.hasProperty("kubernetesUrlPath")) {
+	project.ext.set("kubernetesUrlPathOrg", "$kubernetesUrlPath")
+}
+if (project.hasProperty("runtimeUrlPath")) {
+	project.ext.set("runtimeUrlPathOrg", "$runtimeUrlPath")
+}
+if (project.hasProperty("dockerSubPathAccess")) {
+	project.ext.set("dockerSubPathAccessOrg", "$dockerSubPathAccess")
+}
+if (project.hasProperty("fatWebSubContext")) {
+	project.ext.set("fatWebSubContextOrg", "$fatWebSubContext")
+}
 
 
 /***************************************************************************************
@@ -350,10 +362,25 @@ ext.generatePackageJson = { outputPath = "${$rootDirectory}",
 }
 
 
-ext.fatWebSubContext = "$dockerSubPathAccess"
+// set the used sub pazh
+setCommonGradleDefaultPropertyIfNull("fatWebSubContext", "${kubernetesUrlPath}")
+
 apply from: "${commonGradleBuildElementPath}/base/container.gradle"
 apply from: "${commonGradleBuildElementPath}/base/webjar.gradle"
 
+// support script for dynamic sub-path
+dockerBuild {  ->
+	doFirst {
+		// copy subpath script to build path
+		def applySubpathScriptFile = "$dockerScriptPath/apply-subpath.sh";
+		mkdir "$dockerScriptPath" // create local file in project 
+		createFileFromTemplate("$applySubpathScriptFile", getTemplateFile("apply-subpath.sh.template"), true /*overwrite*/, false /*print*/, true /*replace*/, NELINE /*only nl*/)
+		new File("$applySubpathScriptFile").setExecutable(true, true);
+		buildServiceProperties("${dockerScriptPath}", "${servicePropertiesName}", "${kubernetesUrlPath}", "${runtimeUrlPath}", "${gradlePropertiesFile}", "dockerSubPathAccess"); 	
+	}
+}
+
+// support fat-jar
 buildFatWebJar {  ->
 	doLast {
 		if (project.hasProperty('createFatJar') && project.getProperty('createFatJar').toString().trim().equalsIgnoreCase("true")) {
@@ -470,4 +497,51 @@ ext.parseNpmDependencyVersion = { versionFile="$rootDirectory/package.json", pac
     }
 	
 	return null
+}
+
+
+/***************************************************************************************
+ * project validation
+ ***************************************************************************************/
+projectValidation {
+	doFirst {
+		try { 
+			def stdout = new StringBuilder()
+			def exitStatus = execCommand("node --version", -1, stdout, stdout)
+			if (exitStatus==0) {
+				def nodeVersion = stdout.toString().replaceAll("\\r?\\n", "").trim()
+				if (nodeVersion.length() > 1 && nodeVersion.startsWith("v")) {
+					nodeVersion = nodeVersion.substring(1).trim()
+				}
+				
+				printInfo("> " + colorize(HIGHLITE_LEVEL, "Node") + " version " + colorize(HIGHLITE_LEVEL, nodeVersion) + ".");
+			}
+		} catch(Exception e) {
+			// NOP
+		}
+
+		printInfo("> Web path: " + colorize(HIGHLITE_LEVEL, kubernetesUrlPath) + ", container path " + colorize(HIGHLITE_LEVEL, dockerSubPathAccess) + ".")
+		if (!"$kubernetesUrlPath".toString().equals("$runtimeUrlPath".toString())) {
+			if (project.hasProperty('createCustomJar') && project.getProperty('createCustomJar').toString().equalsIgnoreCase("true")) {
+				printInfo("> Sub-Path: " + colorize(HIGHLITE_LEVEL, runtimeUrlPath) + ", fat-jar path " + colorize(HIGHLITE_LEVEL, fatWebSubContext) + ".")
+			} else {
+				printInfo("> Sub-Path: " + colorize(HIGHLITE_LEVEL, runtimeUrlPath) + ".")
+			}
+		}
+
+		//if (project.hasProperty("kubernetesUrlPathOrg") && project.hasProperty("kubernetesUrlPath") && !"${kubernetesUrlPathOrg}".toString().equals("${kubernetesUrlPath}".toString())) {
+		//	printWarn("Please remove the " + colorize(HIGHLITE_LEVEL, "kubernetesUrlPath") + colorize(WARN_LEVEL, " from") + colorize(HIGHLITE_LEVEL, "gradle.properties") + colorize(WARN_LEVEL, ", it's redundant!"))
+		//}
+		if (project.hasProperty("runtimeUrlPathOrg") && trimSlahes("${runtimeUrlPathOrg}").toString().trim().equals(trimSlahes("${kubernetesUrlPath}".toString().trim()))) {
+			printWarn("Please remove the " + colorize(HIGHLITE_LEVEL, "runtimeUrlPath") + colorize(WARN_LEVEL, " from ") + colorize(HIGHLITE_LEVEL, "gradle.properties") + colorize(WARN_LEVEL, ", it's redundant!"))
+		}
+		if (project.hasProperty("dockerSubPathAccessOrg") && trimSlahes("${dockerSubPathAccessOrg}").toString().trim().equals(trimSlahes("${kubernetesUrlPath}".toString().trim()))) {
+			printWarn("Please remove the " + colorize(HIGHLITE_LEVEL, "dockerSubPathAccess") + colorize(WARN_LEVEL, " from ") + colorize(HIGHLITE_LEVEL, "gradle.properties") + colorize(WARN_LEVEL, ", it's redundant!"))
+		} else if (project.hasProperty("dockerSubPathAccessOrg") && trimSlahes("${dockerSubPathAccessOrg}").toString().trim().equals(trimSlahes("${runtimeUrlPath}".toString().trim()))) {
+			printWarn("Please remove the " + colorize(HIGHLITE_LEVEL, "dockerSubPathAccess") + colorize(WARN_LEVEL, " from ") + colorize(HIGHLITE_LEVEL, "gradle.properties") + colorize(WARN_LEVEL, ", it's redundant!"))
+		}
+		if (project.hasProperty("fatWebSubContextOrg") && trimSlahes("${fatWebSubContextOrg}").toString().trim().equals(trimSlahes("${kubernetesUrlPath}".toString().trim()))) {
+			printWarn("Please remove the " + colorize(HIGHLITE_LEVEL, "fatWebSubContext") + colorize(WARN_LEVEL, " from ") + colorize(HIGHLITE_LEVEL, "gradle.properties") + colorize(WARN_LEVEL, ", it's redundant!"))
+		}
+	}
 }

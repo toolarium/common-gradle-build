@@ -70,6 +70,47 @@ ext.splitAsListByLength = { splitString = "", partLength ->
 }
 
 
+/** 
+ * Trim 
+ */
+ext.trimCharacters = { str, charToTrim ->
+    if (str == null || str.isEmpty()) {
+         return str;
+    }
+
+    int start = 0;
+    int end = str.length() - 1;
+
+    // Trim from the left
+    while (start <= end && str.charAt(start) == charToTrim) {
+        start++;
+    }
+
+    // Trim from the right
+    while (end >= start && str.charAt(end) == charToTrim) {
+        end--;
+    }
+
+    // Return the substring or empty string if all characters were trimmed
+    if (start > end) {
+        return "";
+    } else {
+        return str.substring(start, end + 1);
+    }
+}
+
+
+/** 
+ * Trim slahes
+ */
+ext.trimSlahes = { subPath = "" ->
+	if (subPath == null) {
+		return null;
+	}
+	
+	return subPath.toString().trim().replaceAll("^/+", "").replaceAll("/+\$", "");
+}
+
 
 /** 
  * Add an error. The build will fail at the end.

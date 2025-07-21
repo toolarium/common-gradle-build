@@ -204,6 +204,9 @@ ext.searchReplaceByProperties = { inputLine, replacePlaceHolders = true ->
 		if (project.hasProperty('dockerSubPathAccess')) {
 			line = line.replaceAll('@@dockerSubPathAccess@@', "${project.ext.dockerSubPathAccess}".toString())
 		}
+		if (project.hasProperty('dockerScriptPath')) {
+			line = line.replaceAll('@@dockerScriptPath@@', "${project.ext.dockerScriptPath}".toString())
+		}
 		if (project.hasProperty('dockerDefaultEncoding')) {
 			line = line.replaceAll('@@dockerDefaultEncoding@@', "${project.ext.dockerDefaultEncoding}".toString())
 		}

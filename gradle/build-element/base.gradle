@@ -121,17 +121,28 @@ if (!project.hasProperty('hasProjectValidationExecuted')) {
 	setCommonGradleProperty('hasProjectValidationExecuted', false)
 }
 
-if (project.hasProperty('dockerSubPathAccess')) {
-	def subPath = "${dockerSubPathAccess}".toString().trim()
-	if (!subPath.toString().isEmpty()) {
-		while(subPath.toString().startsWith("/")) {
-			subPath = subPath.substring(1);
-		}
-		if (!subPath.toString().endsWith("/")) {
-			subPath = subPath + "/"
+// trim unecessary slaahes
+if (project.hasProperty("kubernetesUrlPath")) {	
+	setCommonGradleProperty("kubernetesUrlPath", "/" + trimSlahes("${kubernetesUrlPath}").toString().trim())
+}
+if (project.hasProperty("runtimeUrlPath")) {	
+	setCommonGradleProperty("runtimeUrlPath", "/" + trimSlahes("${runtimeUrlPath}").toString().trim())
+} else {
+	setCommonGradleProperty("runtimeUrlPath", "$kubernetesUrlPath")
+}
+if (project.hasProperty("dockerSubPathAccess")) {
+	if (!trimSlahes("${kubernetesUrlPath}").toString().trim().isEmpty() && trimSlahes("${dockerSubPathAccess}").toString().trim().isEmpty()) {
+		setCommonGradleProperty("dockerSubPathAccess", trimSlahes("${kubernetesUrlPath}").toString().trim() + "/")
+	} else {
+		if (!trimSlahes("${runtimeUrlPath}").toString().trim().isEmpty() && trimSlahes("${dockerSubPathAccess}").toString().trim().isEmpty()) {
+			setCommonGradleProperty("dockerSubPathAccess", trimSlahes("${runtimeUrlPath}").toString().trim() + "/")
+		} else {
+			setCommonGradleProperty("dockerSubPathAccess", trimSlahes("${dockerSubPathAccess}").toString().trim() + "/")
 		}
 	}
-	setCommonGradleProperty('dockerSubPathAccess', subPath)
+}
+if (project.hasProperty("fatWebSubContext")) {
+	setCommonGradleProperty("fatWebSubContext", trimSlahes("${fatWebSubContext}").toString().trim() + "/")
 }
 
 tasks.matching { it != projectValidation }.all {
@@ -584,15 +595,22 @@ ext.buildServiceProperties = { baseFolder = "${gradleBuildDirectory}", filename 
 		if (!testResourcePath.toString().endsWith("/")) {
 			testResourcePath = testResourcePath + "/"
 		}
+		if (!testResourcePath.toString().startsWith("/")) {
+			testResourcePath = "/" + testResourcePath
+		}
+
 		def isValidPath = testResourcePath.toString().startsWith(testRootPath.toString())
 		if (!isValidPath) { 
 			printWarn("The " + colorize(HIGHLITE_LEVEL, "$rootPathSourceProperty = $rootPath") + colorize(WARN_LEVEL, " in ") + colorize(HIGHLITE_LEVEL, "$rootPathSourceFile") 
-			+ colorize(WARN_LEVEL, "\n    must be parent of ") + colorize(HIGHLITE_LEVEL, "$resourcePathSourceProperty = $resourcePath") + colorize(WARN_LEVEL, " in ") + colorize(HIGHLITE_LEVEL, "$resourcePathSourceFile") + colorize(WARN_LEVEL, "!"))
+			+ colorize(WARN_LEVEL, "\n    must be child of ") + colorize(HIGHLITE_LEVEL, "$resourcePathSourceProperty = $resourcePath") + colorize(WARN_LEVEL, " in ") + colorize(HIGHLITE_LEVEL, "$resourcePathSourceFile") + colorize(WARN_LEVEL, "!"))
 		}
 	}	
 
 	if (project.hasProperty('createServiceProperties') && project.getProperty('createServiceProperties')) {
 		def servicePathProperties = new File("${baseFolder}/${filename}")
+		if (servicePathProperties.exists()) {
+			servicePathProperties.delete();
+		}
 		servicePathProperties.append("# ${filename}" + NELINE)
 		servicePathProperties.append("service.name = ${rootProject.name}" + NELINE)
 		servicePathProperties.append("service.version = ${project.version}" + NELINE)		

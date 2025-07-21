@@ -313,6 +313,45 @@ ext.copyFile = { fileToCopy, fileDest, overwrite = false ->
 
 
 /** 
+ * Search and replace in a file tree
+ *
+ * filePath the file path
+ * fileExtension the file extension
+ * searchPattern the search pattern as regular expression
+ * replacement the replacement
+ * returne the changed files
+ */
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.FileVisitResult;
+import java.util.regex.Pattern;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.io.File;
+
+ext.replaceFilesInPath = { filePath, fileExtension, searchPattern, replacement ->
+	def changedFiles = []
+	def pattern = Pattern.compile(searchPattern);
+	Files.walkFileTree(new File(filePath.toString()).toPath(), new SimpleFileVisitor<Path>() {
+		FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+            if (Files.isRegularFile(file) && (fileExtension == null || fileExtension.isEmpty() || file.getFileName().toString().endsWith(fileExtension))) {
+				def content = new String(Files.readAllBytes(file), java.nio.charset.StandardCharsets.UTF_8);
+				def updatedContent = pattern.matcher(content).replaceAll(replacement);
+				
+				if (!content.toString().equals(updatedContent.toString())) {
+					Files.write(file, updatedContent.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+					changedFiles.add(file.toFile());
+				}
+			}
+			return FileVisitResult.CONTINUE;
+		}
+	});
+	
+	return changedFiles;
+}
+
+
+/** 
  * Replace in a file
  *
  * filePath the file path
