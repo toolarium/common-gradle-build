@@ -122,19 +122,19 @@ if (!project.hasProperty('hasProjectValidationExecuted')) {
 }
 
 // trim unecessary slaahes
-if (project.hasProperty("kubernetesUrlPath")) {	
+if (project.hasProperty("kubernetesUrlPath") && !project.getProperty("kubernetesUrlPath").toString().trim().isEmpty()) {
 	setCommonGradleProperty("kubernetesUrlPath", "/" + trimSlahes("${kubernetesUrlPath}").toString().trim())
 }
-if (project.hasProperty("runtimeUrlPath")) {	
+if (project.hasProperty("runtimeUrlPath") && !project.getProperty("runtimeUrlPath").toString().trim().isEmpty()) {
 	setCommonGradleProperty("runtimeUrlPath", "/" + trimSlahes("${runtimeUrlPath}").toString().trim())
-} else {
+} else if (!project.getProperty("kubernetesUrlPath").toString().trim().isEmpty()) {
 	setCommonGradleProperty("runtimeUrlPath", "$kubernetesUrlPath")
 }
 if (project.hasProperty("dockerSubPathAccess")) {
 	if (!trimSlahes("${kubernetesUrlPath}").toString().trim().isEmpty() && trimSlahes("${dockerSubPathAccess}").toString().trim().isEmpty()) {
 		setCommonGradleProperty("dockerSubPathAccess", trimSlahes("${kubernetesUrlPath}").toString().trim() + "/")
 	} else {
-		if (!trimSlahes("${runtimeUrlPath}").toString().trim().isEmpty() && trimSlahes("${dockerSubPathAccess}").toString().trim().isEmpty()) {
+		if (project.hasProperty("runtimeUrlPath") && !trimSlahes("${runtimeUrlPath}").toString().trim().isEmpty() && trimSlahes("${dockerSubPathAccess}").toString().trim().isEmpty()) {
 			setCommonGradleProperty("dockerSubPathAccess", trimSlahes("${runtimeUrlPath}").toString().trim() + "/")
 		} else {
 			setCommonGradleProperty("dockerSubPathAccess", trimSlahes("${dockerSubPathAccess}").toString().trim() + "/")
