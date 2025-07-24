@@ -90,14 +90,16 @@ task buildFatWebJar {  ->
 					}
 				}
 				
-				if (!"$dockerSubPathAccess".toString().equals("$fatWebSubContext".toString())) {
-					printInfo("> Apply source files path from " + colorize(HIGHLITE_LEVEL, dockerSubPathAccess) + " -> " + colorize(HIGHLITE_LEVEL, fatWebSubContext) + " (in " + colorize(HIGHLITE_LEVEL, "${distWebPath}/${commonGradleBuildDistName}/") + ")...")
+				if (!trimSlahes("${dockerSubPathAccess}").toString().trim().equals(trimSlahes("${fatWebSubContext}").toString().trim())) {
+					// e.g.fatWebSubContext=/my/app/my-ui, dockerSubPathAccess=my/other/app/my-ui/
+					def fatWebSubContextReplqacement=trimSlahes("${fatWebSubContext}").toString().trim() + "/"
+					printInfo("> Apply source files path from " + colorize(HIGHLITE_LEVEL, dockerSubPathAccess) + " -> " + colorize(HIGHLITE_LEVEL, fatWebSubContextReplqacement) + " (in " + colorize(HIGHLITE_LEVEL, "${distWebPath}/${commonGradleBuildDistName}/") + ")...")
 					def savedApiCalls = replaceFilesInPath("${project.rootDir}".replace('\\', '/') + "/${distWebPath}/${commonGradleBuildDistName}/".toString(), null, "api/${dockerSubPathAccess}", "__PROTECTED__") // save API calls					
 					def filesReplaced = []
-					if (project.getProperty("fatWebSubContext").toString().equals("/")) {
-						filesReplaced += replaceFilesInPath("${project.rootDir}".replace('\\', '/') + "/${distWebPath}/${commonGradleBuildDistName}/".toString(), null, "/${dockerSubPathAccess}", "$fatWebSubContext")
+					if ("$fatWebSubContextReplqacement".toString().equals("/")) {
+						filesReplaced += replaceFilesInPath("${project.rootDir}".replace('\\', '/') + "/${distWebPath}/${commonGradleBuildDistName}/".toString(), null, "/${dockerSubPathAccess}", "$fatWebSubContextReplqacement")
 					}
-					filesReplaced += replaceFilesInPath("${project.rootDir}".replace('\\', '/') + "/${distWebPath}/${commonGradleBuildDistName}/".toString(), null, "$dockerSubPathAccess", "$fatWebSubContext")
+					filesReplaced += replaceFilesInPath("${project.rootDir}".replace('\\', '/') + "/${distWebPath}/${commonGradleBuildDistName}/".toString(), null, "$dockerSubPathAccess", "$fatWebSubContextReplqacement")
 					def restoredApiCalls = replaceFilesInPath("${project.rootDir}".replace('\\', '/') + "/${distWebPath}/${commonGradleBuildDistName}/".toString(), null, "__PROTECTED__", "api/${dockerSubPathAccess}") // restore API calls				
 					logInfo("  -> Updated files " + colorize(HIGHLITE_LEVEL, "" + filesReplaced) + colorize(INFO_LEVEL, "."))
 					printInfo("  -> Updated " + colorize(HIGHLITE_LEVEL, "" + filesReplaced.size()) + " file(s).")
