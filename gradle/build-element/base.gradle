@@ -131,7 +131,7 @@ if (project.hasProperty("runtimeUrlPath") && !project.getProperty("runtimeUrlPat
 	setCommonGradleProperty("runtimeUrlPath", "$kubernetesUrlPath")
 }
 if (project.hasProperty("dockerSubPathAccess")) {
-	if (!trimSlahes("${kubernetesUrlPath}").toString().trim().isEmpty() && trimSlahes("${dockerSubPathAccess}").toString().trim().isEmpty()) {
+	if (project.hasProperty("kubernetesUrlPath") && !trimSlahes("${kubernetesUrlPath}").toString().trim().isEmpty() && trimSlahes("${dockerSubPathAccess}").toString().trim().isEmpty()) {
 		setCommonGradleProperty("dockerSubPathAccess", trimSlahes("${kubernetesUrlPath}").toString().trim() + "/")
 	} else {
 		if (project.hasProperty("runtimeUrlPath") && !trimSlahes("${runtimeUrlPath}").toString().trim().isEmpty() && trimSlahes("${dockerSubPathAccess}").toString().trim().isEmpty()) {

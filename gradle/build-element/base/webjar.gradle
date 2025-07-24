@@ -92,7 +92,13 @@ task buildFatWebJar {  ->
 				
 				if (!"$dockerSubPathAccess".toString().equals("$fatWebSubContext".toString())) {
 					printInfo("> Apply source files path from " + colorize(HIGHLITE_LEVEL, dockerSubPathAccess) + " -> " + colorize(HIGHLITE_LEVEL, fatWebSubContext) + " (in " + colorize(HIGHLITE_LEVEL, "${distWebPath}/${commonGradleBuildDistName}/") + ")...")
-					def filesReplaced = replaceFilesInPath("${project.rootDir}".replace('\\', '/') + "/${distWebPath}/${commonGradleBuildDistName}/".toString(), null, "$dockerSubPathAccess", "$fatWebSubContext")
+					def savedApiCalls = replaceFilesInPath("${project.rootDir}".replace('\\', '/') + "/${distWebPath}/${commonGradleBuildDistName}/".toString(), null, "api/${dockerSubPathAccess}", "__PROTECTED__") // save API calls					
+					def filesReplaced = []
+					if (project.getProperty("fatWebSubContext").toString().equals("/")) {
+						filesReplaced += replaceFilesInPath("${project.rootDir}".replace('\\', '/') + "/${distWebPath}/${commonGradleBuildDistName}/".toString(), null, "/${dockerSubPathAccess}", "$fatWebSubContext")
+					}
+					filesReplaced += replaceFilesInPath("${project.rootDir}".replace('\\', '/') + "/${distWebPath}/${commonGradleBuildDistName}/".toString(), null, "$dockerSubPathAccess", "$fatWebSubContext")
+					def restoredApiCalls = replaceFilesInPath("${project.rootDir}".replace('\\', '/') + "/${distWebPath}/${commonGradleBuildDistName}/".toString(), null, "__PROTECTED__", "api/${dockerSubPathAccess}") // restore API calls				
 					logInfo("  -> Updated files " + colorize(HIGHLITE_LEVEL, "" + filesReplaced) + colorize(INFO_LEVEL, "."))
 					printInfo("  -> Updated " + colorize(HIGHLITE_LEVEL, "" + filesReplaced.size()) + " file(s).")
 					buildServiceProperties("${distWebPath}", "${servicePropertiesName}", "${fatWebSubContext}", "${gradlePropertiesFile}", "fatWebSubContext"); 
