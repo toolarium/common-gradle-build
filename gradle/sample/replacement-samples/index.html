@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script>
+        // Unicode escapes in JavaScript
+        window.APP_CONFIG = {
+            basePath: "__administration__\u002F",
+            apiUrl: "__administration__\u002Fapi"
+        };
+        
+        // URL encoded in data attributes  
+        var redirectPath = "__administration__%2Flogin";
+    </script>
+    
+    <!-- Standard paths (original handles) -->
+    <link href="__administration__/css/main.css" rel="stylesheet">
+    
+    <!-- URL encoded in href (original misses) -->
+    <a href="__administration__%2Fdashboard">Dashboard</a>
+</head>
+<body>
+    <!-- Standard format -->
+    <img src="__administration__/images/logo.png" alt="Logo">
+</body>
+</html>

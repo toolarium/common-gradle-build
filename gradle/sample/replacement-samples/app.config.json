@@ -1,0 +1,22 @@
+{
+  "baseHref": "__administration__/",
+  "apiEndpoints": {
+    "users": "__administration__\u002Fapi\u002Fusers",
+    "settings": "__administration__\u002Fsettings"
+  },
+  "routes": [
+    {
+      "path": "__administration__/",
+      "component": "AdminComponent"
+    },
+    {
+      "path": "__administration__\u002Fdashboard", 
+      "component": "DashboardComponent"
+    }
+  ],
+  "staticAssets": "__administration__\/assets\/",
+  "redirectUrls": [
+    "__administration__%2Flogin",
+    "__administration__%2Flogout"
+  ]
+}

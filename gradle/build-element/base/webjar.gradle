@@ -41,6 +41,135 @@ configurations.webJar {
 
 
 /****************************************************************************************
+ * Build fat webJar, usage examples:
+ * def changedFiles = replaceFilesInPathWithSlahes("/deployment/myapp", ".js", "administration/", "new-admin/")
+ * def changedFiles = replaceFilesInPathWithSlahes("/deployment/myapp", ".json", "administration/", "new-admin/")
+ * def changedFiles = replaceFilesInPathWithSlahes("/deployment/myapp", null, "administration/", "new-admin/")  // All files
+ ***************************************************************************************/
+import java.nio.file.*
+import java.nio.file.attribute.BasicFileAttributes
+import java.util.regex.Pattern
+import java.nio.charset.StandardCharsets
+ext.replaceFilesInPathWithSlahes = { filePath, fileExtension, sourcePattern, replacement ->
+    def changedFiles = []
+    
+    // Helper function to detect binary files
+    def isBinaryFile = { Path file ->
+        try {
+            // Read first 1024 bytes to check for binary content
+            def bytes = Files.readAllBytes(file)
+            if (bytes.length == 0) return false
+            
+            def sampleSize = Math.min(1024, bytes.length)
+            def nullBytes = 0
+            for (int i = 0; i < sampleSize; i++) {
+                if (bytes[i] == 0) nullBytes++
+            }
+            // If more than 1% null bytes, consider it binary
+            return (nullBytes / sampleSize) > 0.01
+        } catch (Exception e) {
+            return true // If we can't read it, treat as binary
+        }
+    }
+    
+    // Create all the patterns we need to handle different encodings
+    def createReplacementPatterns = { String source, String target ->
+        def sourceEscaped = Pattern.quote(source)
+        def sourceWithoutSlash = source.endsWith('/') ? source.substring(0, source.length() - 1) : source
+        def sourceWithoutSlashEscaped = Pattern.quote(sourceWithoutSlash)
+        
+        // Normalize target - remove any trailing slashes for consistent handling
+        def normalizedTarget = target.replaceAll('/$', '')
+        
+        return [
+            // 1. standard replacement (use normalized target)
+            [Pattern.compile(sourceEscaped), normalizedTarget],
+            
+            // 2. unicode escape sequences (\u002F for /) - the \u002F IS the slash, so replace with target + /
+            [Pattern.compile(sourceEscaped + "\\\\\\\\u002[Ff]"), normalizedTarget + "/"],
+            [Pattern.compile(sourceWithoutSlashEscaped + "\\\\\\\\u002[Ff]"), normalizedTarget + "/"],
+            
+            // 3. URL encoding (%2F for /) - the %2F IS the slash, so replace with target + /
+            [Pattern.compile(sourceEscaped + "%2[Ff]"), normalizedTarget + "/"],
+            [Pattern.compile(sourceWithoutSlashEscaped + "%2[Ff]"), normalizedTarget + "/"],
+            
+            // 4. JSON/JavaScript escaped slashes (\/) - the \/ IS the slash, so replace with target + /
+            [Pattern.compile(sourceEscaped + "\\\\\\\\/"), normalizedTarget + "/"],
+            [Pattern.compile(sourceWithoutSlashEscaped + "\\\\\\\\/"), normalizedTarget + "/"],
+            
+            // 5. double escaped slashes (\\/) - the \\/ IS the slash, so replace with target + /
+            [Pattern.compile(sourceEscaped + "\\\\\\\\\\\\\\\\/"), normalizedTarget + "/"],
+            [Pattern.compile(sourceWithoutSlashEscaped + "\\\\\\\\\\\\\\\\/"), normalizedTarget + "/"],
+            
+            // 6. quoted contexts with different quote types (use normalized target)
+            [Pattern.compile("\"" + sourceEscaped + "\""), "\"" + normalizedTarget + "\""],
+            [Pattern.compile("'" + sourceEscaped + "'"), "'" + normalizedTarget + "'"],
+            [Pattern.compile("`" + sourceEscaped + "`"), "`" + normalizedTarget + "`"]
+        ]
+    }
+    
+    def replacementPatterns = createReplacementPatterns(sourcePattern, replacement)
+    
+    Files.walkFileTree(new File(filePath.toString()).toPath(), new SimpleFileVisitor<Path>() {
+        @Override
+        FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+            if (Files.isRegularFile(file) && 
+                (fileExtension == null || fileExtension.isEmpty() || file.getFileName().toString().endsWith(fileExtension))) {
+                
+                // Skip binary files
+                if (isBinaryFile(file)) {
+                    return FileVisitResult.CONTINUE
+                }
+                
+                try {
+                    def content = new String(Files.readAllBytes(file), StandardCharsets.UTF_8)
+                    def originalContent = content
+                    def wasModified = false
+                    
+                    // Protect API paths first (equivalent to shell script's API protection)
+                    def apiProtectionPattern = Pattern.compile("api/" + Pattern.quote(sourcePattern))
+                    content = apiProtectionPattern.matcher(content).replaceAll("__PROTECTED_API__")
+                    
+                    // Apply all replacement patterns
+                    replacementPatterns.each { patternInfo ->
+                        def pattern = patternInfo[0]
+                        def targetReplacement = patternInfo[1]
+                        def newContent = pattern.matcher(content).replaceAll(targetReplacement)
+                        if (!content.equals(newContent)) {
+                            content = newContent
+                            wasModified = true
+                        }
+                    }
+                    
+                    // Restore protected API paths
+                    def restoreApiPattern = Pattern.compile("__PROTECTED_API__")
+                    content = restoreApiPattern.matcher(content).replaceAll("api/" + sourcePattern)
+                    
+                    // Write back if content changed
+                    if (wasModified || !originalContent.equals(content)) {
+                        Files.write(file, content.getBytes(StandardCharsets.UTF_8))
+                        changedFiles.add(file.toFile())
+                    }
+                    
+                } catch (Exception e) {
+                    printWarn("Could not process file [" + colorize(HIGHLITE_LEVEL, file) + colorize(WARN_LEVEL, "]: " +e.getMessage())) 
+                }
+            }
+            return FileVisitResult.CONTINUE
+        }
+        
+        @Override
+        FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+            printWarn("Failed to visit file [" + colorize(HIGHLITE_LEVEL, file) + colorize(WARN_LEVEL, "]: " +exc.getMessage())) 
+            return FileVisitResult.CONTINUE
+        }
+    })
+    
+    return changedFiles
+}
+
+
+/****************************************************************************************
  * Build fat webJar
  ****************************************************************************************/
 task buildFatWebJar {  ->
@@ -94,13 +223,7 @@ task buildFatWebJar {  ->
 					// e.g.fatWebSubContext=/my/app/my-ui, dockerSubPathAccess=my/other/app/my-ui/
 					def fatWebSubContextReplqacement=trimSlahes("${fatWebSubContext}").toString().trim() + "/"
 					printInfo("> Apply source files path from " + colorize(HIGHLITE_LEVEL, dockerSubPathAccess) + " -> " + colorize(HIGHLITE_LEVEL, fatWebSubContextReplqacement) + " (in " + colorize(HIGHLITE_LEVEL, "${distWebPath}/${commonGradleBuildDistName}/") + ")...")
-					def savedApiCalls = replaceFilesInPath("${project.rootDir}".replace('\\', '/') + "/${distWebPath}/${commonGradleBuildDistName}/".toString(), null, "api/${dockerSubPathAccess}", "__PROTECTED__") // save API calls					
-					def filesReplaced = []
-					if ("$fatWebSubContextReplqacement".toString().equals("/")) {
-						filesReplaced += replaceFilesInPath("${project.rootDir}".replace('\\', '/') + "/${distWebPath}/${commonGradleBuildDistName}/".toString(), null, "/${dockerSubPathAccess}", "$fatWebSubContextReplqacement")
-					}
-					filesReplaced += replaceFilesInPath("${project.rootDir}".replace('\\', '/') + "/${distWebPath}/${commonGradleBuildDistName}/".toString(), null, "$dockerSubPathAccess", "$fatWebSubContextReplqacement")
-					def restoredApiCalls = replaceFilesInPath("${project.rootDir}".replace('\\', '/') + "/${distWebPath}/${commonGradleBuildDistName}/".toString(), null, "__PROTECTED__", "api/${dockerSubPathAccess}") // restore API calls				
+					def filesReplaced = replaceFilesInPathWithSlahes("${project.rootDir}".replace('\\', '/') + "/${distWebPath}/${commonGradleBuildDistName}/".toString(), null, trimSlahes("${dockerSubPathAccess}").toString().trim(), "$fatWebSubContextReplqacement")
 					logInfo("  -> Updated files " + colorize(HIGHLITE_LEVEL, "" + filesReplaced) + colorize(INFO_LEVEL, "."))
 					printInfo("  -> Updated " + colorize(HIGHLITE_LEVEL, "" + filesReplaced.size()) + " file(s).")
 					buildServiceProperties("${distWebPath}", "${servicePropertiesName}", "${fatWebSubContext}", "${gradlePropertiesFile}", "fatWebSubContext"); 

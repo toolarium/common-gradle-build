@@ -1,0 +1,13 @@
+/* Standard format (original handles) */
+.admin-bg {
+    background-image: url('__administration__/images/bg.jpg');
+}
+
+/* URL encoded (original misses) */
+.header-logo {
+    background: url('__administration__%2Fimages%2Flogo.png');
+}
+
+/* In CSS, paths are usually standard, but can be URL encoded */
+@import url("__administration__/css/admin-theme.css");
+@import url("__administration__%2Fcss%2Fresponsive.css");
