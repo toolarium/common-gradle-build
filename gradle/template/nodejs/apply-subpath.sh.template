@@ -128,11 +128,11 @@ find "$DEPLOYMENT_DIR/$targetSubpath" -type d -name locales -prune -o -type f -p
 done
 
 # 3 apply replacements in nginx conf, e.g. location / { try_files $uri myui/index.html /myui/index.html =404; }
+[ -z "$NGINX_CONF_DIR" ] && NGINX_CONF_DIR="/etc/nginx/conf.d/"
 if [ -r $NGINX_CONF_DIR/default.conf ]; then
     echo "${CB_LINEHEADER}Apply nginx replacement path from $sourceConfigSubdir -> $replaceTo"
 
     # avoid sed temp file
-    [ -z "$NGINX_CONF_DIR" ] && NGINX_CONF_DIR="/etc/nginx/conf.d/"
     TEMP_SED=$(sed "s|$sourceConfigSubdir|$replaceTo|g" "$NGINX_CONF_DIR/default.conf")
     echo "$TEMP_SED" > $NGINX_CONF_DIR/default.conf
     unset TEMP_SED
