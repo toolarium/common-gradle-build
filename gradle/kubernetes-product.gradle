@@ -68,6 +68,17 @@ if (!project.hasProperty("dockerImage")) {
 	project.ext.set("dockerImage", "nginx:alpine")
 }
 
+// static container has json files therefore the check path are different
+if (!project.hasProperty('kubernetesNodeReadinessCheckPath')) {
+	ext.kubernetesNodeReadinessCheckPath="/index.json"
+}
+if (!project.hasProperty('kubernetesNodeLivenessCheckPath')) {
+	ext.kubernetesNodeLivenessCheckPath="/index.json"
+}
+if (!project.hasProperty('kubernetesNodeStartupCheckPath')) {
+	ext.kubernetesNodeStartupCheckPath="/index.json"
+}
+
 
 /***************************************************************************************
  * Dependencies
@@ -76,6 +87,7 @@ apply from: "${commonGradleBuildElementPath}/base.gradle"
 apply from: "${commonGradleBuildElementPath}/base/gradle.gradle"
 apply from: "${commonGradleBuildElementPath}/base/run.gradle"
 apply from: "${commonGradleBuildElementPath}/base/json.gradle"
+//apply from: "${commonGradleBuildElementPath}/base/markdown-pdf-support.gradle"
 
 
 ext.fatWebClassifierContext = "$kubernetesApplicationConfigurationInformationPathname"
@@ -584,6 +596,11 @@ task extractKubernetesInformation() {
 							kubernetesInformationMap[baseName] = nameSplitVersion[1]
 							kubernetesSourceInformationMap[baseName] = sourceFileName
 						} else if (!kubernetesInformationMap[baseName].equals(nameSplitVersion[1])) {
+// TODO:
+//type -> error
+//removed -> error
+//cardinality
+//mnin / max						
 							def message = "Configuration conflict! The dependency " + nameSplitVersion[0] + " exist in different versions " + nameSplitVersion[1] + " and " + kubernetesInformationMap[baseName] + ", please resolve:\n" + "    - " + sourceFileName + "\n" + "    - " + kubernetesSourceInformationMap[baseName]
 							printWarn(message) 
 							addError(message)
