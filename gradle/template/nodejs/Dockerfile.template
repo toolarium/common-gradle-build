@@ -82,6 +82,7 @@ COPY --chown=${RUNTIMEUSER} ${DEPLOYMENT_SOURCE_PATH} ${DEPLOYMENT_PATH}${DEPLOY
 
 # copy apply-subpath script
 COPY ${DEPLOYMENT_SCRIPT_PATH}/apply-subpath.sh /docker-entrypoint.d/05-apply-subpath.sh
+RUN chmod 755 /docker-entrypoint.d/05-apply-subpath.sh
 
 # copyd serivce properties
 COPY ${DEPLOYMENT_SCRIPT_PATH}/*.properties /opt
