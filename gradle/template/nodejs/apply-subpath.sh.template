@@ -37,7 +37,7 @@ sourceSubdir=$(basename "$subdirs" | sed -E 's:^/*::; s:/*$::')
 [ -z "$sourceSubdir" ] && echo "${CB_LINEHEADER}Skip apply subpath, no source subdirectory found." && echo "$CB_LINE" && exit 0
 
 # if we have a configuration file, take path form there: runtimeUrlPath={where the resources are located}, kubernetesUrlPath={where the access is granted from}
-[ -z "$PROPERTIES_FILE" ] && PROPERTIES_FILE="/opt/toolarium-service.properties"
+[ -z "$PROPERTIES_FILE" ] && PROPERTIES_FILE="/opt/@@servicePropertiesName@@"
 [ -r "$PROPERTIES_FILE" ] && kubernetesUrlPath=$(cat "$PROPERTIES_FILE" | grep service.root-path | uniq | awk -F= '{print $2}' | sed 's/ //g' | sed -E 's:^/*::; s:/*$::')
 [ -r "$PROPERTIES_FILE" ] && runtimeUrlPath=$(cat "$PROPERTIES_FILE" | grep service.resources | uniq | awk -F= '{print $2}' | sed 's/ //g' | sed -E 's:^/*::; s:/*$::')
 [ -z  "$kubernetesUrlPath" ] && kubernetesUrlPath=$sourceSubdir
