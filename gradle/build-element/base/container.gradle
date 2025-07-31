@@ -222,7 +222,51 @@ task dockerBuild {
 			printInfo("> Create container image " + colorize(HIGHLITE_LEVEL,  dockerBuildName) + " (${dockerSourceMessage} dockerfile)")
 			logInfo("Use dockerfile [" +colorize(HIGHLITE_LEVEL,  dockerBuildName) + colorize(INFO_LEVEL, "]."))
 			
-			def cmd="${containerCmd} build -t ${dockerBuildName} ${dockerBuildPull} ${dockerBuildCompress}"
+			def dockerTag="-t ${dockerBuildName}"
+            if( project.hasProperty("dockerSupportLatestTag") && project.getProperty("dockerSupportLatestTag") ) {
+			    dockerTag+=" -t ${rootProject.name}:latest"
+			}
+
+			def dockerAnnotation=""
+            if( project.hasProperty("dockerAddAnnotation") && project.getProperty("dockerAddAnnotation") ) {
+				def containerGroupId="${project.ext.projectGroupId}"
+				if (project.hasProperty("productGroupId") && !"${productGroupId}".toString().trim().isEmpty()) {
+					containerGroupId="${productGroupId}".toString().trim()				
+				}			
+				if (project.hasProperty("productMaintainer") && !"${productMaintainer}".toString().trim().isEmpty()) {
+    			    dockerAnnotation+=" --annotation \\\"${containerGroupId}.image.maintainer=${project.ext.productMaintainer}\\\""
+				}
+				if (project.hasProperty("productTitle") && !"${productTitle}".toString().trim().isEmpty()) {
+			        dockerAnnotation+=" --annotation \\\"${containerGroupId}.image.title=${project.ext.productTitle}\\\""
+				}				
+				if (project.hasProperty("licenseOrganisation") && !"${licenseOrganisation}".toString().trim().isEmpty()) {
+   			        dockerAnnotation+=" --annotation \\\"${containerGroupId}.image.vendor=${project.ext.licenseOrganisation}\\\""
+				}
+				if (project.hasProperty("licenseUrl") && !"${licenseUrl}".toString().trim().isEmpty()) {
+			        dockerAnnotation+=" --annotation \\\"${containerGroupId}.image.url=${project.ext.licenseUrl}\\\""
+				}
+				if (project.hasProperty("licenseText") && !"${licenseText}".toString().trim().isEmpty()) {
+				    dockerAnnotation+=" --annotation \\\"${containerGroupId}.image.license=${project.ext.licenseText}\\\""
+				}
+			    dockerAnnotation+=" --annotation \\\"${containerGroupId}.image.layer=${project.ext.projectComponentId}\\\""
+				/*
+				if (project.hasProperty("projectDescription") && !"${projectDescription}".toString().trim().isEmpty()) {
+				    dockerAnnotation+=" -annotation ${containerGroupId}.image.description=\"${project.ext.projectDescription}\""
+				}
+			    */
+			    dockerAnnotation+=" --annotation \\\"${containerGroupId}.image.version=${project.version}\\\""
+				if (project.hasProperty("scmVersionNumber") && !"${scmVersionNumber}".toString().trim().isEmpty()) {
+			        dockerAnnotation+=" --annotation \\\"${containerGroupId}.image.revision=${scmVersionNumber}\\\""
+				}
+			    dockerAnnotation+=" --annotation \\\"${containerGroupId}.image.created=${project.ext.BUILD_TIMESTAMP_SHORT}\\\""
+			}
+
+			def dockerMetadataFileCmd=""
+			if (project.hasProperty("dockerMetadataFile") && !"${dockerMetadataFile}".toString().trim().isEmpty()) {
+                dockerMetadataFileCmd=" --metadata-file ${dockerMetadataFile}"
+            }
+
+			def cmd="${containerCmd} ${dockerBuildCmd} ${dockerTag}${dockerAnnotation}${dockerMetadataFileCmd} ${dockerBuildPull} ${dockerBuildCompress}"
 			if (!"${dockerBuildArgs}".toString().trim().isEmpty()) {
 				cmd="$cmd ${dockerBuildArgs}"
 			}

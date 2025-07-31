@@ -675,6 +675,10 @@ setCommonGradleDefaultPropertyIfNull("dockerLogLevel", "")
 setCommonGradleDefaultPropertyIfNull("dockerJavaRunner", "java-runner.sh")
 setCommonGradleDefaultPropertyIfNull("dockerEnableAccessLog", false)
 setCommonGradleDefaultPropertyIfNull("containerCmd", "nerdctl") // docker: docker
+setCommonGradleDefaultPropertyIfNull("dockerBuildCmd", "buildx build") // docker: buildx build
+setCommonGradleDefaultPropertyIfNull("dockerAddAnnotation", true) // docker: -t myrepo/myapp:latest 
+setCommonGradleDefaultPropertyIfNull("dockerSupportLatestTag", true) // docker: -t myrepo/myapp:latest 
+setCommonGradleDefaultPropertyIfNull("dockerMetadataFile", "$gradleBuildDirectory/container-metadata.json") // docker: --metadata-file metadata.json
 setCommonGradleDefaultPropertyIfNull("dockerBuildPull", "") // docker: --pull --force-rm
 setCommonGradleDefaultPropertyIfNull("dockerBuildCompress", "") // docker: --compress
 setCommonGradleDefaultPropertyIfNull("dockerBuildArgs", "") // "--build-arg "
@@ -690,7 +694,7 @@ setCommonGradleDefaultPropertyIfNull("dockerCleanupAfterBuild", false)
 setCommonGradleDefaultPropertyIfNull("dockerCleanupAfterPublish", true)
 setCommonGradleDefaultPropertyIfNull("dockerPullImageCommand", "docker pull")
 
-if (!"$dockerIgnoreFile".toString().isEmpty()) {
+if (!"$dockerIgnoreFile".toString().isEmpty()) {	
 	addCommonGradlePropertyList("allowedMainFiles", "$dockerIgnoreFile")
 }
 
