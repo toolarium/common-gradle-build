@@ -136,5 +136,35 @@ if [ -r $NGINX_CONF_DIR/default.conf ]; then
     TEMP_SED=$(sed "s|$sourceConfigSubdir|$replaceTo|g" "$NGINX_CONF_DIR/default.conf")
     echo "$TEMP_SED" > $NGINX_CONF_DIR/default.conf
     unset TEMP_SED
+
+    redirectBlocks=""
+    if [ -n "$targetSubpath" ] && [ "$targetSubpath" != "." ] && [ "$targetSubpath" != "$runtimeUrlPath" ]; then
+        # Generate 302 redirect blocks for path hierarchy: Split path into components and build redirect blocks
+        currentPath=""
+        for component in $(echo "$targetSubpath" | tr '/' ' '); do
+            [ -n "$currentPath" ] && currentPath="$currentPath/$component" || currentPath="$component"
+            redirectBlocks="$redirectBlocks
+   # 302 redirect for /$currentPath (with or without trailing slash) to full final path
+   location ~ ^/$currentPath/?$ {
+       return 302 /$replaceTo/;
+   }
+"
+        done
+    
+		TEMP_NGINX=$(mktemp)
+		if [ -n "$redirectBlocks" ]; then
+    		echo "${CB_LINEHEADER}Apply nginx configuration with hierarchical 302 redirects"
+			while IFS= read -r line; do
+				echo "$line" >> "$TEMP_NGINX"
+				# Insert redirect blocks after the index line and before location /
+				if echo "$line" | grep -q "index index.html index.html"; then
+					echo "$redirectBlocks" >> "$TEMP_NGINX"
+				fi
+			done < "$NGINX_CONF_DIR/default.conf"
+		fi
+	
+		# Replace original file with updated configuration
+		cat "$TEMP_NGINX" > "$NGINX_CONF_DIR/default.conf" && rm $TEMP_NGINX
+	fi
 fi
 echo "$CB_LINE"

@@ -415,6 +415,7 @@ setCommonGradleDefaultPropertyIfNull("dependenciesReportPath", "${reportsPath}/d
 setCommonGradleDefaultPropertyIfNull("dependenciesReport", "${dependenciesReportPath}/dependencies.txt")
 setCommonGradleDefaultPropertyIfNull("dependenciesFile", "${dependenciesReportPath}/dependencies.json")
 
+
 /***************************************************************************************
  * dependency-check: https://plugins.gradle.org/plugin/org.owasp.dependencycheck
  ***************************************************************************************/
@@ -485,6 +486,31 @@ setCommonGradleDefaultPropertyIfNull("jacocoReportPath", "${reportsPath}/testcov
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("sonarEnabled", false)
 setCommonGradleDefaultPropertyIfNull("sonarVersion", "4.4.1.3373")
+
+
+/***************************************************************************************
+ * asciidoc
+ ***************************************************************************************/
+setCommonGradleDefaultPropertyIfNull("supportAsciiDoctor", true)
+setCommonGradleDefaultPropertyIfNull("asciidocDirectoryName", "asciidoc")
+setCommonGradleDefaultPropertyIfNull("asciidocSourceDirectory", "${docsDirectory}/${asciidocDirectoryName}")
+setCommonGradleDefaultPropertyIfNull("asciidocOutputDirectory", "${reportsPath}/${asciidocDirectoryName}")
+setCommonGradleDefaultPropertyIfNull("asciiDoctorEncoding", "utf-8")
+setCommonGradleDefaultPropertyIfNull("asciiDoctorPdfTheme", "theme.yml")
+setCommonGradleDefaultPropertyIfNull("asciiDoctorHtmlTheme", "theme.css")
+setCommonGradleDefaultPropertyIfNull("asciiDoctorEndpointUrl", "")
+setCommonGradleDefaultPropertyIfNull("asciiDoctorSourceHighlighter", "highlight.js")
+setCommonGradleDefaultPropertyIfNull("asciiDoctorPDFSourceHighlighter", "rouge")
+setCommonGradleDefaultPropertyIfNull("asciiDoctorHighlightJsTheme", "github")  // "github", "default", "monokai", "base16", "solarized-light", "solarized-dark"
+setCommonGradleDefaultPropertyIfNull("asciiDoctorRougeStyle", "github") // "github", "monokai", "base16", "default"
+setCommonGradleDefaultPropertyIfNull("asciiDoctorToc", "left")
+setCommonGradleDefaultPropertyIfNull("asciiDoctorTocLevel", "3")
+setCommonGradleDefaultPropertyIfNull("asciiDoctorIcons", "font")
+setCommonGradleDefaultPropertyIfNull("asciiDoctorIdPrefix", "")
+setCommonGradleDefaultPropertyIfNull("asciiDoctorIdSeparator", "-")
+setCommonGradleDefaultPropertyIfNull("asciiDoctorSectanchors", "")
+setCommonGradleDefaultPropertyIfNull("asciiDoctorSectlinks", "")
+setCommonGradleDefaultPropertyIfNull("asciiDoctorLinkattrs", "")
 
 
 /***************************************************************************************

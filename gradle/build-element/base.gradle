@@ -115,6 +115,14 @@ try {
 }
 
 
+/***************************************************************************************
+ * asciidoc task
+ ***************************************************************************************/
+if (project.hasProperty('supportAsciiDoctor') && project.getProperty('supportAsciiDoctor')) {
+	apply from: "${commonGradleBuildElementPath}/docs/asciidoctor-support.gradle"
+}
+
+
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // add dependencies to all tasks except some special ones
 if (!project.hasProperty('hasProjectValidationExecuted')) {

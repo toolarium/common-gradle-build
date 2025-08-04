@@ -1,0 +1,178 @@
+/*
+ * asciidoctor-support.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * 
+ * This file is part of the toolarium common-gradle-build.
+ * 
+ * The common-gradle-build is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * The common-gradle-build is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+ */
+ 
+
+ buildscript {
+	repositories {
+        gradlePluginPortal()
+        maven {
+            url 'https://repo1.maven.org/maven2/'
+        }
+	}
+	dependencies {
+		def toolarimAsciiDoctor="3.3.2" // "4.0.2"
+		if (project.hasProperty('toolarimAsciiDoctor')) {
+			toolarimAsciiDoctor = project.getProperty('toolarimAsciiDoctor')
+		}
+		logInfo("toolarimAsciiDoctor version: ${toolarimAsciiDoctor}."); 
+        classpath "org.asciidoctor:asciidoctor-gradle-jvm-pdf:${toolarimAsciiDoctor}"
+        classpath "org.asciidoctor:asciidoctor-gradle-jvm:${toolarimAsciiDoctor}"
+	}
+}
+ext.asciiDoctorjVersion = '2.5.7'
+ext.asciiDoctorPDFVersion = "2.3.4"
+ext.asciiDoctorImagesdir = "./images"
+
+
+/***************************************************************************************
+ * asciidoctor, see https://docs.asciidoctor.org/gradle-plugin/latest/
+ ***************************************************************************************/
+import org.asciidoctor.gradle.jvm.pdf.AsciidoctorPdfTask
+import org.asciidoctor.gradle.jvm.AsciidoctorTask
+import org.asciidoctor.gradle.jvm.AsciidoctorJExtension
+
+if (!project.getProperty('IS_NEW') && project.hasProperty('supportAsciiDoctor') && project.getProperty('supportAsciiDoctor')) {
+
+    // Create asciidoctorj extension manually
+    extensions.create('asciidoctorj', AsciidoctorJExtension, project)
+
+
+    /***************************************************************************************
+     * HTML generation task with theme
+     ***************************************************************************************/
+    task convertAsciidoctorHtml(type: AsciidoctorTask) {
+        group = 'documentation'
+        description = 'Generate HTML documentation from asciidoctor files'
+        
+        forkOptions {
+            jvmArgs = [
+                '--add-opens', 'java.base/sun.nio.ch=ALL-UNNAMED',
+                '--add-opens', 'java.base/java.io=ALL-UNNAMED',
+                '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
+                '--add-opens', 'java.base/java.lang.reflect=ALL-UNNAMED'
+            ]
+        }
+
+        doFirst {
+            copy {
+                from "${asciidocSourceDirectory}/${asciiDoctorHtmlTheme}"
+                into "${asciidocOutputDirectory}/html"
+            }
+        }
+        baseDirFollowsSourceFile()
+
+        asciidoctorj {
+            version = "$asciiDoctorjVersion"
+            attributes 'build-gradle': file('build.gradle'),
+                    'endpoint-url': "$asciiDoctorEndpointUrl",
+                    'source-highlighter': "$asciiDoctorSourceHighlighter",
+                    'highlightjs-theme': "$asciiDoctorHighlightJsTheme",
+                    'imagesdir': "$asciiDoctorImagesdir",
+                    'toc': "$asciiDoctorToc",
+                    'toclevels': "$asciiDoctorTocLevel",
+                    'icons': "$asciiDoctorIcons",
+                    'idprefix': "$asciiDoctorIdPrefix",
+                    'idseparator': "$asciiDoctorIdSeparator",
+                    'sectanchors': "$asciiDoctorSectanchors",
+                    'sectlinks': "$asciiDoctorSectlinks",
+                    'linkattrs': "$asciiDoctorLinkattrs",
+                    'encoding': "$asciiDoctorEncoding",
+                    'stylesheet': "$asciiDoctorHtmlTheme",
+                    'stylesdir': ".",
+                    'copycss': ''
+        }
+
+        sourceDir = file("${asciidocSourceDirectory}")
+        outputDir = file("${asciidocOutputDirectory}/html")
+    }
+
+
+    /***************************************************************************************
+     * PDF generation task with theme
+     ***************************************************************************************/
+    task convertAsciidoctorPdf(type: AsciidoctorPdfTask) {
+        group = 'documentation'
+        description = 'Generate PDF documentation from asciidoctor files'
+        
+        forkOptions {
+            jvmArgs = [
+                '--add-opens', 'java.base/sun.nio.ch=ALL-UNNAMED',
+                '--add-opens', 'java.base/java.io=ALL-UNNAMED',
+                '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
+                '--add-opens', 'java.base/java.lang.reflect=ALL-UNNAMED'
+            ]
+        }
+
+        baseDirFollowsSourceFile()
+
+        asciidoctorj {
+            version = "$asciiDoctorjVersion"
+            modules.pdf.version "$asciiDoctorPDFVersion"
+            attributes 'build-gradle': file('build.gradle'),
+                    'endpoint-url': "$asciiDoctorEndpointUrl",
+                    'source-highlighter': "$asciiDoctorPDFSourceHighlighter",
+                    'rouge-style': "$asciiDoctorRougeStyle",
+                    'imagesdir': "$asciiDoctorImagesdir",
+                    'toc': "$asciiDoctorToc",
+                    'toclevels': "$asciiDoctorTocLevel",
+                    'icons': "$asciiDoctorIcons",
+                    'idprefix': "$asciiDoctorIdPrefix",
+                    'idseparator': "$asciiDoctorIdSeparator",
+                    'sectanchors': "$asciiDoctorSectanchors",
+                    'sectlinks': "$asciiDoctorSectlinks",
+                    'linkattrs': "$asciiDoctorLinkattrs",
+                    'pagenums': "",
+                    'encoding': "$asciiDoctorEncoding",
+                    'pdf-theme': "$asciiDoctorPdfTheme",
+                    'pdf-themesdir': "."
+        }
+        
+        sourceDir = file("${asciidocSourceDirectory}")
+        outputDir = file("${asciidocOutputDirectory}/pdf")
+        
+        // Optional fonts directory
+        /*
+        if (file("${asciidocSourceDirectory}/fonts").exists()) {
+            fontsDir file("${asciidocSourceDirectory}/fonts")
+        }*/
+    }
+
+
+    /***************************************************************************************
+     * Clean task
+     ***************************************************************************************/
+    task cleanAsciidoctorDocs(type: Delete) {
+        delete "${asciidocOutputDirectory}"
+    }
+
+
+    /***************************************************************************************
+     * Generate the artefacts
+     ***************************************************************************************/
+    task generateAsciidoctorArtefacts {
+        dependsOn cleanAsciidoctorDocs, convertAsciidoctorHtml, convertAsciidoctorPdf
+        group = 'documentation'
+        description = 'Generate the asciidoctor document artefacts'
+    }
+
+
+	projectValidation.finalizedBy(generateAsciidoctorArtefacts)
+}
