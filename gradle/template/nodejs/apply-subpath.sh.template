@@ -58,13 +58,13 @@ sourceConfigSubdir=$sourceSubdir
 # 1) in case of a subpath inside the container looks differently than the runtimeUrlPath, e.g. __mypath__ -> mypath and move if a SUBPATH is defined to the proper place
 if ! [ "$sourceSubdir" = "$runtimeUrlPath" ]; then 
     echo "${CB_LINEHEADER}Apply container subpath from $sourceSubdir -> $runtimeUrlPath..."
-    mv -f $DEPLOYMENT_DIR/$sourceSubdir $DEPLOYMENT_DIR/$runtimeUrlPath
+    mv -f $DEPLOYMENT_DIR/$sourceSubdir $DEPLOYMENT_DIR/$runtimeUrlPath 2>/dev/null
     sourceSubdir=$runtimeUrlPath
 fi
 if ! [ "$sourceSubdir" = "$targetSubpath" ]; then
     echo "${CB_LINEHEADER}Apply subpath from $sourceSubdir -> $replaceTo"
     mkdir -p "$DEPLOYMENT_DIR/$targetSubpath"
-    mv -f $DEPLOYMENT_DIR/$sourceSubdir $DEPLOYMENT_DIR/$targetSubpath
+    mv -f $DEPLOYMENT_DIR/$sourceSubdir $DEPLOYMENT_DIR/$targetSubpath 2>/dev/null
 fi
 
 # 2) apply replacements in static resources, except locales
@@ -147,7 +147,10 @@ if [ -r $NGINX_CONF_DIR/default.conf ]; then
    # 302 redirect for /$currentPath (with or without trailing slash) to full final path
    location ~ ^/$currentPath/?$ {
        return 302 /$replaceTo/;
-   }
+   }RUN chgrp -R root /deployment \
+    && chmod -R g=u /deployment \
+    && chmod -R g=u /etc/nginx/conf.d  
+
 "
         done
     
