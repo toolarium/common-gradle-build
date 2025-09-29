@@ -39,7 +39,6 @@
 }
 ext.asciiDoctorjVersion = '2.5.7'
 ext.asciiDoctorPDFVersion = "2.3.4"
-ext.asciiDoctorImagesdir = "./images"
 
 
 /***************************************************************************************
@@ -49,7 +48,7 @@ import org.asciidoctor.gradle.jvm.pdf.AsciidoctorPdfTask
 import org.asciidoctor.gradle.jvm.AsciidoctorTask
 import org.asciidoctor.gradle.jvm.AsciidoctorJExtension
 
-if (!project.getProperty('IS_NEW') && project.hasProperty('supportAsciiDoctor') && project.getProperty('supportAsciiDoctor')) {
+if (!project.getProperty('IS_NEW') && project.hasProperty('supportAsciiDoctor') && project.getProperty('supportAsciiDoctor') && new File("$asciidocSourceDirectory").exists()) {
 
     // Create asciidoctorj extension manually
     extensions.create('asciidoctorj', AsciidoctorJExtension, project)
@@ -71,10 +70,21 @@ if (!project.getProperty('IS_NEW') && project.hasProperty('supportAsciiDoctor') 
             ]
         }
 
+		if (!new File("$asciidocSourceDirectory/$asciiDoctorImagePath").exists()) {
+			new File("$asciidocSourceDirectory/$asciiDoctorImagePath").mkdirs()
+		}
+		if (!new File("$asciidocSourceDirectory/$asciiDoctorHtmlThemePath").exists()) {
+			new File("$asciidocSourceDirectory/$asciiDoctorHtmlThemePath").mkdirs()
+		}
+		if (!new File("${asciidocSourceDirectory}/${asciiDoctorHtmlThemePath}/$asciiDoctorHtmlTheme").exists()) {
+			createFileFromTemplate("${asciidocSourceDirectory}/${asciiDoctorHtmlThemePath}/$asciiDoctorHtmlTheme", getTemplateFile('asciidoctor-theme.css.template', 'doc'), true /*overwrite*/, false /*print*/, true /*replace*/, NELINE /*only nl*/)
+			//new File("${asciidocSourceDirectory}/${asciiDoctorHtmlThemePath}/$asciiDoctorHtmlTheme").createNewFile() 
+		}
+
         doFirst {
             copy {
                 from "${asciidocSourceDirectory}/${asciiDoctorHtmlTheme}"
-                into "${asciidocOutputDirectory}/html"
+                into "${asciiDoctorHtmlPath}"
             }
         }
         baseDirFollowsSourceFile()
@@ -85,7 +95,7 @@ if (!project.getProperty('IS_NEW') && project.hasProperty('supportAsciiDoctor') 
                     'endpoint-url': "$asciiDoctorEndpointUrl",
                     'source-highlighter': "$asciiDoctorSourceHighlighter",
                     'highlightjs-theme': "$asciiDoctorHighlightJsTheme",
-                    'imagesdir': "$asciiDoctorImagesdir",
+                    'imagesdir': "$asciiDoctorImagePath",
                     'toc': "$asciiDoctorToc",
                     'toclevels': "$asciiDoctorTocLevel",
                     'icons': "$asciiDoctorIcons",
@@ -94,14 +104,16 @@ if (!project.getProperty('IS_NEW') && project.hasProperty('supportAsciiDoctor') 
                     'sectanchors': "$asciiDoctorSectanchors",
                     'sectlinks': "$asciiDoctorSectlinks",
                     'linkattrs': "$asciiDoctorLinkattrs",
+                    'organization': "$licenseOrganisation",
+                    'copyright': "$licenseText",
                     'encoding': "$asciiDoctorEncoding",
                     'stylesheet': "$asciiDoctorHtmlTheme",
-                    'stylesdir': ".",
+                    'stylesdir': "$asciiDoctorHtmlThemePath",
                     'copycss': ''
         }
 
         sourceDir = file("${asciidocSourceDirectory}")
-        outputDir = file("${asciidocOutputDirectory}/html")
+        outputDir = file("${asciiDoctorHtmlPath}")
     }
 
 
@@ -121,6 +133,20 @@ if (!project.getProperty('IS_NEW') && project.hasProperty('supportAsciiDoctor') 
             ]
         }
 
+		if (!new File("$asciidocSourceDirectory/$asciiDoctorImagePath").exists()) {
+			new File("$asciidocSourceDirectory/$asciiDoctorImagePath").mkdirs()
+		}
+		if (!new File("${asciidocSourceDirectory}/$asciiDoctorPdfThemePath").exists()) {
+			new File("${asciidocSourceDirectory}/$asciiDoctorPdfThemePath").mkdirs()
+		}
+		if (file("$asciidocSourceDirectory/$asciiDoctorFontPath").exists()) {
+			new File("$asciidocSourceDirectory/$asciiDoctorFontPath").mkdirs()
+		}
+		if (!new File("${asciidocSourceDirectory}/${asciiDoctorPdfThemePath}/$asciiDoctorPdfTheme").exists()) {
+			//new File("${asciidocSourceDirectory}/${asciiDoctorPdfThemePath}/$asciiDoctorPdfTheme").createNewFile() 
+			createFileFromTemplate("${asciidocSourceDirectory}/${asciiDoctorPdfThemePath}/$asciiDoctorPdfTheme", getTemplateFile('asciidoctor-theme.yml.template', 'doc'), true /*overwrite*/, false /*print*/, true /*replace*/, NELINE /*only nl*/)
+		}
+
         baseDirFollowsSourceFile()
 
         asciidoctorj {
@@ -130,7 +156,7 @@ if (!project.getProperty('IS_NEW') && project.hasProperty('supportAsciiDoctor') 
                     'endpoint-url': "$asciiDoctorEndpointUrl",
                     'source-highlighter': "$asciiDoctorPDFSourceHighlighter",
                     'rouge-style': "$asciiDoctorRougeStyle",
-                    'imagesdir': "$asciiDoctorImagesdir",
+                    'imagesdir': "$asciiDoctorImagePath",
                     'toc': "$asciiDoctorToc",
                     'toclevels': "$asciiDoctorTocLevel",
                     'icons': "$asciiDoctorIcons",
@@ -139,20 +165,21 @@ if (!project.getProperty('IS_NEW') && project.hasProperty('supportAsciiDoctor') 
                     'sectanchors': "$asciiDoctorSectanchors",
                     'sectlinks': "$asciiDoctorSectlinks",
                     'linkattrs': "$asciiDoctorLinkattrs",
+                    'organization': "$licenseOrganisation",
+                    'copyright': "$licenseText",
                     'pagenums': "",
                     'encoding': "$asciiDoctorEncoding",
                     'pdf-theme': "$asciiDoctorPdfTheme",
-                    'pdf-themesdir': "."
+                    'pdf-themesdir': "$asciiDoctorPdfThemePath"
         }
         
         sourceDir = file("${asciidocSourceDirectory}")
-        outputDir = file("${asciidocOutputDirectory}/pdf")
-        
+        outputDir = file("${asciiDoctorPdfPath}")
+
         // Optional fonts directory
-        /*
-        if (file("${asciidocSourceDirectory}/fonts").exists()) {
-            fontsDir file("${asciidocSourceDirectory}/fonts")
-        }*/
+        if (file("$asciidocSourceDirectory/$asciiDoctorFontPath").exists()) {
+            fontsDir file(asciiDoctorFontPath)
+        }
     }
 
 
@@ -172,7 +199,6 @@ if (!project.getProperty('IS_NEW') && project.hasProperty('supportAsciiDoctor') 
         group = 'documentation'
         description = 'Generate the asciidoctor document artefacts'
     }
-
 
 	projectValidation.finalizedBy(generateAsciidoctorArtefacts)
 }

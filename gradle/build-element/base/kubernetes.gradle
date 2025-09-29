@@ -340,6 +340,10 @@ task kubernetesJar(type: Jar, dependsOn: ['kubernetesConfiguration', 'prepareToo
 		if (project.getProperty('includeChangelogFile')) {
 			from "${changelogFile}"
 		}
+		
+		if (project.getProperty('kubernetesDocSupport')) {
+			from "$asciiDoctorPdfPath"
+		}
 	}
 
 	archiveClassifier = 'kubernetes'
@@ -363,4 +367,11 @@ task kubernetesJar(type: Jar, dependsOn: ['kubernetesConfiguration', 'prepareToo
 			printInfo("> Created package " + colorize(HIGHLITE_LEVEL, filename) + ".")
 		}
 	}
+}
+
+if (project.tasks.findByName('convertAsciidoctorHtml')) {
+	kubernetesJar.dependsOn(convertAsciidoctorHtml)
+}
+if (project.tasks.findByName('convertAsciidoctorPdf')) {
+	kubernetesJar.dependsOn(convertAsciidoctorPdf)
 }

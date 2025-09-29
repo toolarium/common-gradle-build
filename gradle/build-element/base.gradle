@@ -119,7 +119,7 @@ try {
  * asciidoc task
  ***************************************************************************************/
 if (project.hasProperty('supportAsciiDoctor') && project.getProperty('supportAsciiDoctor')) {
-	apply from: "${commonGradleBuildElementPath}/docs/asciidoctor-support.gradle"
+	apply from: "${commonGradleBuildElementPath}/doc/asciidoctor-support.gradle"
 }
 
 

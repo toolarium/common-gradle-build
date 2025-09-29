@@ -492,12 +492,18 @@ setCommonGradleDefaultPropertyIfNull("sonarVersion", "4.4.1.3373")
  * asciidoc
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("supportAsciiDoctor", true)
-setCommonGradleDefaultPropertyIfNull("asciidocDirectoryName", "asciidoc")
-setCommonGradleDefaultPropertyIfNull("asciidocSourceDirectory", "${docsDirectory}/${asciidocDirectoryName}")
-setCommonGradleDefaultPropertyIfNull("asciidocOutputDirectory", "${reportsPath}/${asciidocDirectoryName}")
+setCommonGradleDefaultPropertyIfNull("asciidocDirectoryName", "doc")
+setCommonGradleDefaultPropertyIfNull("asciidocSourceDirectory", "${srcDirectory}/${asciidocDirectoryName}")
+setCommonGradleDefaultPropertyIfNull("asciidocOutputDirectory", "${buildDir}/docs/asciidoc")
 setCommonGradleDefaultPropertyIfNull("asciiDoctorEncoding", "utf-8")
 setCommonGradleDefaultPropertyIfNull("asciiDoctorPdfTheme", "theme.yml")
+setCommonGradleDefaultPropertyIfNull("asciiDoctorPdfThemePath", "themes")
+setCommonGradleDefaultPropertyIfNull("asciiDoctorPdfPath", "$asciidocOutputDirectory/pdf")
 setCommonGradleDefaultPropertyIfNull("asciiDoctorHtmlTheme", "theme.css")
+setCommonGradleDefaultPropertyIfNull("asciiDoctorHtmlThemePath", "themes")
+setCommonGradleDefaultPropertyIfNull("asciiDoctorHtmlPath", "$asciidocOutputDirectory/html")
+setCommonGradleDefaultPropertyIfNull("asciiDoctorImagePath", "images")
+setCommonGradleDefaultPropertyIfNull("asciiDoctorFontPath", "fonts")
 setCommonGradleDefaultPropertyIfNull("asciiDoctorEndpointUrl", "")
 setCommonGradleDefaultPropertyIfNull("asciiDoctorSourceHighlighter", "highlight.js")
 setCommonGradleDefaultPropertyIfNull("asciiDoctorPDFSourceHighlighter", "rouge")
@@ -525,7 +531,7 @@ setCommonGradleDefaultPropertyIfNull("servicePropertiesName", "toolarium-service
  ***************************************************************************************/
 // the quarkusPluginVersion is used for setup new projects where defaultQuarkusPluginVersion 
 // controls the used version and force for update.x
-setCommonGradleDefaultPropertyIfNull("defaultQuarkusPluginVersion", '3.20.0')
+setCommonGradleDefaultPropertyIfNull("defaultQuarkusPluginVersion", '3.20.3')
 //setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", '3.6.9')
 setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", "${defaultQuarkusPluginVersion}")
 setCommonGradleDefaultPropertyIfNull("quarkusReleaseUpdateVersion", true)
@@ -702,7 +708,7 @@ setCommonGradleDefaultPropertyIfNull("dockerJavaRunner", "java-runner.sh")
 setCommonGradleDefaultPropertyIfNull("dockerEnableAccessLog", false)
 setCommonGradleDefaultPropertyIfNull("containerCmd", "nerdctl") // docker: docker
 setCommonGradleDefaultPropertyIfNull("dockerBuildCmd", "buildx build") // docker: buildx build
-setCommonGradleDefaultPropertyIfNull("dockerAddAnnotation", true) // docker: -t myrepo/myapp:latest 
+setCommonGradleDefaultPropertyIfNull("dockerAddAnnotation", false) // docker: -t myrepo/myapp:latest 
 setCommonGradleDefaultPropertyIfNull("dockerSupportLatestTag", true) // docker: -t myrepo/myapp:latest 
 setCommonGradleDefaultPropertyIfNull("dockerMetadataFile", "$gradleBuildDirectory/container-metadata.json") // docker: --metadata-file metadata.json
 setCommonGradleDefaultPropertyIfNull("dockerBuildPull", "") // docker: --pull --force-rm
@@ -740,6 +746,7 @@ setCommonGradleDefaultPropertyIfNull("kubernetesReplicas", "2")
 setCommonGradleDefaultPropertyIfNull("srcKubernetesDirectoryName", "kubernetes")
 setCommonGradleDefaultPropertyIfNull("srcKubernetesDirectory", "${srcMainDirectory}/${srcKubernetesDirectoryName}")
 setCommonGradleDefaultPropertyIfNull("kubernetesInstallSupport", true)
+setCommonGradleDefaultPropertyIfNull("kubernetesDocSupport", true)
 setCommonGradleDefaultPropertyIfNull("kubernetesProductInformationSupport", true)
 
 if (project.hasProperty('projectGroupId') && !project.getProperty('projectGroupId').trim().isEmpty()) {

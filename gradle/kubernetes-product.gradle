@@ -1149,6 +1149,14 @@ build.dependsOn kubernetesConcat
 kubernetesConcat.dependsOn kubernetesConfiguration
 kubernetesJar.dependsOn kubernetesConcat
 
+if (project.tasks.findByName('convertAsciidoctorHtml')) {
+	convertAsciidoctorHtml.mustRunAfter(kubernetesConcat)
+}
+if (project.tasks.findByName('convertAsciidoctorPdf')) {
+	convertAsciidoctorPdf.mustRunAfter(kubernetesConcat)
+}
+
+
 defaultTasks 'clean', 'projectValidation', 'build'
 
 if (project.hasProperty('kubernetesProductInformationSupport') && project.getProperty('kubernetesProductInformationSupport')) {
