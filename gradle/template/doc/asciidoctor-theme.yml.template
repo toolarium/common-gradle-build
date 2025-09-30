@@ -5,7 +5,7 @@
 # @@LICENSE@@
 #
 
-extends: default
+extends: default-with-fallback-font
 
 # color Palette
 brand:
@@ -51,14 +51,15 @@ footer:
 page:
   background_color: '#ffffff'
   layout: portrait
-  margin: [0.75in, 1in, 0.75in, 1in]
+  # Measurement[top,right,bottom,left]:
+  margin: [2.5cm, 2cm, 2.5cm, 2cm]
+  # margin: [0.75in, 1in, 0.75in, 1in]
   size: A4
 
 # Base Typography
 base:
   align: justify
   font_color: $brand_text_primary
-  font_family: Helvetica
   font_size: 11
   line_height: 1.4
 
@@ -96,7 +97,6 @@ list:
 
 # Code
 code:
-  font_family: Courier
   font_size: 10
   font_color: '#02303A'
   background_color: '#f8f9fa'
@@ -107,17 +107,14 @@ code:
 
 # Codespan (inline code styling)
 codespan:
-  font_family: Courier
   font_color: '#02303A'
 
 # Monospace text (catches any remaining monospace styling)
 monospace:
-  font_family: Courier
   font_color: '#02303A'
 
 # Listing blocks
 listing:
-  font_family: Courier
   font_size: 9
   background_color: '#f8f9fa'
   border_width: 1
