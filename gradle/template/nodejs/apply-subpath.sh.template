@@ -147,10 +147,7 @@ if [ -r $NGINX_CONF_DIR/default.conf ]; then
    # 302 redirect for /$currentPath (with or without trailing slash) to full final path
    location ~ ^/$currentPath/?$ {
        return 302 /$replaceTo/;
-   }RUN chgrp -R root /deployment \
-    && chmod -R g=u /deployment \
-    && chmod -R g=u /etc/nginx/conf.d  
-
+   }
 "
         done
     
