@@ -33,7 +33,7 @@ buildscript {
 		}
     }
     dependencies {
-		def toolariumDependencyCheckVersion="12.0.1"
+		def toolariumDependencyCheckVersion="12.1.8"
 		if (project.hasProperty('toolariumDependencyCheckVersion')) {
 			toolariumDependencyCheckVersion = project.getProperty('toolariumDependencyCheckVersion')
 		}

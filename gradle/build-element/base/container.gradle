@@ -44,6 +44,9 @@ ext.checkDockerInstallation = { ->
 			exitStatus = execCommand("${containerCmd} --version", -1, stdout, stdout)
 			if (exitStatus==0) {
 				exitStatus = execCommand("${containerCmd} info")
+				if (exitStatus==0) {
+					setCommonGradleProperty("dockerBuildCmd", "build") // nerdctl build
+				}
 			}
 		} catch(Exception e) {
 			// NOP
@@ -262,9 +265,10 @@ task dockerBuild {
 			}
 
 			def dockerMetadataFileCmd=""
+			/*
 			if (project.hasProperty("dockerMetadataFile") && !"${dockerMetadataFile}".toString().trim().isEmpty()) {
                 dockerMetadataFileCmd=" --metadata-file ${dockerMetadataFile}"
-            }
+            }*/
 
 			def cmd="${containerCmd} ${dockerBuildCmd} ${dockerTag}${dockerAnnotation}${dockerMetadataFileCmd} ${dockerBuildPull} ${dockerBuildCompress}"
 			if (!"${dockerBuildArgs}".toString().trim().isEmpty()) {
