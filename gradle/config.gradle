@@ -78,7 +78,7 @@ projectValidation {
 							<< "  Define in the " + colorize(HIGHLITE_LEVEL, "$rootDirectory/gradle.properties") + " the sub configuration packages:" << NELINE \
 							<< "      " + colorize(HIGHLITE_LEVEL, "configPackages = sample1, sample2") + "" << NELINE \
 							<< "" << NELINE \
-							<< "  To get started, got to " + project.projectDir.toString() + ":" << NELINE \
+							<< "  To get started, go to " + project.projectDir.toString() + ":" << NELINE \
 							<< "      " + colorize(HIGHLITE_LEVEL, startExecutable) + "" << NELINE)
 	}
 }

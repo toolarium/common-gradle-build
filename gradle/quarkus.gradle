@@ -464,13 +464,13 @@ projectValidation {
 			createFileFromTemplate("${quarkusResourcePath}/index.html", getTemplateFile("index.html.template")) 
 
 			registerEndMessage("" << NELINE \
-								<< "  To get started, got to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
+								<< "  To get started, go to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
 								<< "      " + colorize(HIGHLITE_LEVEL, "$startExecutable run") + "" << NELINE \
 								<< "" << NELINE \
-								<< "  To build (build & package jars, run tests), got to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
+								<< "  To build (build & package jars, run tests), go to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
 								<< "      " + colorize(HIGHLITE_LEVEL, "$startExecutable") + "" << NELINE \
 								<< "" << NELINE \
-								<< "  To test, got to  " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
+								<< "  To test, go to  " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
 								<< "      " + colorize(HIGHLITE_LEVEL, "$startExecutable test") + "" << NELINE)
 		}
 	}

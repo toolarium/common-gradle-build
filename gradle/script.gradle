@@ -49,7 +49,7 @@ apply from: "${commonGradleBuildUrl}/config.gradle"
 projectValidation {
 	if (project.getProperty('IS_NEW')) {
 		registerEndMessage("" << NELINE \
-							<< "  To get started, got to " + project.projectDir.toString() + ":" << NELINE \
+							<< "  To get started, go to " + project.projectDir.toString() + ":" << NELINE \
 							<< "      " + colorize(HIGHLITE_LEVEL, startExecutable) + "" << NELINE)
 	}
 }

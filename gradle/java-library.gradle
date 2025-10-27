@@ -185,10 +185,10 @@ projectValidation {
 			}
 			
 			registerEndMessage("" << NELINE \
-								<< "  To get started (build & package jars, run tests), got to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
+								<< "  To get started (build & package jars, run tests), go to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
 								<< "      " + colorize(HIGHLITE_LEVEL, startExecutable) + "" << NELINE \
 								<< "" << NELINE \
-								<< "  To test, got to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
+								<< "  To test, go to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
 								<< "      " + colorize(HIGHLITE_LEVEL, "$startExecutable test") + "" << NELINE)
 		}
 	}

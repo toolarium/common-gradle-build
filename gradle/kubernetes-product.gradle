@@ -1281,7 +1281,7 @@ projectValidation {
 			}
 
 			registerEndMessage("" << NELINE \
-								<< "  To get started, got to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
+								<< "  To get started, go to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
 								<< "      " + colorize(HIGHLITE_LEVEL, "$startExecutable") + "" << NELINE )
 		}
 	}

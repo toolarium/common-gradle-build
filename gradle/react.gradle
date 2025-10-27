@@ -167,13 +167,13 @@ projectValidation {
 			}
 
 			registerEndMessage("" << NELINE \
-								<< "  To get started (equivalent to 'npm run dev'), got to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
+								<< "  To get started (equivalent to 'npm run dev'), go to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
 								<< "      " + colorize(HIGHLITE_LEVEL, "$startExecutable run") + "" << NELINE \
 								<< "" << NELINE \
-								<< "  To build (equivalent to 'npm run build'), got to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
+								<< "  To build (equivalent to 'npm run build'), go to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
 								<< "      " + colorize(HIGHLITE_LEVEL, "$startExecutable") + "" << NELINE \
 								<< "" << NELINE \
-								<< "  To test (equivalent to 'npm test'), got to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
+								<< "  To test (equivalent to 'npm test'), go to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
 								<< "      " + colorize(HIGHLITE_LEVEL, "$startExecutable test") + "" << NELINE \
 								<< "" << NELINE \
 								<< "  For TypeScript users, see: " + colorize(HIGHLITE_LEVEL, "https://typescript.nuxtjs.org/cookbook/components/") + "" << NELINE)
