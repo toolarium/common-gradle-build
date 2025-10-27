@@ -1,0 +1,146 @@
+/*
+ * documentation.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ * 
+ * This file is part of the toolarium common-gradle-build.
+ * 
+ * The common-gradle-build is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * The common-gradle-build is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+if (!project.hasProperty('commonGradleBuildUrl')) {
+    ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
+}
+
+if (!project.hasProperty('commonGradleBuildElementPath')) {
+	ext.commonGradleBuildElementPath="${commonGradleBuildUrl}/build-element"
+}
+
+if (!project.hasProperty("supportAsciiDoctor")) {
+	project.ext.set("supportAsciiDoctor", true)
+}
+if (!project.hasProperty("createJar")) {
+	project.ext.set("createJar", false)
+}
+if (!project.hasProperty("createSourceJar")) {
+	project.ext.set("createSourceJar", false)
+}
+if (!project.hasProperty("createJavadocJar")) {
+	project.ext.set("createJavadocJar", false)
+}
+if (!project.hasProperty("kubernetesSupport")) {
+	project.ext.set("kubernetesSupport", false)
+}
+project.ext.srcMainDirectoryName="doc"
+project.ext.createCustomJar=true
+
+
+/***************************************************************************************
+ * Set additional template path
+ ***************************************************************************************/
+ext.projectTypeTemplatePath='documentation'
+
+
+/***************************************************************************************
+ * Dependencies
+ ***************************************************************************************/
+apply from: "${commonGradleBuildElementPath}/language-base.gradle"
+
+
+/***************************************************************************************
+ * Build kubernetes jar file
+ ***************************************************************************************/
+task customJar(type: Jar, dependsOn: ['generateAsciidoctorArtefacts']) { jar ->
+	group = 'Build'
+    duplicatesStrategy = 'exclude' // work around, currendly don't work "$duplicatesStrategy"
+	description = 'Assembles the documentation generation output into a jar file'
+	onlyIf { return (project.hasProperty('createCustomJar') && project.getProperty('createCustomJar').toString().equalsIgnoreCase("true")) }
+	
+	from "${asciidocOutputDirectory}"
+	
+	// define proper manifest
+	manifest {
+		attributes 	'Specification-Title'   : rootProject.name,
+					'Specification-Version' : project.version,
+					'Implementation-Title'  : rootProject.name,
+					'Implementation-Version': project.version + project.ext.scmVersionNumber,
+					'Created-By'		   	: project.ext.buildToolVersionStackMessage,
+					'Built-By'			   	: publishingUsername,
+					'Build-Timestamp'	   	: BUILD_TIMESTAMP,
+					'Build-OS'			   	: "${System.properties['os.name']} (${System.properties['os.version']}), ${System.properties['os.arch']}"
+	}
+	
+	doLast {
+		def filename = prepareFilename(jar.archivePath.getPath())
+		printInfo("> Create documentation jar " + colorize(HIGHLITE_LEVEL, filename) + ".")
+	}
+}
+
+apply from: "${commonGradleBuildElementPath}/java/repository.gradle"
+apply from: "${commonGradleBuildElementPath}/java/signing.gradle"
+apply from: "${commonGradleBuildElementPath}/java/publication.gradle"
+
+if (project.tasks.findByName('build')) {
+	customJar.mustRunAfter("build")
+	build.finalizedBy(customJar)
+}
+
+defaultTasks 'clean', 'projectValidation', 'build'
+
+
+/***************************************************************************************
+ * project java validation
+ ***************************************************************************************/
+projectValidation {
+	if (project.getProperty('IS_NEW')) {
+		bootStraplogLifecycle("  > Just create project structure, skip build.")
+		gradle.startParameter.excludedTaskNames += "build"
+	}
+
+	doLast {
+		if (project.hasProperty('IS_NEW_SRC_FOLDER') && project.getProperty('IS_NEW_SRC_FOLDER')) {
+            logInfo("Create at least one document file...")
+			def docTemplate = 'documentation.adoc.template'
+			setCommonGradleProperty("fileName", "documentation.adoc".toString())
+
+			if (!new File("$asciidocSourceDirectory/$asciiDoctorImagePath").exists()) {
+				new File("$asciidocSourceDirectory/$asciiDoctorImagePath").mkdirs()
+			}
+
+			if (!createFileFromTemplate("${asciidocSourceDirectory}/${fileName}", getTemplateFile(docTemplate, 'documentation'))) {
+				printInfo("> Create file " + colorize(HIGHLITE_LEVEL, "${asciidocSourceDirectory}/${fileName}") + " with default values.")
+				new File(asciidocSourceDirectory, "${fileName}").withWriter { w ->
+					w << "= Sample Documentation" << NELINE \
+						<< ":doctype: article" << NELINE \
+						<< ":toc: left" << NELINE \
+						<< ":toclevels: 3" << NELINE \
+						<< ":sectanchors:" << NELINE \
+						<< ":sectlinks:" << NELINE \
+						<< ":sectnums:" << NELINE \
+						<< "" << NELINE \
+						<< "== Overview" << NELINE \
+						<< "" << NELINE \
+						<< "This document is a sample document." << NELINE \
+						<< "" << NELINE \
+				}
+			}
+
+			registerEndMessage("" << NELINE \
+								<< "  To get started (build & package jar), go to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
+								<< "      " + colorize(HIGHLITE_LEVEL, startExecutable) + "" << NELINE \
+								<< "" << NELINE)
+		}
+	}
+}
