@@ -179,6 +179,7 @@ setCommonGradleDefaultPropertyIfNull("createFatJar", false)
 setCommonGradleDefaultPropertyIfNull("createSourceJar", true)
 setCommonGradleDefaultPropertyIfNull("createJavadocJar", true)
 setCommonGradleDefaultPropertyIfNull("createCustomJar", false)
+setCommonGradleDefaultPropertyIfNull("fatJarPackageType", "jar")
 
 // project config directory
 setCommonGradleDefaultPropertyIfNull("configDirectoryName", "conf")

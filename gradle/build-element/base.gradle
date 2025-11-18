@@ -633,13 +633,13 @@ ext.buildServiceProperties = { baseFolder = "${gradleBuildDirectory}", filename 
  ***************************************************************************************/
 ext.buildFatJar = { jarLibBaseFolder = "${gradleBuildDirectory}",
 					sourceJarFile = "${gradleBuildDirectory}/libs/${project.name}-${project.version}.jar",
-					destJarFile = "${gradleBuildDirectory}/libs/${project.name}-${project.version}.jar",
+					destJarFile = "${gradleBuildDirectory}/libs/${project.name}-${project.version}.${fatJarPackageType}",
                     includeSourceJar = false,
 					mergeManifest = true ->
 	if (!validBuild) {
 	    return
 	}
-	
+
 	def manifestReferenceFile = "${gradleBuildDirectory}/tmp/jar/MANIFEST.MF"
 	if (!new File(manifestReferenceFile).exists()) {
 		manifestReferenceFile = "${gradleBuildDirectory}/tmp/kubernetesJar/MANIFEST.MF"
@@ -685,38 +685,83 @@ ext.buildFatJar = { jarLibBaseFolder = "${gradleBuildDirectory}",
 		}
 	}
 	
-	ant.jar(destfile: destJarFile, manifest: manifestReferenceFile) {	
-		if (includeSourceJar && sourceJarFile!=null && new File(sourceJarFile).exists()) {
-			zipfileset(src: "$sourceJarFile", excludes: "**/${webServerRunnerPropertiesName}") {
+	def packageType = "jar"
+	if ("${destJarFile}".toString().endsWith(".jar")) {
+		ant.jar(destfile: destJarFile, manifest: manifestReferenceFile) {	
+			if (includeSourceJar && sourceJarFile!=null && new File(sourceJarFile).exists()) {
+				zipfileset(src: "$sourceJarFile", excludes: "**/${webServerRunnerPropertiesName}") {
+				}
+			}
+
+			fileset(dir: "$jarLibBaseFolder") { 
+				include(name: '**/**.*')
+				//exclude(name: new File(destJarFile).getName())
+				//exclude(name: new File(sourceJarFile).getName())
+				//include(name: '*.jar') 
+				//include(name: '**/**.jar')
+			}
+
+			if (project.getProperty('includeLicenseFile')) {
+				fileset(file: "${licenseFile}") {}
+			}
+
+			if (project.getProperty('includeReadmeFile')) {
+				fileset(file: "${readmeFile}") {}
+			}
+
+			if (project.getProperty('includeVersionFile')) {
+				fileset(file: "${versionFile}") {}
+			}
+
+			if (project.getProperty('includeChangelogFile')) {
+				fileset(file: "${changelogFile}") {}
 			}
 		}
-
-		fileset(dir: "$jarLibBaseFolder") { 
-			include(name: '**/**.*')
-			//exclude(name: new File(destJarFile).getName())
-			//exclude(name: new File(sourceJarFile).getName())
-			//include(name: '*.jar') 
-			//include(name: '**/**.jar')
-		}
-
-		if (project.getProperty('includeLicenseFile')) {
-			fileset(file: "${licenseFile}") {}
-		}
-
-		if (project.getProperty('includeReadmeFile')) {
-			fileset(file: "${readmeFile}") {}
-		}
-
-		if (project.getProperty('includeVersionFile')) {
-			fileset(file: "${versionFile}") {}
-		}
-
-		if (project.getProperty('includeChangelogFile')) {
-			fileset(file: "${changelogFile}") {}
-		}
-	}
+    } else {
+		packageType = "tgz"
+		//destJarFile = destJarFile.replace('.jar', '.tar.gz')
+		ant.tar(destfile: destJarFile, compression: "gzip", longfile: "gnu") {
+			if (includeSourceJar && sourceJarFile != null && new File(sourceJarFile).exists()) {
+				if ("${destJarFile}".toString().endsWith(".jgz")) {
+					zipfileset(src: "$sourceJarFile", excludes: "**/${webServerRunnerPropertiesName}") {
+					}
+				} else {
+				    //tarfileset(file: "$sourceJarFile", prefix: "lib/") {
+				    tarfileset(file: "$sourceJarFile") {
+					    exclude(name: "**/${webServerRunnerPropertiesName}")
+				    }
+				}
+			}
+			tarfileset(dir: "$jarLibBaseFolder") {
+				include(name: '**/**.*')
+				//exclude(name: new File(destJarFile).getName())
+				//exclude(name: new File(sourceJarFile).getName())
+				//include(name: '*.jar') 
+				//include(name: '**/**.jar')
+			}
+			if (project.getProperty('includeLicenseFile')) {
+				tarfileset(file: "${licenseFile}")
+			}
+			if (project.getProperty('includeReadmeFile')) {
+				tarfileset(file: "${readmeFile}")
+			}
+			if (project.getProperty('includeVersionFile')) {
+				tarfileset(file: "${versionFile}")
+			}
+			if (project.getProperty('includeChangelogFile')) {
+				tarfileset(file: "${changelogFile}")
+			}
+		}	
+    }
 	
 	if (project.hasProperty('showCreatedArtefacts') && project.getProperty('showCreatedArtefacts')) {
-		printInfo("> Created fat-jar package " + colorize(HIGHLITE_LEVEL, destJarFile.replace("./", "")) + ".")
+		long totalSize = 0 
+		File sourceJar = new File(destJarFile)
+		if (sourceJar.exists()) {
+			totalSize += sourceJar.length()
+		}
+	
+		double sizeInMB = totalSize / (1024.0 * 1024.0)
+		printInfo("> Created fat-${packageType} package " + colorize(HIGHLITE_LEVEL, destJarFile.replace("./", "")) + ", ${String.format('%.2f', sizeInMB)} MB")
 	}
 }

@@ -1194,7 +1194,7 @@ configurations.jar {
 
 build { ->
 	doLast {
-		def fatJarFilename = "${gradleDistributionDirectory}/${project.name}-${project.version}.jar"
+		def fatJarFilename = "${gradleDistributionDirectory}/${project.name}-${project.version}.${fatJarPackageType}"
 		if (validBuild && project.hasProperty('createFatJar') && project.getProperty('createFatJar').toString().trim().equalsIgnoreCase("true")) {
 			printInfo("> Create java fat-jar " + colorize(HIGHLITE_LEVEL, "${fatJarFilename}".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")
 			setCommonGradleDefaultPropertyIfNull('jarRunnerFile', "${project.name}-${project.version}${fatJarClassifierContext}.jar");
@@ -1238,6 +1238,13 @@ build { ->
 			}
 
 			buildFatJar("${javaAppPath}", "${gradleBuildDirectory}/${project.name}-${project.version}${fatJarClassifierContext}.jar", "$fatJarFilename", hasRunner)
+			
+			if (!"${fatJarPackageType}".toString().equals("jar")) {
+				def orgFatJarFilename = fatJarFilename.replace('.tgz', '.jar').replace('.jgz', '.jar')
+				if (new File("${orgFatJarFilename}").exists()) {
+					delete orgFatJarFilename
+				}
+			}
 		} else {
 			delete fatJarFilename
 		}		

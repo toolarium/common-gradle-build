@@ -478,3 +478,20 @@ ext.readApplicationPropertiesFile = { inputFile = "${srcMainResourcesDirectory}/
 	
 	return result
 }
+
+
+/** 
+ * Function to calculate directory size recursively
+ */
+ext.calculateDirectorySize = { inputDirectoryName ->
+	long size = 0
+	if (inputDirectoryName != null && !inputDirectoryName.toString().isEmpty()) {
+		File dir = new File(inputDirectoryName)
+		if (dir.exists() && dir.isDirectory()) {
+			dir.eachFileRecurse(groovy.io.FileType.FILES) { file ->
+				size += file.length()
+			}
+		}
+	}
+    return size
+}
