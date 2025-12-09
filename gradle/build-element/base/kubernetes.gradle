@@ -145,9 +145,7 @@ task kubernetesApplicationConfig() {
 		
 		createFileFromTemplate("$kubernetesConfigurationPath/$kubernetesApplicationConfigFilename", getTemplateFile('kubernetes-application-config.template', 'kubernetes'), true /*overwrite*/, false /*print*/, true /*replace*/, NELINE /*only nl*/)
 		
-		if (project.hasProperty('kubernetesApplicationOIDCPublicKey') && !project.getProperty('kubernetesApplicationOIDCPublicKey').toString().isEmpty()) {
-			createFileFromTemplate("$kubernetesConfigurationPath/$kubernetesApplicationSecretFilename", getTemplateFile('kubernetes-application-secret.template', 'kubernetes'), true /*overwrite*/, false /*print*/, true /*replace*/, NELINE /*only nl*/)
-		}
+		createFileFromTemplate("$kubernetesConfigurationPath/$kubernetesApplicationSecretFilename", getTemplateFile('kubernetes-application-secret.template', 'kubernetes'), true /*overwrite*/, false /*print*/, true /*replace*/, NELINE /*only nl*/)
 		
 		createFileFromTemplate("$kubernetesConfigurationPath/$kubernetesDatabaseSecretFilename", getTemplateFile('kubernetes-database-secret.template', 'kubernetes'), true /*overwrite*/, false /*print*/, true /*replace*/, NELINE /*only nl*/)
 	}
