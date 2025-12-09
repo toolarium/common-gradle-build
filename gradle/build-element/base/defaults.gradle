@@ -1024,7 +1024,7 @@ setCommonGradleDefaultPropertyIfNull("kubernetesIdmLivenessInitialDelaySeconds",
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmLivenessPeriodSeconds", project.getProperty('kubernetesLivenessPeriodSeconds'))
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmLivenessSuccessThreshold", project.getProperty('kubernetesLivenessSuccessThreshold'))
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmLivenessTimeoutSeconds", project.getProperty('kubernetesLivenessTimeoutSeconds'))
-setCommonGradleDefaultPropertyIfNull("kubernetesIdmStartupCheckPath", "${kubernetesIdmUrlPath}/health/started"))
+setCommonGradleDefaultPropertyIfNull("kubernetesIdmStartupCheckPath", "${kubernetesIdmUrlPath}/health/started")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmStartupFailureThreshold", project.getProperty('kubernetesLivenessFailureThreshold'))
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmStartupScheme", project.getProperty('kubernetesLivenessScheme'))
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmStartupInitialDelaySeconds", project.getProperty('kubernetesLivenessInitialDelaySeconds'))
