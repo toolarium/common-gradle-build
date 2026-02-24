@@ -50,7 +50,11 @@ publishing {
 			}
 
 			if (project.hasProperty('createCustomJar') && project.getProperty('createCustomJar').toString().equalsIgnoreCase("true")) {
-				artifact customJar
+				if (!"$fatJarPackageType".toString().isEmpty() && !"${fatJarPackageType}".toString().equals("jar")) {
+					artifact targetFatJar
+				} else {
+					artifact customJar
+				}
 			}
 			
             versionMapping {

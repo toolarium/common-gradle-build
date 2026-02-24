@@ -254,6 +254,29 @@ task buildFatWebJar {  ->
 }
 
 
+/****************************************************************************************
+ * Build fat targetFatJar
+ ****************************************************************************************/
+if (project.hasProperty('createFatJar') && project.getProperty('createFatJar').toString().trim().equalsIgnoreCase("true") && !"$fatJarPackageType".toString().isEmpty() && !"${fatJarPackageType}".toString().equals("jar")) {
+	task targetFatJar(type: Tar) {
+		archiveFileName = "${project.name}-${project.version}.${fatJarPackageType}"
+		destinationDirectory = file("$gradleDistributionDirectory")
+		archiveExtension = "${fatJarPackageType}"
+		compression = Compression.GZIP
+		//from jar.archivePath
+	}
+	artifacts {
+		archives(targetFatJar.archiveFile) {
+			name "${project.name}-${project.version}"
+			type "${fatJarPackageType}"
+			extension "${fatJarPackageType}"
+			builtBy targetFatJar
+		}	
+	}	
+    buildFatWebJar.dependsOn targetFatJar
+}
+
+
 if (!project.getProperty('IS_NEW')) {
 	if (project.hasProperty('createFatJar') && project.getProperty('createFatJar').toString().trim().equalsIgnoreCase("true")) {
 		logInfo("Enable build webserver fat jar.")

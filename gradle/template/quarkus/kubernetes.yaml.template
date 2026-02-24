@@ -112,6 +112,16 @@ spec:
           periodSeconds: @@KUBERNETES_QUARKUS_LIVENESS_PERIOD_SECONDS@@
           successThreshold: @@KUBERNETES_QUARKUS_LIVENESS_SUCCESS_THRESHOLD@@
           timeoutSeconds: @@KUBERNETES_QUARKUS_LIVENESS_TIMEOUT_SECONDS@@
+        startupProbe:
+          failureThreshold: @@KUBERNETES_QUARKUS_STARTUP_FAILURE_THRESHOLD@@
+          httpGet:
+            path: "@@KUBERNETES_QUARKUS_STARTUP_CHECK_PATH@@"
+            port: @@DOCKER_EXPOSE_PORT@@
+            scheme: "@@KUBERNETES_QUARKUS_STARTUP_SCHEME@@"
+          initialDelaySeconds: @@KUBERNETES_QUARKUS_STARTUP_INITIAL_DELAY_SECONDS@@
+          periodSeconds: @@KUBERNETES_QUARKUS_STARTUP_PERIOD_SECONDS@@
+          successThreshold: @@KUBERNETES_QUARKUS_STARTUP_SUCCESS_THRESHOLD@@
+          timeoutSeconds: @@KUBERNETES_QUARKUS_STARTUP_TIMEOUT_SECONDS@@
       restartPolicy: Always
 ---
 apiVersion: v1

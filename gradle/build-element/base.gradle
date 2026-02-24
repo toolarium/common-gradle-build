@@ -762,6 +762,6 @@ ext.buildFatJar = { jarLibBaseFolder = "${gradleBuildDirectory}",
 		}
 	
 		double sizeInMB = totalSize / (1024.0 * 1024.0)
-		printInfo("> Created fat-${packageType} package " + colorize(HIGHLITE_LEVEL, destJarFile.replace("./", "")) + ", ${String.format('%.2f', sizeInMB)} MB")
+		printInfo("> Created app package " + colorize(HIGHLITE_LEVEL, destJarFile.replace("./", "")) + ", ${String.format('%.2f', sizeInMB)} MB")
 	}
 }

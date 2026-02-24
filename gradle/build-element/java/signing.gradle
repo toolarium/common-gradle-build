@@ -62,3 +62,15 @@ signing {
 	//sign publishing.publications.mavenJava
 	sign publishing.publications
 }
+
+/*
+import org.gradle.plugins.signing.Sign
+tasks.named("signMavenJavaPublication", Sign).configure {
+    doLast {
+		printInfo("> Signing artifacts for " + colorize(HIGHLITE_LEVEL, "${name}".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")
+        filesToSign.files.each { f ->
+		    printInfo("  -> " + colorize(HIGHLITE_LEVEL, "$f".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")
+        }
+    }
+}
+*/

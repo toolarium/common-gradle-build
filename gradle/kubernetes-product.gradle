@@ -117,7 +117,6 @@ task customJar(type: Jar, dependsOn: ['kubernetesJar']) { jar ->
 apply from: "${commonGradleBuildElementPath}/base/kubernetes.gradle"
 apply from: "${commonGradleBuildElementPath}/java/repository.gradle"
 apply from: "${commonGradleBuildElementPath}/java/signing.gradle"
-apply from: "${commonGradleBuildElementPath}/java/publication.gradle"
 apply from: "${commonGradleBuildElementPath}/base/enumconfiguration.gradle"
 
 
@@ -1196,7 +1195,7 @@ build { ->
 	doLast {
 		def fatJarFilename = "${gradleDistributionDirectory}/${project.name}-${project.version}.${fatJarPackageType}"
 		if (validBuild && project.hasProperty('createFatJar') && project.getProperty('createFatJar').toString().trim().equalsIgnoreCase("true")) {
-			printInfo("> Create java fat-jar " + colorize(HIGHLITE_LEVEL, "${fatJarFilename}".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")
+			printInfo("> Create app " + colorize(HIGHLITE_LEVEL, "${fatJarFilename}".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")
 			setCommonGradleDefaultPropertyIfNull('jarRunnerFile', "${project.name}-${project.version}${fatJarClassifierContext}.jar");
 			def javaAppPath = "${gradleBuildDirectory}/app"
 			mkdir "$javaAppPath"
@@ -1253,6 +1252,7 @@ build { ->
 customJar.mustRunAfter("kubernetesJar")
 
 apply from: "${commonGradleBuildElementPath}/base/webjar.gradle"
+apply from: "${commonGradleBuildElementPath}/java/publication.gradle"
 ext.fatWebSubContext = "" // $fatWebClassifierContext application-information
 buildFatWebJar {  ->
 	doFirst {
