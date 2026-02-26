@@ -624,6 +624,14 @@ ext.buildServiceProperties = { baseFolder = "${gradleBuildDirectory}", filename 
 		servicePathProperties.append("service.version = ${project.version}" + NELINE)		
 		servicePathProperties.append("service.root-path = " + rootPath + NELINE)     // kubernetes internal root-path
 		servicePathProperties.append("service.resources = " + resourcePath + NELINE) // public url path 
+		
+		if (project.hasProperty("servicesProperties") && !"$servicesProperties".toString().trim().isEmpty()) {
+			def services = (project.findProperty("servicesProperties") ?: "").split(",").collect { it.trim() }.findAll { it }   // empty entries removed
+			printInfo("> Enhance $filename...")
+			services.each { entry ->
+				servicePathProperties.append("service.$entry" + NELINE)
+			}		
+		}
 	}
 }
 
