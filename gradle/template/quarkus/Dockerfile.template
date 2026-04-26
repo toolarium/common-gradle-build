@@ -19,6 +19,10 @@ ARG DEFAULT_ENCODING="@@dockerDefaultEncoding@@"
 ARG DEFAULT_LOCALE="@@dockerDefaultLocale@@"
 ARG DEFAULT_LANGUAGE="@@dockerDefaultLanguage@@"
 ARG DEFAULT_JAVA_OPTIONS="@@dockerDefaultJavaOptions@@"
+ARG REMOVE_NON_ESSENTIAL_BINARIES="@@dockerRemoveNonEssentialBinaries@@"
+ARG MAKE_FILESYSTEM_READONLY="@@dockerMakeFilesystemReadonly@@"
+ARG READONLY_FILESYSTEM_PATH="@@dockerReadonlyFilesystemPath@@"
+ARG READONLY_FILESYSTEM_EXCLUDE_PATH="@@dockerReadonlyFilesystemExcludePath@@"
 
 # set meta data
 LABEL vendor="@@LICENSE_ORGANISATION@@" \
@@ -34,11 +38,24 @@ LABEL vendor="@@LICENSE_ORGANISATION@@" \
 # set user
 RUN adduser -D ${RUNTIMEUSER}
 
-# update and set timezone
+# update, set timezone and harden
 RUN apk --no-cache -U upgrade \
     && apk --no-cache add tzdata \
     && cp "/usr/share/zoneinfo/${TIMEZONE}" /etc/localtime \
-    && echo "${TIMEZONE}" > /etc/timezone
+    && echo "${TIMEZONE}" > /etc/timezone \
+    # remove setuid/setgid binaries
+    && find / -perm /6000 -type f -exec chmod a-s {} + 2>/dev/null || true \
+    # remove cron and periodic
+    && rm -rf /etc/crontabs /etc/periodic /var/spool/cron \
+    # remove unnecessary system accounts
+    && sed -i '/^root/!{/^nobody/!{/^'${RUNTIMEUSER}'/!d}}' /etc/passwd /etc/shadow /etc/group \
+    # remove docs, man pages, includes
+    && rm -rf /usr/share/man /usr/share/doc /usr/include \
+    # remove version information
+    && rm -f /etc/alpine-release /etc/os-release /etc/issue \
+    # remove apk to prevent package installation
+    && apk del apk-tools alpine-keys 2>/dev/null; \
+    rm -rf /sbin/apk /etc/apk /lib/apk /usr/share/apk /var/lib/apk
 
 # create path and set permissions for user
 RUN mkdir -p ${DEPLOYMENT_PATH} \
@@ -50,11 +67,30 @@ RUN mkdir -p ${DEPLOYMENT_PATH} \
 COPY --chown=${RUNTIMEUSER} build/quarkus-app/ ${DEPLOYMENT_PATH}/
 
 # set language
-ENV LANG='${DEFAULT_LOCALE}.${DEFAULT_ENCODING}' LANGUAGE='${DEFAULT_LOCALE}:${DEFAULT_LANGUAGE}'
+ENV LANG="${DEFAULT_LOCALE}.${DEFAULT_ENCODING}" LANGUAGE="${DEFAULT_LOCALE}:${DEFAULT_LANGUAGE}"
 
 # define JAVA_OPTIONS; with can be used to display the heap size: -XshowSettings:vm
 ENV JAVA_OPTIONS="${DEFAULT_JAVA_OPTIONS}"
 ENV EXPOSE_PORT="${EXPOSE_PORT}"
+
+# remove non-essential binaries (keep only what toolarium-java-runner.sh, cb-meminfo.sh and java need)
+RUN if [ "${REMOVE_NON_ESSENTIAL_BINARIES}" = "true" ]; then \
+    cp "$(command -v busybox)" /tmp/bb && \
+    [ -e /sbin/tini ] && /tmp/bb cp /sbin/tini /tmp/tini; \
+    /tmp/bb rm -f /bin/* /sbin/* /usr/bin/* /usr/sbin/* 2>/dev/null; \
+    /tmp/bb cp /tmp/bb /bin/busybox && \
+    for cmd in sh cat chmod date dirname basename pwd ls hostname env grep tr sed stat tail sleep uname ps kill rm echo printf awk free cp mv; do /bin/busybox ln -s busybox /bin/$cmd 2>/dev/null; done && \
+    [ -e /tmp/tini ] && /bin/cp /tmp/tini /sbin/tini && /bin/chmod 755 /sbin/tini; \
+    /bin/rm -f /tmp/bb /tmp/tini 2>/dev/null; \
+    fi
+
+# make filesystem read-only friendly
+RUN if [ "${MAKE_FILESYSTEM_READONLY}" = "true" ]; then \
+    chmod a-w ${READONLY_FILESYSTEM_PATH}; \
+    for p in ${READONLY_FILESYSTEM_EXCLUDE_PATH}; do \
+        if [ -e "$p" ]; then chmod u+w "$p"; fi; \
+    done; \
+    fi
 
 # expose port
 EXPOSE ${EXPOSE_PORT}
@@ -65,5 +101,5 @@ USER ${RUNTIMEUSER}
 # change working path
 WORKDIR ${DEPLOYMENT_PATH}
 
-# start service
-ENTRYPOINT [ "java", "-jar", "/deployment/quarkus-run.jar" ]
+# start service (shell form so $EXPOSE_PORT is resolved at runtime)
+ENTRYPOINT java -Dquarkus.http.port=${EXPOSE_PORT} -jar /deployment/quarkus-run.jar

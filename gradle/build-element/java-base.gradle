@@ -127,6 +127,7 @@ if (project.hasProperty('generatedCommonGradleBuildSources') && !project.getProp
 	def generatedCommonGradleBuildSources = project.getProperty('generatedCommonGradleBuildSources');
 	def mainDirectoryName = project.getProperty('srcMainDirectoryName')
 	sourceSets.main.java.srcDirs += "${generatedCommonGradleBuildSources}/java/${mainDirectoryName}"
+	// TODO: sourceSets.main.java.srcDirs += "${commonGradleJavaOutputPath}"
 	logInfo("Set source set main to " + colorize(HIGHLITE_LEVEL, sourceSets.main.java.srcDirs))
 
 	def size = sourceSets.main.resources.srcDirs.size()

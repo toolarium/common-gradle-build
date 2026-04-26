@@ -166,7 +166,7 @@ ext.projectInitialisation = { ->
 					&& !createEditorConfigFile
 
 	if (!isReady) {
-		printLine(ERROR_LEVEL, true)
+		printLine(ERROR_LINE_LEVEL, true)
 
 		if (createSettingsGralde) {
 			printInfo("Set root project name to " + colorize(HIGHLITE_LEVEL, rootProject.name) + ", created file " + colorize(HIGHLITE_LEVEL, settingsGradleFile) + "...")
@@ -456,7 +456,7 @@ ext.projectInitialisation = { ->
 			addCommonGradlePropertyList("changedFileSet", buildGradleFile)
 		}
 
-		printLine(ERROR_LEVEL, true)
+		printLine(ERROR_LINE_LEVEL, true)
 		printNewline()
 	}
 

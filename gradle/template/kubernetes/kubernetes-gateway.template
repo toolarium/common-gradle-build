@@ -1,0 +1,24 @@
+#
+# Copyright by @@LICENSE_ORGANISATION@@, all rights reserved.
+# @@LICENSE@@
+#
+# Gateway API Gateway resource — installed once per cluster/namespace by the platform admin.
+# The Gateway controller (NGINX Gateway Fabric, Envoy Gateway, etc.) must be installed separately.
+# See: https://gateway-api.sigs.k8s.io/
+
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: @@KUBERNETES_GATEWAY_NAME@@
+  namespace: @@KUBERNETES_NAMESPACE@@
+  labels:
+    app: @@PROJECT_NAME@@
+spec:
+  gatewayClassName: @@KUBERNETES_GATEWAY_CLASS_NAME@@
+  listeners:
+    - name: http
+      protocol: @@KUBERNETES_GATEWAY_LISTENER_PROTOCOL@@
+      port: @@KUBERNETES_GATEWAY_LISTENER_PORT@@
+      allowedRoutes:
+        namespaces:
+          from: Same

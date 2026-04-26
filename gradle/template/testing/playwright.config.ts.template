@@ -1,0 +1,45 @@
+import { defineConfig, devices } from '@playwright/test';
+
+/**
+ * Environment URL mapping — adapt the URLs to your environments.
+ * Usage: ENV_NAME=int npx playwright test
+ *        docker run -e ENV_NAME=acpt my-project-testing
+ *        docker run -e BASE_URL=https://custom.example.com my-project-testing
+ */
+const environments: Record<string, string> = {
+  local: 'http://localhost:8080',
+  int:   'https://int.example.com',
+  acpt:  'https://acpt.example.com',
+  prod:  'https://www.example.com',
+};
+
+function resolveBaseURL(): string | undefined {
+  if (process.env.BASE_URL) return process.env.BASE_URL;
+  if (process.env.ENV_NAME) {
+    const url = environments[process.env.ENV_NAME];
+    if (!url) throw new Error(`Unknown environment: ${process.env.ENV_NAME}. Available: ${Object.keys(environments).join(', ')}`);
+    return url;
+  }
+  return environments['local'];
+}
+
+export default defineConfig({
+  testDir: './src/main/ts/tests',
+  outputDir: 'build/test-results',
+  grep: process.env.TESTCASE ? new RegExp(process.env.TESTCASE) : undefined,
+  fullyParallel: true,
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 2 : 0,
+  workers: process.env.CI ? 1 : undefined,
+  reporter: [['html', { outputFolder: 'build/playwright-report' }]],
+  use: {
+    baseURL: resolveBaseURL(),
+    trace: 'on-first-retry',
+  },
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+    },
+  ],
+});

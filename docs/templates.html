@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Template Reference — common-gradle-build</title>
+<style>
+  :root {
+    --primary: #2d6a4f; --primary-light: #40916c; --primary-dark: #1b4332;
+    --accent: #52b788; --bg: #fafbfc; --bg-card: #ffffff; --bg-code: #f0f4f8;
+    --bg-table-header: #e8f0e8; --text: #24292f; --text-muted: #57606a;
+    --border: #d0d7de; --border-light: #e1e4e8; --link: #0969da;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06); --radius: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: var(--text); background: var(--bg); line-height: 1.6; font-size: 15px; }
+  .header { background: linear-gradient(135deg, var(--primary-dark), var(--primary), var(--primary-light)); color: white; padding: 2rem; }
+  .header-inner { max-width: 1100px; margin: 0 auto; }
+  .header h1 { font-size: 1.8rem; font-weight: 700; }
+  .header p { opacity: 0.9; margin-top: 0.3rem; }
+  .header a { color: #90caf9; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 1.5rem 2rem 3rem; }
+  h2 { font-size: 1.4rem; font-weight: 700; color: var(--primary-dark); border-bottom: 2px solid var(--accent); padding-bottom: 0.4rem; margin: 2rem 0 1rem; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: var(--primary); margin: 1.3rem 0 0.5rem; }
+  p { margin-bottom: 0.7rem; }
+  a { color: var(--link); }
+  code { font-family: 'SFMono-Regular', Consolas, monospace; font-size: 0.88em; background: var(--bg-code); padding: 0.15em 0.4em; border-radius: 4px; border: 1px solid var(--border-light); }
+  table { width: 100%; border-collapse: collapse; margin: 0.5rem 0 1.2rem; font-size: 0.9rem; background: var(--bg-card); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); table-layout: fixed; }
+  table col:nth-child(1) { width: 38%; }
+  table col:nth-child(2) { width: 62%; }
+  th { background: var(--bg-table-header); font-weight: 600; text-align: left; padding: 0.6rem 0.8rem; border-bottom: 2px solid var(--border); white-space: nowrap; }
+  td { padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--border-light); vertical-align: top; word-wrap: break-word; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f6f8fa; }
+  td:first-child code { font-weight: 500; color: var(--primary-dark); background: #e8f5e9; border-color: #c8e6c9; white-space: nowrap; }
+  /* Token table */
+  table.tokens col:nth-child(1) { width: 30%; }
+  table.tokens col:nth-child(2) { width: 70%; }
+  nav.toc { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: var(--radius); padding: 1rem 1.5rem; margin-bottom: 2rem; box-shadow: var(--shadow); }
+  nav.toc h2 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.5rem; border: none; padding: 0; }
+  nav.toc ul { list-style: none; columns: 3; column-gap: 2rem; }
+  nav.toc li { padding: 0.1rem 0; }
+  nav.toc a { color: var(--link); text-decoration: none; font-size: 0.9rem; }
+  nav.toc a:hover { text-decoration: underline; }
+  footer { text-align: center; padding: 1.5rem; color: var(--text-muted); font-size: 0.85rem; border-top: 1px solid var(--border-light); margin-top: 2rem; }
+  @media (max-width: 768px) { .container { padding: 1rem; } nav.toc ul { columns: 1; } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <h1>Template Reference</h1>
+    <p>All scaffolding templates in <code style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.2);color:white">gradle/template/</code> &mdash; <a href="index.html">back to README</a></p>
+  </div>
+</div>
+
+<div class="container">
+
+<nav class="toc">
+  <h2>Categories</h2>
+  <ul>
+    <li><a href="#tokens">Placeholder Tokens</a></li>
+    <li><a href="#base">Base</a></li>
+    <li><a href="#checkstyle">Checkstyle</a></li>
+    <li><a href="#config">Config</a></li>
+    <li><a href="#doc">Documentation (AsciiDoctor)</a></li>
+    <li><a href="#documentation">Documentation Project</a></li>
+    <li><a href="#docker">Docker</a></li>
+    <li><a href="#eclipse">Eclipse</a></li>
+    <li><a href="#java">Java</a></li>
+    <li><a href="#java-application">Java Application</a></li>
+    <li><a href="#kubernetes">Kubernetes</a></li>
+    <li><a href="#nodejs">Node.js</a></li>
+    <li><a href="#openapi">OpenAPI</a></li>
+    <li><a href="#quarkus">Quarkus</a></li>
+    <li><a href="#scm">SCM</a></li>
+    <li><a href="#script">Script</a></li>
+    <li><a href="#typescript">TypeScript</a></li>
+  </ul>
+</nav>
+
+<p>Templates are used during project initialization and build-time code generation. Each file uses the <code>.template</code> extension and contains placeholder tokens that are replaced with project-specific values. Templates can be overridden via <a href="index.html#org-overrides">Organization-Specific Overrides</a> &mdash; you only need to place the templates you want to override in your organization home directory. Any template not overridden falls back to the built-in default automatically.</p>
+
+<h2 id="tokens">Placeholder Tokens</h2>
+<table class="tokens">
+  <colgroup><col><col></colgroup>
+  <thead><tr><th>Token</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>@@PROJECT_NAME@@</code></td><td>Project name (e.g., <code>my-service</code>)</td></tr>
+    <tr><td><code>@@GROUP_ID@@</code></td><td>Maven group ID (e.g., <code>com.acme</code>)</td></tr>
+    <tr><td><code>@@COMPONENT_ID@@</code></td><td>Component identifier</td></tr>
+    <tr><td><code>@@PACKAGE@@</code></td><td>Java package name (e.g., <code>com.acme.myservice</code>)</td></tr>
+    <tr><td><code>@@PARENT_PACKAGE@@</code></td><td>Parent package name</td></tr>
+    <tr><td><code>@@VERSION@@</code></td><td>Project version</td></tr>
+    <tr><td><code>@@YEAR@@</code></td><td>Current year</td></tr>
+    <tr><td><code>@@BUILD_TIMESTAMP@@</code></td><td>Build timestamp</td></tr>
+    <tr><td><code>@@DESCRIPTION@@</code></td><td>Project description</td></tr>
+    <tr><td><code>@@URL@@</code></td><td>Project URL</td></tr>
+    <tr><td><code>@@LICENSE@@</code></td><td>License text</td></tr>
+    <tr><td><code>@@SOURCE_MAIN@@</code></td><td>Main source directory path</td></tr>
+    <tr><td><code>@@SRC_TEST@@</code></td><td>Test source directory path</td></tr>
+    <tr><td><code>@@DISTNAME@@</code></td><td>Distribution name</td></tr>
+  </tbody>
+</table>
+
+<h2 id="base">Base <code>gradle/template/base/</code></h2>
+<p>Shared templates used across all project types.</p>
+<table><colgroup><col><col></colgroup>
+  <thead><tr><th>Template</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>build.gradle.template</code></td><td>Default <code>build.gradle</code> with common-gradle-build <code>apply from:</code></td></tr>
+    <tr><td><code>settings.gradle.template</code></td><td>Gradle <code>settings.gradle</code> with root project name</td></tr>
+    <tr><td><code>gradle.properties.template</code></td><td>Default <code>gradle.properties</code> with group ID, component ID, and description</td></tr>
+    <tr><td><code>CHANGELOG.template</code></td><td>Initial <code>CHANGELOG.md</code> in Keep a Changelog format</td></tr>
+    <tr><td><code>LICENSE.template</code></td><td>License file template</td></tr>
+    <tr><td><code>README.template</code></td><td>Project <code>README.md</code> with description and quick start</td></tr>
+    <tr><td><code>editorconfig.template</code></td><td><code>.editorconfig</code> with encoding, indentation, and line ending rules</td></tr>
+    <tr><td><code>Dockerfile.template</code></td><td>Generic Dockerfile for container builds</td></tr>
+    <tr><td><code>dockerignore.template</code></td><td><code>.dockerignore</code> excluding build artifacts, IDE files, and logs</td></tr>
+    <tr><td><code>kubernetes.yaml.template</code></td><td>Generic Kubernetes deployment and service manifest</td></tr>
+    <tr><td><code>jwebserver.properties.template</code></td><td>Configuration for embedded toolarium-jwebserver</td></tr>
+    <tr><td><code>redirectIndexFile.template</code></td><td>HTML redirect index file for subpath deployments</td></tr>
+    <tr><td><code>robots.template</code></td><td><code>robots.txt</code> template</td></tr>
+    <tr><td><code>defaults.gradle.template</code></td><td>Organization <code>defaults.gradle</code> for organization-config projects</td></tr>
+    <tr><td><code>custom.gradle.template</code></td><td>Organization <code>custom.gradle</code> for organization-config projects</td></tr>
+    <tr><td><code>gradlehome.properties.template</code></td><td>Gradle home properties for custom configuration</td></tr>
+  </tbody>
+</table>
+
+<h2 id="checkstyle">Checkstyle <code>gradle/template/checkstyle/</code></h2>
+<table><colgroup><col><col></colgroup>
+  <thead><tr><th>Template</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>checkstyle.xml.template</code></td><td>Checkstyle rules configuration</td></tr>
+    <tr><td><code>checkstyle-suppressions.xml.template</code></td><td>Checkstyle suppression rules</td></tr>
+    <tr><td><code>checkstyle-file-header.txt.template</code></td><td>Required file header text for license checks</td></tr>
+  </tbody>
+</table>
+
+<h2 id="config">Config <code>gradle/template/config/</code></h2>
+<table><colgroup><col><col></colgroup>
+  <thead><tr><th>Template</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>build.gradle.template</code></td><td>Config project <code>build.gradle</code></td></tr>
+    <tr><td><code>gradle.properties.template</code></td><td>Config project properties</td></tr>
+  </tbody>
+</table>
+
+<h2 id="doc">Documentation (AsciiDoctor) <code>gradle/template/doc/</code></h2>
+<table><colgroup><col><col></colgroup>
+  <thead><tr><th>Template</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>asciidoctor-theme.css.template</code></td><td>HTML theme with branded colors, responsive design, print styles</td></tr>
+    <tr><td><code>asciidoctor-theme.yml.template</code></td><td>PDF theme with typography, heading styles, code block formatting</td></tr>
+  </tbody>
+</table>
+
+<h2 id="documentation">Documentation Project <code>gradle/template/documentation/</code></h2>
+<table><colgroup><col><col></colgroup>
+  <thead><tr><th>Template</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>build.gradle.template</code></td><td>Documentation project <code>build.gradle</code></td></tr>
+    <tr><td><code>gradle.properties.template</code></td><td>Documentation project properties</td></tr>
+    <tr><td><code>documentation.adoc.template</code></td><td>Sample AsciiDoc document</td></tr>
+  </tbody>
+</table>
+
+<h2 id="docker">Docker <code>gradle/template/docker/</code></h2>
+<table><colgroup><col><col></colgroup>
+  <thead><tr><th>Template</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>build.gradle.template</code></td><td>Docker project <code>build.gradle</code></td></tr>
+    <tr><td><code>gradle.properties.template</code></td><td>Docker project properties</td></tr>
+    <tr><td><code>Dockerfile.template</code></td><td>Standalone container Dockerfile</td></tr>
+  </tbody>
+</table>
+
+<h2 id="eclipse">Eclipse <code>gradle/template/eclipse/</code></h2>
+<table><colgroup><col><col></colgroup>
+  <thead><tr><th>Template</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>eclipse-project.template</code></td><td>Eclipse <code>.project</code> file</td></tr>
+    <tr><td><code>eclipse-classpath.template</code></td><td>Eclipse <code>.classpath</code> file</td></tr>
+    <tr><td><code>eclipse-checkstyle.template</code></td><td>Eclipse Checkstyle plugin configuration</td></tr>
+    <tr><td><code>eclipse-build-settings.template</code></td><td>Eclipse build settings</td></tr>
+  </tbody>
+</table>
+
+<h2 id="java">Java <code>gradle/template/java/</code></h2>
+<table><colgroup><col><col></colgroup>
+  <thead><tr><th>Template</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>build.gradle.template</code></td><td>Java library <code>build.gradle</code> with dependencies and plugins</td></tr>
+    <tr><td><code>javaFile.template</code></td><td>Sample Java source file with package declaration</td></tr>
+    <tr><td><code>javaLibrary.template</code></td><td>Main library class stub</td></tr>
+    <tr><td><code>javaLibraryTest.template</code></td><td>JUnit test class stub</td></tr>
+    <tr><td><code>JavaVersion.template</code></td><td>Java version constants class</td></tr>
+    <tr><td><code>logback.template</code></td><td>Logback configuration (<code>logback-test.xml</code>) for test logging</td></tr>
+  </tbody>
+</table>
+
+<h2 id="java-application">Java Application <code>gradle/template/java-application/</code></h2>
+<table><colgroup><col><col></colgroup>
+  <thead><tr><th>Template</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>build.gradle.template</code></td><td>Application <code>build.gradle</code> with shadow plugin</td></tr>
+    <tr><td><code>gradle.properties.template</code></td><td>Application properties with main class configuration</td></tr>
+    <tr><td><code>javaLibrary.template</code></td><td>Application main class with <code>public static void main</code></td></tr>
+  </tbody>
+</table>
+
+<h2 id="kubernetes">Kubernetes <code>gradle/template/kubernetes/</code></h2>
+<table><colgroup><col><col></colgroup>
+  <thead><tr><th>Template</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>build.gradle.template</code></td><td>Kubernetes product <code>build.gradle</code></td></tr>
+    <tr><td><code>gradle.properties.template</code></td><td>Kubernetes product properties</td></tr>
+    <tr><td><code>kubernetes.yaml.template</code></td><td>Service deployment manifest</td></tr>
+    <tr><td><code>kubernetes-namespace.template</code></td><td>Namespace definition</td></tr>
+    <tr><td><code>kubernetes-application-config.template</code></td><td>Application ConfigMap (OIDC, database settings)</td></tr>
+    <tr><td><code>kubernetes-application-secret.template</code></td><td>Application Secret (OIDC keys)</td></tr>
+    <tr><td><code>kubernetes-database.template</code></td><td>PostgreSQL StatefulSet with PVC and init scripts</td></tr>
+    <tr><td><code>kubernetes-database-parameters.template</code></td><td>Database connection parameters ConfigMap</td></tr>
+    <tr><td><code>kubernetes-database-secret.template</code></td><td>Database credentials Secret</td></tr>
+    <tr><td><code>kubernetes-idm.template</code></td><td>Keycloak/IDM Deployment with health probes</td></tr>
+    <tr><td><code>kubernetes-idm-config.template</code></td><td>IDM ConfigMap (database, realm settings)</td></tr>
+    <tr><td><code>kubernetes-idm-secret.template</code></td><td>IDM credentials Secret</td></tr>
+    <tr><td><code>kubernetes-ingess-nginx.template</code></td><td>Ingress-nginx controller deployment (deprecated &mdash; archived March 2026)</td></tr>
+    <tr><td><code>kubernetes-ingress-controller-header.template</code></td><td>Ingress resource with routing rules (deprecated)</td></tr>
+    <tr><td><code>kubernetes-gateway.template</code></td><td>Gateway API Gateway resource &mdash; installed once per cluster by platform admin</td></tr>
+    <tr><td><code>kubernetes-httproute.template</code></td><td>Gateway API HTTPRoute &mdash; portable routing rules for any Gateway API implementation</td></tr>
+    <tr><td><code>kustomization.template</code></td><td>Kustomize <code>kustomization.yaml</code></td></tr>
+    <tr><td><code>Dockerfile.template</code></td><td>Container Dockerfile for Kubernetes products</td></tr>
+    <tr><td><code>INSTALL.template</code></td><td>Installation instructions</td></tr>
+    <tr><td><code>install.sh.template</code></td><td>Linux/Mac install script with <code>--replicas</code>, <code>--initialDelay</code>, <code>--period</code></td></tr>
+    <tr><td><code>install.bat.template</code></td><td>Windows install script</td></tr>
+  </tbody>
+</table>
+
+<h2 id="nodejs">Node.js <code>gradle/template/nodejs/</code></h2>
+<table><colgroup><col><col></colgroup>
+  <thead><tr><th>Template</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>build.gradle.template</code></td><td>Node.js <code>build.gradle</code> with node plugin</td></tr>
+    <tr><td><code>gradle.properties.template</code></td><td>Node properties with version, registry, and build settings</td></tr>
+    <tr><td><code>README.template</code></td><td>Node.js project README</td></tr>
+    <tr><td><code>Dockerfile.template</code></td><td>Nginx Alpine Dockerfile for static web apps</td></tr>
+    <tr><td><code>Dockerfile-node.template</code></td><td>Node.js Alpine Dockerfile for server-side rendering</td></tr>
+    <tr><td><code>kubernetes.yaml.template</code></td><td>Kubernetes manifest for Node.js containers</td></tr>
+    <tr><td><code>apply-subpath.sh.template</code></td><td>Runtime subpath remapping script for dynamic context paths. See <a href="index.html#runtime-subpath-remapping">full documentation</a>.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="openapi">OpenAPI <code>gradle/template/openapi/</code></h2>
+<table><colgroup><col><col></colgroup>
+  <thead><tr><th>Template</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>build.gradle.template</code></td><td>OpenAPI <code>build.gradle</code> with generator plugin and Jakarta dependencies</td></tr>
+    <tr><td><code>gradle.properties.template</code></td><td>OpenAPI properties with generator settings</td></tr>
+    <tr><td><code>openapi-sample.yaml.template</code></td><td>Sample OpenAPI 3.0 specification YAML</td></tr>
+  </tbody>
+</table>
+
+<h2 id="quarkus">Quarkus <code>gradle/template/quarkus/</code></h2>
+<table><colgroup><col><col></colgroup>
+  <thead><tr><th>Template</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>build.gradle.template</code></td><td>Quarkus <code>build.gradle</code> with platform BOM and extensions</td></tr>
+    <tr><td><code>gradle.properties.template</code></td><td>Quarkus properties with plugin version, URL path, and database settings</td></tr>
+    <tr><td><code>settings.gradle.template</code></td><td>Quarkus <code>settings.gradle</code> with plugin management</td></tr>
+    <tr><td><code>application.properties.template</code></td><td>Quarkus <code>application.properties</code> with HTTP, datasource, OIDC, and logging config</td></tr>
+    <tr><td><code>javaLibrary.template</code></td><td>JAX-RS resource class stub</td></tr>
+    <tr><td><code>javaLibraryTest.template</code></td><td>Quarkus test class with <code>@QuarkusTest</code></td></tr>
+    <tr><td><code>javaLibraryNativeTest.template</code></td><td>Native image test class</td></tr>
+    <tr><td><code>index.html.template</code></td><td>Welcome page for Quarkus dev UI</td></tr>
+    <tr><td><code>Dockerfile.template</code></td><td>Quarkus Dockerfile with JRE Alpine base image</td></tr>
+    <tr><td><code>Dockerfile-java-runner.template</code></td><td>Optimized Dockerfile using <code>toolarium-java-runner.sh</code></td></tr>
+    <tr><td><code>Dockerfile-java-runner-multistage.template</code></td><td>Multistage build Dockerfile — compiles with JDK, runs on minimal Alpine image</td></tr>
+    <tr><td><code>RunTimeDefaultsConfigSource.template</code></td><td>MicroProfile Config source for runtime defaults</td></tr>
+    <tr><td><code>kubernetes.yaml.template</code></td><td>Kubernetes manifest with Quarkus health probes</td></tr>
+    <tr><td><code>toolarium-java-runner.sh.template</code></td><td>POSIX shell script for running Quarkus JARs in containers with JVM memory options, GC configuration, and graceful startup</td></tr>
+    <tr><td><code>cb-meminfo.sh</code></td><td>Memory monitoring script for container JVM diagnostics</td></tr>
+  </tbody>
+</table>
+
+<h2 id="scm">SCM <code>gradle/template/scm/</code></h2>
+<table><colgroup><col><col></colgroup>
+  <thead><tr><th>Template</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>gitignore.template</code></td><td><code>.gitignore</code> with IDE, build, OS, and Node.js patterns</td></tr>
+    <tr><td><code>gitattributes.template</code></td><td><code>.gitattributes</code> with line ending rules for YAML, shell scripts</td></tr>
+  </tbody>
+</table>
+
+<h2 id="testing">Testing <code>gradle/template/testing/</code></h2>
+<p>Templates for Playwright end-to-end testing projects.</p>
+<table><colgroup><col><col></colgroup>
+  <thead><tr><th>Template</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>package.json.template</code></td><td>Node.js <code>package.json</code> with Playwright dependency and test scripts</td></tr>
+    <tr><td><code>playwright.config.ts.template</code></td><td>Playwright configuration with environment URL mapping, <code>TESTCASE</code> support, and <code>build/</code> output paths</td></tr>
+    <tr><td><code>tests/example.spec.ts.template</code></td><td>Sample Playwright test spec</td></tr>
+  </tbody>
+</table>
+
+<h2 id="script">Script <code>gradle/template/script/</code></h2>
+<table><colgroup><col><col></colgroup>
+  <thead><tr><th>Template</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>build.gradle.template</code></td><td>Script project <code>build.gradle</code></td></tr>
+    <tr><td><code>gradle.properties.template</code></td><td>Script project properties</td></tr>
+  </tbody>
+</table>
+
+<h2 id="typescript">TypeScript <code>gradle/template/typescript/</code></h2>
+<table><colgroup><col><col></colgroup>
+  <thead><tr><th>Template</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>tsconfig.json.template</code></td><td>TypeScript compiler configuration</td></tr>
+  </tbody>
+</table>
+
+</div>
+
+<footer>
+  common-gradle-build &copy; toolarium &mdash; <a href="index.html">Back to README</a>
+</footer>
+
+</body>
+</html>

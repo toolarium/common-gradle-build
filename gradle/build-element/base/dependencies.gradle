@@ -107,16 +107,28 @@ ext.getVersionExpression = { Properties properties, sourceName, dependencyGroupN
 		logInfo("Version expression found, name " + dependencyGroupName + "." + dependencyName + " => " +versionExpression)
 	    return versionExpression;
 	}
-	
+
+	versionExpression = properties.getProperty(("" + dependencyGroupName + ":" + dependencyName).toString())
+	if (versionExpression!=null && !versionExpression.toString().trim().isEmpty()) {
+		logInfo("Version expression found, name " + dependencyGroupName + ":" + dependencyName + " => " +versionExpression)
+	    return versionExpression;
+	}
+
 	versionExpression = properties.getProperty(("[" + sourceName + "]" + dependencyGroupName).toString())
 	if (versionExpression!=null && !versionExpression.toString().trim().isEmpty()) {
 		logInfo("Version expression in section [" + sourceName + "] found, groupname " + dependencyGroupName + " => " +versionExpression)
 	    return versionExpression;
-	}		
-	
+	}
+
 	versionExpression = properties.getProperty(("[" + sourceName + "]" + dependencyGroupName + "." + dependencyName).toString())
 	if (versionExpression!=null && !versionExpression.toString().trim().isEmpty()) {
 		logInfo("Version expression in section [" + sourceName + "] found, name " + dependencyGroupName + "." + dependencyName + " => " +versionExpression)
+	    return versionExpression;
+	}
+
+	versionExpression = properties.getProperty(("[" + sourceName + "]" + dependencyGroupName + ":" + dependencyName).toString())
+	if (versionExpression!=null && !versionExpression.toString().trim().isEmpty()) {
+		logInfo("Version expression in section [" + sourceName + "] found, name " + dependencyGroupName + ":" + dependencyName + " => " +versionExpression)
 	    return versionExpression;
 	}		
 	return null
@@ -261,6 +273,12 @@ task verifyDependencies() {
 /***************************************************************************************
  * project validation
  ***************************************************************************************/
+/*
+if (!project.getProperty('IS_NEW')) {
+    projectValidation.finalizedBy("verifyDependencies")
+    verifyDependencies.mustRunAfter("build")
+}
+*/
 if (!project.getProperty('IS_NEW') && project.hasProperty('dependencyTextReport') && project.getProperty('dependencyTextReport')) {
     projectValidation.finalizedBy("dependencyReport")
 }

@@ -1,0 +1,174 @@
+/*
+ * testing.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ *
+ * This file is part of the toolarium common-gradle-build.
+ *
+ * The common-gradle-build is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * The common-gradle-build is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+if (!project.hasProperty('commonGradleBuildUrl')) {
+    ext.commonGradleBuildUrl='https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle'
+}
+
+if (!project.hasProperty('commonGradleBuildElementPath')) {
+	ext.commonGradleBuildElementPath="${commonGradleBuildUrl}/build-element"
+}
+
+
+/***************************************************************************************
+ * Set docker image to node (not nginx) for testing containers
+ ***************************************************************************************/
+if (!project.hasProperty("dockerImage")) {
+	project.ext.set("dockerImage", "node:alpine")
+}
+if (!project.hasProperty("dockerFileTemplateName")) {
+	project.ext.set("dockerFileTemplateName", "Dockerfile-node.template")
+}
+if (!project.hasProperty("dockerEntrypoint")) {
+	project.ext.set("dockerEntrypoint", '["npx", "playwright", "test"]')
+}
+
+
+/***************************************************************************************
+ * Dependencies
+ ***************************************************************************************/
+apply from: "${commonGradleBuildElementPath}/nodejs.gradle"
+
+
+/***************************************************************************************
+ * Playwright testing project - source under src/main/ts, output under build/
+ ***************************************************************************************/
+ext.testingSourceDirectory = "${srcMainDirectory}/ts"
+ext.testingTestDirectory = "${testingSourceDirectory}/tests"
+
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/playwright.config.ts")
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/playwright.config.js")
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.env")
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/.env.local")
+addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/tsconfig.json")
+
+
+/***************************************************************************************
+ * Testing project has nothing to build — disable npmBuild entirely.
+ * Tests are executed via the 'test' task: cb test / gradle test
+ ***************************************************************************************/
+if (project.tasks.findByName('npmBuild') != null) {
+	npmBuild.enabled = false
+}
+
+/***************************************************************************************
+ * Install Playwright browsers (only if not already installed)
+ ***************************************************************************************/
+if (!project.getProperty('IS_NEW') && project.tasks.findByName('npmInstall') != null) {
+	task playwrightInstall(type: Exec) {
+		group = 'Playwright'
+		description = 'Install Playwright browsers if not already present'
+		commandLine 'npx', 'playwright', 'install', 'chromium'
+		onlyIf {
+			def browsersPath = System.getenv("PLAYWRIGHT_BROWSERS_PATH")
+			if (browsersPath == null || browsersPath.isEmpty()) {
+				def os = System.getProperty("os.name", "").toLowerCase()
+				if (os.contains("win")) {
+					browsersPath = System.getenv("LOCALAPPDATA") + "/ms-playwright"
+				} else if (os.contains("mac")) {
+					browsersPath = System.getProperty("user.home") + "/Library/Caches/ms-playwright"
+				} else {
+					browsersPath = System.getProperty("user.home") + "/.cache/ms-playwright"
+				}
+			}
+			def dir = new File(browsersPath)
+			if (!dir.exists()) return true
+			def found = false
+			dir.eachDir { d -> if (d.name.startsWith("chromium")) found = true }
+			return !found
+		}
+	}
+	playwrightInstall.dependsOn npmInstall
+	if (project.tasks.findByName('test') != null) {
+		test.dependsOn playwrightInstall
+	}
+}
+
+
+/***************************************************************************************
+ * project validation
+ ***************************************************************************************/
+projectValidation {
+	if (project.getProperty('IS_NEW')) {
+		bootStraplogLifecycle("  > Just create project structure, skip build.")
+		gradle.startParameter.excludedTaskNames += "build"
+	}
+
+	doFirst {
+		// ensure essential files exist (fallback for existing projects)
+		if (!new File("$rootDirectory/package.json").exists()) {
+			createFileFromTemplate("$rootDirectory/package.json", getTemplateFile('package.json.template', 'testing'))
+		}
+		if (!new File("$rootDirectory/playwright.config.ts").exists() && !new File("$rootDirectory/playwright.config.js").exists()) {
+			createFileFromTemplate("$rootDirectory/playwright.config.ts", getTemplateFile('playwright.config.ts.template', 'testing'))
+		}
+		def testDir = new File("${testingSourceDirectory}/tests")
+		if (!testDir.exists()) {
+			testDir.mkdirs()
+			createFileFromTemplate("${testingSourceDirectory}/tests/example.spec.ts", getTemplateFile('tests/example.spec.ts.template', 'testing'))
+		}
+
+		if (project.getProperty('IS_NEW')) {
+			// remove Playwright-generated files at root (we use our own templates)
+			['tests', 'tests-examples'].each { dir ->
+				def d = new File("$rootDirectory/$dir")
+				if (d.exists()) { d.deleteDir() }
+			}
+			['global-setup.ts', 'global-teardown.ts'].each { f ->
+				new File("$rootDirectory/$f").delete()
+			}
+
+			// create project files from templates
+			new File("$rootDirectory/$licenseFilename").delete()
+			if ("$rootDirectory/$licenseFilename".toString().equalsIgnoreCase(licenseFile.toString())) {
+				createFileFromTemplate(licenseFile, getTemplateFile('LICENSE.template'))
+			}
+			new File(readmeFile).delete()
+			createFileFromTemplate(readmeFile, getTemplateFile('README.template'))
+			new File(editorConfigFile).delete()
+			createFileFromTemplate(editorConfigFile, getTemplateFile('editorconfig.template'))
+
+			// overwrite Playwright's config with our template (correct paths)
+			new File("$rootDirectory/playwright.config.ts").delete()
+			new File("$rootDirectory/playwright.config.js").delete()
+			createFileFromTemplate("$rootDirectory/playwright.config.ts", getTemplateFile('playwright.config.ts.template', 'testing'))
+
+			// generate git files if necessary
+			if (project.hasProperty('initScmForNewProjects') && project.getProperty('initScmForNewProjects')) {
+				createGitFiles(true)
+			}
+
+			registerEndMessage("" << NELINE \
+								<< "  To run tests, go to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
+								<< "      " + colorize(HIGHLITE_LEVEL, "$startExecutable test") + " or " + colorize(HIGHLITE_LEVEL, "npx playwright test") + "" << NELINE \
+								<< "" << NELINE \
+								<< "  To run tests with UI mode:" << NELINE \
+								<< "      " + colorize(HIGHLITE_LEVEL, "npx playwright test --ui") + "" << NELINE \
+								<< "" << NELINE \
+								<< "  To generate a test report:" << NELINE \
+								<< "      " + colorize(HIGHLITE_LEVEL, "npx playwright show-report build/playwright-report") + "" << NELINE \
+								<< "" << NELINE \
+								<< "  To generate test code interactively:" << NELINE \
+								<< "      " + colorize(HIGHLITE_LEVEL, "npx playwright codegen") + "" << NELINE)
+		}
+	}
+}

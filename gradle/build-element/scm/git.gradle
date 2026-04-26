@@ -37,7 +37,7 @@ buildscript {
 		}
 	}
 	dependencies {
-		def grgitCoreVersion="4.1.1"
+		def grgitCoreVersion="5.3.2"
 		if (project.hasProperty('grgitCoreVersion')) {
 			grgitCoreVersion = project.getProperty('grgitCoreVersion')
 		}
@@ -88,38 +88,14 @@ apply from: "${commonGradleBuildElementPath}/base/exec.gradle"
  * Open git 
  */
 ext.openGit = { directory = projectDir ->
- 	try	
-	{
-		logInfo("Open git...")
-
-		// use credential manager
-		org.ajoberstar.grgit.Credentials credentials = null
-		/*
-		if (project.hasProperty('scmUseCredentialManager') && project.getProperty('scmUseCredentialManager')) {
-			def credentialContent=requestCredentials(cloneUrl)
-			if (credentialContent!=null) {
-				logInfo("Got credentials for [" + credentialContent[0] + "] of git repository: ${cloneUrl}")
-				credentials = new org.ajoberstar.grgit.Credentials(credentialContent[0], credentialContent[1]);		
-				//System.properties["org.ajoberstar.grgit.auth.username"]=credentialContent[0]
-				//System.properties["org.ajoberstar.grgit.auth.password"]=credentialContent[1]
-				//System.properties["org.ajoberstar.grgit.auth.force=hardcoded"]="true"
-			}
-		}
-		*/
-
-		def git
-		if (credentials!=null) {
-			//logInfo("Try to open git with credentials: ${cloneUrl}")
-			git = org.ajoberstar.grgit.Grgit.open(dir: directory, credentials: credentials)
-		} else {
-			//logInfo("Try to open git without any credentials: ${cloneUrl}")
-			git = org.ajoberstar.grgit.Grgit.open(dir: directory)
-		}
+	logInfo("Open git...")
+	try {
+		return org.ajoberstar.grgit.Grgit.open(dir: directory)
 	} catch (java.lang.IllegalStateException e) {
-		printLine(ERROR_LEVEL, true)
+		printLine(ERROR_LINE_LEVEL, true)
 		printInfo(colorize(ERROR_LEVEL, 'ERROR') + ": Can not access to git repository: " + e.getMessage() )
 		printInfo("      In case you have to authenticate, please use system environment " + colorize(HIGHLITE_LEVEL, 'GRGIT_USER') + " and " + colorize(HIGHLITE_LEVEL, 'GRGIT_PASS') + "!")
-		printLine(ERROR_LEVEL, true)
+		printLine(ERROR_LINE_LEVEL, true)
 		throw new GradleException("Can not access to git repository: " + e.getMessage())
 	}
 }
@@ -387,42 +363,11 @@ ext.gitClone = { inputCloneDir, inputCloneUrl, overwrite = true ->
 			return false
 		}
 		
-		logInfo("GIT checkout [" + colorize(HIGHLITE_LEVEL, cloneUrl) + colorize(INFO_LEVEL, "] into [") + colorize(HIGHLITE_LEVEL, cloneDir) + colorize(INFO_LEVEL, "]."))		
+		logInfo("GIT checkout [" + colorize(HIGHLITE_LEVEL, cloneUrl) + colorize(INFO_LEVEL, "] into [") + colorize(HIGHLITE_LEVEL, cloneDir) + colorize(INFO_LEVEL, "]."))
 
-		// use credential manager
-		org.ajoberstar.grgit.Credentials credentials = null
-		if (project.hasProperty('scmUseCredentialManager') && project.getProperty('scmUseCredentialManager')) {
-			def credentialContent=requestCredentials(cloneUrl)
-			if (credentialContent!=null) {
-				logInfo("Got credentials for [" + credentialContent[0] + "] of git repository: ${cloneUrl}")
-				credentials = new org.ajoberstar.grgit.Credentials(credentialContent[0], credentialContent[1]);		
-				//System.properties["org.ajoberstar.grgit.auth.username"]=credentialContent[0]
-				//System.properties["org.ajoberstar.grgit.auth.password"]=credentialContent[1]
-				//System.properties["org.ajoberstar.grgit.auth.force=hardcoded"]="true"
-			}
-		}
-		
-		if (credentials!=null) {
-			logInfo("Try to clone git with credentials: ${cloneUrl}")			
-			/*
-		    org.eclipse.jgit.api.Git.cloneRepository()
-				.setURI(cloneUrl)
-				.setDirectory(new File(cloneDir))
-				.setCredentialsProvider(new org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider(credentials.username, credentials.password))
-				.call();
-			*/
-			git = org.ajoberstar.grgit.Grgit.clone(dir: cloneDir, uri: cloneUrl, credentials: credentials)
-		} else {
-			logInfo("Try to clone git without any credentials: ${cloneUrl}")
-			/*
-		    org.eclipse.jgit.api.Git.cloneRepository()
-				.setURI(cloneUrl)
-				.setDirectory(new File(cloneDir))
-				.call();
-			*/
-			git = org.ajoberstar.grgit.Grgit.clone(dir: cloneDir, uri: cloneUrl)
-			result = true
-		}
+		// credentials are provided via GRGIT_USER / GRGIT_PASS environment variables
+		git = org.ajoberstar.grgit.Grgit.clone(dir: cloneDir, uri: cloneUrl)
+		result = true
 	} catch (Exception e) {
 		logInfo("Could not checkout [" + colorize(HIGHLITE_LEVEL, cloneUrl) + colorize(WARN_LEVEL, "] into [") + colorize(HIGHLITE_LEVEL, cloneDir) + colorize(WARN_LEVEL, "]: " + e.getMessage()))
 	
@@ -445,8 +390,131 @@ ext.gitClone = { inputCloneDir, inputCloneUrl, overwrite = true ->
 }
 
 
-/** 
- * Read the git commit hash 
+/**
+ * Remove files from git cache (git rm --cached)
+ */
+ext.removeFromGitCache = { inputPatterns ->
+	def git = null
+	if (isGitAvailable()) {
+		try {
+			git = openGit()
+			logInfo("Remove from git cache: " + inputPatterns)
+			git.remove(patterns: inputPatterns, cached: true)
+		} catch (Exception e) {
+			printWarn("Could not remove from git cache: " + e.getMessage())
+		} finally {
+			closeGit(git)
+		}
+	}
+}
+
+
+/**
+ * Cleanup disallowed tracked files from git index and add them to .gitignore.
+ * Only runs on snapshot builds. Can be disabled via environment variable
+ * CB_DISABLE_GIT_CLEANUP=true or property gitCleanupDisallowedFiles=false.
+ */
+ext.cleanupDisallowedTrackedFiles = { ->
+	// check if disabled via environment variable
+	def disableEnv = System.getenv('CB_DISABLE_GIT_CLEANUP')
+	if (disableEnv != null && "true".equalsIgnoreCase(disableEnv.toString().trim())) {
+		logInfo("Git cleanup of disallowed tracked files is disabled by environment variable CB_DISABLE_GIT_CLEANUP.")
+		return
+	}
+
+	// check if disabled via property
+	if (!project.hasProperty('gitCleanupDisallowedFiles') || !"true".equalsIgnoreCase("" + project.getProperty('gitCleanupDisallowedFiles'))) {
+		logInfo("Git cleanup of disallowed tracked files is disabled by property gitCleanupDisallowedFiles.")
+		return
+	}
+
+	// only run on snapshot builds
+	if (project.hasProperty('isReleaseVersion') && "true".equalsIgnoreCase("" + project.getProperty('isReleaseVersion'))) {
+		logInfo("Git cleanup of disallowed tracked files is skipped on release builds.")
+		return
+	}
+
+	if (!isGitAvailable()) {
+		logInfo("Git cleanup of disallowed tracked files is skipped because git is not available.")
+		return
+	}
+
+	if (!project.hasProperty('disallowedCheckedInFiles') || project.getProperty('disallowedCheckedInFiles').toString().trim().isEmpty()) {
+		logInfo("No disallowed checked-in files defined.")
+		return
+	}
+
+	// get all tracked files in one shot (efficient)
+	def trackedFiles = ""
+	try {
+		trackedFiles = "git ls-files".execute(null, new File(rootDirectory)).text.trim()
+	} catch (Exception e) {
+		logInfo("Could not read tracked files from git: " + e.getMessage())
+		return
+	}
+
+	if (trackedFiles.isEmpty()) {
+		return
+	}
+
+	def trackedFileList = trackedFiles.split('\n').collect { it.trim().replace('\\', '/') }
+	def disallowedList = project.getProperty('disallowedCheckedInFiles').toString().split(', ').collect { it.trim() }.findAll { !it.isEmpty() }
+	def patternsToRemove = []
+
+	for (def disallowed : disallowedList) {
+		for (def tracked : trackedFileList) {
+			// match files that start with the disallowed entry as directory prefix or match exactly
+			if (tracked.equals(disallowed) || tracked.startsWith(disallowed + '/')) {
+				if (!patternsToRemove.contains(disallowed)) {
+					patternsToRemove.add(disallowed)
+				}
+				break
+			}
+		}
+	}
+
+	if (patternsToRemove.isEmpty()) {
+		logInfo("No disallowed tracked files found in git index.")
+		return
+	}
+
+	// remove from git cache
+	printInfo("> Cleanup disallowed tracked files from git index: " + colorize(HIGHLITE_LEVEL, patternsToRemove.join(', ')))
+	removeFromGitCache(patternsToRemove)
+
+	// add to .gitignore if not already present
+	def gitIgnoreFile = new File(rootDirectory, '.gitignore')
+	def gitIgnoreContent = ""
+	if (gitIgnoreFile.exists()) {
+		gitIgnoreContent = gitIgnoreFile.text
+	}
+
+	def gitIgnoreLines = gitIgnoreContent.split('\n').collect { it.trim() }
+	def entriesToAdd = []
+	for (def pattern : patternsToRemove) {
+		def entryDir = pattern + '/'
+		if (!gitIgnoreLines.contains(pattern) && !gitIgnoreLines.contains(entryDir)) {
+			entriesToAdd.add(pattern)
+		}
+	}
+
+	if (!entriesToAdd.isEmpty()) {
+		printInfo("> Adding to " + colorize(HIGHLITE_LEVEL, '.gitignore') + ": " + colorize(HIGHLITE_LEVEL, entriesToAdd.join(', ')))
+		gitIgnoreFile.withWriterAppend { w ->
+			if (gitIgnoreContent.length() > 0 && !gitIgnoreContent.endsWith('\n')) {
+				w << NELINE
+			}
+			w << NELINE << "# Disallowed checked-in files (auto-cleaned by common-gradle-build)" << NELINE
+			for (def entry : entriesToAdd) {
+				w << entry << NELINE
+			}
+		}
+	}
+}
+
+
+/**
+ * Read the git commit hash
  */
 def getGitCommitHashCmdline() {
     try {

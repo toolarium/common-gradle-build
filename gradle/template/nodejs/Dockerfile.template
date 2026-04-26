@@ -21,6 +21,10 @@ ARG DEFAULT_ENCODING="@@dockerDefaultEncoding@@"
 ARG DEFAULT_LOCALE="@@dockerDefaultLocale@@"
 ARG DEFAULT_LANGUAGE="@@dockerDefaultLanguage@@"
 ARG ENABLE_ACCESS_LOG=@@dockerEnableAccessLog@@
+ARG REMOVE_NON_ESSENTIAL_BINARIES="@@dockerRemoveNonEssentialBinaries@@"
+ARG MAKE_FILESYSTEM_READONLY="@@dockerMakeFilesystemReadonly@@"
+ARG READONLY_FILESYSTEM_PATH="@@dockerReadonlyFilesystemPath@@"
+ARG READONLY_FILESYSTEM_EXCLUDE_PATH="@@dockerReadonlyFilesystemExcludePath@@"
 
 # set meta data
 LABEL vendor="@@LICENSE_ORGANISATION@@" \
@@ -36,12 +40,25 @@ LABEL vendor="@@LICENSE_ORGANISATION@@" \
 # set user
 RUN adduser -D ${RUNTIMEUSER}
 
-# update and set timezone
+# update, set timezone and harden
 RUN apk --no-cache -U upgrade \
     && apk --no-cache add tzdata \
     && apk --no-cache add file \
     && cp "/usr/share/zoneinfo/${TIMEZONE}" /etc/localtime \
-    && echo "${TIMEZONE}" > /etc/timezone
+    && echo "${TIMEZONE}" > /etc/timezone \
+    # remove setuid/setgid binaries
+    && find / -perm /6000 -type f -exec chmod a-s {} + 2>/dev/null || true \
+    # remove cron and periodic
+    && rm -rf /etc/crontabs /etc/periodic /var/spool/cron \
+    # remove unnecessary system accounts
+    && sed -i '/^root/!{/^nobody/!{/^nginx/!{/^'${RUNTIMEUSER}'/!d}}}' /etc/passwd /etc/shadow /etc/group \
+    # remove docs, man pages, includes
+    && rm -rf /usr/share/man /usr/share/doc /usr/include \
+    # remove version information
+    && rm -f /etc/alpine-release /etc/os-release /etc/issue \
+    # remove apk to prevent package installation
+    && apk del apk-tools alpine-keys 2>/dev/null; \
+    rm -rf /sbin/apk /etc/apk /lib/apk /usr/share/apk /var/lib/apk
 
 # disable access log
 RUN if [ "${ENABLE_ACCESS_LOG}" = "false" ] ; then rm /var/log/nginx/access.log && ln -s /dev/null /var/log/nginx/access.log; fi
@@ -80,6 +97,10 @@ RUN cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.org \
 # copy the application
 COPY --chown=${RUNTIMEUSER} ${DEPLOYMENT_SOURCE_PATH} ${DEPLOYMENT_PATH}${DEPLOYMENT_SUBPATH}
 
+# create entrypoint script to apply EXPOSE_PORT at runtime (before nginx starts)
+RUN printf '#!/bin/sh\nset -e\nNGINX_CONF="/etc/nginx/conf.d/default.conf"\n[ -z "$EXPOSE_PORT" ] && exit 0\nsed -i "s/listen [0-9]\\{1,\\};/listen ${EXPOSE_PORT};/" "$NGINX_CONF" 2>/dev/null || true\n' > /docker-entrypoint.d/01-apply-port.sh \
+    && chmod 755 /docker-entrypoint.d/01-apply-port.sh
+
 # copy apply-subpath script
 COPY ${DEPLOYMENT_SCRIPT_PATH}/apply-subpath.sh /docker-entrypoint.d/05-apply-subpath.sh
 RUN chmod 755 /docker-entrypoint.d/05-apply-subpath.sh
@@ -87,8 +108,34 @@ RUN chmod 755 /docker-entrypoint.d/05-apply-subpath.sh
 # copyd serivce properties
 COPY ${DEPLOYMENT_SCRIPT_PATH}/*.properties /opt
 
-# set language
-ENV LANG='${DEFAULT_LOCALE}.${DEFAULT_ENCODING}' LANGUAGE='${DEFAULT_LOCALE}:${DEFAULT_LANGUAGE}'
+# set language and port
+ENV LANG="${DEFAULT_LOCALE}.${DEFAULT_ENCODING}" LANGUAGE="${DEFAULT_LOCALE}:${DEFAULT_LANGUAGE}"
+ENV EXPOSE_PORT="${EXPOSE_PORT}"
+
+# remove non-essential binaries (keep only what nginx entrypoint and apply-subpath.sh need)
+RUN if [ "${REMOVE_NON_ESSENTIAL_BINARIES}" = "true" ]; then \
+    cp "$(command -v busybox)" /tmp/bb && \
+    for cmd in envsubst file getconf; do [ -e "/usr/bin/$cmd" ] && /tmp/bb cp "/usr/bin/$cmd" "/tmp/$cmd" 2>/dev/null; done; \
+    [ -e "/usr/sbin/nginx" ] && /tmp/bb cp /usr/sbin/nginx /tmp/nginx 2>/dev/null; \
+    /tmp/bb rm -f /bin/* /sbin/* /usr/bin/* /usr/sbin/* 2>/dev/null; \
+    /tmp/bb cp /tmp/bb /bin/busybox && \
+    for cmd in sh cat chmod cut date dirname basename pwd ls echo find grep head md5sum mkdir mktemp mv printf rm sed seq sort touch tr uniq wc awk cp; do /bin/busybox ln -s busybox /bin/$cmd 2>/dev/null; done && \
+    for cmd in envsubst file getconf; do [ -e "/tmp/$cmd" ] && /bin/cp "/tmp/$cmd" "/usr/bin/$cmd" && /bin/chmod 755 "/usr/bin/$cmd"; done; \
+    [ -e "/tmp/nginx" ] && /bin/cp /tmp/nginx /usr/sbin/nginx && /bin/chmod 755 /usr/sbin/nginx; \
+    /bin/rm -f /tmp/bb /tmp/nginx /tmp/envsubst /tmp/file /tmp/getconf 2>/dev/null; \
+    fi
+
+# make filesystem read-only friendly (exclude /etc/nginx: apply-subpath.sh modifies nginx config at runtime)
+RUN if [ "${MAKE_FILESYSTEM_READONLY}" = "true" ]; then \
+    chmod a-w ${READONLY_FILESYSTEM_PATH} \
+    && chmod u+w /etc/nginx /etc/nginx/conf.d; \
+    for p in ${READONLY_FILESYSTEM_EXCLUDE_PATH}; do \
+        if [ -e "$p" ]; then chmod u+w "$p"; fi; \
+    done; \
+    fi
+
+# expose port
+EXPOSE ${EXPOSE_PORT}
 
 # switch RUNTIMEUSER
 USER ${RUNTIMEUSER}

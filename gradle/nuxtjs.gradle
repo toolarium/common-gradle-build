@@ -85,6 +85,9 @@ if (project.hasProperty("targetStatic") && project.getProperty("targetStatic")) 
 	if (!project.hasProperty("dockerFileTemplateName")) {
 		project.ext.set("dockerFileTemplateName", 'Dockerfile-node.template')
 	}
+	if (!project.hasProperty("dockerEntrypoint")) {
+		project.ext.set("dockerEntrypoint", 'NUXT_PORT=${EXPOSE_PORT} exec npm start')
+	}
 	if (!project.hasProperty("dockerDeploymentSourcePath")) {
 		project.ext.set("dockerDeploymentSourcePath", '.')
 	}

@@ -1,0 +1,39 @@
+name: Feature Request
+description: Suggest a new feature or improvement
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: "What are you trying to do that common-gradle-build doesn't support?"
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: "How would you like this to work?"
+    validations:
+      required: true
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Area
+      options:
+        - New project type
+        - Build element (gradle/build-element/)
+        - Template (gradle/template/)
+        - Configuration (gradle/conf/)
+        - Vulnerability scanner
+        - Shell scripts (container runtime)
+        - CI / Testing
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: "Any workarounds you've tried?"

@@ -53,10 +53,6 @@ if (!project.hasProperty('commonGradleBuildElementPath')) {
 	ext.commonGradleBuildElementPath="${commonGradleBuildUrl}/build-element"
 }
 
-// set docker image standards
-if (!project.hasProperty("dockerImage")) {
-	project.ext.set("dockerImage", "eclipse-temurin:21-jre-alpine") // previous: adoptopenjdk/openjdk11:alpine-jre
-}
 if (!project.hasProperty("dockerJavaOptions")) {
 	//project.ext.set("dockerJavaOptions", "-Djava.security.egd=file:/dev/./urandom")
 	project.ext.set("dockerJavaOptions", "-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager -Djava.security.egd=file:/dev/./urandom")
@@ -276,6 +272,29 @@ apply from: "${commonGradleBuildElementPath}/base/run.gradle"
 apply from: "${commonGradleBuildElementPath}/base/container.gradle"
 setCommonGradleProperty("createLogbackConfig", false)
 
+// set docker image standards (after defaults.gradle is loaded via java-library.gradle)
+if (!project.hasProperty("dockerImage")) {
+	if (project.hasProperty("dockerMultistageBuild") && "true".equalsIgnoreCase("${project.getProperty('dockerMultistageBuild')}".toString().trim())) {
+		// multistage build: JDK for build stage, minimal runtime image for final stage
+		project.ext.set("dockerImage", "eclipse-temurin:25-jdk-alpine") // previous: eclipse-temurin:21-jdk-alpine, eclipse-temurin:21-jre-alpine
+	} else {
+		// single-stage build: JRE only
+		project.ext.set("dockerImage", "eclipse-temurin:25-jre-alpine") // previous: eclipse-temurin:21-jdk-alpine, eclipse-temurin:21-jre-alpine
+	}
+}
+// set runtime image for multistage builds (independent of dockerImage)
+if (!project.hasProperty("dockerRuntimeImage")) {
+	project.ext.set("dockerRuntimeImage", "alpine:latest")
+}
+// set dockerOsVersion fallback: dockerRuntimeImage > dockerImage
+if (!project.hasProperty("dockerOsVersion") || project.getProperty("dockerOsVersion").toString().trim().isEmpty()) {
+	if (project.hasProperty("dockerRuntimeImage") && !project.getProperty("dockerRuntimeImage").toString().trim().isEmpty()) {
+		project.ext.set("dockerOsVersion", "${project.getProperty('dockerRuntimeImage')}")
+	} else {
+		project.ext.set("dockerOsVersion", "${project.getProperty('dockerImage')}")
+	}
+}
+
 
 /***************************************************************************************
  * Don't do project validation in case of quarkus dev
@@ -315,7 +334,9 @@ dependencies {
     implementation enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}")
 	
 	if (project.hasProperty("hasToolariumEnumConfiguration") && project.getProperty("hasToolariumEnumConfiguration")) {
-		implementation "com.github.toolarium:toolarium-enum-configuration:${toolariumEnumConfigurationVersion}"
+		annotationProcessor "com.github.toolarium:toolarium-enum-configuration:${toolariumEnumConfigurationVersion}"
+		compileOnly "com.github.toolarium:toolarium-enum-configuration:${toolariumEnumConfigurationVersion}"
+		//testImplementation "com.github.toolarium:toolarium-enum-configuration:${toolariumEnumConfigurationVersion}"
 	}
 }
 
@@ -513,8 +534,66 @@ build { ->
 		}
 
 		if (project.hasProperty('createServiceJavaRunner') && project.getProperty('createServiceJavaRunner')) {
-			project.ext.set("dockerFileTemplateName", 'Dockerfile-java-runner.template')
-			copyFile("${commonGradleTemplateQuarkusPath}/${dockerJavaRunner}", "${quarkusAppDirectory}/${dockerJavaRunner}")
+			if (project.hasProperty("dockerMultistageBuild") && "true".equalsIgnoreCase("${project.getProperty('dockerMultistageBuild')}".toString().trim())) {
+				project.ext.set("dockerFileTemplateName", 'Dockerfile-java-runner-multistage.template')
+			} else {
+				project.ext.set("dockerFileTemplateName", 'Dockerfile-java-runner.template')
+			}
+			
+			// override log package with projectRootPackageName if available
+			if (project.hasProperty('projectRootPackageName') && !project.getProperty('projectRootPackageName').toString().trim().isEmpty()) {
+				project.ext.set("toolariumJavaRunnerLogPackage", project.getProperty('projectRootPackageName').toString().trim())
+			}
+
+			// parse quarkus.log.console.format from application.properties to extract log dimensions
+			def logConsoleFormat = ""
+			def appPropsFile = new File("${srcMainResourcesDirectory}/application.properties")
+			if (appPropsFile.exists()) {
+				appPropsFile.eachLine { l ->
+					def trimmed = l.trim()
+					// match non-profile quarkus.log.console.format (not %dev., %test., %prod.)
+					if (trimmed.startsWith("quarkus.log.console.format") && !trimmed.startsWith("#")) {
+						logConsoleFormat = trimmed.replaceFirst(/^quarkus\.log\.console\.format\s*=\s*/, "")
+					}
+				}
+			}
+			if (!logConsoleFormat.isEmpty()) {
+				// extract category width from %-Nc{M}, only if not manually set
+				def catMatch = (logConsoleFormat =~ /%-(\d+)c\{(\d+)\}/)
+				if (catMatch.find()) {
+					if (!project.hasProperty('toolariumJavaRunnerLogCategoryWidth') || project.getProperty('toolariumJavaRunnerLogCategoryWidth').toString().trim().isEmpty()) {
+						project.ext.set("toolariumJavaRunnerLogCategoryWidth", catMatch.group(1))
+					}
+					if (!project.hasProperty('toolariumJavaRunnerLogCategoryMax') || project.getProperty('toolariumJavaRunnerLogCategoryMax').toString().trim().isEmpty()) {
+						project.ext.set("toolariumJavaRunnerLogCategoryMax", catMatch.group(2))
+					}
+				}
+				// extract logInformation width from %-N.MX{logInformation}, only if logInformation is present and not manually set
+				if (logConsoleFormat.contains("logInformation")) {
+					def infoMatch = (logConsoleFormat =~ /%-(\d+)\.(\d+)X\{logInformation\}/)
+					if (infoMatch.find()) {
+						if (!project.hasProperty('toolariumJavaRunnerLogInfoWidth') || project.getProperty('toolariumJavaRunnerLogInfoWidth').toString().trim().isEmpty()) {
+							project.ext.set("toolariumJavaRunnerLogInfoWidth", infoMatch.group(1))
+						}
+						if (!project.hasProperty('toolariumJavaRunnerLogInfoMax') || project.getProperty('toolariumJavaRunnerLogInfoMax').toString().trim().isEmpty()) {
+							project.ext.set("toolariumJavaRunnerLogInfoMax", infoMatch.group(2))
+						}
+					}
+				}
+			}
+
+			def javaRunnerOutputName = dockerJavaRunner.toString()
+			def javaRunnerTemplateName = dockerJavaRunner.toString()
+			if (javaRunnerTemplateName.endsWith('.template')) {
+				javaRunnerOutputName = javaRunnerTemplateName.replaceFirst(/\.template$/, '')
+			} else {
+				javaRunnerTemplateName = "${javaRunnerTemplateName}.template"
+			}
+			createFileFromTemplate("${quarkusAppDirectory}/${javaRunnerOutputName}", getTemplateFile("${javaRunnerTemplateName}"), true /*overwrite*/, true /*print*/, true /*replace*/, NELINE /*unix line endings*/)
+
+			if (project.hasProperty('dockerObserveMemoryCycle') && project.getProperty('dockerObserveMemoryCycle')!=null && !project.getProperty('dockerObserveMemoryCycle').toString().trim().isEmpty()) {
+				copyFile("${commonGradleTemplateQuarkusPath}/${dockerMeminfo}", "${quarkusAppDirectory}/${dockerMeminfo}")
+			}
 
 			if (project.hasProperty('createServiceJavaAgent') && project.getProperty('createServiceJavaAgent') && project.getProperty('dockerJavaAgent')!=null && !project.getProperty('dockerJavaAgent').toString().trim().isEmpty()) {
 				// TODO:

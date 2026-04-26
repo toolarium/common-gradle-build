@@ -26,9 +26,10 @@ if (project.hasProperty('openapiPluginVersion')) {
 buildscript {
 	repositories {
 		maven { url "https://repo1.maven.org/maven2" }
+		gradlePluginPortal()
 	}
 	dependencies {
-		def openapiPluginVersion="6.6.0"
+		def openapiPluginVersion="7.12.0"
 		if (project.hasProperty('openapiPluginVersion')) {
 			openapiPluginVersion = project.getProperty('openapiPluginVersion')
 		}

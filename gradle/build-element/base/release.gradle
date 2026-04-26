@@ -536,12 +536,72 @@ task publishRelease() {
 			if (project.ext.isSnapshotVersion) {
 				deployUrl = project.getProperty('mavenSnapshotPublishUrl')
 			}
+			printLine(HIGHLITE_LEVEL, true)
 			printInfo("> Publish release version " + colorize(HIGHLITE_LEVEL, "${project.version}") + " to " + colorize(HIGHLITE_LEVEL, deployUrl) + ".")
 		}
 	}
 }
+
+/***************************************************************************************
+ * Finalize OSSRH Staging API upload — POST to make deployment visible in Central Portal.
+ * Required by https://central.sonatype.org/publish/publish-portal-ossrh-staging-api/
+ ***************************************************************************************/
+ext.finalizeOssrhUpload = { ->
+	def deployUrl = project.getProperty('mavenPublishUrl')
+	def finalizeBaseUrl = project.getProperty('mavenPublishFinalizeUrl')
+
+	// only finalize if publish and finalize URLs are on the same domain
+	def publishDomain = new URI(deployUrl).host
+	def finalizeDomain = new URI(finalizeBaseUrl).host
+	if (publishDomain != finalizeDomain) {
+		return
+	}
+
+	def namespace = project.getProperty('projectGroupId').toString()
+	def finalizeUrl = "${finalizeBaseUrl}${namespace}"
+
+	printInfo("> Finalize deployment to Central Portal: " + colorize(HIGHLITE_LEVEL, finalizeUrl))
+
+	try {
+		def mvnUsername = project.getProperty('mavenUsername')
+		def mvnPassword = project.getProperty('mavenPassword')
+		def credentials = "${mvnUsername}:${mvnPassword}".bytes.encodeBase64().toString()
+		def connection = new URL(finalizeUrl).openConnection()
+		connection.setRequestMethod("POST")
+		connection.setRequestProperty("Authorization", "Bearer ${credentials}")
+		connection.setRequestProperty("Content-Length", "0")
+		connection.setDoOutput(true)
+		connection.getOutputStream().close()
+
+		def responseCode = connection.getResponseCode()
+		if (responseCode >= 200 && responseCode < 300) {
+			printInfo("> Central Portal deployment finalized " + colorize(SUCCESS_LEVEL, "successfully") + " (HTTP ${responseCode}).")
+		} else {
+			def responseBody = ""
+			try { responseBody = connection.getErrorStream()?.text ?: "" } catch (Exception ignored) {}
+			printWarn("Central Portal finalization returned HTTP ${responseCode}: ${responseBody}")
+		}
+	} catch (Exception e) {
+		printWarn("Could not finalize Central Portal deployment: " + e.getMessage())
+	}
+}
+
 if (project.hasProperty("commonGradleBuildReleasePublish") && project.getProperty("commonGradleBuildReleasePublish")) {
 	publishRelease.finalizedBy('publish')
+
+	// after publish completes, finalize if publish and finalize URLs share the same domain
+	gradle.taskGraph.afterTask { task ->
+		if (task.name == 'publish' && task.state.failure == null) {
+			def deployUrl = project.getProperty('mavenPublishUrl')
+			if (project.ext.isSnapshotVersion) {
+				deployUrl = project.getProperty('mavenSnapshotPublishUrl')
+			}
+			def finalizeBaseUrl = project.getProperty('mavenPublishFinalizeUrl')
+			if (new URI(deployUrl).host == new URI(finalizeBaseUrl).host) {
+				finalizeOssrhUpload()
+			}
+		}
+	}
 }
 
 

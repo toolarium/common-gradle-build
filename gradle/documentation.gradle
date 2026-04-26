@@ -96,6 +96,9 @@ if (project.tasks.findByName('build')) {
 	customJar.mustRunAfter("build")
 	build.finalizedBy(customJar)
 }
+if (project.tasks.findByName('vulnerabilityScanner') != null) {
+	vulnerabilityScanner.mustRunAfter("customJar")
+}
 
 defaultTasks 'clean', 'projectValidation', 'build'
 

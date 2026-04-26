@@ -51,9 +51,8 @@ setCommonGradleDefaultPropertyIfNull("srcTestJavaDirectory", "${srcTestDirectory
 dependencies {
 	if (project.hasProperty("hasToolariumEnumConfiguration") && project.getProperty("hasToolariumEnumConfiguration")) {
 		annotationProcessor "com.github.toolarium:toolarium-enum-configuration:${toolariumEnumConfigurationVersion}"
-		//implementation "com.github.toolarium:toolarium-enum-configuration:${toolariumEnumConfigurationVersion}"
 		compileOnly "com.github.toolarium:toolarium-enum-configuration:${toolariumEnumConfigurationVersion}"
-		testImplementation "com.github.toolarium:toolarium-enum-configuration:${toolariumEnumConfigurationVersion}"
+		//testImplementation "com.github.toolarium:toolarium-enum-configuration:${toolariumEnumConfigurationVersion}"
 	}
 }
 

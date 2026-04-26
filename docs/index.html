@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>common-gradle-build</title>
+<style>
+  :root {
+    --primary: #2d6a4f;
+    --primary-light: #40916c;
+    --primary-dark: #1b4332;
+    --accent: #52b788;
+    --bg: #fafbfc;
+    --bg-card: #ffffff;
+    --bg-code: #f0f4f8;
+    --bg-table-header: #e8f0e8;
+    --text: #24292f;
+    --text-muted: #57606a;
+    --border: #d0d7de;
+    --border-light: #e1e4e8;
+    --link: #0969da;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+    --radius: 8px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.6;
+    font-size: 15px;
+  }
+
+  .header {
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 50%, var(--primary-light) 100%);
+    color: white;
+    padding: 2.5rem 2rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><circle cx="40" cy="40" r="38" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="1"/></svg>') repeat;
+    background-size: 80px;
+  }
+  .header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+  .header img { height: 90px; border-radius: 12px; background: rgba(255,255,255,0.15); padding: 8px; }
+  .header h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.5px; }
+  .header p { opacity: 0.92; font-size: 1.05rem; margin-top: 0.3rem; max-width: 650px; }
+  .badge { display: inline-block; margin-top: 0.5rem; }
+  .badge img { height: 20px; padding: 0; background: none; border-radius: 3px; }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 1.5rem 2rem 3rem; }
+
+  nav.toc {
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius);
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow);
+  }
+  nav.toc h2 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.6rem; }
+  nav.toc ul { list-style: none; columns: 2; column-gap: 2rem; }
+  nav.toc li { padding: 0.15rem 0; }
+  nav.toc a { color: var(--link); text-decoration: none; font-size: 0.9rem; }
+  nav.toc a:hover { text-decoration: underline; }
+
+  section { margin-bottom: 2rem; }
+
+  h2 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--primary-dark);
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 0.4rem;
+    margin-bottom: 1rem;
+    margin-top: 2.5rem;
+  }
+  h3 { font-size: 1.1rem; font-weight: 600; color: var(--primary); margin: 1.3rem 0 0.5rem; }
+  h4 { font-size: 1rem; font-weight: 600; color: var(--text); margin: 1rem 0 0.4rem; }
+
+  p { margin-bottom: 0.7rem; }
+  a { color: var(--link); }
+
+  ul, ol { margin: 0.4rem 0 0.8rem 1.5rem; }
+  li { margin-bottom: 0.25rem; }
+
+  code {
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.88em;
+    background: var(--bg-code);
+    padding: 0.15em 0.4em;
+    border-radius: 4px;
+    border: 1px solid var(--border-light);
+  }
+
+  pre {
+    background: #1e293b;
+    color: #e2e8f0;
+    padding: 1rem 1.2rem;
+    border-radius: var(--radius);
+    overflow-x: auto;
+    margin: 0.5rem 0 1rem;
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+  pre code { background: none; border: none; padding: 0; color: inherit; font-size: inherit; }
+  pre .comment { color: #64748b; }
+  pre .keyword { color: #7dd3fc; }
+  pre .string { color: #86efac; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.5rem 0 1.2rem;
+    font-size: 0.9rem;
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    table-layout: fixed;
+  }
+  /* 3-column settings tables: Property | Default | Description */
+  table.settings col:nth-child(1) { width: 35%; }
+  table.settings col:nth-child(2) { width: 15%; }
+  table.settings col:nth-child(3) { width: 50%; }
+  /* 2-column tables: Variable/Type | Purpose/Description */
+  table.two-col col:nth-child(1) { width: 35%; }
+  table.two-col col:nth-child(2) { width: 65%; }
+  /* 3-column project type table: Type | Description | Suffix */
+  table.project-types col:nth-child(1) { width: 20%; }
+  table.project-types col:nth-child(2) { width: 65%; }
+  table.project-types col:nth-child(3) { width: 15%; }
+  th {
+    background: var(--bg-table-header);
+    font-weight: 600;
+    text-align: left;
+    padding: 0.6rem 0.8rem;
+    border-bottom: 2px solid var(--border);
+    white-space: nowrap;
+  }
+  td {
+    padding: 0.5rem 0.8rem;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    border-bottom: 1px solid var(--border-light);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f6f8fa; }
+  td:first-child code { font-weight: 500; color: var(--primary-dark); background: #e8f5e9; border-color: #c8e6c9; white-space: nowrap; }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius);
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow);
+  }
+  .card h3 { margin-top: 0; }
+
+  .feature-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; margin: 1rem 0; }
+  .feature-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius);
+    padding: 1rem 1.2rem;
+    box-shadow: var(--shadow);
+    border-left: 3px solid var(--accent);
+  }
+  .feature-card h4 { margin-top: 0; color: var(--primary); font-size: 0.95rem; }
+  .feature-card p { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 0; }
+
+  .highlight-box {
+    background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+    border: 1px solid #a5d6a7;
+    border-radius: var(--radius);
+    padding: 1rem 1.2rem;
+    margin: 1rem 0;
+  }
+  .highlight-box strong { color: var(--primary-dark); }
+
+  .sister-banner {
+    background: linear-gradient(135deg, #e3f2fd 0%, #e8eaf6 100%);
+    border: 1px solid #90caf9;
+    border-left: 4px solid #1976d2;
+    border-radius: var(--radius);
+    padding: 1rem 1.3rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+  .sister-banner .icon { font-size: 1.5rem; flex-shrink: 0; }
+  .sister-banner strong a { color: #1565c0; text-decoration: none; }
+  .sister-banner strong a:hover { text-decoration: underline; }
+  .sister-banner p { margin: 0; font-size: 0.93rem; color: #37474f; }
+
+  .env-table td:first-child code { color: #b45309; background: #fef3c7; border-color: #fde68a; }
+
+  details { margin: 0.5rem 0; }
+  details summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--primary);
+    padding: 0.4rem 0;
+    user-select: none;
+  }
+  details summary:hover { color: var(--primary-light); }
+  details[open] summary { margin-bottom: 0.5rem; }
+
+  hr { border: none; border-top: 1px solid var(--border-light); margin: 2rem 0; }
+
+  footer {
+    text-align: center;
+    padding: 1.5rem;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    border-top: 1px solid var(--border-light);
+    margin-top: 2rem;
+  }
+
+  @media (max-width: 768px) {
+    .header-inner { flex-direction: column; text-align: center; }
+    nav.toc ul { columns: 1; }
+    .feature-grid { grid-template-columns: 1fr; }
+    .container { padding: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <img src="logo/common-gradle-build-small.png" alt="common-gradle-build logo">
+    <div>
+      <h1>common-gradle-build</h1>
+      <p>A shared, script-based Gradle build framework that provides a complete build lifecycle for multiple project types. One line integration &mdash; no plugins, no <code style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.2);color:white">buildscript</code> blocks.</p>
+      <span class="badge"><img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="GPL v3"></span>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<div class="sister-banner">
+  <span class="icon">&#x1F91D;</span>
+  <p>Works hand in hand with its sister project <strong><a href="https://github.com/toolarium/common-build">common-build</a></strong> &mdash; see <a href="#quick-start">Quick Start</a> below.</p>
+</div>
+
+<nav class="toc">
+  <h2>Contents</h2>
+  <ul>
+    <li><a href="#quick-start">Quick Start</a></li>
+    <li><a href="#project-types">Supported Project Types</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#versioning">Versioning &amp; Release Management</a></li>
+    <li><a href="#configuration">Configuration Reference</a></li>
+    <li><a href="#architecture">Architecture</a></li>
+    <li><a href="#sensitive-settings">Sensitive Settings</a></li>
+    <li><a href="#org-overrides">Organization-Specific Overrides</a></li>
+    <li><a href="#local-dev">Local Development</a></li>
+    <li><a href="#shell-compat">Shell Script Compatibility</a></li>
+    <li><a href="TEMPLATES.html">Template Reference</a></li>
+    <li><a href="#license">License</a></li>
+  </ul>
+</nav>
+
+<!-- QUICK START -->
+<section id="quick-start">
+<h2>Quick Start</h2>
+
+<h3>Using common-build (recommended)</h3>
+<p>The <a href="https://github.com/toolarium/common-build"><strong>common-build</strong></a> project wizard creates new projects interactively and installs Gradle for you &mdash; no manual setup required:</p>
+<pre><code>cb --new</code></pre>
+<p>See the <a href="https://github.com/toolarium/common-build">common-build documentation</a> for installation and usage.</p>
+
+<h3>Manual setup</h3>
+<ol>
+  <li>Install <a href="https://gradle.org/install/">Gradle</a> and ensure <code>gradle</code> is available on your command line.</li>
+  <li>Create a project directory, e.g. <code>mkdir my-java-lib &amp;&amp; cd my-java-lib</code></li>
+  <li>Create a <code>build.gradle</code> with this content and run <code>gradle</code>:</li>
+</ol>
+<pre><code><span class="keyword">apply from</span>: <span class="string">"https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/common.gradle"</span></code></pre>
+
+<p><strong>One-liner for the shell:</strong></p>
+<ul>
+  <li><strong>Windows:</strong> <code>echo apply from: "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/common.gradle" &gt; build.gradle &amp; gradle</code></li>
+  <li><strong>Linux/Mac:</strong> <code>echo apply from: \"https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/common.gradle\" &gt; build.gradle &amp;&amp; gradle</code></li>
+</ul>
+
+<div class="highlight-box">
+  <strong>That's it.</strong> The framework auto-detects your project type from the directory structure and applies the full build lifecycle automatically.
+</div>
+</section>
+
+<!-- PROJECT TYPES -->
+<section id="project-types">
+<h2>Supported Project Types</h2>
+<table class="project-types">
+  <colgroup><col><col><col></colgroup>
+  <thead><tr><th>Type</th><th>Description</th><th>Name Suffix</th></tr></thead>
+  <tbody>
+    <tr><td><code>config</code></td><td>Configuration package projects (properties, YAML)</td><td><code>-config</code></td></tr>
+    <tr><td><code>container</code></td><td>Container image building with Docker/nerdctl</td><td><code>-container</code></td></tr>
+    <tr><td><code>documentation</code></td><td>AsciiDoctor documentation rendering to HTML and PDF</td><td><code>-documentation</code></td></tr>
+    <tr><td><code>java-application</code></td><td>Executable Java application with shadow/fat jar and container support</td><td><code>-app</code></td></tr>
+    <tr><td><code>java-library</code></td><td>Standard Java library with compilation, testing, publication, and signing</td><td>&mdash;</td></tr>
+    <tr><td><code>kubernetes-product</code></td><td>Kubernetes deployments with manifest generation and product assembly</td><td><code>-app</code></td></tr>
+    <tr><td><code>nuxtjs</code></td><td>Nuxt.js with TypeScript support and localization</td><td><code>-ui</code></td></tr>
+    <tr><td><code>openapi</code></td><td>OpenAPI spec generation using the openapi-generator plugin</td><td><code>-service-api-spec</code></td></tr>
+    <tr><td><code>organization-config</code></td><td>Organization-level configuration and policy management</td><td><code>-config</code></td></tr>
+    <tr><td><code>quarkus</code></td><td>Quarkus REST service with optimized JVM options and Alpine container support</td><td><code>-service</code></td></tr>
+    <tr><td><code>react</code></td><td>React single-page application projects</td><td><code>-ui</code></td></tr>
+    <tr><td><code>script</code></td><td>Shell/bash script projects with distribution archives</td><td><code>-bin</code></td></tr>
+    <tr><td><code>testing</code></td><td>End-to-end testing with Playwright, container-based test execution</td><td><code>-testing</code></td></tr>
+    <tr><td><code>vuejs</code></td><td>Vue.js single-page application projects</td><td><code>-ui</code></td></tr>
+  </tbody>
+</table>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+<h2>Features</h2>
+
+<div class="feature-grid">
+  <div class="feature-card">
+    <h4>Changelog Management</h4>
+    <p>Keep a Changelog format. Auto-creation, mandatory validation, auto-update after release with configurable change types.</p>
+  </div>
+  <div class="feature-card">
+    <h4>Dependency Management</h4>
+    <p>Whitelist/blacklist system with version expressions (<code>1.2.*</code>, <code>&gt;=1.0.2 &lt;2.1.2</code>), scoped to configurations.</p>
+  </div>
+  <div class="feature-card">
+    <h4>Vulnerability Scanning</h4>
+    <p>Trivy integration for dependencies and container images. DENY/CRIT/HIGH/MED/LOW severity. Dependency tree resolution. Unfixable vulnerabilities reported with <code>[no fix available]</code> but don't fail the build (configurable). Container image whitelist/blacklist via <code>[container]</code> tag. Kubernetes-product referenced image scanning with summary table.</p>
+  </div>
+  <div class="feature-card">
+    <h4>OWASP Dependency-Check</h4>
+    <p>Optional integration with colored console reports showing CVEs, severity, confidence, and included-by chains.</p>
+  </div>
+  <div class="feature-card">
+    <h4>Code Quality</h4>
+    <p>Checkstyle with auto-config, JaCoCo coverage (XML/CSV/HTML), SonarQube analysis with full report integration.</p>
+  </div>
+  <div class="feature-card">
+    <h4>Java Build</h4>
+    <p>JDK auto-detection, JUnit 5, Javadoc JAR, Maven publication with POM, GPG signing, Shadow/fat JARs, JReleaser.</p>
+  </div>
+  <div class="feature-card">
+    <h4>Container Support</h4>
+    <p>Docker/nerdctl auto-detection, template Dockerfiles, OCI annotations, latest tag, vulnerability scanning, registry push.</p>
+  </div>
+  <div class="feature-card">
+    <h4>Kubernetes</h4>
+    <p>YAML manifests, probes, ConfigMaps/Secrets, OIDC, database config, IDM/Keycloak, kustomize, install scripts. <a href="https://gateway-api.sigs.k8s.io/">Gateway API</a> support (HTTPRoute + Gateway). Legacy ingress-nginx (deprecated).</p>
+  </div>
+  <div class="feature-card">
+    <h4>AsciiDoctor Docs</h4>
+    <p>HTML &amp; PDF generation with auto-created themes, custom fonts, syntax highlighting, TOC. Included in K8s JARs.</p>
+  </div>
+  <div class="feature-card">
+    <h4>Node.js / JavaScript</h4>
+    <p>gradle-node-plugin, npm/yarn, Nuxt 3 detection, React .env, fat web JARs with jwebserver, <a href="#runtime-subpath-remapping">runtime subpath remapping</a>.</p>
+  </div>
+  <div class="feature-card">
+    <h4>Templates &amp; Scaffolding</h4>
+    <p>85+ templates for build files, Dockerfiles, K8s manifests, Java stubs, configs. See <a href="TEMPLATES.html">Template Reference</a>.</p>
+  </div>
+  <div class="feature-card">
+    <h4>Testing (Playwright)</h4>
+    <p>End-to-end testing with Playwright. Sources in <code>src/main/ts/tests/</code>, output to <code>build/</code>. Environment URL mapping (<code>ENV_NAME</code>: local/int/acpt/prod), <code>TESTCASE</code> filtering, <code>BASE_URL</code> override. Container-based test execution via <code>cb-container</code> or <code>docker run</code>.</p>
+  </div>
+  <div class="feature-card">
+    <h4>Enum Configuration</h4>
+    <p>Type-safe config generation, duplicate key validation, mandatory field detection, K8s product assembly.</p>
+  </div>
+  <div class="feature-card">
+    <h4>Resource Bundles</h4>
+    <p>Excel-based localization: <code>Resourcebundle.xlsx</code> &rarr; JSON &amp; properties for multi-language projects.</p>
+  </div>
+  <div class="feature-card">
+    <h4>Security Utilities</h4>
+    <p>Password/hash generation, PEM key I/O, RSA signing/verification with auto-detected algorithms.</p>
+  </div>
+  <div class="feature-card">
+    <h4>SCM Integration</h4>
+    <p>Git via grgit: clone, branch, commit, push, tag. Release branch workflow. Auto-detected remote URL for POM.</p>
+  </div>
+</div>
+
+<h2 id="versioning">Versioning &amp; Release Management</h2>
+<p>The <code>VERSION</code> file controls the build version with four fields:</p>
+<pre><code>major.number        = 1
+minor.number        = 4
+revision.number     = 8
+qualifier           =</code></pre>
+<p><strong>Snapshot vs. release:</strong> The build is a <strong>snapshot</strong> when the <code>qualifier</code> contains <code>SNAPSHOT</code> (the default). It is a <strong>release</strong> when the qualifier is empty. Snapshot builds skip strict validation, allow mutable artifacts, and disable version caching; release builds enforce changelog validation, sign artifacts, and fail on vulnerability issues.</p>
+<p><strong>Releasing:</strong></p>
+<pre><code>gradle release</code></pre>
+<p>If the qualifier is <code>SNAPSHOT</code>, this creates a full release &mdash; removes the qualifier, builds and publishes artifacts, creates a git tag, then increments the revision and re-adds SNAPSHOT. If the qualifier is already empty, it creates a snapshot build.</p>
+<p>To force a release build regardless of the current qualifier (e.g., for CI), the SNAPSHOT qualifier will be removed automatically:</p>
+<pre><code>gradle -PisReleaseVersion=<span class="keyword">true</span> release</code></pre>
+<p>With <a href="https://github.com/toolarium/common-build"><strong>common-build</strong></a>:</p>
+<pre><code>cb release                            <span class="comment"># release based on qualifier (full release or snapshot)</span>
+cb -PisReleaseVersion=<span class="keyword">true</span> release    <span class="comment"># force a release, SNAPSHOT qualifier removed automatically</span></code></pre>
+
+<h3>SonarQube Setup</h3>
+<pre><code>sonarEnabled = <span class="keyword">true</span>
+sonarHostUrl = <span class="string">"https://your-sonar-server.com"</span>
+sonarToken   = <span class="string">"your-token"</span></code></pre>
+</section>
+
+<!-- CONFIGURATION INTRO -->
+<section>
+<h2 id="configuration">Configuration Reference</h2>
+<p>All properties below can be set in two places:</p>
+<ul>
+  <li><strong><code>defaults.gradle</code></strong> (via <a href="#org-overrides">Organization-Specific Overrides</a>) &mdash; recommended for <strong>general settings</strong> that apply across all projects in your organization.</li>
+  <li><strong><code>gradle.properties</code></strong> (per project, or via <code>-P</code> on the command line) &mdash; for <strong>project-specific settings</strong> only.</li>
+</ul>
+<p>Framework defaults are defined in <a href="../gradle/build-element/base/defaults.gradle"><code>gradle/build-element/base/defaults.gradle</code></a>.</p>
+</section>
+
+<!-- ENVIRONMENT VARIABLES -->
+<section id="env-vars">
+<h2>Environment Variables</h2>
+<table class="env-table two-col">
+  <colgroup><col><col></colgroup>
+  <thead><tr><th>Variable</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>COMMON_GRADLE_BUILD_URL</code></td><td>Override framework location (<code>file://</code> for local testing, <code>https://</code> for custom fork)</td></tr>
+    <tr><td><code>COMMON_GRADLE_BUILD_CACHE</code></td><td>Override local cache directory (default: <code>~/.gradle/common-gradle-build/</code>)</td></tr>
+    <tr><td><code>COMMON_GRADLE_BUILD_HOME</code></td><td>Override configuration home directory (see <a href="#org-overrides">Organization-Specific Overrides</a>)</td></tr>
+    <tr><td><code>CB_CUSTOM_CONFIG_VERSION</code></td><td>Pin custom configuration version</td></tr>
+    <tr><td><code>GRGIT_USER</code></td><td>Git username for release operations</td></tr>
+    <tr><td><code>GRGIT_PASS</code></td><td>Git password/token for release operations</td></tr>
+  </tbody>
+</table>
+</section>
+
+<!-- MOST RELEVANT SETTINGS -->
+<section id="relevant-settings">
+<h2>Most Relevant Settings</h2>
+<p>These are the properties you are most likely to customize. Set general/organization-wide values in <code>defaults.gradle</code> (via <a href="#org-overrides">Organization-Specific Overrides</a>); set project-specific values in <code>gradle.properties</code>:</p>
+
+<details open>
+<summary>Build Artifacts</summary>
+<table class="settings"><colgroup><col><col><col></colgroup>
+  <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>createJar</code></td><td><code>true</code></td><td>Create main JAR artifact</td></tr>
+    <tr><td><code>createSourceJar</code></td><td><code>true</code></td><td>Create sources JAR artifact</td></tr>
+    <tr><td><code>createJavadocJar</code></td><td><code>true</code></td><td>Create Javadoc JAR artifact</td></tr>
+    <tr><td><code>createFatJar</code></td><td><code>false</code></td><td>Create fat/uber JAR with all dependencies</td></tr>
+    <tr><td><code>createCustomJar</code></td><td><code>false</code></td><td>Create custom JAR (used by kubernetes-product, docker, nodejs)</td></tr>
+    <tr><td><code>fatJarPackageType</code></td><td><code>jar</code></td><td>Fat JAR output format: <code>jar</code>, <code>tgz</code>, or <code>jgz</code></td></tr>
+  </tbody>
+</table>
+</details>
+
+<details open>
+<summary>Compilation</summary>
+<table class="settings"><colgroup><col><col><col></colgroup>
+  <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>sourceCompatibility</code></td><td><em>(current JDK)</em></td><td>Java source compatibility version</td></tr>
+    <tr><td><code>targetCompatibility</code></td><td><em>(current JDK)</em></td><td>Java bytecode target version</td></tr>
+    <tr><td><code>fileEncoding</code></td><td><code>UTF-8</code></td><td>Source file encoding</td></tr>
+    <tr><td><code>compileJavaFork</code></td><td><code>false</code></td><td>Fork a separate JVM for compilation</td></tr>
+    <tr><td><code>compileJavaHome</code></td><td><code>""</code></td><td>Custom JDK home (requires <code>compileJavaFork=true</code>)</td></tr>
+  </tbody>
+</table>
+</details>
+
+<details open>
+<summary>Testing</summary>
+<table class="settings"><colgroup><col><col><col></colgroup>
+  <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>useJUnit</code></td><td><code>true</code></td><td>Enable JUnit testing</td></tr>
+    <tr><td><code>testDependencyVersion</code></td><td><code>5.7.2</code></td><td>JUnit version (auto-detects JUnit 4 vs 5)</td></tr>
+    <tr><td><code>testMinHeapSize</code></td><td><code>128m</code></td><td>Minimum heap for test JVM</td></tr>
+    <tr><td><code>testMaxHeapSize</code></td><td><code>512m</code></td><td>Maximum heap for test JVM</td></tr>
+    <tr><td><code>testEnableDynamicAgentLoading</code></td><td><code>true</code></td><td>Add <code>-XX:+EnableDynamicAgentLoading</code> for JDK 21+</td></tr>
+    <tr><td><code>showStandardStreams</code></td><td><code>false</code></td><td>Display test stdout/stderr in console</td></tr>
+  </tbody>
+</table>
+</details>
+
+<details open>
+<summary>Changelog</summary>
+<table class="settings"><colgroup><col><col><col></colgroup>
+  <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>createChangelogFile</code></td><td><code>true</code></td><td>Auto-create CHANGELOG.md for new projects</td></tr>
+    <tr><td><code>validateChangelogFile</code></td><td><code>true</code></td><td>Validate changelog format on build</td></tr>
+    <tr><td><code>changelogUpdateFileAfterRelease</code></td><td><code>true</code></td><td>Auto-add version entry after release</td></tr>
+    <tr><td><code>changelogFailOnSnapshotBuild</code></td><td><code>false</code></td><td>Fail validation on snapshot builds</td></tr>
+    <tr><td><code>changelogSupportUnreleased</code></td><td><code>true</code></td><td>Allow [Unreleased] section</td></tr>
+  </tbody>
+</table>
+</details>
+
+<details open>
+<summary>Code Quality</summary>
+<table class="settings"><colgroup><col><col><col></colgroup>
+  <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>checkstyleToolVersion</code></td><td><code>10.3.3</code></td><td>Checkstyle version</td></tr>
+    <tr><td><code>checkstyleMaxWarnings</code></td><td><code>0</code></td><td>Maximum allowed warnings before failure</td></tr>
+    <tr><td><code>checkstyleHTMLReport</code></td><td><code>true</code></td><td>Generate HTML checkstyle report</td></tr>
+    <tr><td><code>checkstyleXMLReport</code></td><td><code>false</code></td><td>Generate XML checkstyle report</td></tr>
+    <tr><td><code>projectIndividualCheckstyleConfiguration</code></td><td><code>true</code></td><td>Use project-local checkstyle config</td></tr>
+    <tr><td><code>jacocoToolDefaultVersion</code></td><td><code>0.8.14</code></td><td>JaCoCo version</td></tr>
+    <tr><td><code>jacocoXMLReport</code></td><td><code>true</code></td><td>Generate XML coverage report (needed for SonarQube)</td></tr>
+    <tr><td><code>jacocoHTMLReport</code></td><td><code>true</code></td><td>Generate HTML coverage report</td></tr>
+    <tr><td><code>jacocoCSVReport</code></td><td><code>false</code></td><td>Generate CSV coverage report</td></tr>
+    <tr><td><code>sonarEnabled</code></td><td><code>false</code></td><td>Enable SonarQube analysis</td></tr>
+    <tr><td><code>sonarVersion</code></td><td><code>7.2.3.7755</code></td><td>SonarQube Gradle plugin version</td></tr>
+  </tbody>
+</table>
+</details>
+
+<details open>
+<summary>Container</summary>
+<table class="settings"><colgroup><col><col><col></colgroup>
+  <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>containerCmd</code></td><td><code>nerdctl</code></td><td>Container tool command (<code>nerdctl</code> or <code>docker</code>)</td></tr>
+    <tr><td><code>dockerImage</code></td><td><em>(per project type)</em></td><td>Base container image</td></tr>
+    <tr><td><code>dockerDefaultPort</code></td><td><code>8080</code></td><td>Container exposed port</td></tr>
+    <tr><td><code>dockerSubPathAccess</code></td><td><code>""</code></td><td>URL subpath for container deployment</td></tr>
+    <tr><td><code>buildAlwaysDockerImage</code></td><td><code>false</code></td><td>Build container image on every build</td></tr>
+    <tr><td><code>dockerRemoveDanglingImages</code></td><td><code>true</code></td><td>Clean up dangling images after build</td></tr>
+    <tr><td><code>dockerRemoveNonEssentialBinaries</code></td><td><code>true</code></td><td>Remove non-essential binaries from container</td></tr>
+    <tr><td><code>dockerMakeFilesystemReadonly</code></td><td><code>true</code></td><td>Make <code>/etc</code>, <code>/usr</code>, <code>/lib</code> read-only</td></tr>
+    <tr><td><code>dockerReadonlyFilesystemPath</code></td><td><code>"/etc /usr /lib"</code></td><td>Space-separated paths to make read-only</td></tr>
+    <tr><td><code>dockerReadonlyFilesystemExcludePath</code></td><td><code>"/etc/ssl/certs /usr/local/share/ca-certificates $JAVA_HOME/lib/security"</code></td><td>Paths to keep writable within read-only dirs (Alpine CA certs, Java truststore)</td></tr>
+    <tr><td><code>dockerSupportLatestTag</code></td><td><code>true</code></td><td>Add <code>:latest</code> tag to built image</td></tr>
+    <tr><td><code>dockerAddAnnotation</code></td><td><code>false</code></td><td>Add OCI metadata annotations</td></tr>
+    <tr><td><code>dockerCleanupAfterBuild</code></td><td><code>false</code></td><td>Remove image after successful build</td></tr>
+    <tr><td><code>dockerCleanupAfterPublish</code></td><td><code>true</code></td><td>Remove local image after push</td></tr>
+  </tbody>
+</table>
+</details>
+
+<details open>
+<summary>Vulnerability Scanner</summary>
+<table class="settings"><colgroup><col><col><col></colgroup>
+  <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>vulnerabilityScannerEnabled</code></td><td><code>true</code></td><td>Enable Trivy vulnerability scanning</td></tr>
+    <tr><td><code>vulnerabilityScannerCmd</code></td><td><code>trivy</code></td><td>Vulnerability scanner command</td></tr>
+    <tr><td><code>vulnerabilityScannerSeverity</code></td><td><code>CRITICAL,HIGH</code></td><td>Severity levels to scan (release builds)</td></tr>
+    <tr><td><code>vulnerabilityScannerFailWithoutFix</code></td><td><code>false</code></td><td>When <code>true</code>, unfixable vulnerabilities also fail the build</td></tr>
+  </tbody>
+</table>
+</details>
+
+<details open>
+<summary>Publishing &amp; Repository</summary>
+<table class="settings"><colgroup><col><col><col></colgroup>
+  <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>mavenPublishUrl</code></td><td><code>https://ossrh-staging-api.central.sonatype.com/.../maven2</code></td><td>Release repository URL</td></tr>
+    <tr><td><code>mavenSnapshotPublishUrl</code></td><td><code>https://central.sonatype.com/.../maven-snapshots</code></td><td>Snapshot repository URL</td></tr>
+    <tr><td><code>mavenUsername</code></td><td>&mdash;</td><td>Maven repository username (see <a href="#sensitive-settings">Sensitive Settings</a>)</td></tr>
+    <tr><td><code>mavenPassword</code></td><td>&mdash;</td><td>Maven repository password (see <a href="#sensitive-settings">Sensitive Settings</a>)</td></tr>
+    <tr><td><code>allowMavenCentralRepository</code></td><td><code>true</code></td><td>Use Maven Central for dependency resolution</td></tr>
+    <tr><td><code>allowMavenSnapshotRepository</code></td><td><code>true</code></td><td>Use snapshot repository for dependency resolution</td></tr>
+  </tbody>
+</table>
+</details>
+
+</section>
+
+<!-- ALL SETTINGS -->
+<section id="all-settings">
+<h2>All Settings by Category</h2>
+<p>Same rules apply: use <code>defaults.gradle</code> for general settings, <code>gradle.properties</code> for project-specific ones.</p>
+<div class="highlight-box">This section documents the most commonly used settings. For the complete list of all 700+ properties including Kubernetes OIDC, database init scripts, IDM/Keycloak configuration, Docker advanced tuning, dependency-check report colors, and more, see <a href="../gradle/build-element/base/defaults.gradle"><code>defaults.gradle</code></a>.</div>
+
+<h3>Core</h3>
+
+<details>
+<summary>Framework &amp; Cache</summary>
+<table class="settings">
+  <colgroup><col><col><col></colgroup>
+  <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>gradleWrapperDefaultVersion</code></td><td><code>8.13</code></td><td>Default Gradle wrapper version for new projects</td></tr>
+    <tr><td><code>commonGradleBuildCache</code></td><td><code>~/.gradle/common-gradle-build</code></td><td>Local cache directory</td></tr>
+    <tr><td><code>commonGradleBuildCacheLastCheckTimeout</code></td><td><code>43200000</code> (12h)</td><td>Cache freshness timeout in ms</td></tr>
+    <tr><td><code>commonGradleBuildReleaseVersion</code></td><td><code>""</code></td><td>Pin framework to specific version</td></tr>
+    <tr><td><code>commonGradleBuildReleasesPreRelease</code></td><td><code>false</code></td><td>Include pre-release versions</td></tr>
+    <tr><td><code>commonGradleBuildCustomConfigName</code></td><td><code>Custom Config</code></td><td>Display name for custom config</td></tr>
+    <tr><td><code>commonGradleBuildHomeGitUrl</code></td><td><code>""</code></td><td>Git URL for organization config home</td></tr>
+    <tr><td><code>commonGradleCacheDynamicDuration</code></td><td><code>600</code> / <code>0</code></td><td>Dynamic version cache duration (release/snapshot)</td></tr>
+    <tr><td><code>commonGradleCacheChangingModulesDuration</code></td><td><code>0</code></td><td>Changing modules cache duration in seconds</td></tr>
+    <tr><td><code>duplicatesStrategy</code></td><td><code>exclude</code></td><td>Gradle duplicate file strategy</td></tr>
+    <tr><td><code>onlineCheckConnectionUrl</code></td><td><code>www.google.com</code></td><td>URL for online connectivity check</td></tr>
+    <tr><td><code>onlineCheckConnectionUrlTimeout</code></td><td><code>1500</code></td><td>Connectivity check timeout in ms</td></tr>
+  </tbody>
+</table>
+</details>
+
+<details>
+<summary>Gradle JVM</summary>
+<table class="settings">
+  <colgroup><col><col><col></colgroup>
+  <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>gradlePropertiesJvmArgs</code></td><td><code>-Xmx1g ...</code></td><td>JVM arguments for Gradle daemon</td></tr>
+    <tr><td><code>gradlePropertiesLogLevel</code></td><td><code>quiet</code></td><td>Gradle log level</td></tr>
+    <tr><td><code>gradlePropertiesConsole</code></td><td><code>rich</code></td><td>Console output mode</td></tr>
+    <tr><td><code>gradlePropertiesWarningMode</code></td><td><code>all</code></td><td>Deprecation warning mode</td></tr>
+  </tbody>
+</table>
+</details>
+
+<details>
+<summary>Project Structure &amp; Files</summary>
+<table class="settings">
+  <colgroup><col><col><col></colgroup>
+  <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>projectType</code></td><td><code>java-library</code></td><td>Explicit project type (normally auto-detected)</td></tr>
+    <tr><td><code>licenseOrganisation</code></td><td><code>${rootProject.name}</code></td><td>Organization name in license/metadata</td></tr>
+    <tr><td><code>licenseText</code></td><td><code>MIT License</code></td><td>License description</td></tr>
+    <tr><td><code>licenseUrl</code></td><td><code>https://mit-license.org</code></td><td>License URL</td></tr>
+    <tr><td><code>projectUrl</code></td><td><code>""</code></td><td>Project homepage URL</td></tr>
+    <tr><td><code>configDirectoryName</code></td><td><code>conf</code></td><td>Configuration directory name</td></tr>
+    <tr><td><code>srcDirectoryName</code></td><td><code>src</code></td><td>Source root directory name</td></tr>
+    <tr><td><code>docsDirectoryName</code></td><td><code>docs</code></td><td>Documentation directory name</td></tr>
+    <tr><td><code>supportMultipleResourceFolder</code></td><td><code>true</code></td><td>Support multiple resource folders</td></tr>
+    <tr><td><code>includeReadmeFile</code></td><td><code>false</code></td><td>Include README in JAR META-INF</td></tr>
+    <tr><td><code>includeLicenseFile</code></td><td><code>true</code></td><td>Include LICENSE in JAR META-INF</td></tr>
+    <tr><td><code>includeVersionFile</code></td><td><code>true</code></td><td>Include VERSION in JAR META-INF</td></tr>
+    <tr><td><code>includeChangelogFile</code></td><td><code>true</code></td><td>Include CHANGELOG in JAR META-INF</td></tr>
+  </tbody>
+</table>
+</details>
+
+<details>
+<summary>Project Validation</summary>
+<table class="settings">
+  <colgroup><col><col><col></colgroup>
+  <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>projectNameRegularExpressionPattern</code></td><td><code>^[a-zA-Z0-9\-]+$</code></td><td>Regex for valid project names</td></tr>
+    <tr><td><code>projectGroupIdRegularExpressionPattern</code></td><td><code>^[a-zA-Z0-9\.]+$</code></td><td>Regex for valid group IDs</td></tr>
+    <tr><td><code>projectComponentIdIsPartOfProjectName</code></td><td><code>true</code></td><td>Component ID must be part of project name</td></tr>
+    <tr><td><code>projectComponentIdSeparator</code></td><td><code>-</code></td><td>Separator between name parts</td></tr>
+    <tr><td><code>validateRootFiles</code></td><td><code>true</code></td><td>Warn about unexpected files in project root</td></tr>
+    <tr><td><code>validateRootDirectories</code></td><td><code>false</code></td><td>Warn about unexpected directories in project root</td></tr>
+    <tr><td><code>validateProjectNameAndFolder</code></td><td><code>false</code></td><td>Validate project name matches folder name</td></tr>
+    <tr><td><code>allowMultipleSourceFiles</code></td><td><code>true</code></td><td>Allow multiple source files</td></tr>
+  </tbody>
+</table>
+</details>
+
+<details>
+<summary>Build Initialization Display</summary>
+<table class="settings">
+  <colgroup><col><col><col></colgroup>
+  <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>initShowJava</code></td><td><code>true</code></td><td>Show Java version at build start</td></tr>
+    <tr><td><code>initShowGroovy</code></td><td><code>false</code></td><td>Show Groovy version</td></tr>
+    <tr><td><code>initShowRuntime</code></td><td><code>false</code></td><td>Show runtime info</td></tr>
+    <tr><td><code>initShowPath</code></td><td><code>true</code></td><td>Show project paths</td></tr>
+    <tr><td><code>initShowScm</code></td><td><code>true</code></td><td>Show SCM info</td></tr>
+    <tr><td><code>initShowGradle</code></td><td><code>true</code></td><td>Show Gradle info</td></tr>
+    <tr><td><code>initCheckstyle</code></td><td><code>true</code></td><td>Initialize checkstyle</td></tr>
+    <tr><td><code>initEclipse</code></td><td><code>true</code></td><td>Initialize Eclipse settings</td></tr>
+    <tr><td><code>installGradleWrapper</code></td><td><code>true</code></td><td>Install Gradle wrapper</td></tr>
+    <tr><td><code>showCreatedArtefacts</code></td><td><code>true</code></td><td>Display artifact info after build</td></tr>
+  </tbody>
+</table>
+</details>
+
+<details>
+<summary>Build Artifacts</summary>
+<table class="settings">
+  <colgroup><col><col><col></colgroup>
+  <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>createJar</code></td><td><code>true</code></td><td>Create main JAR artifact</td></tr>
+    <tr><td><code>createSourceJar</code></td><td><code>true</code></td><td>Create sources JAR artifact</td></tr>
+    <tr><td><code>createJavadocJar</code></td><td><code>true</code></td><td>Create Javadoc JAR artifact</td></tr>
+    <tr><td><code>createFatJar</code></td><td><code>false</code></td><td>Create fat/uber JAR with all dependencies</td></tr>
+    <tr><td><code>createCustomJar</code></td><td><code>false</code></td><td>Create custom JAR (used by kubernetes-product, docker, nodejs)</td></tr>
+    <tr><td><code>fatJarPackageType</code></td><td><code>jar</code></td><td>Fat JAR output format: <code>jar</code>, <code>tgz</code>, or <code>jgz</code></td></tr>
+  </tbody>
+</table>
+</details>
+
+<details>
+<summary>Compilation</summary>
+<table class="settings">
+  <colgroup><col><col><col></colgroup>
+  <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>sourceCompatibility</code></td><td><em>(current JDK)</em></td><td>Java source compatibility version</td></tr>
+    <tr><td><code>targetCompatibility</code></td><td><em>(current JDK)</em></td><td>Java bytecode target version</td></tr>
+    <tr><td><code>fileEncoding</code></td><td><code>UTF-8</code></td><td>Source file encoding</td></tr>
+    <tr><td><code>excelFileEncoding</code></td><td><code>UTF-8</code></td><td>Excel file encoding for resource bundles</td></tr>
+    <tr><td><code>compileJavaFork</code></td><td><code>false</code></td><td>Fork a separate JVM for compilation</td></tr>
+    <tr><td><code>compileJavaHome</code></td><td><code>""</code></td><td>Custom JDK home (requires <code>compileJavaFork=true</code>)</td></tr>
+  </tbody>
+</table>
+</details>
+
+<details>
+<summary>Testing</summary>
+<table class="settings">
+  <colgroup><col><col><col></colgroup>
+  <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>initTesting</code></td><td><code>true</code></td><td>Enable testing initialization</td></tr>
+    <tr><td><code>useJUnit</code></td><td><code>true</code></td><td>Enable JUnit testing</td></tr>
+    <tr><td><code>testDependencyVersion</code></td><td><code>5.7.2</code></td><td>JUnit version (auto-detects JUnit 4 vs 5)</td></tr>
+    <tr><td><code>testMinHeapSize</code></td><td><code>128m</code></td><td>Minimum heap for test JVM</td></tr>
+    <tr><td><code>testMaxHeapSize</code></td><td><code>512m</code></td><td>Maximum heap for test JVM</td></tr>
+    <tr><td><code>testEnableDynamicAgentLoading</code></td><td><code>true</code></td><td>Add <code>-XX:+EnableDynamicAgentLoading</code> for JDK 21+</td></tr>
+    <tr><td><code>showStandardStreams</code></td><td><code>false</code></td><td>Display test stdout/stderr in console</td></tr>
+  </tbody>
+</table>
+</details>
+
+<details>
+<summary>Release &amp; Versioning</summary>
+<table class="settings">
+  <colgroup><col><col><col></colgroup>
+  <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>isReleaseVersion</code></td><td><code>false</code></td><td>Mark build as release (removes SNAPSHOT qualifier)</td></tr>
+    <tr><td><code>tagReleaseVersion</code></td><td><code>true</code></td><td>Create git tag on release</td></tr>
+    <tr><td><code>isReleaseUpdateVersion</code></td><td><code>false</code></td><td>Version-only update release (e.g., security patches)</td></tr>
+    <tr><td><code>tagReleaseUpdateVersion</code></td><td><code>true</code></td><td>Create git tag on release update</td></tr>
+    <tr><td><code>tagIgnoreReleaseUpdateVersionIfNoFilesChanged</code></td><td><code>true</code></td><td>Skip tag if no files changed</td></tr>
+    <tr><td><code>commonGradleBuildSupportSnapshotHandling</code></td><td><code>true</code></td><td>Enable SNAPSHOT version workflow</td></tr>
+    <tr><td><code>commonGradleBuildReleasePublish</code></td><td><code>true</code></td><td>Publish artifacts during release</td></tr>
+    <tr><td><code>commonGradleBuildReleaseBranchName</code></td><td><code>""</code></td><td>Required branch for release (empty = any branch)</td></tr>
+    <tr><td><code>commonGradleBuildValidateReleaseArtefact</code></td><td><code>true</code></td><td>Validate artifacts before release</td></tr>
+    <tr><td><code>copyReleaseArtefactInformation</code></td><td><code>true</code></td><td>Copy build artifacts to release directory</td></tr>
+    <tr><td><code>releaseAddComponentIdIntoReleasePath</code></td><td><code>true</code></td><td>Include component ID in release path</td></tr>
+    <tr><td><code>taskNameBeforeReleaseArtefacts</code></td><td><code>build</code></td><td>Task that must run before release artifacts</td></tr>
+  </tbody>
+</table>
+</details>
+
+<details>
+<summary>Changelog</summary>
+<table class="settings">
+  <colgroup><col><col><col></colgroup>
+  <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>changelogHeaderSeparator</code></td><td><code>-</code></td><td>Separator character for headers</td></tr>
+    <tr><td><code>changelogItemSeparator</code></td><td><code>-</code></td><td>Separator character for items</td></tr>
+    <tr><td><code>changelogSupportBracketsAroundVersion</code></td><td><code>true</code></td><td>Support [version] format</td></tr>
+    <tr><td><code>changelogSupportReleaseLink</code></td><td><code>true</code></td><td>Support release links</td></tr>
+    <tr><td><code>changelogSupportEmptySection</code></td><td><code>false</code></td><td>Allow empty changelog sections</td></tr>
+    <tr><td><code>changelogDefaultType</code></td><td><code>""</code></td><td>Default change type (e.g., FIXED)</td></tr>
+    <tr><td><code>changelogDefaultComment</code></td><td><code>Small bug fixes.</code></td><td>Default changelog comment</td></tr>
+    <tr><td><code>changelogReleaseUpdateType</code></td><td><code>SECURITY</code></td><td>Change type for release updates</td></tr>
+    <tr><td><code>changelogReleaseUpdateComment</code></td><td><code>Security updates.</code></td><td>Comment for release updates</td></tr>
+  </tbody>
+</table>
+</details>
+
+<details>
+<summary>Code Quality</summary>
+<table class="settings">
+  <colgroup><col><col><col></colgroup>
+  <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>checkstyleToolVersion</code></td><td><code>10.3.3</code></td><td>Checkstyle version</td></tr>
+    <tr><td><code>checkstyleMaxWarnings</code></td><td><code>0</code></td><td>Maximum allowed warnings before failure</td></tr>
+    <tr><td><code>checkstyleHTMLReport</code></td><td><code>true</code></td><td>Generate HTML checkstyle report</td></tr>
+    <tr><td><code>checkstyleXMLReport</code></td><td><code>false</code></td><td>Generate XML checkstyle report</td></tr>
+    <tr><td><code>checkstyleConfigurationFilename</code></td><td><code>checkstyle.xml</code></td><td>Checkstyle config filename</td></tr>
+    <tr><td><code>projectIndividualCheckstyleConfiguration</code></td><td><code>true</code></td><td>Use project-local checkstyle config</td></tr>
+    <tr><td><code>checkstyleEclipseConfigurationOverwrite</code></td><td><code>true</code></td><td>Overwrite Eclipse checkstyle config</td></tr>
+    <tr><td><code>jacocoToolDefaultVersion</code></td><td><code>0.8.14</code></td><td>JaCoCo version</td></tr>
+    <tr><td><code>jacocoXMLReport</code></td><td><code>true</code></td><td>Generate XML coverage report (needed for SonarQube)</td></tr>
+    <tr><td><code>jacocoHTMLReport</code></td><td><code>true</code></td><td>Generate HTML coverage report</td></tr>
+    <tr><td><code>jacocoCSVReport</code></td><td><code>false</code></td><td>Generate CSV coverage report</td></tr>
+    <tr><td><code>sonarEnabled</code></td><td><code>false</code></td><td>Enable SonarQube analysis</td></tr>
+    <tr><td><code>sonarVersion</code></td><td><code>7.2.3.7755</code></td><td>SonarQube Gradle plugin version</td></tr>
+  </tbody>
+</table>
+</details>
+
+<details>
+<summary>Publishing &amp; Repository</summary>
+<table class="settings">
+  <colgroup><col><col><col></colgroup>
+  <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>mavenPublishUrl</code></td><td><code>https://ossrh-staging-api.central.sonatype.com/.../maven2</code></td><td>Release repository URL</td></tr>
+    <tr><td><code>mavenSnapshotPublishUrl</code></td><td><code>https://central.sonatype.com/.../maven-snapshots</code></td><td>Snapshot repository URL</td></tr>
+    <tr><td><code>mavenUsername</code></td><td>&mdash;</td><td>Maven repository username (see <a href="#sensitive-settings">Sensitive Settings</a>)</td></tr>
+    <tr><td><code>mavenPassword</code></td><td>&mdash;</td><td>Maven repository password (see <a href="#sensitive-settings">Sensitive Settings</a>)</td></tr>
+    <tr><td><code>allowMavenCentralRepository</code></td><td><code>true</code></td><td>Use Maven Central</td></tr>
+    <tr><td><code>allowGoogleRepository</code></td><td><code>true</code></td><td>Use Google repository</td></tr>
+    <tr><td><code>allowJCenterRepository</code></td><td><code>false</code></td><td>Use JCenter (Gradle &lt;7 only)</td></tr>
+    <tr><td><code>allowMavenRepository</code></td><td><code>false</code></td><td>Use custom Maven repository</td></tr>
+    <tr><td><code>allowMavenStagingRepository</code></td><td><code>false</code></td><td>Use staging repository</td></tr>
+    <tr><td><code>allowMavenSnapshotRepository</code></td><td><code>true</code></td><td>Use snapshot repository</td></tr>
+    <tr><td><code>mavenRepositoryUrl</code></td><td><code>https://repo1.maven.org/maven2</code></td><td>Maven repository URL</td></tr>
+    <tr><td><code>mavenStagingPublishUrl</code></td><td><code>https://ossrh-staging-api.central.sonatype.com/.../maven2</code></td><td>Staging publish URL</td></tr>
+    <tr><td><code>mavenSnapshotRepositoryUrl</code></td><td><code>https://central.sonatype.com/.../maven-snapshots</code></td><td>Snapshot repository URL</td></tr>
+  </tbody>
+</table>
+</details>
+
+<details>
+<summary>Container</summary>
+<table class="settings">
+  <colgroup><col><col><col></colgroup>
+  <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>containerCmd</code></td><td><code>nerdctl</code></td><td>Container tool command (<code>nerdctl</code> or <code>docker</code>)</td></tr>
+    <tr><td><code>dockerImage</code></td><td><em>(per project type)</em></td><td>Base container image</td></tr>
+    <tr><td><code>dockerBuildCmd</code></td><td><code>buildx build</code></td><td>Container build command</td></tr>
+    <tr><td><code>dockerBuildArgs</code></td><td><code>""</code></td><td>Additional --build-arg arguments</td></tr>
+    <tr><td><code>dockerName</code></td><td><code>""</code></td><td>Custom image name (default: rootProject:version)</td></tr>
+    <tr><td><code>dockerDefaultPort</code></td><td><code>8080</code></td><td>Default exposed port</td></tr>
+    <tr><td><code>dockerUID</code></td><td><code>3000</code></td><td>Container user ID</td></tr>
+    <tr><td><code>dockerUser</code></td><td><code>appuser</code></td><td>Container username</td></tr>
+    <tr><td><code>dockerTimezone</code></td><td><em>(system)</em></td><td>Container timezone</td></tr>
+    <tr><td><code>dockerJavaOptions</code></td><td><code>-Djava.security.egd=...</code></td><td>JVM options in container</td></tr>
+    <tr><td><code>dockerGc</code></td><td><code>UseG1GC</code></td><td>JVM garbage collector</td></tr>
+    <tr><td><code>dockerExitOnOutOfMemory</code></td><td><code>true</code></td><td>Exit JVM on OOM</td></tr>
+    <tr><td><code>dockerSupportLatestTag</code></td><td><code>true</code></td><td>Add <code>:latest</code> tag to built image</td></tr>
+    <tr><td><code>dockerAddAnnotation</code></td><td><code>false</code></td><td>Add OCI metadata annotations</td></tr>
+    <tr><td><code>dockerRemoveDanglingImages</code></td><td><code>true</code></td><td>Clean up dangling images after build</td></tr>
+    <tr><td><code>dockerRemoveNonEssentialBinaries</code></td><td><code>true</code></td><td>Remove non-essential binaries from container</td></tr>
+    <tr><td><code>dockerMakeFilesystemReadonly</code></td><td><code>true</code></td><td>Make <code>/etc</code>, <code>/usr</code>, <code>/lib</code> read-only</td></tr>
+    <tr><td><code>dockerReadonlyFilesystemPath</code></td><td><code>"/etc /usr /lib"</code></td><td>Space-separated paths to make read-only</td></tr>
+    <tr><td><code>dockerReadonlyFilesystemExcludePath</code></td><td><code>"/etc/ssl/certs /usr/local/share/ca-certificates $JAVA_HOME/lib/security"</code></td><td>Paths to keep writable within read-only dirs (Alpine CA certs, Java truststore)</td></tr>
+    <tr><td><code>dockerCleanupAfterBuild</code></td><td><code>false</code></td><td>Remove image after successful build</td></tr>
+    <tr><td><code>dockerCleanupAfterPublish</code></td><td><code>true</code></td><td>Remove local image after push</td></tr>
+    <tr><td><code>buildAlwaysDockerImage</code></td><td><code>false</code></td><td>Build container image on every build</td></tr>
+    <tr><td><code>dockerSubPathAccess</code></td><td><code>""</code></td><td>URL subpath for container deployment</td></tr>
+    <tr><td><code>dockerRepositoryHost</code></td><td><code>""</code></td><td>Release registry URL</td></tr>
+    <tr><td><code>dockerTagPrefix</code></td><td><code>hub.docker.com</code></td><td>Release image tag prefix</td></tr>
+    <tr><td><code>dockerSnapshotRepositoryHost</code></td><td><code>""</code></td><td>Snapshot registry URL</td></tr>
+    <tr><td><code>dockerRepositoryUser</code></td><td><code>""</code></td><td>Registry login username (see <a href="#sensitive-settings">Sensitive Settings</a>)</td></tr>
+    <tr><td><code>dockerRepositoryPassword</code></td><td><code>""</code></td><td>Registry login password (see <a href="#sensitive-settings">Sensitive Settings</a>)</td></tr>
+    <tr><td><code>createServiceProperties</code></td><td><code>true</code></td><td>Generate toolarium-service.properties</td></tr>
+  </tbody>
+</table>
+</details>
+
+<details>
+<summary>Kubernetes</summary>
+<table class="settings">
+  <colgroup><col><col><col></colgroup>
+  <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>kubernetesSupport</code></td><td><code>false</code></td><td>Enable Kubernetes support</td></tr>
+    <tr><td><code>kubernetesReplicas</code></td><td><code>2</code></td><td>Default replica count</td></tr>
+    <tr><td><code>kubernetesNamespace</code></td><td><em>(from groupId)</em></td><td>Kubernetes namespace</td></tr>
+    <tr><td><code>kubernetesApplicationHost</code></td><td><code>${rootProject.name}.local</code></td><td>Application hostname</td></tr>
+    <tr><td><code>kubernetesUrlPath</code></td><td><code>/api/${rootProject.name}</code></td><td>Service URL path</td></tr>
+    <tr><td><code>kubernetesDocSupport</code></td><td><code>true</code></td><td>Include docs in Kubernetes JAR</td></tr>
+    <tr><td><code>kustomizeSupport</code></td><td><code>true</code></td><td>Enable kustomize output</td></tr>
+    <tr><td><code>kubernetesIngressNginxVersion</code></td><td><code>1.9.5</code></td><td><strong>Deprecated</strong> &mdash; ingress-nginx version (archived March 2026)</td></tr>
+    <tr><td><code>kubernetesIngressProxyBufferSize</code></td><td><code>8k</code></td><td>Nginx proxy buffer size</td></tr>
+    <tr><td><code>kubernetesIngressProxyBodySize</code></td><td><code>10m</code></td><td>Nginx max request body size</td></tr>
+    <tr><td><code>kubernetesGatewayApiSupport</code></td><td><code>false</code></td><td>Enable <a href="https://gateway-api.sigs.k8s.io/">Gateway API</a> support (modern replacement for Ingress)</td></tr>
+    <tr><td><code>kubernetesGatewayClassName</code></td><td><code>nginx</code></td><td>Gateway class name (nginx, istio, envoy, etc.)</td></tr>
+    <tr><td><code>kubernetesGatewayListenerPort</code></td><td><code>80</code></td><td>Gateway listener port</td></tr>
+    <tr><td><code>kubernetesGatewayListenerProtocol</code></td><td><code>HTTP</code></td><td>Gateway listener protocol</td></tr>
+    <tr><td><code>kubernetesSupportDatabase</code></td><td><code>true</code></td><td>Include database configuration</td></tr>
+    <tr><td><code>kubernetesDatabaseHost</code></td><td><code>database</code></td><td>Database service hostname</td></tr>
+    <tr><td><code>kubernetesDatabasePort</code></td><td><code>5432</code></td><td>Database port</td></tr>
+    <tr><td><code>kubernetesDatabaseImage</code></td><td><code>postgres:latest</code></td><td>Database container image</td></tr>
+    <tr><td><code>kubernetesDatabaseStorage</code></td><td><code>100Mi</code></td><td>Database PVC size</td></tr>
+    <tr><td><code>kubernetesDatabaseUsername</code></td><td><code>appuser</code></td><td>Application database user</td></tr>
+    <tr><td><code>kubernetesDatabaseAdminUsername</code></td><td><code>dbadmin</code></td><td>Database admin user</td></tr>
+  </tbody>
+</table>
+</details>
+
+<details>
+<summary>Kubernetes Health Probes</summary>
+<p>Health probe settings follow the pattern <code>kubernetes{Service}{Probe}{Setting}</code> for each combination of service type and probe type:</p>
+<p><strong>Service types:</strong> <em>(no prefix)</em> (generic), <code>Quarkus</code>, <code>Node</code>, <code>Idm</code> &mdash;
+<strong>Probe types:</strong> <code>Readiness</code>, <code>Liveness</code>, <code>Startup</code></p>
+<table class="settings"><colgroup><col><col><col></colgroup>
+  <thead><tr><th>Setting suffix</th><th>Default (generic)</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>CheckPath</code></td><td><em>(per service/probe)</em></td><td>Health check URL path</td></tr>
+    <tr><td><code>FailureThreshold</code></td><td><code>3</code></td><td>Failures before giving up</td></tr>
+    <tr><td><code>InitialDelaySeconds</code></td><td><code>0</code></td><td>Delay before first check</td></tr>
+    <tr><td><code>PeriodSeconds</code></td><td><code>10</code></td><td>Check interval</td></tr>
+    <tr><td><code>SuccessThreshold</code></td><td><code>1</code></td><td>Successes needed to pass</td></tr>
+    <tr><td><code>TimeoutSeconds</code></td><td><code>5</code></td><td>Check timeout</td></tr>
+    <tr><td><code>Scheme</code></td><td><code>HTTP</code></td><td>HTTP or HTTPS</td></tr>
+  </tbody>
+</table>
+<p>Example: <code>kubernetesQuarkusReadinessCheckPath</code>, <code>kubernetesNodeLivenessFailureThreshold</code>, <code>kubernetesIdmStartupInitialDelaySeconds</code></p>
+<div class="highlight-box">For the complete list of all Kubernetes health probe properties, see <a href="../gradle/build-element/base/defaults.gradle"><code>defaults.gradle</code></a>.</div>
+</details>
+
+<h3>Third-Party / Project-Type Specific</h3>
+
+<details>
+<summary>AsciiDoctor &mdash; <a href="https://asciidoctor.org/">asciidoctor.org</a></summary>
+<table class="settings"><colgroup><col><col><col></colgroup>
+  <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>supportAsciiDoctor</code></td><td><code>true</code></td><td>Enable AsciiDoctor (activates when source dir exists)</td></tr>
+    <tr><td><code>asciidocDirectoryName</code></td><td><code>doc</code></td><td>Source directory name under <code>src/</code></td></tr>
+    <tr><td><code>asciiDoctorEncoding</code></td><td><code>utf-8</code></td><td>Document encoding</td></tr>
+    <tr><td><code>asciiDoctorPdfTheme</code></td><td><code>theme.yml</code></td><td>PDF theme filename</td></tr>
+    <tr><td><code>asciiDoctorHtmlTheme</code></td><td><code>theme.css</code></td><td>HTML theme filename</td></tr>
+    <tr><td><code>asciiDoctorSourceHighlighter</code></td><td><code>highlight.js</code></td><td>HTML source highlighter</td></tr>
+    <tr><td><code>asciiDoctorToc</code></td><td><code>left</code></td><td>Table of contents position</td></tr>
+    <tr><td><code>asciiDoctorTocLevel</code></td><td><code>3</code></td><td>TOC depth level</td></tr>
+    <tr><td><code>asciiDoctorIcons</code></td><td><code>font</code></td><td>Icon mode</td></tr>
+  </tbody>
+</table>
+</details>
+
+<details>
+<summary>Dependency Check (OWASP) &mdash; <a href="https://owasp.org/www-project-dependency-check/">owasp.org</a></summary>
+<table class="settings"><colgroup><col><col><col></colgroup>
+  <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>dependencyCheckEnabled</code></td><td><code>false</code></td><td>Enable OWASP dependency-check</td></tr>
+    <tr><td><code>toolariumDependencyCheckVersion</code></td><td><code>12.1.8</code></td><td>Dependency-check plugin version</td></tr>
+    <tr><td><code>dependencyCheckFailBuildOnCVSS</code></td><td><code>11</code></td><td>CVSS score threshold for build failure (7 = standard)</td></tr>
+    <tr><td><code>dependencyCheckAutoUpdate</code></td><td><code>true</code></td><td>Auto-update NVD database</td></tr>
+    <tr><td><code>dependencyCheckCveValidForHours</code></td><td><code>12</code></td><td>CVE database freshness in hours</td></tr>
+    <tr><td><code>dependencyCheckFailOnError</code></td><td><code>true</code></td><td>Fail build on check errors</td></tr>
+    <tr><td><code>dependencyCheckReportMaxTextLen</code></td><td><code>72</code></td><td>Max text length in console report</td></tr>
+    <tr><td><code>dependencyCheckReportFilter</code></td><td><code>api, implementation, ...</code></td><td>Configurations to check</td></tr>
+  </tbody>
+</table>
+</details>
+
+<details>
+<summary>Elasticsearch (Kubernetes) &mdash; <a href="https://www.elastic.co/elasticsearch">elastic.co</a></summary>
+<table class="settings"><colgroup><col><col><col></colgroup>
+  <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>esElasticsearchVersion</code></td><td><code>8.8.2</code></td><td>Elasticsearch version</td></tr>
+    <tr><td><code>esElasticsearchClusterName</code></td><td><code>elastic</code></td><td>Cluster name</td></tr>
+    <tr><td><code>esElasticsearchReplicas</code></td><td><code>""</code></td><td>Replica count</td></tr>
+    <tr><td><code>esElasticsearchStorageSize</code></td><td><code>3Gi</code></td><td>Storage size</td></tr>
+    <tr><td><code>esElasticsearchStorageClassName</code></td><td><code>standard</code></td><td>Storage class</td></tr>
+  </tbody>
+</table>
+</details>
+
+<details>
+<summary>Enum Configuration &mdash; <a href="https://github.com/toolarium/toolarium-enum-configuration">github.com/toolarium</a></summary>
+<table class="settings"><colgroup><col><col><col></colgroup>
+  <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>hasToolariumEnumConfiguration</code></td><td><code>true</code></td><td>Enable enum configuration support</td></tr>
+    <tr><td><code>toolariumEnumConfigurationVersion</code></td><td><code>1.2.0</code></td><td>Enum configuration library version</td></tr>
+  </tbody>
+</table>
+</details>
+
+<details>
+<summary>Java Application (Shadow JAR) &mdash; <a href="https://github.com/GradleUp/shadow">github.com/GradleUp/shadow</a></summary>
+<table class="settings"><colgroup><col><col><col></colgroup>
+  <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>javaApplicationShadowClassifier</code></td><td><code>""</code></td><td>Shadow JAR classifier (empty = replace main JAR)</td></tr>
+  </tbody>
+</table>
+</details>
+
+<details>
+<summary>Node.js &mdash; <a href="https://nodejs.org/">nodejs.org</a></summary>
+<table class="settings"><colgroup><col><col><col></colgroup>
+  <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>nodePluginVersion</code></td><td><code>7.1.0</code></td><td>gradle-node-plugin version</td></tr>
+    <tr><td><code>nodeFundMessage</code></td><td><code>false</code></td><td>Show npm fund messages</td></tr>
+    <tr><td><code>nodeRegistry</code></td><td><code>https://registry.npmjs.org/</code></td><td>NPM registry URL</td></tr>
+    <tr><td><code>webServerRunnerVersion</code></td><td><code>1.2.7</code></td><td>Embedded jwebserver version</td></tr>
+    <tr><td><code>resolveParentResourceIfNotFound</code></td><td><code>""</code></td><td>SPA routing fallback</td></tr>
+  </tbody>
+</table>
+
+<h4 id="runtime-subpath-remapping">Runtime Subpath Remapping</h4>
+<p>When a Node.js application is deployed under a different URL subpath than it was built with, the container automatically rewrites all path references at startup. For example, an app built as <code>myui</code> can be served under <code>/org/team/myui</code> without rebuilding.</p>
+
+<p><strong>Example: Deploy under a custom subpath</strong></p>
+<p>Set the <code>SUBPATH</code> environment variable when running the container:</p>
+<pre><code># App built with subdir "myui", now served under /portal/myui
+docker run -e SUBPATH=portal myimage
+
+# Nested subpath: served under /org/team/myui
+docker run -e SUBPATH=org/team myimage</code></pre>
+
+<p><strong>Example: Configure via service properties</strong></p>
+<p>Instead of <code>SUBPATH</code>, you can define the paths in <code>toolarium-service.properties</code>:</p>
+<pre><code>service.root-path = /org/team/myui
+service.resources = /myui</code></pre>
+
+<p><strong>Example: Kubernetes deployment</strong></p>
+<pre><code>env:
+  - name: SUBPATH
+    value: "org/team"</code></pre>
+
+<p><strong>What happens at container startup:</strong></p>
+<ol>
+  <li>Detects the source subdirectory in the deployment directory</li>
+  <li>Reads target paths from the service properties file if available</li>
+  <li>Moves files to the target subpath structure</li>
+  <li>Replaces all occurrences of the source path in text files, handling multiple encodings (Unicode <code>\u002F</code>, URL-encoded <code>%2F</code>, JSON-escaped <code>\/</code>, double-escaped <code>\\/</code>, and quoted contexts)</li>
+  <li>Updates the nginx configuration and generates 302 redirect blocks for intermediate path segments</li>
+</ol>
+<p>Binary files (images, fonts, wasm, archives) and <code>locales/</code> directories are automatically skipped.</p>
+
+<p><strong>Environment variables:</strong></p>
+<table class="settings"><colgroup><col><col><col></colgroup>
+  <thead><tr><th>Variable</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>SUBPATH</code></td><td><em>(empty)</em></td><td>Override target subpath (e.g., <code>org/team</code>)</td></tr>
+    <tr><td><code>REPLACE_WHITESPACE_VARIATIONS</code></td><td><code>false</code></td><td>Also replace paths surrounded by whitespace, e.g. <code>key = myui&nbsp;&nbsp;value</code> &rarr; <code>key = portal/myui&nbsp;&nbsp;value</code>. Useful for config files with loose formatting.</td></tr>
+    <tr><td><code>REPLACE_CASE_VARIATIONS</code></td><td><code>false</code></td><td>Also replace UPPERCASE and Title Case variants, e.g. <code>MYUI</code> &rarr; <code>portal/myui</code> and <code>Myui</code> &rarr; <code>portal/myui</code>. Requires GNU sed (not available on Alpine by default).</td></tr>
+  </tbody>
+</table>
+
+<p><strong>Allowed characters:</strong></p>
+<ul>
+  <li><code>SUBPATH</code> must only contain <code>[a-zA-Z0-9._/-]</code> &mdash; no spaces, semicolons, dollar signs, or other special characters</li>
+  <li><code>SUBPATH</code> must not contain <code>..</code> (path traversal is rejected)</li>
+  <li>API paths (<code>api/&lt;subdir&gt;/...</code>) are automatically protected from rewriting</li>
+</ul>
+</details>
+
+<details>
+<summary>OpenAPI &mdash; <a href="https://openapi-generator.tech/">openapi-generator.tech</a></summary>
+<table class="settings"><colgroup><col><col><col></colgroup>
+  <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>openapiPluginVersion</code></td><td><code>7.2.0</code></td><td>OpenAPI Generator plugin version</td></tr>
+    <tr><td><code>openapiGeneratorName</code></td><td><code>jaxrs-spec</code></td><td>Generator type</td></tr>
+    <tr><td><code>openapiLibrary</code></td><td><code>quarkus</code></td><td>Target library</td></tr>
+    <tr><td><code>openapiUseJakartaEe</code></td><td><code>true</code></td><td>Use Jakarta EE instead of javax</td></tr>
+    <tr><td><code>openapiInterfaceOnly</code></td><td><code>true</code></td><td>Generate interfaces only</td></tr>
+    <tr><td><code>openapiReturnResponse</code></td><td><code>true</code></td><td>Return Response objects</td></tr>
+    <tr><td><code>openapiDocs</code></td><td><code>true</code></td><td>Generate API documentation</td></tr>
+    <tr><td><code>openapiDateLibrary</code></td><td><code>java8</code></td><td>Date library</td></tr>
+    <tr><td><code>openapiSerializableModel</code></td><td><code>true</code></td><td>Make models serializable</td></tr>
+    <tr><td><code>openapiUpdateFileAfterRelease</code></td><td><code>true</code></td><td>Update spec version after release</td></tr>
+  </tbody>
+</table>
+</details>
+
+<details>
+<summary>Quarkus &mdash; <a href="https://quarkus.io/">quarkus.io</a></summary>
+<table class="settings"><colgroup><col><col><col></colgroup>
+  <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>defaultQuarkusPluginVersion</code></td><td><code>3.20.5</code></td><td>Quarkus plugin version (controls auto-update)</td></tr>
+    <tr><td><code>quarkusReleaseUpdateVersion</code></td><td><code>true</code></td><td>Auto-update Quarkus version on release</td></tr>
+    <tr><td><code>quarkusAppJar</code></td><td><code>quarkus-run.jar</code></td><td>Application JAR name</td></tr>
+    <tr><td><code>updateApplicationProperties</code></td><td><code>true</code></td><td>Strip test/dev profiles from app properties</td></tr>
+    <tr><td><code>createServiceJavaRunner</code></td><td><code>true</code></td><td>Generate toolarium-java-runner.sh for container</td></tr>
+    <tr><td><code>createServiceJavaAgent</code></td><td><code>false</code></td><td>Include Java agent in container</td></tr>
+    <tr><td><code>enablePatchRunTimeDefaultsConfigSource</code></td><td><code>false</code></td><td>Patch RunTimeDefaultsConfigSource class</td></tr>
+  </tbody>
+</table>
+</details>
+
+<details>
+<summary>Vulnerability Scanner (Trivy) &mdash; <a href="https://trivy.dev/">trivy.dev</a></summary>
+<table class="settings"><colgroup><col><col><col></colgroup>
+  <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>vulnerabilityScannerEnabled</code></td><td><code>true</code></td><td>Enable Trivy vulnerability scanning</td></tr>
+    <tr><td><code>vulnerabilityScannerCmd</code></td><td><code>trivy</code></td><td>Vulnerability scanner command</td></tr>
+    <tr><td><code>vulnerabilityScannerScanners</code></td><td><code>vuln</code></td><td>Scanner types to run</td></tr>
+    <tr><td><code>vulnerabilityScannerSeverity</code></td><td><code>CRITICAL,HIGH</code></td><td>Severity levels to scan (release builds)</td></tr>
+    <tr><td><code>vulnerabilityScannerExitCode</code></td><td><code>0</code></td><td>Exit code handling for scanner</td></tr>
+    <tr><td><code>vulnerabilityScannerFailWithoutFix</code></td><td><code>false</code></td><td>When <code>true</code>, unfixable vulnerabilities also fail the build</td></tr>
+  </tbody>
+</table>
+</details>
+
+</section>
+
+<!-- ARCHITECTURE -->
+<section id="architecture">
+<h2>Architecture</h2>
+
+<h3>Entry Point</h3>
+<p><code>gradle/common.gradle</code> bootstraps the framework: initializes logging with ANSI color support, reads the git project URL, resolves cache/home paths with URL-based organization routing, auto-detects the project type from directory structure, and applies the matching build script.</p>
+
+<h3>Build Elements</h3>
+<p>Modular, composable Gradle script fragments in <code>gradle/build-element/</code>:</p>
+<ul>
+  <li><strong>base/</strong> &mdash; logging, ANSI colors, constants, properties, versioning, release, security, dependencies, vulnerability scanning, SonarQube, exec, file operations, JSON, changelog, Kubernetes, container, enum configuration, webjar, init, scripts</li>
+  <li><strong>java/</strong> &mdash; compilation, testing, coverage, Javadoc, Checkstyle, Eclipse, repository, publication, signing, JReleaser</li>
+  <li><strong>scm/</strong> &mdash; Git integration via grgit</li>
+  <li><strong>doc/</strong> &mdash; AsciiDoctor support</li>
+  <li><strong>config/</strong> &mdash; Configuration publication</li>
+  <li><strong>Aggregators:</strong> <code>base.gradle</code>, <code>java-base.gradle</code>, <code>language-base.gradle</code>, <code>nodejs.gradle</code></li>
+</ul>
+
+<h3>Templates</h3>
+<p><code>gradle/template/</code> contains 85+ scaffolding templates organized by project type (base, java, quarkus, openapi, nodejs, kubernetes, docker, documentation, scm, checkstyle, eclipse). See the full <a href="TEMPLATES.html">Template Reference</a>.</p>
+
+<h3>Local Data</h3>
+<p>The framework stores data under the Gradle home directory (overridable via <a href="#env-vars">Environment Variables</a>):</p>
+<table class="settings">
+  <colgroup><col><col><col></colgroup>
+  <thead><tr><th>Directory</th><th>Override</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>~/.gradle/common-gradle-build/</code></td><td><code>COMMON_GRADLE_BUILD_CACHE</code></td><td>Cached framework scripts, version tracking (<code>lastCheck.properties</code>)</td></tr>
+    <tr><td><code>~/.gradle/common-gradle-build-releases/</code></td><td><code>COMMON_GRADLE_BUILD_HOME</code></td><td>Release build artifacts and information (only for non-snapshot releases)</td></tr>
+    <tr><td><code>~/.gradle/dependency-check-data/</code></td><td>&mdash;</td><td>OWASP dependency-check NVD database (when <code>dependencyCheckEnabled=true</code>)</td></tr>
+  </tbody>
+</table>
+<p>On Windows, <code>~</code> corresponds to <code>%USERPROFILE%</code> (e.g. <code>C:\Users\&lt;name&gt;\.gradle\...</code>).</p>
+</section>
+
+<!-- SENSITIVE SETTINGS -->
+<section id="sensitive-settings">
+<h2>Sensitive Settings</h2>
+<p>The following properties contain credentials or secrets and <strong>must not</strong> be placed in your project's <code>gradle.properties</code> (which is typically committed to version control). Define them in your <strong>user-level</strong> Gradle properties file instead:</p>
+<ul>
+  <li><strong>Linux/Mac:</strong> <code>~/.gradle/gradle.properties</code></li>
+  <li><strong>Windows:</strong> <code>%USERPROFILE%\.gradle\gradle.properties</code></li>
+</ul>
+<pre><code><span class="comment"># Maven / Sonatype publishing credentials</span>
+sonatypeUsername=your-username
+sonatypePassword=your-password
+<span class="comment"># or directly:</span>
+mavenUsername=your-username
+mavenPassword=your-password
+
+<span class="comment"># GPG signing</span>
+signing.keyId=AABBCCDD
+signing.password=your-gpg-passphrase
+signing.secretKeyRingFile=/path/to/secring.gpg
+
+<span class="comment"># Docker / container registry</span>
+dockerRepositoryUser=your-registry-user
+dockerRepositoryPassword=your-registry-password
+
+<span class="comment"># SonarQube</span>
+sonarHostUrl=<span class="string">https://your-sonar-server.com</span>
+sonarToken=sqa_your-token</code></pre>
+
+<table class="two-col">
+  <colgroup><col><col></colgroup>
+  <thead><tr><th>Property</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>sonatypeUsername</code> / <code>mavenUsername</code></td><td>Maven repository username</td></tr>
+    <tr><td><code>sonatypePassword</code> / <code>mavenPassword</code></td><td>Maven repository password</td></tr>
+    <tr><td><code>signing.keyId</code></td><td>GPG key ID for artifact signing</td></tr>
+    <tr><td><code>signing.password</code></td><td>GPG private key passphrase</td></tr>
+    <tr><td><code>signing.secretKeyRingFile</code></td><td>Path to GPG secret key ring file</td></tr>
+    <tr><td><code>dockerRepositoryUser</code></td><td>Container registry username</td></tr>
+    <tr><td><code>dockerRepositoryPassword</code></td><td>Container registry password</td></tr>
+    <tr><td><code>sonarHostUrl</code></td><td>SonarQube server URL</td></tr>
+    <tr><td><code>sonarToken</code></td><td>SonarQube authentication token</td></tr>
+  </tbody>
+</table>
+
+<div class="highlight-box">
+  <strong>Note:</strong> Git credentials (<code>GRGIT_USER</code>, <code>GRGIT_PASS</code>) are passed as environment variables, not Gradle properties &mdash; see the <a href="#env-vars">Environment Variables</a> table above.
+</div>
+</section>
+
+<!-- ORG OVERRIDES -->
+<section id="org-overrides">
+<h2>Organization-Specific Overrides</h2>
+<p>Organization-specific overrides allow different teams or companies to share the same common-gradle-build framework with their own default settings, custom tasks, and configuration files.</p>
+
+<h3>How It Works</h3>
+<p>On every build, the framework resolves an organization-specific <strong>home directory</strong> that can contain override files. The resolution follows this priority:</p>
+<ol>
+  <li><strong>Environment variable <code>COMMON_GRADLE_BUILD_HOME</code></strong> &mdash; if set, used directly (skips all routing)</li>
+  <li><strong>URL-based routing via <code>.cb-custom-config</code></strong> &mdash; matches the project's git remote URL to select the right config</li>
+  <li><strong>Default fallback</strong> &mdash; <code>~/.gradle/common-gradle-build-home/</code></li>
+</ol>
+
+<h3>Setting Up <code>.cb-custom-config</code></h3>
+<p>Create the routing file at:</p>
+<ul>
+  <li><strong>Linux/Mac:</strong> <code>~/.common-build/conf/.cb-custom-config</code></li>
+  <li><strong>Windows:</strong> <code>%USERPROFILE%\.common-build\conf\.cb-custom-config</code></li>
+</ul>
+<p>The file contains <code>KEY=URL-PATTERN</code> entries. The framework reads the current project's git remote URL and matches it against the patterns using <strong>prefix matching</strong> (longest match wins):</p>
+<pre><code><span class="comment"># ~/.common-build/conf/.cb-custom-config</span>
+acme-corp=https://github.com/acme-corp/
+xyz-ltd=https://github.com/xyz-ltd/</code></pre>
+<p>When building a project with remote <code>https://github.com/acme-corp/my-service.git</code>, the <code>acme-corp</code> entry matches. The framework resolves the home directory from the URL:</p>
+<pre><code>Host:  github.com
+Port:  443 (HTTPS default)
+Path:  /acme-corp/ &rarr; _acme-corp
+
+Result: ~/.common-build/conf/github.com@443_acme-corp/</code></pre>
+
+<h3>Home Directory Structure</h3>
+<p>Once the home directory is resolved, the framework looks for these files:</p>
+<pre><code>~/.common-build/conf/github.com@443_acme-corp/
+├── gradle/
+│   ├── defaults.gradle        <span class="comment"># Override framework default properties</span>
+│   └── custom.gradle          <span class="comment"># Add custom tasks and build extensions</span>
+├── conf/                      <span class="comment"># Configuration files (checkstyle, security keys, etc.)</span>
+└── lastCheck.properties       <span class="comment"># Auto-generated version tracking</span></code></pre>
+
+<p><strong><code>gradle/defaults.gradle</code></strong> &mdash; loaded <strong>before</strong> framework defaults, so properties set here take precedence. Use <code>setCommonGradleProperty()</code> to override any setting from the <a href="#relevant-settings">Configuration Reference</a>:</p>
+<pre><code><span class="comment">// Organization-wide defaults</span>
+setCommonGradleProperty(<span class="string">"licenseOrganisation"</span>, <span class="string">"ACME Corporation"</span>)
+setCommonGradleProperty(<span class="string">"sourceCompatibility"</span>, JavaVersion.VERSION_21)
+setCommonGradleProperty(<span class="string">"targetCompatibility"</span>, JavaVersion.VERSION_21)
+setCommonGradleProperty(<span class="string">"mavenPublishUrl"</span>, <span class="string">"https://nexus.acme.internal/repository/releases/"</span>)
+setCommonGradleProperty(<span class="string">"dockerTagPrefix"</span>, <span class="string">"registry.acme.internal"</span>)</code></pre>
+
+<p><strong><code>gradle/custom.gradle</code></strong> &mdash; loaded <strong>after</strong> the project type is applied. Use this for custom tasks or build extensions:</p>
+<pre><code><span class="comment">// Organization-specific custom tasks</span>
+task complianceReport {
+    doLast {
+        println <span class="string">"Running ACME compliance checks..."</span>
+    }
+}</code></pre>
+
+<h3>Remote Configuration via Git</h3>
+<p>Instead of manually setting up the home directory, you can host your organization configuration in a Git repository and have it automatically downloaded and cached:</p>
+<table class="settings">
+  <colgroup><col><col><col></colgroup>
+  <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>commonGradleBuildHomeGitUrl</code></td><td><code>""</code></td><td>Git repository URL containing organization config</td></tr>
+    <tr><td><code>commonGradleBuildHomeVersionFileUrl</code></td><td><code>""</code></td><td>URL to VERSION file for version tracking (auto-derived from git URL if empty)</td></tr>
+    <tr><td><code>commonGradleBuildCustomConfigName</code></td><td><code>Custom Config</code></td><td>Display name for logging</td></tr>
+  </tbody>
+</table>
+<p>The framework caches each version in a separate subdirectory and re-checks for updates based on <code>commonGradleBuildCacheLastCheckTimeout</code> (default: 12 hours). Pin a specific version with the <code>CB_CUSTOM_CONFIG_VERSION</code> environment variable.</p>
+
+<h3>Creating an Organization Config Project</h3>
+<p>Use the <code>organization-config</code> project type to scaffold a new configuration repository:</p>
+<pre><code><span class="comment">// build.gradle</span>
+projectType = <span class="string">'organization-config'</span>
+<span class="keyword">apply from</span>: <span class="string">"https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/common.gradle"</span></code></pre>
+<p>This generates the directory structure with template <code>defaults.gradle</code> and <code>custom.gradle</code> files ready to customize.</p>
+
+<h3>Overriding Templates</h3>
+<p>Templates can also be overridden by placing custom versions in the home directory's <code>gradle/template/</code> folder. The framework checks the home directory first before falling back to the built-in templates. See the full <a href="TEMPLATES.html">Template Reference</a> for all available templates.</p>
+<p>For example, to override the Dockerfile template for Quarkus projects across your organization:</p>
+<pre><code>~/.common-build/conf/github.com@443_acme-corp/
+└── gradle/
+    └── template/
+        └── quarkus/
+            └── Dockerfile.template    <span class="comment"># Your custom Dockerfile</span></code></pre>
+
+<h3>Property Override Priority</h3>
+<pre><code>Highest:  gradle.properties / -P command line (project-specific)
+          &darr;
+          Home gradle/defaults.gradle (organization-wide via setCommonGradleProperty)
+          &darr;
+          Framework defaults.gradle (via setCommonGradleDefaultPropertyIfNull)
+Lowest:   Built-in framework defaults</code></pre>
+
+</section>
+
+<!-- LOCAL DEV -->
+<section id="local-dev">
+<h2>Local Development</h2>
+<p>To test framework changes locally, point a consumer project at your local checkout:</p>
+<pre><code><span class="keyword">export</span> COMMON_GRADLE_BUILD_URL=<span class="string">"file:///path/to/common-gradle-build/gradle"</span>
+<span class="keyword">cd</span> /path/to/consumer-project
+gradle build</code></pre>
+
+<h3>Logging Functions</h3>
+<p>The framework provides these logging functions for use in gradle scripts:</p>
+<table class="settings">
+  <colgroup><col><col><col></colgroup>
+  <thead><tr><th>Function</th><th>Visibility / Color</th><th>Use Case</th></tr></thead>
+  <tbody>
+    <tr><td><code>logDebug(message)</code></td><td>Only with <code>-d</code> flag / light pink</td><td>Detailed diagnostic information</td></tr>
+    <tr><td><code>logInfo(message)</code></td><td>Gradle info level / light lavender</td><td>Informational messages in build logs</td></tr>
+    <tr><td><code>printInfo(message)</code></td><td>Always visible / plain text</td><td>User-visible status messages</td></tr>
+    <tr><td><code>printWarn(message)</code></td><td>Always visible / yellow</td><td>Warnings that don't fail the build</td></tr>
+    <tr><td><code>printLine(color, force)</code></td><td>Conditional / configurable</td><td>Visual separator lines (120 chars)</td></tr>
+  </tbody>
+</table>
+
+<h3>Error Handling &amp; Build Failure</h3>
+<p>The framework uses a <strong>deferred error collection</strong> pattern &mdash; errors are accumulated during the build and reported at the end:</p>
+<pre><code><span class="comment">// Add an error (does NOT throw immediately)</span>
+addError(<span class="string">"Dependency version mismatch: expected 1.2.x, found 1.3.0"</span>)
+
+<span class="comment">// Multiple errors can be accumulated</span>
+addError(<span class="string">"Changelog validation failed"</span>)
+addError(<span class="string">"Blacklisted dependency found: log4j:1.2.17"</span>)</code></pre>
+<p><code>addError()</code> sets <code>validBuild = false</code> and appends the message to <code>validBuildMessage</code>. At build completion, the <code>gradle.buildFinished</code> hook checks <code>validBuild</code> &mdash; if false, it prints all accumulated errors in a formatted error box and throws a <code>GradleException</code> to fail the build.</p>
+<p>Many tasks guard execution with <code>onlyIf { return validBuild }</code> so they skip gracefully after an error is recorded.</p>
+
+<h3>Property Setter Pattern</h3>
+<table class="settings">
+  <colgroup><col><col><col></colgroup>
+  <thead><tr><th>Function</th><th>Overwrites?</th><th>Use Case</th></tr></thead>
+  <tbody>
+    <tr><td><code>setCommonGradleDefaultPropertyIfNull(name, value)</code></td><td>No &mdash; skips if exists</td><td>Framework defaults in <code>defaults.gradle</code></td></tr>
+    <tr><td><code>setCommonGradleProperty(name, value)</code></td><td>Yes &mdash; always sets</td><td>Organization overrides, runtime updates</td></tr>
+    <tr><td><code>addCommonGradlePropertyList(name, value)</code></td><td>Appends with <code>, </code></td><td>Accumulating lists (allowed files, errors)</td></tr>
+  </tbody>
+</table>
+
+<h3>Task Dependency Graph</h3>
+<p>The diagram shows the major task flow and conditional branches:</p>
+<pre><code>                      gradle build (default)
+                      ══════════════════════
+                               │
+                ┌──────────────┼──────────────┐
+                ▼              ▼              ▼
+             clean    projectValidation    build
+                         │                   │
+              ┌──────────┤              ┌────┼────────────────────┐
+              ▼          ▼              ▼    ▼                    ▼
+         initScm   validateProject     jar  test            createResourceBundle
+                   (name, groupId,      │    │
+                    root files)         │    ▼
+                                        │  jacocoTestReport
+                                        │    │
+                                ┌───────┼────┼───────┐
+                                ▼       ▼    ▼       ▼
+                          sourcesJar javadocJar checkstyleMain
+                                                     │
+                         ┌───────────────────────────┘
+                         ▼
+                  verifyDependencies
+                  dependencyReport
+
+                ═══ Conditional Tasks ═══
+
+         if buildAlwaysDockerImage
+           build ──finalizedBy──▶ dockerBuild
+
+         if vulnerabilityScannerEnabled
+           build ──finalizedBy──▶ vulnerabilityScanner
+
+         if sonarEnabled
+           build ──▶ sonar
+
+         if supportAsciiDoctor &amp;&amp; src/doc/ exists
+           build ──▶ convertAsciidoctorHtml/Pdf
+
+
+                   dockerBuild
+                   ═══════════
+               [onlyIf: validBuild]
+                         │
+                  ┌──────┴──────┐
+                  ▼             ▼
+             dockerRun     dockerPush
+                       (login, tag, push)
+                                │
+                                ▼
+                      vulnerabilityScanner
+                      (trivy image scan)
+
+                   gradle release
+                   ══════════════
+                         │
+          ┌──────────────┼──────────────┐
+          ▼              ▼              ▼
+checkReleaseCredentials  │  checkValidReleaseEnvironment
+          │              │              │
+          └──────────────┼──────────────┘
+                         ▼
+                  releasePrepare
+                  (set version, validate artifacts)
+                         │
+                         ▼
+                       build
+               (full build with release version)
+                         │
+                         ▼
+                releaseVerification
+                [onlyIf: validBuild]
+                (git branch, tag, merge, push)
+                         │
+                         ▼
+                  publishRelease
+                  (Maven publish)
+                      (trivy image scan)</code></pre>
+
+</section>
+
+<!-- SHELL COMPAT -->
+<section id="shell-compat">
+<h2>Shell Script Compatibility</h2>
+<p>All shell scripts in this framework are POSIX-compatible and run on both bash and Alpine/BusyBox ash:</p>
+<ul>
+  <li><code>#!/bin/sh</code> shebang with POSIX-only syntax</li>
+  <li>No bash-isms (<code>[[ ]]</code>, arrays, process substitution)</li>
+  <li>Quoted variable expansions to prevent word splitting</li>
+  <li><code>grep -F</code> with <code>--</code> separator for patterns starting with <code>-</code></li>
+</ul>
+</section>
+
+<!-- LICENSE -->
+<section id="license">
+<h2>License</h2>
+<p>This project is licensed under the <a href="LICENSE">GNU General Public License v3.0</a>.</p>
+</section>
+
+</div>
+
+<footer>
+  common-gradle-build &copy; toolarium &mdash; Licensed under GPL-3.0
+</footer>
+
+</body>
+</html>

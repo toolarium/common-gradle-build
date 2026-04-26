@@ -1,0 +1,85 @@
+name: Bug Report
+description: Report a bug in common-gradle-build
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Linux
+        - macOS
+        - Windows
+        - Container (Alpine/BusyBox)
+    validations:
+      required: true
+  - type: input
+    id: gradle-version
+    attributes:
+      label: Gradle version
+      description: "Output of `gradle --version`"
+      placeholder: "8.x"
+    validations:
+      required: true
+  - type: input
+    id: cgb-version
+    attributes:
+      label: common-gradle-build version
+      description: "Version from the VERSION file or tag"
+      placeholder: "1.4.8"
+    validations:
+      required: true
+  - type: dropdown
+    id: project-type
+    attributes:
+      label: Project type
+      description: "Which project type are you using?"
+      options:
+        - java-library
+        - java-application
+        - quarkus
+        - openapi
+        - config
+        - docker
+        - container
+        - kubernetes-product
+        - nuxtjs
+        - vuejs
+        - react
+        - script
+        - documentation
+        - testing
+        - organization-config
+        - Other / Not applicable
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: "Describe the bug clearly."
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: "Minimal steps to trigger the bug."
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console output / logs
+      description: "Paste relevant output. Use `--info` or `--debug` Gradle flags for more detail."
+      render: shell

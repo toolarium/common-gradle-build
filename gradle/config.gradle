@@ -54,7 +54,10 @@ apply plugin: 'distribution'
 /***************************************************************************************
  * default tasks
  ***************************************************************************************/
-defaultTasks 'clean', 'configJar'
+defaultTasks 'clean', 'projectValidation', 'configJar'
+if (project.tasks.findByName('vulnerabilityScanner') != null) {
+	vulnerabilityScanner.mustRunAfter("configJar")
+}
 
 
 /***************************************************************************************

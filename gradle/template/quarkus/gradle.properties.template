@@ -27,5 +27,8 @@ org.gradle.warning.mode  = @@GRADLE_WARNING_MODE@@
 # build always docker image or environment pararameter CB_BUILD_ALWAYS_DOCKER_IMAGE
 #buildAlwaysDockerImage  = true
 
+# vulnerability scanner switch or environment pararameter CB_VULNERABILITY_SCANNER_ENABLED
+#vulnerabilityScannerEnabled = true
+
 # create fat jar which contains the content
 #createFatJar             = true

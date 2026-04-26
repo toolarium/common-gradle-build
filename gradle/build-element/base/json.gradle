@@ -33,7 +33,7 @@ buildscript {
 		}
 	}
 	dependencies {
-		def snakeYamlVersion="1.29"
+		def snakeYamlVersion="2.3"
 		
 		if (project.hasProperty('snakeYamlVersion')) {
 			snakeYamlVersion = project.getProperty('snakeYamlVersion')

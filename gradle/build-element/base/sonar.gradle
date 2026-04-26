@@ -40,7 +40,7 @@ buildscript {
         gradlePluginPortal()
 	}
 	dependencies {
-		def sonarVersion="4.4.1.3373" //"3.5.0.2730" --> version from https://plugins.gradle.org/plugin/org.sonarqube
+		def sonarVersion="7.2.3.7755" // previous: 4.4.1.3373 --> version from https://plugins.gradle.org/plugin/org.sonarqube
 		if (project.hasProperty('sonarVersion')) {
 			sonarVersion = project.getProperty('sonarVersion')
 		}
@@ -71,9 +71,8 @@ if (!project.getProperty('IS_NEW') && project.hasProperty("sonarEnabled") && "tr
 			property "sonar.sourceEncoding", "${fileEncoding}"
 			property "sonar.dependencyCheck.htmlReportPath", "${dependencyCheckReportHtmlFile}"
 			property "sonar.dependencyCheck.jsonReportPath", "${dependencyCheckReportFile}"
-			property "sonar.java.coveragePlugin", "jacoco"
-			property "sonar.jacoco.reportPath", "${jacocoReportPath}"
-			property "sonar.junit.reportPath", "${junitReportPath}" //"${gradleBuildDirectory}/test-results/test"
+			property "sonar.coverage.jacoco.xmlReportPaths", "${jacocoReportPath}/jacocoTestReport.xml"
+			property "sonar.junit.reportPaths", "${junitReportPath}"
 		}
 	}
 

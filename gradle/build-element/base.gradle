@@ -116,6 +116,16 @@ try {
 
 
 /***************************************************************************************
+ * vulnerability scanner
+ ***************************************************************************************/
+try {
+	apply from: "${commonGradleBuildElementPath}/base/vulnerability-scanner.gradle"
+} catch (Exception e) {
+	printWarn("Ignore vulnerability-scanner.gradle!");
+}
+
+
+/***************************************************************************************
  * asciidoc task
  ***************************************************************************************/
 if (project.hasProperty('supportAsciiDoctor') && project.getProperty('supportAsciiDoctor')) {
@@ -260,9 +270,9 @@ gradle.buildFinished { buildResult ->
 		if (errorMessage!=null && !errorMessage.isEmpty()) {
 			errorMessage = errorMessagePrefix + errorMessage
 			if (project.hasProperty('logErrorMessage') && project.getProperty('logErrorMessage')) {				
-				printLine(ERROR_LEVEL, true)
+				printLine(ERROR_LINE_LEVEL, true)
 				printInfo(colorize(ERROR_LEVEL, errorMessage))
-				printLine(ERROR_LEVEL, true)
+				printLine(ERROR_LINE_LEVEL, true)
 			}
 			
 			if (project.hasProperty('errorMessageColor') && project.getProperty('errorMessageColor')!=null) {
@@ -271,7 +281,7 @@ gradle.buildFinished { buildResult ->
 			
 			throw new GradleException(errorMessage)
 		} else {
-			printLine(ERROR_LEVEL)
+			printLine(ERROR_LINE_LEVEL)
 			throw new GradleException(errorMessagePrefix)
 		}
 	}
@@ -315,7 +325,7 @@ gradle.taskGraph.whenReady { taskGraph ->
     if (taskGraph.hasTask(":release") || taskGraph.hasTask(":publish")) {
 		if (project.ext.isSnapshotVersion) {
 			if (!project.ext.qualifierVersionNumber.endsWith(SNAPSHOT_TAG_NAME) || project.ext.isReleaseVersion) {
-				printLine(ERROR_LEVEL, true)
+				printLine(ERROR_LINE_LEVEL, true)
 				def errorMessage = ""
 				if (project.ext.isReleaseVersion) {
 					errorMessage += " Inconsistent status (either we build a snapshot version or a release version)!"
@@ -324,14 +334,14 @@ gradle.taskGraph.whenReady { taskGraph ->
 					errorMessage += " Snapshot version has to end with " + SNAPSHOT_TAG_NAME + "!"
 				}
 				printInfo(colorize(ERROR_LEVEL, "ERROR:" + errorMessage))
-				printLine(ERROR_LEVEL, true)
+				printLine(ERROR_LINE_LEVEL, true)
 				throw new GradleException("ERROR:" + errorMessage)
 			}
 		}
 
 		if (project.ext.isReleaseVersion) {
 			if (project.ext.qualifierVersionNumber.endsWith(SNAPSHOT_TAG_NAME) || project.ext.isSnapshotVersion) {
-				printLine(ERROR_LEVEL, true)
+				printLine(ERROR_LINE_LEVEL, true)
 				def errorMessage = ""
 				if (project.ext.isSnapshotVersion) {
 					errorMessage += " Inconsistent status (either we build a snapshot version or a release version)!"
@@ -340,7 +350,7 @@ gradle.taskGraph.whenReady { taskGraph ->
 					errorMessage += " Release version don't end with " + SNAPSHOT_TAG_NAME + "!"
 				}
 				printInfo(colorize(ERROR_LEVEL, "ERROR:" + errorMessage))
-				printLine(ERROR_LEVEL, true)
+				printLine(ERROR_LINE_LEVEL, true)
 				throw new GradleException("ERROR:" + errorMessage)
 			}
 		}
@@ -353,10 +363,10 @@ gradle.taskGraph.whenReady { taskGraph ->
 
 			def configFileName = "${userHomeDirectory}.gradle/gradle.properties file"
 			def credentialsMessage = colorize(HIGHLITE_LEVEL, 'mavenUsername') + " and " + colorize(HIGHLITE_LEVEL, 'mavenPassword')
-			printLine(ERROR_LEVEL, true)
+			printLine(ERROR_LINE_LEVEL, true)
 			printInfo(colorize(ERROR_LEVEL, 'ERROR:') + " ${credentialsMessage} has to be ")
 			printInfo("       configured, e.g. in " + colorize(HIGHLITE_LEVEL, configFileName) + "!")
-			printLine(ERROR_LEVEL, true)
+			printLine(ERROR_LINE_LEVEL, true)
 
 			throw new GradleException("ERROR: ${mavenUsername} and ${mavenPassword} has to be configured, e.g. in ${configFileName}!")
 		}
@@ -468,6 +478,9 @@ projectValidation {
 		if (project.hasProperty('initScmForNewProjects') && project.getProperty('initScmForNewProjects')) {
 			createGitFiles()
 		}
+
+		// cleanup disallowed tracked files
+		cleanupDisallowedTrackedFiles()
 		
 		def validateProjectNameAndFolder = project.hasProperty('validateProjectNameAndFolder') && project.getProperty('validateProjectNameAndFolder')
 		if (validateProjectNameAndFolder) {

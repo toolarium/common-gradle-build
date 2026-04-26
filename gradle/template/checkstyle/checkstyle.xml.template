@@ -138,12 +138,15 @@
             <property name="format" value="^[a-z]([a-z0-9][a-zA-Z0-9]*)?$"/>
             <!-- <message key="name.invalidPattern" value="Parameter name ''{0}'' must match pattern ''{1}''."/> -->
         </module>
-          <!--
         <module name="LambdaParameterName">
             <property name="format" value="^[a-z]([a-z0-9][a-zA-Z0-9]*)?$"/>
-            <message key="name.invalidPattern" value="Lambda parameter name ''{0}'' must match pattern ''{1}''."/>
         </module>
-          -->
+        <module name="PatternVariableName">
+            <property name="format" value="^[a-z]([a-z0-9][a-zA-Z0-9]*)?$"/>
+        </module>
+        <module name="RecordComponentName">
+            <property name="format" value="^[a-z]([a-z0-9][a-zA-Z0-9]*)?$"/>
+        </module>
         <module name="CatchParameterName">
             <property name="format" value="^[a-z]([a-z0-9][a-zA-Z0-9]*)?$"/>
             <!-- <message key="name.invalidPattern" value="Catch parameter name ''{0}'' must match pattern ''{1}''."/> -->
@@ -258,6 +261,12 @@
             <property name="exceptionVariableName" value="expected"/>
         </module>
         <module name="CommentsIndentation"/>
+        <module name="HexLiteralCase"/>
+        <module name="MissingOverrideOnRecordAccessor"/>
+        <module name="NoWhitespaceBeforeCaseDefaultColon"/>
+        <module name="ConstructorsDeclarationGrouping"/>
+        <module name="InvalidJavadocPosition"/>
+        <module name="RequireEmptyLineBeforeBlockTagGroup"/>
 
           <!-- @@PROJECT_NAME@@ add on -->
           <module name="RegexpSinglelineJava">

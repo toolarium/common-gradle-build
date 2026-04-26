@@ -1,0 +1,154 @@
+#########################################################################
+#
+# Dockerfile
+#
+# Copyright by @@LICENSE_ORGANISATION@@, all rights reserved.
+# @@LICENSE@@
+#
+#########################################################################
+
+# Multi-stage: build minimal JRE with jcmd via jlink (~51MB vs 157MB full JRE)
+FROM @@dockerImage@@ AS jdk
+RUN "$JAVA_HOME/bin/jlink" --no-header-files --no-man-pages --compress zip-6 \
+    --add-modules java.base,java.compiler,java.logging,java.naming,java.sql,java.transaction.xa,java.management,java.net.http,java.security.jgss,java.security.sasl,java.xml,java.xml.crypto,java.prefs,java.desktop,jdk.management,jdk.management.agent,jdk.unsupported,jdk.crypto.ec,jdk.crypto.cryptoki,jdk.zipfs,jdk.net,jdk.jcmd,jdk.naming.dns \
+    --output /opt/jre
+
+FROM @@dockerRuntimeImage@@
+
+# define build settings
+ARG EXPOSE_PORT="@@dockerExposePort@@"
+ARG RUNTIMEUSER="@@dockerUser@@"
+ARG TIMEZONE="@@dockerTimezone@@"
+ARG DEPLOYMENT_SOURCE_PATH="@@dockerDeploymentSourcePath@@"
+ARG DEPLOYMENT_PATH=/deployment
+ARG DEFAULT_ENCODING="@@dockerDefaultEncoding@@"
+ARG DEFAULT_LOCALE="@@dockerDefaultLocale@@"
+ARG DEFAULT_LANGUAGE="@@dockerDefaultLanguage@@"
+ARG proxyHost="@@dockerProxyHost@@"
+ARG proxyPort="@@dockerProxyPort@@"
+ARG nonProxyHosts="@@dockerNoProxyHosts@@"
+ARG JAVA_AGENT="@@dockerJavaAgent@@"
+ARG httpAgent="@@dockerHttpAgent@@"
+ARG keepAlive="@@dockerKeepAlive@@"
+ARG maxConnections="@@dockerMaxConnections@@"
+ARG maxRedirects="@@dockerMaxRedirects@@"
+ARG logLevel="@@dockerLogLevel@@"
+ARG gc="@@dockerGc@@"
+ARG gcLogging="@@dockerGcLogging@@"
+ARG exitOnOutOfMemory="@@dockerExitOnOutOfMemory@@"
+ARG nativeMemoryTracking="@@dockerNativeMemoryTracking@@"
+ARG observeMemoryCycle="@@dockerObserveMemoryCycle@@"
+ARG JAVA_OPTIONS="@@dockerJavaOptions@@"
+ARG REMOVE_NON_ESSENTIAL_BINARIES="@@dockerRemoveNonEssentialBinaries@@"
+ARG MAKE_FILESYSTEM_READONLY="@@dockerMakeFilesystemReadonly@@"
+ARG READONLY_FILESYSTEM_PATH="@@dockerReadonlyFilesystemPath@@"
+ARG READONLY_FILESYSTEM_EXCLUDE_PATH="@@dockerReadonlyFilesystemExcludePath@@"
+
+# set meta data
+LABEL vendor="@@LICENSE_ORGANISATION@@" \
+    group-id="@@GROUP_ID@@" \
+    component-id="@@COMPONENT_ID@@" \
+    description="@@DESCRIPTION@@" \
+    url="@@URL@@" \
+    license="@@LICENSE@@" \
+    version="@@VERSION@@" \
+    is-release-version="@@IS_RELEASE_VERSION@@" \
+    build-timestamp="@@BUILD_TIMESTAMP_SHORT@@"
+
+# copy custom JRE from jlink stage
+ENV JAVA_HOME=/opt/java/openjdk
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
+COPY --from=jdk /opt/jre ${JAVA_HOME}
+
+# set user
+RUN adduser -D ${RUNTIMEUSER}
+
+# read OS version before hardening removes /etc/os-release, save as build arg
+RUN OS_PRETTY_NAME=$(awk -F'"' '/PRETTY_NAME/{print $2}' /etc/os-release 2>/dev/null) && \
+    echo "$OS_PRETTY_NAME" > /tmp/.os-pretty-name; \
+    # update and set timezone
+    apk --no-cache -U upgrade \
+    && apk --no-cache add tzdata \
+    && cp "/usr/share/zoneinfo/${TIMEZONE}" /etc/localtime \
+    && echo "${TIMEZONE}" > /etc/timezone \
+    # remove setuid/setgid binaries
+    && find / -perm /6000 -type f -exec chmod a-s {} + 2>/dev/null || true \
+    # remove cron and periodic
+    && rm -rf /etc/crontabs /etc/periodic /var/spool/cron \
+    # remove unnecessary system accounts
+    && sed -i '/^root/!{/^nobody/!{/^'${RUNTIMEUSER}'/!d}}' /etc/passwd /etc/shadow /etc/group \
+    # remove docs, man pages, includes
+    && rm -rf /usr/share/man /usr/share/doc /usr/include \
+    # remove version information
+    && rm -f /etc/alpine-release /etc/os-release /etc/issue \
+    # remove apk to prevent package installation
+    && apk del apk-tools alpine-keys 2>/dev/null; \
+    rm -rf /sbin/apk /etc/apk /lib/apk /usr/share/apk /var/lib/apk
+
+# create path and set permissions for user
+RUN mkdir -p ${DEPLOYMENT_PATH} \
+    && chown -R ${RUNTIMEUSER} ${DEPLOYMENT_PATH} \
+    && chmod -R 755 ${DEPLOYMENT_PATH} \
+    && chmod -R g=u ${DEPLOYMENT_PATH}
+
+# copy application
+COPY --chown=${RUNTIMEUSER} build/quarkus-app/ ${DEPLOYMENT_PATH}/
+RUN chmod -R 755 ${DEPLOYMENT_PATH}/@@dockerJavaRunner@@ \
+    && chmod -R 755 ${DEPLOYMENT_PATH}/@@dockerMeminfo@@ \
+    && if [ -f /tmp/.os-pretty-name ]; then \
+       OS_PN=$(cat /tmp/.os-pretty-name) && \
+       sed -i "s|@@dockerOsPrettyName@@|${OS_PN}|" ${DEPLOYMENT_PATH}/@@dockerJavaRunner@@ && \
+       rm -f /tmp/.os-pretty-name; \
+    fi
+
+# set language
+ENV LANG="${DEFAULT_LOCALE}.${DEFAULT_ENCODING}" LANGUAGE="${DEFAULT_LOCALE}:${DEFAULT_LANGUAGE}"
+
+ENV EXPOSE_PORT="${EXPOSE_PORT}"
+# define JAVA_OPTIONS; with can be used to display the heap size: -XshowSettings:vm
+ENV javaOptions="${JAVA_OPTIONS}"
+ENV proxyHost="${proxyHost}"
+ENV proxyPort="${proxyPort}"
+ENV nonProxyHosts="${nonProxyHosts}"
+ENV httpAgent="${httpAgent}"
+ENV keepAlive="${keepAlive}"
+ENV maxConnections="${maxConnections}"
+ENV maxRedirects="${maxRedirects}"
+ENV logLevel="${logLevel}"
+ENV gc="${gc}"
+ENV gcLogging="${gcLogging}"
+ENV exitOnOutOfMemory="${exitOnOutOfMemory}"
+ENV nativeMemoryTracking="${nativeMemoryTracking}"
+ENV observeMemoryCycle="${observeMemoryCycle}"
+
+# remove non-essential binaries (keep only what toolarium-java-runner.sh, cb-meminfo.sh and java need)
+RUN if [ "${REMOVE_NON_ESSENTIAL_BINARIES}" = "true" ]; then \
+    cp "$(command -v busybox)" /tmp/bb && \
+    [ -e /sbin/tini ] && /tmp/bb cp /sbin/tini /tmp/tini; \
+    /tmp/bb rm -f /bin/* /sbin/* /usr/bin/* /usr/sbin/* 2>/dev/null; \
+    /tmp/bb cp /tmp/bb /bin/busybox && \
+    for cmd in sh cat chmod date dirname basename pwd ls hostname env grep tr sed stat tail sleep uname ps kill rm echo printf awk free cp mv; do /bin/busybox ln -s busybox /bin/$cmd 2>/dev/null; done && \
+    [ -e /tmp/tini ] && /bin/cp /tmp/tini /sbin/tini && /bin/chmod 755 /sbin/tini; \
+    /bin/rm -f /tmp/bb /tmp/tini 2>/dev/null; \
+    fi
+
+# make filesystem read-only friendly
+RUN if [ "${MAKE_FILESYSTEM_READONLY}" = "true" ]; then \
+    chmod a-w ${READONLY_FILESYSTEM_PATH}; \
+    for p in ${READONLY_FILESYSTEM_EXCLUDE_PATH}; do \
+        if [ -e "$p" ]; then chmod u+w "$p"; fi; \
+    done; \
+    fi
+
+# expose port
+EXPOSE ${EXPOSE_PORT}
+
+# switch RUNTIMEUSER
+USER ${RUNTIMEUSER}
+
+# change working path
+WORKDIR ${DEPLOYMENT_PATH}
+
+# start service
+#ENTRYPOINT [ "java", "-jar", "/deployment/quarkus-run.jar" ]
+ENTRYPOINT /deployment/@@dockerJavaRunner@@ --jar /deployment/quarkus-run.jar

@@ -96,7 +96,7 @@ ext.checkDockerInstallation = { ->
 /***************************************************************************************
  * Execute container command
  ***************************************************************************************/
-ext.execDocker = { cmd, errorMessage, failOnError = true ->
+ext.execDocker = { cmd, errorMessage, failOnError = true, printWarnOnFail = true ->
 	def sout = new StringBuilder(), serr = new StringBuilder()				
 	def exitStatus = execCommand(cmd, -1, sout, serr)
 	if (exitStatus>0) {
@@ -111,7 +111,13 @@ ext.execDocker = { cmd, errorMessage, failOnError = true ->
 			
 			throw new GradleException(errorMessage)		
 		} else {
-			printWarn("$errorMessage")
+			if ("$errorMessage".toString().trim().isEmpty()) {
+				if (printWarnOnFail) {
+					printWarn("$errorMessage")
+				} else {
+					logInfo("$errorMessage")
+				}
+			}
 		}
 	}
 	
@@ -534,6 +540,15 @@ projectValidation {
 				build.finalizedBy(dockerBuild)
 				publish.finalizedBy(dockerPush)
 				setCommonGradleProperty("taskNameBeforeReleaseArtefacts", "dockerBuild") 
+			}
+
+			// ensure vulnerability scanner runs after dockerBuild so it can scan the container image
+			if (project.tasks.findByName('vulnerabilityScanner') != null) {
+				vulnerabilityScanner.mustRunAfter("dockerBuild")
+
+				if (project.hasProperty('taskNameBeforeReleaseArtefacts')) {
+					vulnerabilityScanner.mustRunAfter("${taskNameBeforeReleaseArtefacts}")
+				}
 			}
 		}
 	}

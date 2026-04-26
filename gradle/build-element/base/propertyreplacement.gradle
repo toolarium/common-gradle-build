@@ -23,67 +23,66 @@
 /** 
  * Search and replace by properties
  */
-import java.util.regex.Matcher;
 ext.searchReplaceByProperties = { inputLine, replacePlaceHolders = true ->
 	def line = inputLine
 
 	if (replacePlaceHolders) {
-		line = line.replaceAll('@@PROJECT_NAME@@', "${rootProject.name}".toString())
-		line = line.replaceAll('@@PROJECT_TYPE@@', "${project.ext.projectType}".toString())
-		line = line.replaceAll('@@GROUP_ID@@', "${project.ext.projectGroupId}".toString())
-		line = line.replaceAll('@@COMPONENT_ID@@', "${project.ext.projectComponentId}".toString())
+		line = line.replace('@@PROJECT_NAME@@', "${rootProject.name}".toString())
+		line = line.replace('@@PROJECT_TYPE@@', "${project.ext.projectType}".toString())
+		line = line.replace('@@GROUP_ID@@', "${project.ext.projectGroupId}".toString())
+		line = line.replace('@@COMPONENT_ID@@', "${project.ext.projectComponentId}".toString())
 		
 		if (project.hasProperty('projectParentPackageName')) {
-			line = line.replaceAll('@@PARENT_PACKAGE@@', "${project.ext.projectParentPackageName}".toString())
+			line = line.replace('@@PARENT_PACKAGE@@', "${project.ext.projectParentPackageName}".toString())
 		}
 		
-		line = line.replaceAll('@@PACKAGE@@', "${project.ext.projectRootPackageName}".toString())
-		line = line.replaceAll('@@DESCRIPTION@@', "${project.ext.projectDescription}".toString())
-		line = line.replaceAll('@@URL@@', "${project.ext.projectUrl}".toString())
-		line = line.replaceAll('@@LICENSE@@', "${project.ext.licenseText}".toString())
-		line = line.replaceAll('@@LICENSE_ORGANISATION@@', "${project.ext.licenseOrganisation}".toString())			
-		line = line.replaceAll('@@MAJOR_NUMBER@@', "${project.ext.majorVersionNumber}".toString())
-		line = line.replaceAll('@@MINOR_NUMBER@@', "${project.ext.minorVersionNumber}".toString())
-		line = line.replaceAll('@@REVISION_NUMBER@@', "${project.ext.revisionVersionNumber}".toString())
-		line = line.replaceAll('@@MICRO_NUMBER@@', "${project.ext.revisionVersionNumber}".toString())
-		line = line.replaceAll('@@QUALIFIER@@', "${project.ext.qualifierVersionNumber}".toString())
-		line = line.replaceAll('@@SCM_NUMBER@@', "${project.ext.scmVersionNumber}".toString())
-		line = line.replaceAll('@@BUILD_TIMESTAMP@@', "${project.ext.BUILD_TIMESTAMP}".toString())
-		line = line.replaceAll('@@BUILD_TIMESTAMP_SHORT@@', "${project.ext.BUILD_TIMESTAMP_SHORT}".toString())
-		line = line.replaceAll('@@DATE@@', "${DATE}".toString())
-		line = line.replaceAll('@@YEAR@@', "${YEAR}".toString())
-		line = line.replaceAll('@@IS_RELEASE_VERSION@@', "${project.ext.isReleaseVersion}".toString())
-		line = line.replaceAll('@@VERSION@@', "${project.version}".toString())
-		line = line.replaceAll('@@LINE@@', "${LINE}".toString())
-		line = line.replaceAll('@@STAR_LINE@@', "${STAR_LINE}".toString())			
-		line = line.replaceAll('@@COMMON_GRADLE_BUILD_URL@@', "${defaultCommonGradleBuildUrl}".toString())
-		line = line.replaceAll('@@BUILD_TOOL_VERSION_MESSAGE@@', "${project.ext.buildToolVersionStackMessage}".toString())
+		line = line.replace('@@PACKAGE@@', "${project.ext.projectRootPackageName}".toString())
+		line = line.replace('@@DESCRIPTION@@', "${project.ext.projectDescription}".toString())
+		line = line.replace('@@URL@@', "${project.ext.projectUrl}".toString())
+		line = line.replace('@@LICENSE@@', "${project.ext.licenseText}".toString())
+		line = line.replace('@@LICENSE_ORGANISATION@@', "${project.ext.licenseOrganisation}".toString())			
+		line = line.replace('@@MAJOR_NUMBER@@', "${project.ext.majorVersionNumber}".toString())
+		line = line.replace('@@MINOR_NUMBER@@', "${project.ext.minorVersionNumber}".toString())
+		line = line.replace('@@REVISION_NUMBER@@', "${project.ext.revisionVersionNumber}".toString())
+		line = line.replace('@@MICRO_NUMBER@@', "${project.ext.revisionVersionNumber}".toString())
+		line = line.replace('@@QUALIFIER@@', "${project.ext.qualifierVersionNumber}".toString())
+		line = line.replace('@@SCM_NUMBER@@', "${project.ext.scmVersionNumber}".toString())
+		line = line.replace('@@BUILD_TIMESTAMP@@', "${project.ext.BUILD_TIMESTAMP}".toString())
+		line = line.replace('@@BUILD_TIMESTAMP_SHORT@@', "${project.ext.BUILD_TIMESTAMP_SHORT}".toString())
+		line = line.replace('@@DATE@@', "${DATE}".toString())
+		line = line.replace('@@YEAR@@', "${YEAR}".toString())
+		line = line.replace('@@IS_RELEASE_VERSION@@', "${project.ext.isReleaseVersion}".toString())
+		line = line.replace('@@VERSION@@', "${project.version}".toString())
+		line = line.replace('@@LINE@@', "${LINE}".toString())
+		line = line.replace('@@STAR_LINE@@', "${STAR_LINE}".toString())			
+		line = line.replace('@@COMMON_GRADLE_BUILD_URL@@', "${defaultCommonGradleBuildUrl}".toString())
+		line = line.replace('@@BUILD_TOOL_VERSION_MESSAGE@@', "${project.ext.buildToolVersionStackMessage}".toString())
 		
-		line = line.replaceAll('@@sourceCompatibility@@', "${sourceCompatibility}".toString())
-		line = line.replaceAll('@@targetCompatibility@@', "${targetCompatibility}".toString())
+		line = line.replace('@@sourceCompatibility@@', "${sourceCompatibility}".toString())
+		line = line.replace('@@targetCompatibility@@', "${targetCompatibility}".toString())
 
 		// main source
 		if (project.hasProperty('srcMainDirectoryName')) {
-			line = line.replaceAll('@@MAIN@@', "${project.ext.srcMainDirectoryName}".toString())
+			line = line.replace('@@MAIN@@', "${project.ext.srcMainDirectoryName}".toString())
 		}						
 		if (project.hasProperty('srcMainDirectory')) {
-			line = line.replaceAll('@@SRC_MAIN@@', "${project.ext.srcMainDirectory}".toString())
+			line = line.replace('@@SRC_MAIN@@', "${project.ext.srcMainDirectory}".toString())
 		}
 				
 		// test source
 		if (project.hasProperty('srcTestDirectoryName')) {			
-			line = line.replaceAll('@@TEST@@', "${srcTestDirectoryName}".toString())
+			line = line.replace('@@TEST@@', "${srcTestDirectoryName}".toString())
 		}						
 		if (project.hasProperty('srcTestDirectory')) {			
-			line = line.replaceAll('@@SRC_TEST@@', "${srcTestDirectory}".toString())
+			line = line.replace('@@SRC_TEST@@', "${srcTestDirectory}".toString())
 		}
 
 		// genereated source
 		if (project.hasProperty('generatedCommonGradleBuildJavaSources')) {			
-			line = line.replaceAll('@@SRC_GEN_MAIN@@', "${generatedCommonGradleBuildJavaSources}".toString())
+			line = line.replace('@@SRC_GEN_MAIN@@', "${generatedCommonGradleBuildJavaSources}".toString())
 		}
 		if (project.hasProperty('generatedCommonGradleBuildResourcesSources')) {			
-			line = line.replaceAll('@@SRC_GEN_RESOURCES@@', "${generatedCommonGradleBuildResourcesSources}".toString())
+			line = line.replace('@@SRC_GEN_RESOURCES@@', "${generatedCommonGradleBuildResourcesSources}".toString())
 		}
 
 		// checkstyle
@@ -91,815 +90,883 @@ ext.searchReplaceByProperties = { inputLine, replacePlaceHolders = true ->
 		if (project.hasProperty('checkstyleConfigurationName')) {
 			checkstyleConfigurationNameToSet = project.getProperty('checkstyleConfigurationName')
 		}
-		line = line.replaceAll('@@CHECKSTYLE_CONFIGURATION_NAME@@', "${checkstyleConfigurationNameToSet}".toString())
+		line = line.replace('@@CHECKSTYLE_CONFIGURATION_NAME@@', "${checkstyleConfigurationNameToSet}".toString())
 		if (project.hasProperty('runtimeCheckstyleConfigurationPath')) {			
-			line = line.replaceAll('@@CHECKSTYLE_CONFIGURATION_PATH@@', "${runtimeCheckstyleConfigurationPath}".toString())
+			line = line.replace('@@CHECKSTYLE_CONFIGURATION_PATH@@', "${runtimeCheckstyleConfigurationPath}".toString())
 		}
 		if (project.hasProperty('checkstyleToolVersion')) {
-			line = line.replaceAll('@@checkstyleToolVersion@@', "${project.ext.checkstyleToolVersion}".toString())
+			line = line.replace('@@checkstyleToolVersion@@', "${project.ext.checkstyleToolVersion}".toString())
 		} else {
-			line = line.replaceAll('@@checkstyleToolVersion@@', "${project.ext.checkstyleToolDefaultVersion}".toString())
+			line = line.replace('@@checkstyleToolVersion@@', "${project.ext.checkstyleToolDefaultVersion}".toString())
 		}
 
 		// libs
 		if (project.hasProperty('commonGradleSlf4jApiVersion')) {
-			line = line.replaceAll('@@commonGradleSlf4jApiVersion@@', "${project.ext.commonGradleSlf4jApiVersion}".toString())
+			line = line.replace('@@commonGradleSlf4jApiVersion@@', "${project.ext.commonGradleSlf4jApiVersion}".toString())
 		}
 		if (project.hasProperty('commonGradleLogbackVersion')) {
-			line = line.replaceAll('@@commonGradleLogbackVersion@@', "${project.ext.commonGradleLogbackVersion}".toString())
+			line = line.replace('@@commonGradleLogbackVersion@@', "${project.ext.commonGradleLogbackVersion}".toString())
 		}
 		if (project.hasProperty('commonGradleJptoolsVersion')) {
-			line = line.replaceAll('@@commonGradleJptoolsVersion@@', "${project.ext.commonGradleJptoolsVersion}".toString())
+			line = line.replace('@@commonGradleJptoolsVersion@@', "${project.ext.commonGradleJptoolsVersion}".toString())
 		}
 		if (project.hasProperty('commonGradleJavaxValidtionVersion')) {
-			line = line.replaceAll('@@commonGradleJavaxValidtionVersion@@', "${project.ext.commonGradleJavaxValidtionVersion}".toString())
+			line = line.replace('@@commonGradleJavaxValidtionVersion@@', "${project.ext.commonGradleJavaxValidtionVersion}".toString())
 		}
 		if (project.hasProperty('commonGradleJavaxWsRSApiVersion')) {
-			line = line.replaceAll('@@commonGradleJavaxWsRSApiVersion@@', "${project.ext.commonGradleJavaxWsRSApiVersion}".toString())
+			line = line.replace('@@commonGradleJavaxWsRSApiVersion@@', "${project.ext.commonGradleJavaxWsRSApiVersion}".toString())
 		}
 		if (project.hasProperty('commonGradleJacksonAnnotationVersion')) {
-			line = line.replaceAll('@@commonGradleJacksonAnnotationVersion@@', "${project.ext.commonGradleJacksonAnnotationVersion}".toString())
+			line = line.replace('@@commonGradleJacksonAnnotationVersion@@', "${project.ext.commonGradleJacksonAnnotationVersion}".toString())
 		}
 		if (project.hasProperty('commonGradleJavaxAnnotationVersion')) {
-			line = line.replaceAll('@@commonGradleJavaxAnnotationVersion@@', "${project.ext.commonGradleJavaxAnnotationVersion}".toString())
+			line = line.replace('@@commonGradleJavaxAnnotationVersion@@', "${project.ext.commonGradleJavaxAnnotationVersion}".toString())
 		}
 		if (project.hasProperty('commonGradleJakartaAnnotationVersion')) {
-			line = line.replaceAll('@@commonGradleJakartaAnnotationVersion@@', "${project.ext.commonGradleJakartaAnnotationVersion}".toString())
+			line = line.replace('@@commonGradleJakartaAnnotationVersion@@', "${project.ext.commonGradleJakartaAnnotationVersion}".toString())
 		}
 		if (project.hasProperty('commonGradleJakartaValidtionVersion')) {
-			line = line.replaceAll('@@commonGradleJakartaValidtionVersion@@', "${project.ext.commonGradleJakartaValidtionVersion}".toString())
+			line = line.replace('@@commonGradleJakartaValidtionVersion@@', "${project.ext.commonGradleJakartaValidtionVersion}".toString())
 		}
 		if (project.hasProperty('commonGradleJakartaWsRSApiVersion')) {
-			line = line.replaceAll('@@commonGradleJakartaWsRSApiVersion@@', "${project.ext.commonGradleJakartaWsRSApiVersion}".toString())
+			line = line.replace('@@commonGradleJakartaWsRSApiVersion@@', "${project.ext.commonGradleJakartaWsRSApiVersion}".toString())
 		}
 
 		if (project.hasProperty('testDependencyVersion')) {
-			line = line.replaceAll('@@testDependencyVersion@@', "${project.ext.testDependencyVersion}".toString())
+			line = line.replace('@@testDependencyVersion@@', "${project.ext.testDependencyVersion}".toString())
 		}
 		
 		if (project.hasProperty('gradlePropertiesJvmArgs')) {
-			line = line.replaceAll('@@GRADLE_JVM_ARG@@', "${project.ext.gradlePropertiesJvmArgs}".toString())
+			line = line.replace('@@GRADLE_JVM_ARG@@', "${project.ext.gradlePropertiesJvmArgs}".toString())
 		}
 		if (project.hasProperty('gradlePropertiesLogLevel')) {
-			line = line.replaceAll('@@GRADLE_LOG_LEVEL@@', "${project.ext.gradlePropertiesLogLevel}".toString())
+			line = line.replace('@@GRADLE_LOG_LEVEL@@', "${project.ext.gradlePropertiesLogLevel}".toString())
 		}
 		if (project.hasProperty('gradlePropertiesConsole')) {
-			line = line.replaceAll('@@GRADLE_CONSOLE@@', "${project.ext.gradlePropertiesConsole}".toString())
+			line = line.replace('@@GRADLE_CONSOLE@@', "${project.ext.gradlePropertiesConsole}".toString())
 		}
 		if (project.hasProperty('gradlePropertiesWarningMode')) {
-			line = line.replaceAll('@@GRADLE_WARNING_MODE@@', "${project.ext.gradlePropertiesWarningMode}".toString())
+			line = line.replace('@@GRADLE_WARNING_MODE@@', "${project.ext.gradlePropertiesWarningMode}".toString())
 		}
 		if (project.hasProperty('quarkusPluginVersion')) {
-			line = line.replaceAll('@@QUARKUS_PLUGIN_VERSION@@', "${project.ext.quarkusPluginVersion}".toString())
+			line = line.replace('@@QUARKUS_PLUGIN_VERSION@@', "${project.ext.quarkusPluginVersion}".toString())
 		}
 		if (project.hasProperty('nodePluginVersion')) {
-			line = line.replaceAll('@@NODE_PLUGIN_VERSION@@', "${project.ext.nodePluginVersion}".toString())
+			line = line.replace('@@NODE_PLUGIN_VERSION@@', "${project.ext.nodePluginVersion}".toString())
 		}
 		if (project.hasProperty('openapiPluginVersion')) {
-			line = line.replaceAll('@@OPENAPI_PLUGIN_VERSION@@', "${project.ext.openapiPluginVersion}".toString())
+			line = line.replace('@@OPENAPI_PLUGIN_VERSION@@', "${project.ext.openapiPluginVersion}".toString())
 		}
 		
 		if (project.hasProperty('className')) {
-			line = line.replaceAll('@@className@@', "${project.ext.className}".toString())
-			line = line.replaceAll('@@applicationName@@', "${project.ext.projectRootPackageName}.${project.ext.className}".toString())
+			line = line.replace('@@className@@', "${project.ext.className}".toString())
+			line = line.replace('@@applicationName@@', "${project.ext.projectRootPackageName}.${project.ext.className}".toString())
 		}
 		if (project.hasProperty('classNameUnderTest')) {
-			line = line.replaceAll('@@classNameUnderTest@@', "${project.ext.classNameUnderTest}".toString())
+			line = line.replace('@@classNameUnderTest@@', "${project.ext.classNameUnderTest}".toString())
 		}
 		if (project.hasProperty('fileName')) {
-			line = line.replaceAll('@@fileName@@', "${project.ext.fileName}".toString())
+			line = line.replace('@@fileName@@', "${project.ext.fileName}".toString())
 		}
 		if (project.hasProperty('packageName')) {
-			line = line.replaceAll('@@packageName@@', "${project.ext.packageName}".toString())
+			line = line.replace('@@packageName@@', "${project.ext.packageName}".toString())
 		}
 			
 		// docker
 		if (project.hasProperty('dockerImage')) {
-			line = line.replaceAll('@@dockerImage@@', "${project.ext.dockerImage}".toString())
-			line = line.replaceAll('@@DOCKER_IMAGE@@', "${project.ext.dockerImage}".toString())
+			line = line.replace('@@dockerImage@@', "${project.ext.dockerImage}".toString())
+			line = line.replace('@@DOCKER_IMAGE@@', "${project.ext.dockerImage}".toString())
 		}
+		if (project.hasProperty('dockerRuntimeImage')) {
+			line = line.replace('@@dockerRuntimeImage@@', "${project.ext.dockerRuntimeImage}".toString())
+		}
+		
 		if (project.hasProperty('dockerUID')) {
-			line = line.replaceAll('@@dockerUID@@', "${project.ext.dockerUID}".toString())
+			line = line.replace('@@dockerUID@@', "${project.ext.dockerUID}".toString())
 		}
 		if (project.hasProperty('dockerGID')) {
-			line = line.replaceAll('@@dockerGID@@', "${project.ext.dockerGID}".toString())
+			line = line.replace('@@dockerGID@@', "${project.ext.dockerGID}".toString())
 		}
 		if (project.hasProperty('dockerExposePort')) {
-			line = line.replaceAll('@@dockerExposePort@@', "${project.ext.dockerExposePort}".toString())
-			line = line.replaceAll('@@DOCKER_EXPOSE_PORT@@', "${project.ext.dockerExposePort}".toString())
+			line = line.replace('@@dockerExposePort@@', "${project.ext.dockerExposePort}".toString())
+			line = line.replace('@@DOCKER_EXPOSE_PORT@@', "${project.ext.dockerExposePort}".toString())
 		}
 		if (project.hasProperty('dockerUser')) {
-			line = line.replaceAll('@@dockerUser@@', "${project.ext.dockerUser}".toString())
+			line = line.replace('@@dockerUser@@', "${project.ext.dockerUser}".toString())
 		}
 		if (project.hasProperty('dockerGroup')) {
-			line = line.replaceAll('@@dockerGroup@@', "${project.ext.dockerGroup}".toString())
+			line = line.replace('@@dockerGroup@@', "${project.ext.dockerGroup}".toString())
 		}
 		if (project.hasProperty('dockerTimezone')) {
-			line = line.replaceAll('@@dockerTimezone@@', "${project.ext.dockerTimezone}".toString())
-			line = line.replaceAll('@@DOCKER_TIMEZONE@@', "${project.ext.dockerTimezone}".toString())
+			line = line.replace('@@dockerTimezone@@', "${project.ext.dockerTimezone}".toString())
+			line = line.replace('@@DOCKER_TIMEZONE@@', "${project.ext.dockerTimezone}".toString())
 		}
 		if (project.hasProperty('dockerDeploymentSourcePath')) {
-			line = line.replaceAll('@@dockerDeploymentSourcePath@@', "${project.ext.dockerDeploymentSourcePath}".toString())
+			line = line.replace('@@dockerDeploymentSourcePath@@', "${project.ext.dockerDeploymentSourcePath}".toString())
 		}
 		if (project.hasProperty('dockerSubPathAccess')) {
-			line = line.replaceAll('@@dockerSubPathAccess@@', "${project.ext.dockerSubPathAccess}".toString())
+			line = line.replace('@@dockerSubPathAccess@@', "${project.ext.dockerSubPathAccess}".toString())
 		}
 		if (project.hasProperty('dockerScriptPath')) {
-			line = line.replaceAll('@@dockerScriptPath@@', "${project.ext.dockerScriptPath}".toString())
+			line = line.replace('@@dockerScriptPath@@', "${project.ext.dockerScriptPath}".toString())
 		}
 		if (project.hasProperty('dockerDefaultEncoding')) {
-			line = line.replaceAll('@@dockerDefaultEncoding@@', "${project.ext.dockerDefaultEncoding}".toString())
+			line = line.replace('@@dockerDefaultEncoding@@', "${project.ext.dockerDefaultEncoding}".toString())
 		}
 		if (project.hasProperty('dockerDefaultLanguage')) {
-			line = line.replaceAll('@@dockerDefaultLanguage@@', "${project.ext.dockerDefaultLanguage}".toString())
+			line = line.replace('@@dockerDefaultLanguage@@', "${project.ext.dockerDefaultLanguage}".toString())
 		}
 		if (project.hasProperty('dockerDefaultLocale')) {
-			line = line.replaceAll('@@dockerDefaultLocale@@', "${project.ext.dockerDefaultLocale}".toString())
+			line = line.replace('@@dockerDefaultLocale@@', "${project.ext.dockerDefaultLocale}".toString())
 		}
 		if (project.hasProperty('dockerJavaOptions')) {
-			line = line.replaceAll('@@dockerJavaOptions@@', "${project.ext.dockerJavaOptions}".toString())
+			line = line.replace('@@dockerJavaOptions@@', "${project.ext.dockerJavaOptions}".toString())
 		}
 		if (project.hasProperty('dockerDefaultJavaOptions')) {
-			line = line.replaceAll('@@dockerDefaultJavaOptions@@', "${project.ext.dockerDefaultJavaOptions}".toString())
+			line = line.replace('@@dockerDefaultJavaOptions@@', "${project.ext.dockerDefaultJavaOptions}".toString())
 		}
 		if (project.hasProperty('dockerJavaAgent')) {
-			line = line.replaceAll('@@dockerJavaAgent@@', "${project.ext.dockerJavaAgent}".toString())
+			line = line.replace('@@dockerJavaAgent@@', "${project.ext.dockerJavaAgent}".toString())
 		}
 		if (project.hasProperty('dockerProxyHost')) {
-			line = line.replaceAll('@@dockerProxyHost@@', "${project.ext.dockerProxyHost}".toString())
+			line = line.replace('@@dockerProxyHost@@', "${project.ext.dockerProxyHost}".toString())
 		}
 		if (project.hasProperty('dockerProxyPort')) {
-			line = line.replaceAll('@@dockerProxyPort@@', "${project.ext.dockerProxyPort}".toString())
+			line = line.replace('@@dockerProxyPort@@', "${project.ext.dockerProxyPort}".toString())
 		}
 		if (project.hasProperty('dockerNoProxyHosts')) {
-			line = line.replaceAll('@@dockerNoProxyHosts@@', "${project.ext.dockerNoProxyHosts}".toString())
+			line = line.replace('@@dockerNoProxyHosts@@', "${project.ext.dockerNoProxyHosts}".toString())
 		}
 		if (project.hasProperty('dockerHttpAgent')) {
-			line = line.replaceAll('@@dockerHttpAgent@@', "${project.ext.dockerHttpAgent}".toString())
+			line = line.replace('@@dockerHttpAgent@@', "${project.ext.dockerHttpAgent}".toString())
 		}
 		if (project.hasProperty('dockerKeepAlive')) {
-			line = line.replaceAll('@@dockerKeepAlive@@', "${project.ext.dockerKeepAlive}".toString())
+			line = line.replace('@@dockerKeepAlive@@', "${project.ext.dockerKeepAlive}".toString())
 		}
 		if (project.hasProperty('dockerMaxConnections')) {
-			line = line.replaceAll('@@dockerMaxConnections@@', "${project.ext.dockerMaxConnections}".toString())
+			line = line.replace('@@dockerMaxConnections@@', "${project.ext.dockerMaxConnections}".toString())
 		}
 		if (project.hasProperty('dockerMaxRedirects')) {
-			line = line.replaceAll('@@dockerMaxRedirects@@', "${project.ext.dockerMaxRedirects}".toString())
+			line = line.replace('@@dockerMaxRedirects@@', "${project.ext.dockerMaxRedirects}".toString())
+		}
+		if (project.hasProperty('dockerOsVersion')) {
+			line = line.replace('@@dockerOsVersion@@', "${project.ext.dockerOsVersion}".toString())
 		}
 		if (project.hasProperty('dockerLogLevel')) {
-			line = line.replaceAll('@@dockerLogLevel@@', "${project.ext.dockerLogLevel}".toString())
+			line = line.replace('@@dockerLogLevel@@', "${project.ext.dockerLogLevel}".toString())
+		}
+		if (project.hasProperty('dockerGc')) {
+			line = line.replace('@@dockerGc@@', "${project.ext.dockerGc}".toString())
+		}
+		if (project.hasProperty('dockerGcLogging')) {
+			line = line.replace('@@dockerGcLogging@@', "${project.ext.dockerGcLogging}".toString())
+		}
+		if (project.hasProperty('dockerExitOnOutOfMemory')) {
+			line = line.replace('@@dockerExitOnOutOfMemory@@', "${project.ext.dockerExitOnOutOfMemory}".toString())
+		}
+		if (project.hasProperty('dockerNativeMemoryTracking')) {
+			line = line.replace('@@dockerNativeMemoryTracking@@', "${project.ext.dockerNativeMemoryTracking}".toString())
+		}
+		if (project.hasProperty('dockerObserveMemoryCycle')) {
+			line = line.replace('@@dockerObserveMemoryCycle@@', "${project.ext.dockerObserveMemoryCycle}".toString())
+		}
+		if (project.hasProperty('dockerMeminfo')) {
+			line = line.replace('@@dockerMeminfo@@', "${project.ext.dockerMeminfo}".toString())
 		}
 		if (project.hasProperty('dockerJavaRunner')) {
-			line = line.replaceAll('@@dockerJavaRunner@@', "${project.ext.dockerJavaRunner}".toString())
+			line = line.replace('@@dockerJavaRunner@@', "${project.ext.dockerJavaRunner}".toString())
+		}
+		if (project.hasProperty('toolariumJavaRunnerLogPackage')) {
+			line = line.replace('@@toolariumJavaRunnerLogPackage@@', "${project.ext.toolariumJavaRunnerLogPackage}".toString())
+		}
+		if (project.hasProperty('toolariumJavaRunnerLogCategoryWidth')) {
+			line = line.replace('@@toolariumJavaRunnerLogCategoryWidth@@', "${project.ext.toolariumJavaRunnerLogCategoryWidth}".toString())
+		}
+		if (project.hasProperty('toolariumJavaRunnerLogCategoryMax')) {
+			line = line.replace('@@toolariumJavaRunnerLogCategoryMax@@', "${project.ext.toolariumJavaRunnerLogCategoryMax}".toString())
+		}
+		if (project.hasProperty('toolariumJavaRunnerLogInfoWidth')) {
+			line = line.replace('@@toolariumJavaRunnerLogInfoWidth@@', "${project.ext.toolariumJavaRunnerLogInfoWidth}".toString())
+		}
+		if (project.hasProperty('toolariumJavaRunnerLogInfoMax')) {
+			line = line.replace('@@toolariumJavaRunnerLogInfoMax@@', "${project.ext.toolariumJavaRunnerLogInfoMax}".toString())
 		}
 		if (project.hasProperty('dockerEnableAccessLog')) {
-			line = line.replaceAll('@@dockerEnableAccessLog@@', "${project.ext.dockerEnableAccessLog}".toString())
+			line = line.replace('@@dockerEnableAccessLog@@', "${project.ext.dockerEnableAccessLog}".toString())
+		}
+		if (project.hasProperty('dockerRemoveNonEssentialBinaries')) {
+			line = line.replace('@@dockerRemoveNonEssentialBinaries@@', "${project.ext.dockerRemoveNonEssentialBinaries}".toString())
+		}
+		if (project.hasProperty('dockerMakeFilesystemReadonly')) {
+			line = line.replace('@@dockerMakeFilesystemReadonly@@', "${project.ext.dockerMakeFilesystemReadonly}".toString())
+		}
+		if (project.hasProperty('dockerReadonlyFilesystemPath')) {
+			line = line.replace('@@dockerReadonlyFilesystemPath@@', "${project.ext.dockerReadonlyFilesystemPath}".toString())
+		}
+		if (project.hasProperty('dockerReadonlyFilesystemExcludePath')) {
+			line = line.replace('@@dockerReadonlyFilesystemExcludePath@@', "${project.ext.dockerReadonlyFilesystemExcludePath}".toString())
 		}
 		if (project.hasProperty('dockerEntrypoint')) {
-			line = line.replaceAll('@@dockerEntrypoint@@', "${project.ext.dockerEntrypoint}".toString())
+			line = line.replace('@@dockerEntrypoint@@', "${project.ext.dockerEntrypoint}".toString())
 		}
 		if (project.hasProperty('dockerRepositoryHost')) {
-			line = line.replaceAll('@@DOCKER_REPOSITORY_HOST@@', "${project.ext.dockerRepositoryHost}".toString())
+			line = line.replace('@@DOCKER_REPOSITORY_HOST@@', "${project.ext.dockerRepositoryHost}".toString())
 		}
 		if (project.hasProperty('dockerTagPrefix')) {
-			line = line.replaceAll('@@DOCKER_TAG_PREFIX@@', "${project.ext.dockerTagPrefix}".toString())
+			line = line.replace('@@DOCKER_TAG_PREFIX@@', "${project.ext.dockerTagPrefix}".toString())
 		}
 		if (project.hasProperty('servicePropertiesName')) {
-			line = line.replaceAll('@@servicePropertiesName@@', "${project.ext.servicePropertiesName}".toString())
+			line = line.replace('@@servicePropertiesName@@', "${project.ext.servicePropertiesName}".toString())
 		}
 		
 		// kubernetes
 		if (project.hasProperty('kubernetesLabelId')) {
-			line = line.replaceAll('@@KUBERNETES_LABEL_ID@@', "${project.ext.kubernetesLabelId}".toString())
+			line = line.replace('@@KUBERNETES_LABEL_ID@@', "${project.ext.kubernetesLabelId}".toString())
 		}
 		if (project.hasProperty('kubernetesUrlRootPath')) {
-			line = line.replaceAll('@@KUBERNETES_URL_ROOT_PATH@@', "${project.ext.kubernetesUrlRootPath}".toString())
+			line = line.replace('@@KUBERNETES_URL_ROOT_PATH@@', "${project.ext.kubernetesUrlRootPath}".toString())
 		}
 		if (project.hasProperty('kubernetesUrlPath')) {
-			line = line.replaceAll('@@KUBERNETES_URL_PATH@@', "${project.ext.kubernetesUrlPath}".toString())
+			line = line.replace('@@KUBERNETES_URL_PATH@@', "${project.ext.kubernetesUrlPath}".toString())
 		}
 		if (project.hasProperty('kubernetesNamespace')) {
-			line = line.replaceAll('@@KUBERNETES_NAMESPACE@@', "${project.ext.kubernetesNamespace}".toString())
+			line = line.replace('@@KUBERNETES_NAMESPACE@@', "${project.ext.kubernetesNamespace}".toString())
 		}
 		if (project.hasProperty('kubernetesReplicas')) {
-			line = line.replaceAll('@@KUBERNETES_REPLICAS@@', "${project.ext.kubernetesReplicas}".toString())
+			line = line.replace('@@KUBERNETES_REPLICAS@@', "${project.ext.kubernetesReplicas}".toString())
 		}
 		if (project.hasProperty('kubernetesDockerImage')) {
-			line = line.replaceAll('@@KUBERNETES_DOCKER_IMAGE@@', "${project.ext.kubernetesDockerImage}".toString())
+			line = line.replace('@@KUBERNETES_DOCKER_IMAGE@@', "${project.ext.kubernetesDockerImage}".toString())
 		}
 		
 		// kubernetes / ingres
 		if (project.hasProperty('kubernetesIngressProxyBufferSize')) {
-			line = line.replaceAll('@@KUBERNETES_INGRESS_PROXY_BUFFER_SIZE@@', "${project.ext.kubernetesIngressProxyBufferSize}".toString())
+			line = line.replace('@@KUBERNETES_INGRESS_PROXY_BUFFER_SIZE@@', "${project.ext.kubernetesIngressProxyBufferSize}".toString())
 		}
 		if (project.hasProperty('kubernetesIngressProxyBodySize')) {
-			line = line.replaceAll('@@KUBERNETES_INGRESS_PROXY_BODY_SIZE@@', "${project.ext.kubernetesIngressProxyBodySize}".toString())
+			line = line.replace('@@KUBERNETES_INGRESS_PROXY_BODY_SIZE@@', "${project.ext.kubernetesIngressProxyBodySize}".toString())
 		}
-        
+		if (project.hasProperty('kubernetesGatewayClassName')) {
+			line = line.replace('@@KUBERNETES_GATEWAY_CLASS_NAME@@', "${project.ext.kubernetesGatewayClassName}".toString())
+		}
+		if (project.hasProperty('kubernetesGatewayListenerPort')) {
+			line = line.replace('@@KUBERNETES_GATEWAY_LISTENER_PORT@@', "${project.ext.kubernetesGatewayListenerPort}".toString())
+		}
+		if (project.hasProperty('kubernetesGatewayListenerProtocol')) {
+			line = line.replace('@@KUBERNETES_GATEWAY_LISTENER_PROTOCOL@@', "${project.ext.kubernetesGatewayListenerProtocol}".toString())
+		}
+
+		// gateway name defaults to project name + "-gateway"
+		def gatewayName = "${rootProject.name}-gateway"
+		if (project.hasProperty('kubernetesGatewayName')) {
+			gatewayName = "${project.ext.kubernetesGatewayName}".toString()
+		}
+		line = line.replace('@@KUBERNETES_GATEWAY_NAME@@', gatewayName)
+
 		// kubernetes / application.properties environment variable names
 		if (project.hasProperty('kubernetesDatabaseKind')) {
-			line = line.replaceAll('@@KUBERNETES_DATABASE_KIND@@', "${project.ext.kubernetesDatabaseKind}".toString())
+			line = line.replace('@@KUBERNETES_DATABASE_KIND@@', "${project.ext.kubernetesDatabaseKind}".toString())
 		}
 		if (project.hasProperty('kubernetesDatabaseKindEnvName')) {
-			line = line.replaceAll('@@KUBERNETES_DATABASE_KIND_ENV_NAME@@', "${project.ext.kubernetesDatabaseKindEnvName}".toString())
+			line = line.replace('@@KUBERNETES_DATABASE_KIND_ENV_NAME@@', "${project.ext.kubernetesDatabaseKindEnvName}".toString())
 		}
 		if (project.hasProperty('kubernetesDatabaseKindKey')) {
-			line = line.replaceAll('@@KUBERNETES_DATABASE_KIND_KEY@@', "${project.ext.kubernetesDatabaseKindKey}".toString())
+			line = line.replace('@@KUBERNETES_DATABASE_KIND_KEY@@', "${project.ext.kubernetesDatabaseKindKey}".toString())
 		}
 		if (project.hasProperty('kubernetesDatabaseJdbcUrlEnvName')) {
-			line = line.replaceAll('@@KUBERNETES_DATABASE_JDBC_URL_ENV_NAME@@', "${project.ext.kubernetesDatabaseJdbcUrlEnvName}".toString())
+			line = line.replace('@@KUBERNETES_DATABASE_JDBC_URL_ENV_NAME@@', "${project.ext.kubernetesDatabaseJdbcUrlEnvName}".toString())
 		}
 		if (project.hasProperty('kubernetesDatabaseMaxSizieEnvName')) {
-			line = line.replaceAll('@@KUBERNETES_DATABASE_JDBC_MAXSIZE_ENV_NAME@@', "${project.ext.kubernetesDatabaseMaxSizieEnvName}".toString())
+			line = line.replace('@@KUBERNETES_DATABASE_JDBC_MAXSIZE_ENV_NAME@@', "${project.ext.kubernetesDatabaseMaxSizieEnvName}".toString())
 		}
 		if (project.hasProperty('kubernetesDatabaseUsernameEnvName')) {
-			line = line.replaceAll('@@KUBERNETES_DATABASE_USERNAME_ENV_NAME@@', "${project.ext.kubernetesDatabaseUsernameEnvName}".toString())
+			line = line.replace('@@KUBERNETES_DATABASE_USERNAME_ENV_NAME@@', "${project.ext.kubernetesDatabaseUsernameEnvName}".toString())
 		}
 		if (project.hasProperty('kubernetesDatabasePasswordEnvName')) {
-			line = line.replaceAll('@@KUBERNETES_DATABASE_PASSWORD_ENV_NAME@@', "${project.ext.kubernetesDatabasePasswordEnvName}".toString())
+			line = line.replace('@@KUBERNETES_DATABASE_PASSWORD_ENV_NAME@@', "${project.ext.kubernetesDatabasePasswordEnvName}".toString())
 		}
 		if (project.hasProperty('kubernetesApplicationOIDCClientIdEnvName')) {
-			line = line.replaceAll('@@KUBERNETES_APPLICATION_OIDC_CLIENT_ID_ENV_NAME@@', "${project.ext.kubernetesApplicationOIDCClientIdEnvName}".toString())
+			line = line.replace('@@KUBERNETES_APPLICATION_OIDC_CLIENT_ID_ENV_NAME@@', "${project.ext.kubernetesApplicationOIDCClientIdEnvName}".toString())
 		}
 		if (project.hasProperty('kubernetesApplicationOIDCClientIdKey')) {
-			line = line.replaceAll('@@KUBERNETES_APPLICATION_OIDC_CLIENT_ID_KEY@@', "${project.ext.kubernetesApplicationOIDCClientIdKey}".toString())
+			line = line.replace('@@KUBERNETES_APPLICATION_OIDC_CLIENT_ID_KEY@@', "${project.ext.kubernetesApplicationOIDCClientIdKey}".toString())
 		}
 		if (project.hasProperty('kubernetesApplicationOIDCPublicKeyEnvName')) {
-			line = line.replaceAll('@@KUBERNETES_APPLICATION_OIDC_PUBLICKEY_ID_ENV_NAME@@', "${project.ext.kubernetesApplicationOIDCPublicKeyEnvName}".toString())
+			line = line.replace('@@KUBERNETES_APPLICATION_OIDC_PUBLICKEY_ID_ENV_NAME@@', "${project.ext.kubernetesApplicationOIDCPublicKeyEnvName}".toString())
 		}
 		if (project.hasProperty('kubernetesApplicationOIDCPublicKeyKey')) {
-			line = line.replaceAll('@@KUBERNETES_APPLICATION_OIDC_PUBLICKEY_KEY@@', "${project.ext.kubernetesApplicationOIDCPublicKeyKey}".toString())
+			line = line.replace('@@KUBERNETES_APPLICATION_OIDC_PUBLICKEY_KEY@@', "${project.ext.kubernetesApplicationOIDCPublicKeyKey}".toString())
 		}
 		if (project.hasProperty('kubernetesApplicationOIDCClientId')) {
-			line = line.replaceAll('@@KUBERNETES_APPLICATION_OIDC_CLIENT_ID@@', "${project.ext.kubernetesApplicationOIDCClientId}")
+			line = line.replace('@@KUBERNETES_APPLICATION_OIDC_CLIENT_ID@@', "${project.ext.kubernetesApplicationOIDCClientId}")
 		}
 		if (project.hasProperty('kubernetesApplicationOIDCPublicKey')) {
-			line = line.replaceAll('@@KUBERNETES_APPLICATION_OIDC_PUBLICKEY@@', "${project.ext.kubernetesApplicationOIDCPublicKey}".toString())
+			line = line.replace('@@KUBERNETES_APPLICATION_OIDC_PUBLICKEY@@', "${project.ext.kubernetesApplicationOIDCPublicKey}".toString())
 		}
 		if (project.hasProperty('kubernetesApplicationOIDCAuthServerUrlName')) {
-			line = line.replaceAll('@@KUBERNETES_APPLICATION_OIDC_AUTH_SERVER_URL_NAME@@', "${project.ext.kubernetesApplicationOIDCAuthServerUrlName}".toString())
+			line = line.replace('@@KUBERNETES_APPLICATION_OIDC_AUTH_SERVER_URL_NAME@@', "${project.ext.kubernetesApplicationOIDCAuthServerUrlName}".toString())
 		}
 		if (project.hasProperty('kubernetesApplicationOIDCAuthServerUrlKey')) {
-			line = line.replaceAll('@@KUBERNETES_APPLICATION_OIDC_AUTH_SERVER_URL_KEY@@', "${project.ext.kubernetesApplicationOIDCAuthServerUrlKey}".toString())
+			line = line.replace('@@KUBERNETES_APPLICATION_OIDC_AUTH_SERVER_URL_KEY@@', "${project.ext.kubernetesApplicationOIDCAuthServerUrlKey}".toString())
 		}
 		if (project.hasProperty('kubernetesApplicationOIDCAuthServerUrl')) {
-			line = line.replaceAll('@@KUBERNETES_APPLICATION_OIDC_AUTH_SERVER_URL@@', "${project.ext.kubernetesApplicationOIDCAuthServerUrl}")
+			line = line.replace('@@KUBERNETES_APPLICATION_OIDC_AUTH_SERVER_URL@@', "${project.ext.kubernetesApplicationOIDCAuthServerUrl}")
 		}
 		if (project.hasProperty('kubernetesApplicationOIDCTokenIssuerName')) {
-			line = line.replaceAll('@@KUBERNETES_APPLICATION_OIDC_TOKEN_ISSUER_NAME@@', "${project.ext.kubernetesApplicationOIDCTokenIssuerName}".toString())
+			line = line.replace('@@KUBERNETES_APPLICATION_OIDC_TOKEN_ISSUER_NAME@@', "${project.ext.kubernetesApplicationOIDCTokenIssuerName}".toString())
 		}
 		if (project.hasProperty('kubernetesApplicationOIDCTokenIssuerKey')) {
-			line = line.replaceAll('@@KUBERNETES_APPLICATION_OIDC_TOKEN_ISSUER_KEY@@', "${project.ext.kubernetesApplicationOIDCTokenIssuerKey}".toString())
+			line = line.replace('@@KUBERNETES_APPLICATION_OIDC_TOKEN_ISSUER_KEY@@', "${project.ext.kubernetesApplicationOIDCTokenIssuerKey}".toString())
 		}
 		if (project.hasProperty('kubernetesApplicationOIDCTokenIssuer')) {
-			line = line.replaceAll('@@KUBERNETES_APPLICATION_OIDC_TOKEN_ISSUER@@', "${project.ext.kubernetesApplicationOIDCTokenIssuer}")
+			line = line.replace('@@KUBERNETES_APPLICATION_OIDC_TOKEN_ISSUER@@', "${project.ext.kubernetesApplicationOIDCTokenIssuer}")
 		}
 		// kubernetes application config
 		if (project.hasProperty('kubernetesApplicationConfigName')) {
-			line = line.replaceAll('@@KUBERNETES_APPLICATION_CONFIG_NAME@@', "${project.ext.kubernetesApplicationConfigName}".toString())
+			line = line.replace('@@KUBERNETES_APPLICATION_CONFIG_NAME@@', "${project.ext.kubernetesApplicationConfigName}".toString())
 		}
 		if (project.hasProperty('kubernetesDatabaseUrlKey')) {
-			line = line.replaceAll('@@KUBERNETES_DATABASE_URL_KEY@@', "${project.ext.kubernetesDatabaseUrlKey}".toString())
+			line = line.replace('@@KUBERNETES_DATABASE_URL_KEY@@', "${project.ext.kubernetesDatabaseUrlKey}".toString())
 		}
 		if (project.hasProperty('kubernetesDatabaseUrl')) {
-			line = line.replaceAll('@@KUBERNETES_DATABASE_URL@@', "${project.ext.kubernetesDatabaseUrl}".toString())
+			line = line.replace('@@KUBERNETES_DATABASE_URL@@', "${project.ext.kubernetesDatabaseUrl}".toString())
 		}
 		if (project.hasProperty('kubernetesDatabaseMaxSizeKey')) {
-			line = line.replaceAll('@@KUBERNETES_DATABASE_MAXSIZE_KEY@@', "${project.ext.kubernetesDatabaseMaxSizeKey}".toString())
+			line = line.replace('@@KUBERNETES_DATABASE_MAXSIZE_KEY@@', "${project.ext.kubernetesDatabaseMaxSizeKey}".toString())
 		}
 		if (project.hasProperty('kubernetesDatabaseMaxConnections')) {
-			line = line.replaceAll('@@KUBERNETES_DATABASE_MAXSIZE_VALUE@@', "${project.ext.kubernetesDatabaseMaxConnections}".toString())
+			line = line.replace('@@KUBERNETES_DATABASE_MAXSIZE_VALUE@@', "${project.ext.kubernetesDatabaseMaxConnections}".toString())
 		}
 		if (project.hasProperty('kubernetesDatabaseType')) {
-			line = line.replaceAll('@@KUBERNETES_DATABASE_DEFAULT_KIND@@', "${project.ext.kubernetesDatabaseType}".toString())
+			line = line.replace('@@KUBERNETES_DATABASE_DEFAULT_KIND@@', "${project.ext.kubernetesDatabaseType}".toString())
 		}
 
 		if (project.hasProperty('kubernetesApplicationSecretName')) {
-			line = line.replaceAll('@@KUBERNETES_APPLICATION_SECRET_NAME@@', "${project.ext.kubernetesApplicationSecretName}".toString())
+			line = line.replace('@@KUBERNETES_APPLICATION_SECRET_NAME@@', "${project.ext.kubernetesApplicationSecretName}".toString())
 		}
 					
 		// kubernetes database secrets
 		if (project.hasProperty('kubernetesDatabaseSecretName')) {
-			line = line.replaceAll('@@KUBERNETES_DATABASE_SECRET_NAME@@', "${project.ext.kubernetesDatabaseSecretName}".toString())
+			line = line.replace('@@KUBERNETES_DATABASE_SECRET_NAME@@', "${project.ext.kubernetesDatabaseSecretName}".toString())
 		}
 		if (project.hasProperty('kubernetesDatabaseAdminSecretName')) {
-			line = line.replaceAll('@@KUBERNETES_DATABASE_ADMIN_SECRET_NAME@@', "${project.ext.kubernetesDatabaseAdminSecretName}".toString())
+			line = line.replace('@@KUBERNETES_DATABASE_ADMIN_SECRET_NAME@@', "${project.ext.kubernetesDatabaseAdminSecretName}".toString())
 		}
 		if (project.hasProperty('kubernetesDatabaseUsernameKey')) {
-			line = line.replaceAll('@@KUBERNETES_DATABASE_USERNAME_KEY@@', "${project.ext.kubernetesDatabaseUsernameKey}".toString())
+			line = line.replace('@@KUBERNETES_DATABASE_USERNAME_KEY@@', "${project.ext.kubernetesDatabaseUsernameKey}".toString())
 		}
 		if (project.hasProperty('kubernetesDatabaseUsername')) {
 		
-			line = line.replaceAll('@@KUBERNETES_DATABASE_USERNAME@@', encodeBase64("${project.ext.kubernetesDatabaseUsername}", "${project.ext.kubernetesUsernamePasswordBase64Encode}").toString())
+			line = line.replace('@@KUBERNETES_DATABASE_USERNAME@@', encodeBase64("${project.ext.kubernetesDatabaseUsername}", "${project.ext.kubernetesUsernamePasswordBase64Encode}").toString())
 		}
 		if (project.hasProperty('kubernetesDatabasePasswordKey')) {
-			line = line.replaceAll('@@KUBERNETES_DATABASE_PASSWORD_KEY@@', "${project.ext.kubernetesDatabasePasswordKey}".toString())
+			line = line.replace('@@KUBERNETES_DATABASE_PASSWORD_KEY@@', "${project.ext.kubernetesDatabasePasswordKey}".toString())
 		}
 		if (project.hasProperty('kubernetesDatabasePassword')) {
-			line = line.replaceAll('@@KUBERNETES_DATABASE_PASSWORD@@', encodeBase64("${project.ext.kubernetesDatabasePassword}", "${project.ext.kubernetesUsernamePasswordBase64Encode}").toString())
+			line = line.replace('@@KUBERNETES_DATABASE_PASSWORD@@', encodeBase64("${project.ext.kubernetesDatabasePassword}", "${project.ext.kubernetesUsernamePasswordBase64Encode}").toString())
 		}
 		if (project.hasProperty('kubernetesDatabaseName')) {
-			line = line.replaceAll('@@KUBERNETES_DATABASE_NAME@@', "${project.ext.kubernetesDatabaseName}".toString())
+			line = line.replace('@@KUBERNETES_DATABASE_NAME@@', "${project.ext.kubernetesDatabaseName}".toString())
 		}
 		if (project.hasProperty('kubernetesDatabaseAdminUsername')) {
-			line = line.replaceAll('@@KUBERNETES_DATABASE_ADMIN_USERNAME@@', encodeBase64("${project.ext.kubernetesDatabaseAdminUsername}", "${project.ext.kubernetesUsernamePasswordBase64Encode}").toString())
+			line = line.replace('@@KUBERNETES_DATABASE_ADMIN_USERNAME@@', encodeBase64("${project.ext.kubernetesDatabaseAdminUsername}", "${project.ext.kubernetesUsernamePasswordBase64Encode}").toString())
 		}			
 		if (project.hasProperty('kubernetesDatabaseAdminPassword')) {
-			line = line.replaceAll('@@KUBERNETES_DATABASE_ADMIN_PASSWORD@@', encodeBase64("${project.ext.kubernetesDatabaseAdminPassword}", "${project.ext.kubernetesUsernamePasswordBase64Encode}").toString())
+			line = line.replace('@@KUBERNETES_DATABASE_ADMIN_PASSWORD@@', encodeBase64("${project.ext.kubernetesDatabaseAdminPassword}", "${project.ext.kubernetesUsernamePasswordBase64Encode}").toString())
 		}
 				
 		if (project.hasProperty('kubernetesDatabasePort')) {
-			line = line.replaceAll('@@KUBERNETES_DATABASE_PORT@@', "${project.ext.kubernetesDatabasePort}".toString())
+			line = line.replace('@@KUBERNETES_DATABASE_PORT@@', "${project.ext.kubernetesDatabasePort}".toString())
 		}
 		if (project.hasProperty('kubernetesDatabaseImage')) {
-			line = line.replaceAll('@@KUBERNETES_DATABASE_IMAGE@@', "${project.ext.kubernetesDatabaseImage}".toString())
+			line = line.replace('@@KUBERNETES_DATABASE_IMAGE@@', "${project.ext.kubernetesDatabaseImage}".toString())
 		}
 		if (project.hasProperty('kubernetesDatabaseVolumeName')) {
-			line = line.replaceAll('@@KUBERNETES_DATABASE_VOLUME_NAME@@', "${project.ext.kubernetesDatabaseVolumeName}".toString())
+			line = line.replace('@@KUBERNETES_DATABASE_VOLUME_NAME@@', "${project.ext.kubernetesDatabaseVolumeName}".toString())
 		}
 		if (project.hasProperty('kubernetesDatabaseMountPath')) {
-			line = line.replaceAll('@@KUBERNETES_DATABASE_MOUNT_PATH@@', "${project.ext.kubernetesDatabaseMountPath}".toString())
+			line = line.replace('@@KUBERNETES_DATABASE_MOUNT_PATH@@', "${project.ext.kubernetesDatabaseMountPath}".toString())
 		}
 		if (project.hasProperty('kubernetesDatabaseEnvName')) {
-			line = line.replaceAll('@@KUBERNETES_DATABASE_ENV_NAME@@', "${project.ext.kubernetesDatabaseEnvName}".toString())
+			line = line.replace('@@KUBERNETES_DATABASE_ENV_NAME@@', "${project.ext.kubernetesDatabaseEnvName}".toString())
 		}
 		if (project.hasProperty('kubernetesDatabaseIntitializationString')) {
-			line = line.replaceAll('@@KUBERNETES_DATABASE_INITIALIZATION_STRING@@', Matcher.quoteReplacement("${project.ext.kubernetesDatabaseIntitializationString}".toString()))
+			line = line.replace('@@KUBERNETES_DATABASE_INITIALIZATION_STRING@@', "${project.ext.kubernetesDatabaseIntitializationString}".toString())
 		}
 		if (project.hasProperty('kubernetesDatabaseEnvUserName')) {
-			line = line.replaceAll('@@KUBERNETES_DATABASE_ENV_USER_NAME@@', "${project.ext.kubernetesDatabaseEnvUserName}".toString())
+			line = line.replace('@@KUBERNETES_DATABASE_ENV_USER_NAME@@', "${project.ext.kubernetesDatabaseEnvUserName}".toString())
 		}
 		if (project.hasProperty('kubernetesDatabaseEnvPasswordName')) {
-			line = line.replaceAll('@@KUBERNETES_DATABASE_ENV_PASSWORD_NAME@@', "${project.ext.kubernetesDatabaseEnvPasswordName}".toString())
+			line = line.replace('@@KUBERNETES_DATABASE_ENV_PASSWORD_NAME@@', "${project.ext.kubernetesDatabaseEnvPasswordName}".toString())
 		}
 		if (project.hasProperty('kubernetesDatabaseUserFileEnvName')) {
-			line = line.replaceAll('@@KUBERNETES_DATABASE_USER_FILE_ENV_NAME@@', "${project.ext.kubernetesDatabaseUserFileEnvName}".toString())
+			line = line.replace('@@KUBERNETES_DATABASE_USER_FILE_ENV_NAME@@', "${project.ext.kubernetesDatabaseUserFileEnvName}".toString())
 		}
 		if (project.hasProperty('kubernetesDatabasePasswordFileEnvName')) {
-			line = line.replaceAll('@@KUBERNETES_DATABASE_PASSWORD_FILE_ENV_NAME@@', "${project.ext.kubernetesDatabasePasswordFileEnvName}".toString())
+			line = line.replace('@@KUBERNETES_DATABASE_PASSWORD_FILE_ENV_NAME@@', "${project.ext.kubernetesDatabasePasswordFileEnvName}".toString())
 		}
 		if (project.hasProperty('kubernetesDatabaseStorage')) {
-			line = line.replaceAll('@@KUBERNETES_DATABASE_STORAGE@@', "${project.ext.kubernetesDatabaseStorage}".toString())
+			line = line.replace('@@KUBERNETES_DATABASE_STORAGE@@', "${project.ext.kubernetesDatabaseStorage}".toString())
 		}
 		if (project.hasProperty('kubernetesDatabaseServiceName')) {
-			line = line.replaceAll('@@KUBERNETES_DATABASE_SERVICE_NAME@@', "${project.ext.kubernetesDatabaseServiceName}".toString())
+			line = line.replace('@@KUBERNETES_DATABASE_SERVICE_NAME@@', "${project.ext.kubernetesDatabaseServiceName}".toString())
 		}
 		if (project.hasProperty('kubernetesControllerImage')) {
-			line = line.replaceAll('@@KUBERNETES_CONTROLLER_IMAGE@@', "${project.ext.kubernetesControllerImage}".toString())
+			line = line.replace('@@KUBERNETES_CONTROLLER_IMAGE@@', "${project.ext.kubernetesControllerImage}".toString())
 		}
 		if (project.hasProperty('kubernetesApplicationHost')) {
-			line = line.replaceAll('@@KUBERNETES_APPLICATION_HOST@@', "${project.ext.kubernetesApplicationHost}".toString())
+			line = line.replace('@@KUBERNETES_APPLICATION_HOST@@', "${project.ext.kubernetesApplicationHost}".toString())
 		}			
 		if (project.hasProperty('kubernetesApplicationPrototcol')) {
-			line = line.replaceAll('@@KUBERNETES_APPLICATION_PROTOCOL@@', "${project.ext.kubernetesApplicationPrototcol}".toString())
+			line = line.replace('@@KUBERNETES_APPLICATION_PROTOCOL@@', "${project.ext.kubernetesApplicationPrototcol}".toString())
 		}			
 
 		// IDM config
 		if (project.hasProperty('kubernetesIdmServiceName')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_SERVICE_NAME@@', "${project.ext.kubernetesIdmServiceName}".toString())
+			line = line.replace('@@KUBERNETES_IDM_SERVICE_NAME@@', "${project.ext.kubernetesIdmServiceName}".toString())
 		}
 		if (project.hasProperty('kubernetesIdmImageVersion')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_VERSION@@', "${project.ext.kubernetesIdmImageVersion}".toString())
+			line = line.replace('@@KUBERNETES_IDM_VERSION@@', "${project.ext.kubernetesIdmImageVersion}".toString())
 		}			
 		if (project.hasProperty('kubernetesIdmImage')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_IMAGE@@', "${project.ext.kubernetesIdmImage}".toString())
+			line = line.replace('@@KUBERNETES_IDM_IMAGE@@', "${project.ext.kubernetesIdmImage}".toString())
 		}			
 		if (project.hasProperty('kubernetesIdmDatabaseKey')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_DATABASE_KEY@@', "${project.ext.kubernetesIdmDatabaseKey}".toString())
+			line = line.replace('@@KUBERNETES_IDM_DATABASE_KEY@@', "${project.ext.kubernetesIdmDatabaseKey}".toString())
 		}			
 		if (project.hasProperty('kubernetesIdmDatabaseSchemaKey')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_DATABASESCHEMA_KEY@@', "${project.ext.kubernetesIdmDatabaseSchemaKey}".toString())
+			line = line.replace('@@KUBERNETES_IDM_DATABASESCHEMA_KEY@@', "${project.ext.kubernetesIdmDatabaseSchemaKey}".toString())
 		}			
 		if (project.hasProperty('kubernetesIdmDatabaseHostKey')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_DATABASE_HOST_KEY@@', "${project.ext.kubernetesIdmDatabaseHostKey}".toString())
+			line = line.replace('@@KUBERNETES_IDM_DATABASE_HOST_KEY@@', "${project.ext.kubernetesIdmDatabaseHostKey}".toString())
 		}			
 		if (project.hasProperty('kubernetesIdmDatabasePortKey')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_DATABASE_PORT_KEY@@', "${project.ext.kubernetesIdmDatabasePortKey}".toString())
+			line = line.replace('@@KUBERNETES_IDM_DATABASE_PORT_KEY@@', "${project.ext.kubernetesIdmDatabasePortKey}".toString())
 		}			
 		if (project.hasProperty('kubernetesIdmDatabaseVendorKey')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_DATABASE_VENNDOR_KEY@@', "${project.ext.kubernetesIdmDatabaseVendorKey}".toString())
+			line = line.replace('@@KUBERNETES_IDM_DATABASE_VENNDOR_KEY@@', "${project.ext.kubernetesIdmDatabaseVendorKey}".toString())
 		}
 
 		if (project.hasProperty('kubernetesIdmUrlPath')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_URL@@', "${project.ext.kubernetesIdmUrlPath}".toString())
+			line = line.replace('@@KUBERNETES_IDM_URL@@', "${project.ext.kubernetesIdmUrlPath}".toString())
 		}			
 		if (project.hasProperty('kubernetesIdmFrontendUrlKey')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_FRONTEND_URL_KEY@@', "${project.ext.kubernetesIdmFrontendUrlKey}".toString())
+			line = line.replace('@@KUBERNETES_IDM_FRONTEND_URL_KEY@@', "${project.ext.kubernetesIdmFrontendUrlKey}".toString())
 		}			
 		if (project.hasProperty('kubernetesIdmLogLevelKey')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_LOG_LEVEL_KEY@@', "${project.ext.kubernetesIdmLogLevelKey}".toString())
+			line = line.replace('@@KUBERNETES_IDM_LOG_LEVEL_KEY@@', "${project.ext.kubernetesIdmLogLevelKey}".toString())
 		}			
 		if (project.hasProperty('kubernetesIdmAddressForwardingKey')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_ADDRESS_FORWARDING_KEY@@', "${project.ext.kubernetesIdmAddressForwardingKey}".toString())
+			line = line.replace('@@KUBERNETES_IDM_ADDRESS_FORWARDING_KEY@@', "${project.ext.kubernetesIdmAddressForwardingKey}".toString())
 		}			
 		if (project.hasProperty('kubernetesIdmConfigName')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_CONFIG_NAME@@', "${project.ext.kubernetesIdmConfigName}".toString())
+			line = line.replace('@@KUBERNETES_IDM_CONFIG_NAME@@', "${project.ext.kubernetesIdmConfigName}".toString())
 		}					
 		if (project.hasProperty('kubernetesIdmDatabase')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_DATABASE@@', "${project.ext.kubernetesIdmDatabase}".toString())
+			line = line.replace('@@KUBERNETES_IDM_DATABASE@@', "${project.ext.kubernetesIdmDatabase}".toString())
 		}			
 		if (project.hasProperty('kubernetesIdmDatabaseSchema')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_DATABASESCHEMA@@', "${project.ext.kubernetesIdmDatabaseSchema}".toString())
+			line = line.replace('@@KUBERNETES_IDM_DATABASESCHEMA@@', "${project.ext.kubernetesIdmDatabaseSchema}".toString())
 		}			
 		if (project.hasProperty('kubernetesIdmDatabaseHost')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_DATABASE_HOST@@', "${project.ext.kubernetesIdmDatabaseHost}".toString())
+			line = line.replace('@@KUBERNETES_IDM_DATABASE_HOST@@', "${project.ext.kubernetesIdmDatabaseHost}".toString())
 		}			
 		if (project.hasProperty('kubernetesIdmDatabasePort')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_DATABASE_PORT@@', "${project.ext.kubernetesIdmDatabasePort}".toString())
+			line = line.replace('@@KUBERNETES_IDM_DATABASE_PORT@@', "${project.ext.kubernetesIdmDatabasePort}".toString())
 		}			
 		if (project.hasProperty('kubernetesIdmDatabaseVendor')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_DATABASE_VENNDOR@@', "${project.ext.kubernetesIdmDatabaseVendor}".toString())
+			line = line.replace('@@KUBERNETES_IDM_DATABASE_VENNDOR@@', "${project.ext.kubernetesIdmDatabaseVendor}".toString())
 		}			
 		if (project.hasProperty('kubernetesIdmFrontendUrl')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_FRONTEND_URL@@', "${project.ext.kubernetesIdmFrontendUrl}".toString())
+			line = line.replace('@@KUBERNETES_IDM_FRONTEND_URL@@', "${project.ext.kubernetesIdmFrontendUrl}".toString())
 		}			
 		if (project.hasProperty('kubernetesIdmAdminUrl')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_ADMIN_URL@@', "${project.ext.kubernetesIdmAdminUrl}".toString())
+			line = line.replace('@@KUBERNETES_IDM_ADMIN_URL@@', "${project.ext.kubernetesIdmAdminUrl}".toString())
 		}			
 		if (project.hasProperty('kubernetesIdmLogLevel')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_LOG_LEVEL@@', "${project.ext.kubernetesIdmLogLevel}".toString())
+			line = line.replace('@@KUBERNETES_IDM_LOG_LEVEL@@', "${project.ext.kubernetesIdmLogLevel}".toString())
 		}			
 		if (project.hasProperty('kubernetesIdmAddressForwarding')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_ADDRESS_FORWARDING@@', "${project.ext.kubernetesIdmAddressForwarding}".toString())
+			line = line.replace('@@KUBERNETES_IDM_ADDRESS_FORWARDING@@', "${project.ext.kubernetesIdmAddressForwarding}".toString())
 		}			
 		if (project.hasProperty('kubernetesIdmPort')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_PORT@@', "${project.ext.kubernetesIdmPort}".toString())
+			line = line.replace('@@KUBERNETES_IDM_PORT@@', "${project.ext.kubernetesIdmPort}".toString())
 		}			
 		if (project.hasProperty('kubernetesIdmCacheOwners')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_CACHE_OWNERS@@', "${project.ext.kubernetesIdmCacheOwners}".toString())
+			line = line.replace('@@KUBERNETES_IDM_CACHE_OWNERS@@', "${project.ext.kubernetesIdmCacheOwners}".toString())
 		}			
 		
 		// IDM secret
 		if (project.hasProperty('kubernetesIdmSecretName')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_SECRET_NAME@@', "${project.ext.kubernetesIdmSecretName}".toString())
+			line = line.replace('@@KUBERNETES_IDM_SECRET_NAME@@', "${project.ext.kubernetesIdmSecretName}".toString())
 		}			
 		if (project.hasProperty('kubernetesIdmDatabaseUsernameKey')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_DATABASE_USERNAME_KEY@@', "${project.ext.kubernetesIdmDatabaseUsernameKey}".toString())
+			line = line.replace('@@KUBERNETES_IDM_DATABASE_USERNAME_KEY@@', "${project.ext.kubernetesIdmDatabaseUsernameKey}".toString())
 		}			
 		if (project.hasProperty('kubernetesIdmDatabasePasswordKey')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_DATABASE_PASSWORD_KEY@@', "${project.ext.kubernetesIdmDatabasePasswordKey}".toString())
+			line = line.replace('@@KUBERNETES_IDM_DATABASE_PASSWORD_KEY@@', "${project.ext.kubernetesIdmDatabasePasswordKey}".toString())
 		}			
 		if (project.hasProperty('kubernetesIdmAdminUsernameKey')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_ADMIN_USERNAME_KEY@@', "${project.ext.kubernetesIdmAdminUsernameKey}".toString())
+			line = line.replace('@@KUBERNETES_IDM_ADMIN_USERNAME_KEY@@', "${project.ext.kubernetesIdmAdminUsernameKey}".toString())
 		}			
 		if (project.hasProperty('kubernetesIdmAdminPasswordKey')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_ADMIN_PASSWORD_KEY@@', "${project.ext.kubernetesIdmAdminPasswordKey}".toString())
+			line = line.replace('@@KUBERNETES_IDM_ADMIN_PASSWORD_KEY@@', "${project.ext.kubernetesIdmAdminPasswordKey}".toString())
 		}			
 		if (project.hasProperty('kubernetesIdmDatabaseKey')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_DATABASE_KEY@@', "${project.ext.kubernetesIdmDatabaseKey}".toString())
+			line = line.replace('@@KUBERNETES_IDM_DATABASE_KEY@@', "${project.ext.kubernetesIdmDatabaseKey}".toString())
 		}			
 		if (project.hasProperty('kubernetesIdmDatabaseKey')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_DATABASE_KEY@@', "${project.ext.kubernetesIdmDatabaseKey}".toString())
+			line = line.replace('@@KUBERNETES_IDM_DATABASE_KEY@@', "${project.ext.kubernetesIdmDatabaseKey}".toString())
 		}			
 		if (project.hasProperty('kubernetesIdmDatabaseKey')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_DATABASE_KEY@@', "${project.ext.kubernetesIdmDatabaseKey}".toString())
+			line = line.replace('@@KUBERNETES_IDM_DATABASE_KEY@@', "${project.ext.kubernetesIdmDatabaseKey}".toString())
 		}			
 		if (project.hasProperty('kubernetesIdmDatabaseUsername')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_DATABASE_USERNAME@@', encodeBase64("${project.ext.kubernetesIdmDatabaseUsername}", "${project.ext.kubernetesUsernamePasswordBase64Encode}").toString())
+			line = line.replace('@@KUBERNETES_IDM_DATABASE_USERNAME@@', encodeBase64("${project.ext.kubernetesIdmDatabaseUsername}", "${project.ext.kubernetesUsernamePasswordBase64Encode}").toString())
 		}			
 		if (project.hasProperty('kubernetesIdmDatabasePassword')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_DATABASE_PASSWORD@@', encodeBase64("${project.ext.kubernetesIdmDatabasePassword}", "${project.ext.kubernetesUsernamePasswordBase64Encode}").toString())
+			line = line.replace('@@KUBERNETES_IDM_DATABASE_PASSWORD@@', encodeBase64("${project.ext.kubernetesIdmDatabasePassword}", "${project.ext.kubernetesUsernamePasswordBase64Encode}").toString())
 		}			
 		if (project.hasProperty('kubernetesIdmAdminUsername')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_ADMIN_USERNAME@@', encodeBase64("${project.ext.kubernetesIdmAdminUsername}", "${project.ext.kubernetesUsernamePasswordBase64Encode}").toString())
+			line = line.replace('@@KUBERNETES_IDM_ADMIN_USERNAME@@', encodeBase64("${project.ext.kubernetesIdmAdminUsername}", "${project.ext.kubernetesUsernamePasswordBase64Encode}").toString())
 		}			
 		if (project.hasProperty('kubernetesIdmAdminPassword')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_ADMIN_PASSWORD@@', encodeBase64("${project.ext.kubernetesIdmAdminPassword}", "${project.ext.kubernetesUsernamePasswordBase64Encode}").toString())
+			line = line.replace('@@KUBERNETES_IDM_ADMIN_PASSWORD@@', encodeBase64("${project.ext.kubernetesIdmAdminPassword}", "${project.ext.kubernetesUsernamePasswordBase64Encode}").toString())
 		}
 
 		if (project.hasProperty('kubernetesIdmUserFileEnvName')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_USER_FILE_ENV_NAME@@', "${kubernetesIdmUserFileEnvName}")
+			line = line.replace('@@KUBERNETES_IDM_USER_FILE_ENV_NAME@@', "${kubernetesIdmUserFileEnvName}")
 		}
 		if (project.hasProperty('kubernetesIdmPasswordFileEnvName')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_PASSWORD_FILE_ENV_NAME@@', "${kubernetesIdmPasswordFileEnvName}")
+			line = line.replace('@@KUBERNETES_IDM_PASSWORD_FILE_ENV_NAME@@', "${kubernetesIdmPasswordFileEnvName}")
 		}
 		if (project.hasProperty('kubernetesIdmDatabaseVendorEnvName')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_DATABASE_VENDOR_ENV_NAME@@', "${kubernetesIdmDatabaseVendorEnvName}")
+			line = line.replace('@@KUBERNETES_IDM_DATABASE_VENDOR_ENV_NAME@@', "${kubernetesIdmDatabaseVendorEnvName}")
 		}
 		if (project.hasProperty('kubernetesIdmDatabaseHostEnvName')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_DATABASE_HOST_ENV_NAME@@', "${kubernetesIdmDatabaseHostEnvName}")
+			line = line.replace('@@KUBERNETES_IDM_DATABASE_HOST_ENV_NAME@@', "${kubernetesIdmDatabaseHostEnvName}")
 		}
 		if (project.hasProperty('kubernetesIdmDatabasePortEnvName')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_DATABASE_PORT_ENV_NAME@@', "${kubernetesIdmDatabasePortEnvName}")
+			line = line.replace('@@KUBERNETES_IDM_DATABASE_PORT_ENV_NAME@@', "${kubernetesIdmDatabasePortEnvName}")
 		}
 		if (project.hasProperty('kubernetesIdmDatabaseEnvName')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_DATABASE_ENV_NAME@@', "${kubernetesIdmDatabaseEnvName}")
+			line = line.replace('@@KUBERNETES_IDM_DATABASE_ENV_NAME@@', "${kubernetesIdmDatabaseEnvName}")
 		}
 		if (project.hasProperty('kubernetesIdmDatabaseSchemaEnvName')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_DATABASESCHEMA_ENV_NAME@@', "${kubernetesIdmDatabaseSchemaEnvName}")
+			line = line.replace('@@KUBERNETES_IDM_DATABASESCHEMA_ENV_NAME@@', "${kubernetesIdmDatabaseSchemaEnvName}")
 		}
 		if (project.hasProperty('kubernetesIdmDatabaseUserFileEnvName')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_DATABASE_USER_FILE_ENV_NAME@@', "${kubernetesIdmDatabaseUserFileEnvName}")
+			line = line.replace('@@KUBERNETES_IDM_DATABASE_USER_FILE_ENV_NAME@@', "${kubernetesIdmDatabaseUserFileEnvName}")
 		}
 		if (project.hasProperty('kubernetesIdmDatabasePasswordFileEnvName')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_DATABASE_PASSWORD_FILE_ENV_NAME@@', "${kubernetesIdmDatabasePasswordFileEnvName}")
+			line = line.replace('@@KUBERNETES_IDM_DATABASE_PASSWORD_FILE_ENV_NAME@@', "${kubernetesIdmDatabasePasswordFileEnvName}")
 		}
 		if (project.hasProperty('kubernetesIdmLogLevelEnvName')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_LOG_LEVEL_ENV_NAME@@', "${kubernetesIdmLogLevelEnvName}")
+			line = line.replace('@@KUBERNETES_IDM_LOG_LEVEL_ENV_NAME@@', "${kubernetesIdmLogLevelEnvName}")
 		}
 		if (project.hasProperty('kubernetesIdmAddressForwardingEnvName')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_ADDRESS_FORWARING_ENV_NAME@@', "${kubernetesIdmAddressForwardingEnvName}")
+			line = line.replace('@@KUBERNETES_IDM_ADDRESS_FORWARING_ENV_NAME@@', "${kubernetesIdmAddressForwardingEnvName}")
 		}
 		if (project.hasProperty('kubernetesIdmFrontendUrlEnvName')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_FRONTEND_URL_ENV_NAME@@', "${kubernetesIdmFrontendUrlEnvName}")
+			line = line.replace('@@KUBERNETES_IDM_FRONTEND_URL_ENV_NAME@@', "${kubernetesIdmFrontendUrlEnvName}")
 		}
 		
 		// kubernetes installation
 		if (project.hasProperty('kubernetesInstallDockerPull')) {
-			line = line.replaceAll('@@KUBERNETES_INSTALL_DOCKER_PULL@@', "${kubernetesInstallDockerPull}")
+			line = line.replace('@@KUBERNETES_INSTALL_DOCKER_PULL@@', "${kubernetesInstallDockerPull}")
 		}
 		if (project.hasProperty('kubernetesInstallConfigAndSecretArtefacts')) {
-			line = line.replaceAll('@@KUBERNETES_INSTALL_CONFIG_AND_SECRET_ARTEFACTS@@', "${kubernetesInstallConfigAndSecretArtefacts}")
+			line = line.replace('@@KUBERNETES_INSTALL_CONFIG_AND_SECRET_ARTEFACTS@@', "${kubernetesInstallConfigAndSecretArtefacts}")
 		}
 		if (project.hasProperty('kubernetesInstallDatabase')) {
-			line = line.replaceAll('@@KUBERNETES_INSTALL_DATABASE@@', "${kubernetesInstallDatabase}")
+			line = line.replace('@@KUBERNETES_INSTALL_DATABASE@@', "${kubernetesInstallDatabase}")
 		}
 		if (project.hasProperty('kubernetesApplicationFilename')) {
-			line = line.replaceAll('@@KUBERNETES_INSTALL_APPLICATION_FILENAME@@', "${kubernetesApplicationFilename}")
+			line = line.replace('@@KUBERNETES_INSTALL_APPLICATION_FILENAME@@', "${kubernetesApplicationFilename}")
 		}
 		if (project.hasProperty('kubernetesInstallApplication')) {
-			line = line.replaceAll('@@KUBERNETES_INSTALL_APPLICATION@@', "${kubernetesInstallApplication}")
+			line = line.replace('@@KUBERNETES_INSTALL_APPLICATION@@', "${kubernetesInstallApplication}")
 		}
 		if (project.hasProperty('kubernetesDeleteApplication')) {
-			line = line.replaceAll('@@KUBERNETES_DELETE_APPLICATION@@', "${kubernetesDeleteApplication}")
+			line = line.replace('@@KUBERNETES_DELETE_APPLICATION@@', "${kubernetesDeleteApplication}")
 		}
 		if (project.hasProperty('kubernetesInstallMessage')) {
-			line = line.replaceAll('@@KUBERNETES_INSTALL_MESSAGE@@', "${kubernetesInstallMessage}")
+			line = line.replace('@@KUBERNETES_INSTALL_MESSAGE@@', "${kubernetesInstallMessage}")
 		}
 		
 		// kubernetes readiness / liveness
 		if (project.hasProperty('kubernetesQuarkusReadinessCheckPath')) {
-			line = line.replaceAll('@@KUBERNETES_QUARKUS_READINESS_CHECK_PATH@@', "${kubernetesQuarkusReadinessCheckPath}")
+			line = line.replace('@@KUBERNETES_QUARKUS_READINESS_CHECK_PATH@@', "${kubernetesQuarkusReadinessCheckPath}")
 		}
 		if (project.hasProperty('kubernetesQuarkusReadinessFailureThreshold')) {
-			line = line.replaceAll('@@KUBERNETES_QUARKUS_READINESS_FAILURE_THRESHOLD@@', "${kubernetesQuarkusReadinessFailureThreshold}")
+			line = line.replace('@@KUBERNETES_QUARKUS_READINESS_FAILURE_THRESHOLD@@', "${kubernetesQuarkusReadinessFailureThreshold}")
 		}
 		if (project.hasProperty('kubernetesQuarkusReadinessScheme')) {
-			line = line.replaceAll('@@KUBERNETES_QUARKUS_READINESS_SCHEME@@', "${kubernetesQuarkusReadinessScheme}")
+			line = line.replace('@@KUBERNETES_QUARKUS_READINESS_SCHEME@@', "${kubernetesQuarkusReadinessScheme}")
 		}
 		if (project.hasProperty('kubernetesQuarkusReadinessInitialDelaySeconds')) {
-			line = line.replaceAll('@@KUBERNETES_QUARKUS_READINESS_INITIAL_DELAY_SECONDS@@', "${kubernetesQuarkusReadinessInitialDelaySeconds}")
+			line = line.replace('@@KUBERNETES_QUARKUS_READINESS_INITIAL_DELAY_SECONDS@@', "${kubernetesQuarkusReadinessInitialDelaySeconds}")
 		}
 		if (project.hasProperty('kubernetesQuarkusReadinessPeriodSeconds')) {
-			line = line.replaceAll('@@KUBERNETES_QUARKUS_READINESS_PERIOD_SECONDS@@', "${kubernetesQuarkusReadinessPeriodSeconds}")
+			line = line.replace('@@KUBERNETES_QUARKUS_READINESS_PERIOD_SECONDS@@', "${kubernetesQuarkusReadinessPeriodSeconds}")
 		}
 		if (project.hasProperty('kubernetesQuarkusReadinessSuccessThreshold')) {
-			line = line.replaceAll('@@KUBERNETES_QUARKUS_READINESS_SUCCESS_THRESHOLD@@', "${kubernetesQuarkusReadinessSuccessThreshold}")
+			line = line.replace('@@KUBERNETES_QUARKUS_READINESS_SUCCESS_THRESHOLD@@', "${kubernetesQuarkusReadinessSuccessThreshold}")
 		}
 		if (project.hasProperty('kubernetesQuarkusReadinessTimeoutSeconds')) {
-			line = line.replaceAll('@@KUBERNETES_QUARKUS_READINESS_TIMEOUT_SECONDS@@', "${kubernetesQuarkusReadinessTimeoutSeconds}")
+			line = line.replace('@@KUBERNETES_QUARKUS_READINESS_TIMEOUT_SECONDS@@', "${kubernetesQuarkusReadinessTimeoutSeconds}")
 		}
 		if (project.hasProperty('kubernetesQuarkusLivenessCheckPath')) {
-			line = line.replaceAll('@@KUBERNETES_QUARKUS_LIVENESS_CHECK_PATH@@', "${kubernetesQuarkusLivenessCheckPath}")
+			line = line.replace('@@KUBERNETES_QUARKUS_LIVENESS_CHECK_PATH@@', "${kubernetesQuarkusLivenessCheckPath}")
 		}
 		if (project.hasProperty('kubernetesQuarkusLivenessFailureThreshold')) {
-			line = line.replaceAll('@@KUBERNETES_QUARKUS_LIVENESS_FAILURE_THRESHOLD@@', "${kubernetesQuarkusLivenessFailureThreshold}")
+			line = line.replace('@@KUBERNETES_QUARKUS_LIVENESS_FAILURE_THRESHOLD@@', "${kubernetesQuarkusLivenessFailureThreshold}")
 		}
 		if (project.hasProperty('kubernetesQuarkusLivenessScheme')) {
-			line = line.replaceAll('@@KUBERNETES_QUARKUS_LIVENESS_SCHEME@@', "${kubernetesQuarkusLivenessScheme}")
+			line = line.replace('@@KUBERNETES_QUARKUS_LIVENESS_SCHEME@@', "${kubernetesQuarkusLivenessScheme}")
 		}
 		if (project.hasProperty('kubernetesQuarkusLivenessInitialDelaySeconds')) {
-			line = line.replaceAll('@@KUBERNETES_QUARKUS_LIVENESS_INITIAL_DELAY_SECONDS@@', "${kubernetesQuarkusLivenessInitialDelaySeconds}")
+			line = line.replace('@@KUBERNETES_QUARKUS_LIVENESS_INITIAL_DELAY_SECONDS@@', "${kubernetesQuarkusLivenessInitialDelaySeconds}")
 		}
 		if (project.hasProperty('kubernetesQuarkusLivenessPeriodSeconds')) {
-			line = line.replaceAll('@@KUBERNETES_QUARKUS_LIVENESS_PERIOD_SECONDS@@', "${kubernetesQuarkusLivenessPeriodSeconds}")
+			line = line.replace('@@KUBERNETES_QUARKUS_LIVENESS_PERIOD_SECONDS@@', "${kubernetesQuarkusLivenessPeriodSeconds}")
 		}
 		if (project.hasProperty('kubernetesQuarkusLivenessSuccessThreshold')) {
-			line = line.replaceAll('@@KUBERNETES_QUARKUS_LIVENESS_SUCCESS_THRESHOLD@@', "${kubernetesQuarkusLivenessSuccessThreshold}")
+			line = line.replace('@@KUBERNETES_QUARKUS_LIVENESS_SUCCESS_THRESHOLD@@', "${kubernetesQuarkusLivenessSuccessThreshold}")
 		}
 		if (project.hasProperty('kubernetesQuarkusLivenessTimeoutSeconds')) {
-			line = line.replaceAll('@@KUBERNETES_QUARKUS_LIVENESS_TIMEOUT_SECONDS@@', "${kubernetesQuarkusLivenessTimeoutSeconds}")
+			line = line.replace('@@KUBERNETES_QUARKUS_LIVENESS_TIMEOUT_SECONDS@@', "${kubernetesQuarkusLivenessTimeoutSeconds}")
 		}
 		if (project.hasProperty('kubernetesQuarkusStartupCheckPath')) {
-			line = line.replaceAll('@@KUBERNETES_QUARKUS_STARTUP_CHECK_PATH@@', "${kubernetesQuarkusStartupCheckPath}")
+			line = line.replace('@@KUBERNETES_QUARKUS_STARTUP_CHECK_PATH@@', "${kubernetesQuarkusStartupCheckPath}")
 		}
 		if (project.hasProperty('kubernetesQuarkusStartupFailureThreshold')) {
-			line = line.replaceAll('@@KUBERNETES_QUARKUS_STARTUP_FAILURE_THRESHOLD@@', "${kubernetesQuarkusStartupFailureThreshold}")
+			line = line.replace('@@KUBERNETES_QUARKUS_STARTUP_FAILURE_THRESHOLD@@', "${kubernetesQuarkusStartupFailureThreshold}")
 		}
 		if (project.hasProperty('kubernetesQuarkusStartupScheme')) {
-			line = line.replaceAll('@@KUBERNETES_QUARKUS_STARTUP_SCHEME@@', "${kubernetesQuarkusStartupScheme}")
+			line = line.replace('@@KUBERNETES_QUARKUS_STARTUP_SCHEME@@', "${kubernetesQuarkusStartupScheme}")
 		}
 		if (project.hasProperty('kubernetesQuarkusStartupInitialDelaySeconds')) {
-			line = line.replaceAll('@@KUBERNETES_QUARKUS_STARTUP_INITIAL_DELAY_SECONDS@@', "${kubernetesQuarkusStartupInitialDelaySeconds}")
+			line = line.replace('@@KUBERNETES_QUARKUS_STARTUP_INITIAL_DELAY_SECONDS@@', "${kubernetesQuarkusStartupInitialDelaySeconds}")
 		}
 		if (project.hasProperty('kubernetesQuarkusStartupPeriodSeconds')) {
-			line = line.replaceAll('@@KUBERNETES_QUARKUS_STARTUP_PERIOD_SECONDS@@', "${kubernetesQuarkusStartupPeriodSeconds}")
+			line = line.replace('@@KUBERNETES_QUARKUS_STARTUP_PERIOD_SECONDS@@', "${kubernetesQuarkusStartupPeriodSeconds}")
 		}
 		if (project.hasProperty('kubernetesQuarkusStartupSuccessThreshold')) {
-			line = line.replaceAll('@@KUBERNETES_QUARKUS_STARTUP_SUCCESS_THRESHOLD@@', "${kubernetesQuarkusStartupSuccessThreshold}")
+			line = line.replace('@@KUBERNETES_QUARKUS_STARTUP_SUCCESS_THRESHOLD@@', "${kubernetesQuarkusStartupSuccessThreshold}")
 		}
 		if (project.hasProperty('kubernetesQuarkusStartupTimeoutSeconds')) {
-			line = line.replaceAll('@@KUBERNETES_QUARKUS_STARTUP_TIMEOUT_SECONDS@@', "${kubernetesQuarkusStartupTimeoutSeconds}")
+			line = line.replace('@@KUBERNETES_QUARKUS_STARTUP_TIMEOUT_SECONDS@@', "${kubernetesQuarkusStartupTimeoutSeconds}")
 		}
 
 		if (project.hasProperty('kubernetesNodeReadinessCheckPath')) {
-			line = line.replaceAll('@@KUBERNETES_NODE_READINESS_CHECK_PATH@@', "${kubernetesNodeReadinessCheckPath}")
+			line = line.replace('@@KUBERNETES_NODE_READINESS_CHECK_PATH@@', "${kubernetesNodeReadinessCheckPath}")
 		}
 		if (project.hasProperty('kubernetesNodeReadinessFailureThreshold')) {
-			line = line.replaceAll('@@KUBERNETES_NODE_READINESS_FAILURE_THRESHOLD@@', "${kubernetesNodeReadinessFailureThreshold}")
+			line = line.replace('@@KUBERNETES_NODE_READINESS_FAILURE_THRESHOLD@@', "${kubernetesNodeReadinessFailureThreshold}")
 		}
 		if (project.hasProperty('kubernetesNodeReadinessScheme')) {
-			line = line.replaceAll('@@KUBERNETES_NODE_READINESS_SCHEME@@', "${kubernetesNodeReadinessScheme}")
+			line = line.replace('@@KUBERNETES_NODE_READINESS_SCHEME@@', "${kubernetesNodeReadinessScheme}")
 		}
 		if (project.hasProperty('kubernetesNodeReadinessInitialDelaySeconds')) {
-			line = line.replaceAll('@@KUBERNETES_NODE_READINESS_INITIAL_DELAY_SECONDS@@', "${kubernetesNodeReadinessInitialDelaySeconds}")
+			line = line.replace('@@KUBERNETES_NODE_READINESS_INITIAL_DELAY_SECONDS@@', "${kubernetesNodeReadinessInitialDelaySeconds}")
 		}
 		if (project.hasProperty('kubernetesNodeReadinessPeriodSeconds')) {
-			line = line.replaceAll('@@KUBERNETES_NODE_READINESS_PERIOD_SECONDS@@', "${kubernetesNodeReadinessPeriodSeconds}")
+			line = line.replace('@@KUBERNETES_NODE_READINESS_PERIOD_SECONDS@@', "${kubernetesNodeReadinessPeriodSeconds}")
 		}
 		if (project.hasProperty('kubernetesNodeReadinessSuccessThreshold')) {
-			line = line.replaceAll('@@KUBERNETES_NODE_READINESS_SUCCESS_THRESHOLD@@', "${kubernetesNodeReadinessSuccessThreshold}")
+			line = line.replace('@@KUBERNETES_NODE_READINESS_SUCCESS_THRESHOLD@@', "${kubernetesNodeReadinessSuccessThreshold}")
 		}
 		if (project.hasProperty('kubernetesNodeReadinessTimeoutSeconds')) {
-			line = line.replaceAll('@@KUBERNETES_NODE_READINESS_TIMEOUT_SECONDS@@', "${kubernetesNodeReadinessTimeoutSeconds}")
+			line = line.replace('@@KUBERNETES_NODE_READINESS_TIMEOUT_SECONDS@@', "${kubernetesNodeReadinessTimeoutSeconds}")
 		}
 		if (project.hasProperty('kubernetesNodeLivenessCheckPath')) {
-			line = line.replaceAll('@@KUBERNETES_NODE_LIVENESS_CHECK_PATH@@', "${kubernetesNodeLivenessCheckPath}")
+			line = line.replace('@@KUBERNETES_NODE_LIVENESS_CHECK_PATH@@', "${kubernetesNodeLivenessCheckPath}")
 		}
 		if (project.hasProperty('kubernetesNodeLivenessFailureThreshold')) {
-			line = line.replaceAll('@@KUBERNETES_NODE_LIVENESS_FAILURE_THRESHOLD@@', "${kubernetesNodeLivenessFailureThreshold}")
+			line = line.replace('@@KUBERNETES_NODE_LIVENESS_FAILURE_THRESHOLD@@', "${kubernetesNodeLivenessFailureThreshold}")
 		}
 		if (project.hasProperty('kubernetesNodeLivenessScheme')) {
-			line = line.replaceAll('@@KUBERNETES_NODE_LIVENESS_SCHEME@@', "${kubernetesNodeLivenessScheme}")
+			line = line.replace('@@KUBERNETES_NODE_LIVENESS_SCHEME@@', "${kubernetesNodeLivenessScheme}")
 		}
 		if (project.hasProperty('kubernetesNodeLivenessInitialDelaySeconds')) {
-			line = line.replaceAll('@@KUBERNETES_NODE_LIVENESS_INITIAL_DELAY_SECONDS@@', "${kubernetesNodeLivenessInitialDelaySeconds}")
+			line = line.replace('@@KUBERNETES_NODE_LIVENESS_INITIAL_DELAY_SECONDS@@', "${kubernetesNodeLivenessInitialDelaySeconds}")
 		}
 		if (project.hasProperty('kubernetesNodeLivenessPeriodSeconds')) {
-			line = line.replaceAll('@@KUBERNETES_NODE_LIVENESS_PERIOD_SECONDS@@', "${kubernetesNodeLivenessPeriodSeconds}")
+			line = line.replace('@@KUBERNETES_NODE_LIVENESS_PERIOD_SECONDS@@', "${kubernetesNodeLivenessPeriodSeconds}")
 		}
 		if (project.hasProperty('kubernetesNodeLivenessSuccessThreshold')) {
-			line = line.replaceAll('@@KUBERNETES_NODE_LIVENESS_SUCCESS_THRESHOLD@@', "${kubernetesNodeLivenessSuccessThreshold}")
+			line = line.replace('@@KUBERNETES_NODE_LIVENESS_SUCCESS_THRESHOLD@@', "${kubernetesNodeLivenessSuccessThreshold}")
 		}
 		if (project.hasProperty('kubernetesNodeLivenessTimeoutSeconds')) {
-			line = line.replaceAll('@@KUBERNETES_NODE_LIVENESS_TIMEOUT_SECONDS@@', "${kubernetesNodeLivenessTimeoutSeconds}")
+			line = line.replace('@@KUBERNETES_NODE_LIVENESS_TIMEOUT_SECONDS@@', "${kubernetesNodeLivenessTimeoutSeconds}")
 		}
 		if (project.hasProperty('kubernetesNodeStartupCheckPath')) {
-			line = line.replaceAll('@@KUBERNETES_NODE_STARTUP_CHECK_PATH@@', "${kubernetesNodeStartupCheckPath}")
+			line = line.replace('@@KUBERNETES_NODE_STARTUP_CHECK_PATH@@', "${kubernetesNodeStartupCheckPath}")
 		}
 		if (project.hasProperty('kubernetesNodeStartupFailureThreshold')) {
-			line = line.replaceAll('@@KUBERNETES_NODE_STARTUP_FAILURE_THRESHOLD@@', "${kubernetesNodeStartupFailureThreshold}")
+			line = line.replace('@@KUBERNETES_NODE_STARTUP_FAILURE_THRESHOLD@@', "${kubernetesNodeStartupFailureThreshold}")
 		}
 		if (project.hasProperty('kubernetesNodeStartupScheme')) {
-			line = line.replaceAll('@@KUBERNETES_NODE_STARTUP_SCHEME@@', "${kubernetesNodeStartupScheme}")
+			line = line.replace('@@KUBERNETES_NODE_STARTUP_SCHEME@@', "${kubernetesNodeStartupScheme}")
 		}
 		if (project.hasProperty('kubernetesNodeStartupInitialDelaySeconds')) {
-			line = line.replaceAll('@@KUBERNETES_NODE_STARTUP_INITIAL_DELAY_SECONDS@@', "${kubernetesNodeStartupInitialDelaySeconds}")
+			line = line.replace('@@KUBERNETES_NODE_STARTUP_INITIAL_DELAY_SECONDS@@', "${kubernetesNodeStartupInitialDelaySeconds}")
 		}
 		if (project.hasProperty('kubernetesNodeStartupPeriodSeconds')) {
-			line = line.replaceAll('@@KUBERNETES_NODE_STARTUP_PERIOD_SECONDS@@', "${kubernetesNodeStartupPeriodSeconds}")
+			line = line.replace('@@KUBERNETES_NODE_STARTUP_PERIOD_SECONDS@@', "${kubernetesNodeStartupPeriodSeconds}")
 		}
 		if (project.hasProperty('kubernetesNodeStartupSuccessThreshold')) {
-			line = line.replaceAll('@@KUBERNETES_NODE_STARTUP_SUCCESS_THRESHOLD@@', "${kubernetesNodeStartupSuccessThreshold}")
+			line = line.replace('@@KUBERNETES_NODE_STARTUP_SUCCESS_THRESHOLD@@', "${kubernetesNodeStartupSuccessThreshold}")
 		}
 		if (project.hasProperty('kubernetesNodeStartupTimeoutSeconds')) {
-			line = line.replaceAll('@@KUBERNETES_NODE_STARTUP_TIMEOUT_SECONDS@@', "${kubernetesNodeStartupTimeoutSeconds}")
+			line = line.replace('@@KUBERNETES_NODE_STARTUP_TIMEOUT_SECONDS@@', "${kubernetesNodeStartupTimeoutSeconds}")
 		}
 
 		if (project.hasProperty('kubernetesIdmReadinessCheckPath')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_READINESS_CHECK_PATH@@', "${kubernetesIdmReadinessCheckPath}")
+			line = line.replace('@@KUBERNETES_IDM_READINESS_CHECK_PATH@@', "${kubernetesIdmReadinessCheckPath}")
 		}
 		if (project.hasProperty('kubernetesIdmReadinessFailureThreshold')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_READINESS_FAILURE_THRESHOLD@@', "${kubernetesIdmReadinessFailureThreshold}")
+			line = line.replace('@@KUBERNETES_IDM_READINESS_FAILURE_THRESHOLD@@', "${kubernetesIdmReadinessFailureThreshold}")
 		}
 		if (project.hasProperty('kubernetesIdmReadinessScheme')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_READINESS_SCHEME@@', "${kubernetesIdmReadinessScheme}")
+			line = line.replace('@@KUBERNETES_IDM_READINESS_SCHEME@@', "${kubernetesIdmReadinessScheme}")
 		}
 		if (project.hasProperty('kubernetesIdmReadinessInitialDelaySeconds')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_READINESS_INITIAL_DELAY_SECONDS@@', "${kubernetesIdmReadinessInitialDelaySeconds}")
+			line = line.replace('@@KUBERNETES_IDM_READINESS_INITIAL_DELAY_SECONDS@@', "${kubernetesIdmReadinessInitialDelaySeconds}")
 		}
 		if (project.hasProperty('kubernetesIdmReadinessPeriodSeconds')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_READINESS_PERIOD_SECONDS@@', "${kubernetesIdmReadinessPeriodSeconds}")
+			line = line.replace('@@KUBERNETES_IDM_READINESS_PERIOD_SECONDS@@', "${kubernetesIdmReadinessPeriodSeconds}")
 		}
 		if (project.hasProperty('kubernetesIdmReadinessSuccessThreshold')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_READINESS_SUCCESS_THRESHOLD@@', "${kubernetesIdmReadinessSuccessThreshold}")
+			line = line.replace('@@KUBERNETES_IDM_READINESS_SUCCESS_THRESHOLD@@', "${kubernetesIdmReadinessSuccessThreshold}")
 		}
 		if (project.hasProperty('kubernetesIdmReadinessTimeoutSeconds')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_READINESS_TIMEOUT_SECONDS@@', "${kubernetesIdmReadinessTimeoutSeconds}")
+			line = line.replace('@@KUBERNETES_IDM_READINESS_TIMEOUT_SECONDS@@', "${kubernetesIdmReadinessTimeoutSeconds}")
 		}
 		if (project.hasProperty('kubernetesIdmLivenessCheckPath')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_LIVENESS_CHECK_PATH@@', "${kubernetesIdmLivenessCheckPath}")
+			line = line.replace('@@KUBERNETES_IDM_LIVENESS_CHECK_PATH@@', "${kubernetesIdmLivenessCheckPath}")
 		}
 		if (project.hasProperty('kubernetesIdmLivenessFailureThreshold')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_LIVENESS_FAILURE_THRESHOLD@@', "${kubernetesIdmLivenessFailureThreshold}")
+			line = line.replace('@@KUBERNETES_IDM_LIVENESS_FAILURE_THRESHOLD@@', "${kubernetesIdmLivenessFailureThreshold}")
 		}
 		if (project.hasProperty('kubernetesIdmLivenessScheme')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_LIVENESS_SCHEME@@', "${kubernetesIdmLivenessScheme}")
+			line = line.replace('@@KUBERNETES_IDM_LIVENESS_SCHEME@@', "${kubernetesIdmLivenessScheme}")
 		}
 		if (project.hasProperty('kubernetesIdmLivenessInitialDelaySeconds')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_LIVENESS_INITIAL_DELAY_SECONDS@@', "${kubernetesIdmLivenessInitialDelaySeconds}")
+			line = line.replace('@@KUBERNETES_IDM_LIVENESS_INITIAL_DELAY_SECONDS@@', "${kubernetesIdmLivenessInitialDelaySeconds}")
 		}
 		if (project.hasProperty('kubernetesIdmLivenessPeriodSeconds')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_LIVENESS_PERIOD_SECONDS@@', "${kubernetesIdmLivenessPeriodSeconds}")
+			line = line.replace('@@KUBERNETES_IDM_LIVENESS_PERIOD_SECONDS@@', "${kubernetesIdmLivenessPeriodSeconds}")
 		}
 		if (project.hasProperty('kubernetesIdmLivenessSuccessThreshold')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_LIVENESS_SUCCESS_THRESHOLD@@', "${kubernetesIdmLivenessSuccessThreshold}")
+			line = line.replace('@@KUBERNETES_IDM_LIVENESS_SUCCESS_THRESHOLD@@', "${kubernetesIdmLivenessSuccessThreshold}")
 		}
 		if (project.hasProperty('kubernetesIdmLivenessTimeoutSeconds')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_LIVENESS_TIMEOUT_SECONDS@@', "${kubernetesIdmLivenessTimeoutSeconds}")
+			line = line.replace('@@KUBERNETES_IDM_LIVENESS_TIMEOUT_SECONDS@@', "${kubernetesIdmLivenessTimeoutSeconds}")
 		}
 		if (project.hasProperty('kubernetesIdmStartupCheckPath')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_STARTUP_CHECK_PATH@@', "${kubernetesIdmStartupCheckPath}")
+			line = line.replace('@@KUBERNETES_IDM_STARTUP_CHECK_PATH@@', "${kubernetesIdmStartupCheckPath}")
 		}
 		if (project.hasProperty('kubernetesIdmStartupFailureThreshold')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_STARTUP_FAILURE_THRESHOLD@@', "${kubernetesIdmStartupFailureThreshold}")
+			line = line.replace('@@KUBERNETES_IDM_STARTUP_FAILURE_THRESHOLD@@', "${kubernetesIdmStartupFailureThreshold}")
 		}
 		if (project.hasProperty('kubernetesIdmStartupScheme')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_STARTUP_SCHEME@@', "${kubernetesIdmStartupScheme}")
+			line = line.replace('@@KUBERNETES_IDM_STARTUP_SCHEME@@', "${kubernetesIdmStartupScheme}")
 		}
 		if (project.hasProperty('kubernetesIdmStartupInitialDelaySeconds')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_STARTUP_INITIAL_DELAY_SECONDS@@', "${kubernetesIdmStartupInitialDelaySeconds}")
+			line = line.replace('@@KUBERNETES_IDM_STARTUP_INITIAL_DELAY_SECONDS@@', "${kubernetesIdmStartupInitialDelaySeconds}")
 		}
 		if (project.hasProperty('kubernetesIdmStartupPeriodSeconds')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_STARTUP_PERIOD_SECONDS@@', "${kubernetesIdmStartupPeriodSeconds}")
+			line = line.replace('@@KUBERNETES_IDM_STARTUP_PERIOD_SECONDS@@', "${kubernetesIdmStartupPeriodSeconds}")
 		}
 		if (project.hasProperty('kubernetesIdmStartupSuccessThreshold')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_STARTUP_SUCCESS_THRESHOLD@@', "${kubernetesIdmStartupSuccessThreshold}")
+			line = line.replace('@@KUBERNETES_IDM_STARTUP_SUCCESS_THRESHOLD@@', "${kubernetesIdmStartupSuccessThreshold}")
 		}
 		if (project.hasProperty('kubernetesIdmStartupTimeoutSeconds')) {
-			line = line.replaceAll('@@KUBERNETES_IDM_STARTUP_TIMEOUT_SECONDS@@', "${kubernetesIdmStartupTimeoutSeconds}")
+			line = line.replace('@@KUBERNETES_IDM_STARTUP_TIMEOUT_SECONDS@@', "${kubernetesIdmStartupTimeoutSeconds}")
 		}
 
 		if (project.hasProperty('kubernetesReadinessFailureThreshold')) {
-			line = line.replaceAll('@@KUBERNETES_READINESS_FAILURE_THRESHOLD@@', "${kubernetesReadinessFailureThreshold}")
+			line = line.replace('@@KUBERNETES_READINESS_FAILURE_THRESHOLD@@', "${kubernetesReadinessFailureThreshold}")
 		}
 		if (project.hasProperty('kubernetesReadinessScheme')) {
-			line = line.replaceAll('@@KUBERNETES_READINESS_SCHEME@@', "${kubernetesReadinessScheme}")
+			line = line.replace('@@KUBERNETES_READINESS_SCHEME@@', "${kubernetesReadinessScheme}")
 		}
 		if (project.hasProperty('kubernetesReadinessInitialDelaySeconds')) {
-			line = line.replaceAll('@@KUBERNETES_READINESS_INITIAL_DELAY_SECONDS@@', "${kubernetesReadinessInitialDelaySeconds}")
+			line = line.replace('@@KUBERNETES_READINESS_INITIAL_DELAY_SECONDS@@', "${kubernetesReadinessInitialDelaySeconds}")
 		}
 		if (project.hasProperty('kubernetesReadinessPeriodSeconds')) {
-			line = line.replaceAll('@@KUBERNETES_READINESS_PERIOD_SECONDS@@', "${kubernetesReadinessPeriodSeconds}")
+			line = line.replace('@@KUBERNETES_READINESS_PERIOD_SECONDS@@', "${kubernetesReadinessPeriodSeconds}")
 		}
 		if (project.hasProperty('kubernetesReadinessSuccessThreshold')) {
-			line = line.replaceAll('@@KUBERNETES_READINESS_SUCCESS_THRESHOLD@@', "${kubernetesReadinessSuccessThreshold}")
+			line = line.replace('@@KUBERNETES_READINESS_SUCCESS_THRESHOLD@@', "${kubernetesReadinessSuccessThreshold}")
 		}
 		if (project.hasProperty('kubernetesReadinessTimeoutSeconds')) {
-			line = line.replaceAll('@@KUBERNETES_READINESS_TIMEOUT_SECONDS@@', "${kubernetesReadinessTimeoutSeconds}")
+			line = line.replace('@@KUBERNETES_READINESS_TIMEOUT_SECONDS@@', "${kubernetesReadinessTimeoutSeconds}")
 		}
 		if (project.hasProperty('kubernetesLivenessFailureThreshold')) {
-			line = line.replaceAll('@@KUBERNETES_LIVENESS_FAILURE_THRESHOLD@@', "${kubernetesLivenessFailureThreshold}")
+			line = line.replace('@@KUBERNETES_LIVENESS_FAILURE_THRESHOLD@@', "${kubernetesLivenessFailureThreshold}")
 		}
 		if (project.hasProperty('kubernetesLivenessScheme')) {
-			line = line.replaceAll('@@KUBERNETES_LIVENESS_SCHEME@@', "${kubernetesLivenessScheme}")
+			line = line.replace('@@KUBERNETES_LIVENESS_SCHEME@@', "${kubernetesLivenessScheme}")
 		}
 		if (project.hasProperty('kubernetesLivenessInitialDelaySeconds')) {
-			line = line.replaceAll('@@KUBERNETES_LIVENESS_INITIAL_DELAY_SECONDS@@', "${kubernetesLivenessInitialDelaySeconds}")
+			line = line.replace('@@KUBERNETES_LIVENESS_INITIAL_DELAY_SECONDS@@', "${kubernetesLivenessInitialDelaySeconds}")
 		}
 		if (project.hasProperty('kubernetesLivenessPeriodSeconds')) {
-			line = line.replaceAll('@@KUBERNETES_LIVENESS_PERIOD_SECONDS@@', "${kubernetesLivenessPeriodSeconds}")
+			line = line.replace('@@KUBERNETES_LIVENESS_PERIOD_SECONDS@@', "${kubernetesLivenessPeriodSeconds}")
 		}
 		if (project.hasProperty('kubernetesLivenessSuccessThreshold')) {
-			line = line.replaceAll('@@KUBERNETES_LIVENESS_SUCCESS_THRESHOLD@@', "${kubernetesLivenessSuccessThreshold}")
+			line = line.replace('@@KUBERNETES_LIVENESS_SUCCESS_THRESHOLD@@', "${kubernetesLivenessSuccessThreshold}")
 		}
 		if (project.hasProperty('kubernetesLivenessTimeoutSeconds')) {
-			line = line.replaceAll('@@KUBERNETES_LIVENESS_TIMEOUT_SECONDS@@', "${kubernetesLivenessTimeoutSeconds}")
+			line = line.replace('@@KUBERNETES_LIVENESS_TIMEOUT_SECONDS@@', "${kubernetesLivenessTimeoutSeconds}")
 		}
 		if (project.hasProperty('kubernetesStartupFailureThreshold')) {
-			line = line.replaceAll('@@KUBERNETES_STARTUP_FAILURE_THRESHOLD@@', "${kubernetesStartupFailureThreshold}")
+			line = line.replace('@@KUBERNETES_STARTUP_FAILURE_THRESHOLD@@', "${kubernetesStartupFailureThreshold}")
 		}
 		if (project.hasProperty('kubernetesStartupScheme')) {
-			line = line.replaceAll('@@KUBERNETES_STARTUP_SCHEME@@', "${kubernetesStartupScheme}")
+			line = line.replace('@@KUBERNETES_STARTUP_SCHEME@@', "${kubernetesStartupScheme}")
 		}
 		if (project.hasProperty('kubernetesStartupInitialDelaySeconds')) {
-			line = line.replaceAll('@@KUBERNETES_STARTUP_INITIAL_DELAY_SECONDS@@', "${kubernetesStartupInitialDelaySeconds}")
+			line = line.replace('@@KUBERNETES_STARTUP_INITIAL_DELAY_SECONDS@@', "${kubernetesStartupInitialDelaySeconds}")
 		}
 		if (project.hasProperty('kubernetesStartupPeriodSeconds')) {
-			line = line.replaceAll('@@KUBERNETES_STARTUP_PERIOD_SECONDS@@', "${kubernetesStartupPeriodSeconds}")
+			line = line.replace('@@KUBERNETES_STARTUP_PERIOD_SECONDS@@', "${kubernetesStartupPeriodSeconds}")
 		}
 		if (project.hasProperty('kubernetesStartupSuccessThreshold')) {
-			line = line.replaceAll('@@KUBERNETES_STARTUP_SUCCESS_THRESHOLD@@', "${kubernetesStartupSuccessThreshold}")
+			line = line.replace('@@KUBERNETES_STARTUP_SUCCESS_THRESHOLD@@', "${kubernetesStartupSuccessThreshold}")
 		}
 		if (project.hasProperty('kubernetesStartupTimeoutSeconds')) {
-			line = line.replaceAll('@@KUBERNETES_STARTUP_TIMEOUT_SECONDS@@', "${kubernetesStartupTimeoutSeconds}")
+			line = line.replace('@@KUBERNETES_STARTUP_TIMEOUT_SECONDS@@', "${kubernetesStartupTimeoutSeconds}")
 		}
 		
 		// elastic
 		if (project.hasProperty('esElasticsearchVersion')) {
-			line = line.replaceAll('@@ES_ELASTICSEARCH_VERSION@@', "${esElasticsearchVersion}")
+			line = line.replace('@@ES_ELASTICSEARCH_VERSION@@', "${esElasticsearchVersion}")
 		}
 		if (project.hasProperty('esElasticsearchClusterName')) {
-			line = line.replaceAll('@@ES_ELASTICSEARCH_CLUSTER_NAME@@', "${esElasticsearchClusterName}")
+			line = line.replace('@@ES_ELASTICSEARCH_CLUSTER_NAME@@', "${esElasticsearchClusterName}")
 		}
 		if (project.hasProperty('esElasticsearchReplicas')) {
-			line = line.replaceAll('@@ES_ELASTICSEARCH_REPLICAS@@', "${esElasticsearchReplicas}")
+			line = line.replace('@@ES_ELASTICSEARCH_REPLICAS@@', "${esElasticsearchReplicas}")
 		}
 		if (project.hasProperty('esElasticsearchStorageSize')) {
-			line = line.replaceAll('@@ES_ELASTICSEARCH_STORAGE_SIZE@@', "${esElasticsearchStorageSize}")
+			line = line.replace('@@ES_ELASTICSEARCH_STORAGE_SIZE@@', "${esElasticsearchStorageSize}")
 		}
 		if (project.hasProperty('esElasticsearchStorageClassName')) {
-			line = line.replaceAll('@@ES_ELASTICSEARCH_STORAGE_CLASS_NAME@@', "${esElasticsearchStorageClassName}")
+			line = line.replace('@@ES_ELASTICSEARCH_STORAGE_CLASS_NAME@@', "${esElasticsearchStorageClassName}")
 		}
 		
 		// dist path
 		if (project.hasProperty('commonGradleBuildDistName')) {
-			line = line.replaceAll('@@DISTNAME@@', "${project.ext.commonGradleBuildDistName}".toString())
+			line = line.replace('@@DISTNAME@@', "${project.ext.commonGradleBuildDistName}".toString())
 		}
 
 		// jwebserver
 		if (project.hasProperty('resolveParentResourceIfNotFound')) {
-			line = line.replaceAll('@@resolveParentResourceIfNotFound@@', "${project.ext.resolveParentResourceIfNotFound}".toString())
+			line = line.replace('@@resolveParentResourceIfNotFound@@', "${project.ext.resolveParentResourceIfNotFound}".toString())
 		}
 	}
 	

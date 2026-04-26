@@ -20,9 +20,10 @@
  */
 
 ext.NOW = new Date();
-ext.MAX_LINELENGTH = 88
-ext.LINE = '----------------------------------------------------------------------------------------'
-ext.STAR_LINE = '****************************************************************************************'
+ext.MAX_LINELENGTH = 120
+ext.LINE = '------------------------------------------------------------------------------------------------------------------------'
+ext.STAR_LINE = '************************************************************************************************************************'
+ext.DOT_LINE  = '........................................................................................................................'
 ext.LOGPREFIX = "> "
 ext.INDENT = "  "
 ext.NELINE = '\n'
@@ -31,7 +32,17 @@ ext.BRACE_END = '}'
 ext.QUOTATION_MARKS = '\"'
 ext.SNAPSHOT_TAG_NAME = "SNAPSHOT"
 ext.STYLER_NO_COLOR = 'black red green yellow blue magenta cyan white' .split().toList().withIndex(30).collectEntries { key, val -> [(key) : { "${it}" }] }
+ext.STYLER_NO_COLOR.put('bg_dark_red', { "${it}" })
+ext.STYLER_NO_COLOR.put('bg_dark_green', { "${it}" })
+ext.STYLER_NO_COLOR.put('light_lavender', { "${it}" })
+ext.STYLER_NO_COLOR.put('light_pink', { "${it}" })
+ext.STYLER_NO_COLOR.put('bright_white', { "${it}" })
 ext.STYLER_COLOR = 'black red green yellow blue magenta cyan white' .split().toList().withIndex(30).collectEntries { key, val -> [(key) : { "\033[${val}m${it}\033[0m" }] }
+ext.STYLER_COLOR.put('bg_dark_red', { "\033[48;5;88;1;97m${it}\033[0m" })
+ext.STYLER_COLOR.put('bg_dark_green', { "\033[48;5;22;1;97m${it}\033[0m" })
+ext.STYLER_COLOR.put('light_lavender', { "\033[38;5;147m${it}\033[0m" })
+ext.STYLER_COLOR.put('light_pink', { "\033[38;5;183m${it}\033[0m" })
+ext.STYLER_COLOR.put('bright_white', { "\033[97m${it}\033[0m" })
 
 if (ext.has("org.gradle.console") && "plain".equalsIgnoreCase(ext.get("org.gradle.console").toString().trim())
 	|| project.hasProperty("org.gradle.console") && "plain".equalsIgnoreCase(project.getProperty("org.gradle.console").toString().trim())) {
@@ -40,12 +51,15 @@ if (ext.has("org.gradle.console") && "plain".equalsIgnoreCase(ext.get("org.gradl
 	ext.STYLER = ext.STYLER_COLOR;
 }
 
-ext.INFO_LEVEL = 'magenta'
-ext.DEBUG_LEVEL = 'magenta'
+ext.INFO_LEVEL = 'light_lavender'
+ext.DEBUG_LEVEL = 'light_pink'
 ext.WARN_LEVEL = 'yellow'
-ext.ERROR_LEVEL = 'red'
+ext.ERROR_LEVEL = 'bg_dark_red'
+ext.ERROR_LINE_LEVEL = 'red'
 ext.TITLE_LEVEL = 'yellow'
 ext.HIGHLITE_LEVEL = 'cyan'
+ext.HIGHLITE_INFO_LEVEL = 'bright_white'
+ext.SUCCESS_HINT_LEVEL = 'bg_dark_green'
 ext.SUCCESS_LEVEL = 'green'
 
 ext.BUILD_TIMESTAMP = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(NOW)

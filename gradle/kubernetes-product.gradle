@@ -176,7 +176,7 @@ ext.createContainerImageFileList = { fileContent ->
 	def counter = 0
 	def line
 	def imageList = []
-	def imageListContent = new File("$gradleBuildDirectory/$kubernetesConfigurationPathname/${rootProject.name}-docker-reference.txt")
+	def imageListContent = new File("${kubernetesDockerReferenceFile}")
 	printInfo("> Create container image reference " + colorize(HIGHLITE_LEVEL, "${imageListContent}".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")
 	def kubernetesInstallDockerPull = ""
 	fileContent.withReader {
@@ -497,14 +497,43 @@ task kubernetesIngress() {
 	onlyIf { return project.hasProperty('kubernetesSupportIngressNginx') && project.getProperty('kubernetesSupportIngressNginx') }
 	
 	doFirst {
+		if (project.hasProperty('kubernetesIngressNginxDeprecationWarning') && "true".equalsIgnoreCase("${project.getProperty('kubernetesIngressNginxDeprecationWarning')}".toString().trim())) {
+			printWarn("DEPRECATED: ingress-nginx is archived (March 2026) and will receive no further security updates.")
+			printWarn("            Migrate to Gateway API: set " + colorize(HIGHLITE_LEVEL, "kubernetesGatewayApiSupport=true"))
+		}
 		printInfo("> Create kubernetes ingress configuration " + colorize(HIGHLITE_LEVEL, "${kubernetesIngresControlFilename}".replace("$gradleBuildDirectory/", "")) + ".")
 
 		def hasOnlineConnection = project.hasProperty('HAS_ONLINE_CONNECTION') && project.getProperty('HAS_ONLINE_CONNECTION')
 		if (hasOnlineConnection && project.hasProperty('kubernetesDownloadIngressNginxVersion') && project.getProperty('kubernetesDownloadIngressNginxVersion') && project.hasProperty('kubernetesIngressUrl')) {
-			def count = downloadAndReplace("$kubernetesIngressUrl", "$kubernetesIngresControlFilename", "$kubernetesNamespace")			
+			def count = downloadAndReplace("$kubernetesIngressUrl", "$kubernetesIngresControlFilename", "$kubernetesNamespace")
 		} else {
 			createFileFromTemplate("$kubernetesIngresControlFilename", getTemplateFile('kubernetes-ingess-nginx.template'), true /*overwrite*/, false /*print*/)
 		}
+	}
+}
+
+
+/***************************************************************************************
+ * Get kubernetes Gateway API configuration (HTTPRoute + optional Gateway)
+ ***************************************************************************************/
+task kubernetesGatewayApi() {
+	group = 'Build'
+	description = 'Creates kubernetes Gateway API configuration (HTTPRoute)'
+	dependsOn kubernetesApplicationConfig
+	onlyIf { return project.hasProperty('kubernetesGatewayApiSupport') && "true".equalsIgnoreCase("${project.getProperty('kubernetesGatewayApiSupport')}".toString().trim()) }
+
+	doFirst {
+		def gatewayApiPath = "${kubernetesConfigurationElementsPath}"
+
+		// create HTTPRoute (always — this is the per-service routing rule)
+		def httpRouteFile = "${gatewayApiPath}/${rootProject.name}-httproute.yaml"
+		printInfo("> Create Gateway API HTTPRoute " + colorize(HIGHLITE_LEVEL, httpRouteFile.replace("$gradleBuildDirectory/", "")) + ".")
+		createFileFromTemplate("$httpRouteFile", getTemplateFile('kubernetes-httproute.template'), true /*overwrite*/, false /*print*/)
+
+		// create Gateway resource (optional — platform admin typically creates this once)
+		def gatewayFile = "${gatewayApiPath}/${rootProject.name}-gateway.yaml"
+		printInfo("> Create Gateway API Gateway " + colorize(HIGHLITE_LEVEL, gatewayFile.replace("$gradleBuildDirectory/", "")) + ".")
+		createFileFromTemplate("$gatewayFile", getTemplateFile('kubernetes-gateway.template'), true /*overwrite*/, false /*print*/)
 	}
 }
 
@@ -792,7 +821,7 @@ task processKubernetesDependencies() {
 /****************************************************************************************
  * Extract kubernetes artefacts
  ****************************************************************************************/
-task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extractKubernetes', 'extractKubernetesInformation', 'copyAppResources', 'processKubernetesDependencies', 'prepareEnumConfigurationIndex', 'kubernetesDatabase']) {
+task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesGatewayApi', 'kubernetesIdm', 'extractKubernetes', 'extractKubernetesInformation', 'copyAppResources', 'processKubernetesDependencies', 'prepareEnumConfigurationIndex', 'kubernetesDatabase']) {
 	group = 'Build'
 	description = 'Concat kubernetes dependencies'	
 
@@ -817,8 +846,10 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 		setCommonGradleProperty("kubernetesInstallApplication", "${kubernetesApplyCommand} ${kubernetesApplicationFilename}")
 		
 		// set uninstall information
-		def kubernetesDeleteApplication = "${kubernetesDeleteCommand} namespace ${kubernetesNamespace} --namespace=${kubernetesNamespace}" + NELINE
-		kubernetesDeleteApplication += "${kubernetesDeleteCommand} -A ValidatingWebhookConfiguration ingress-nginx-admission"
+		def kubernetesDeleteApplication = "${kubernetesDeleteCommand} namespace ${kubernetesNamespace} --namespace=${kubernetesNamespace}"
+		if (project.hasProperty('kubernetesSupportIngressNginx') && "true".equalsIgnoreCase("${project.getProperty('kubernetesSupportIngressNginx')}".toString().trim())) {
+			kubernetesDeleteApplication += NELINE + "${kubernetesDeleteCommand} -A ValidatingWebhookConfiguration ingress-nginx-admission"
+		}
 		setCommonGradleDefaultPropertyIfNull('kubernetesDeleteApplication', kubernetesDeleteApplication)
 
 		def fileContent = new File("${kubernetesConfigurationPath}/${kubernetesApplicationFilename}")
@@ -871,6 +902,32 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesIdm', 'extract
 				}
 			}
 			fileContent.append("---" + NELINE)
+		}
+
+		// combine Gateway API resources (HTTPRoute + Gateway)
+		if (project.hasProperty('kubernetesGatewayApiSupport') && "true".equalsIgnoreCase("${project.getProperty('kubernetesGatewayApiSupport')}".toString().trim())) {
+			def httpRouteFile = new File("${kubernetesConfigurationElementsPath}/${rootProject.name}-httproute.yaml")
+			def gatewayFile = new File("${kubernetesConfigurationElementsPath}/${rootProject.name}-gateway.yaml")
+
+			[gatewayFile, httpRouteFile].each { f ->
+				if (f.exists()) {
+					header = true
+					f.withReader {
+						while ((line = it.readLine()) != null) {
+							if (!header || !line.startsWith("#") || line.toString().trim().isBlank()) {
+								fileContent.append(line + NELINE)
+								header = false
+							}
+						}
+					}
+					fileContent.append("---" + NELINE)
+
+					if (project.hasProperty('kustomizeSupport') && project.getProperty('kustomizeSupport')) {
+						copyFile(f.absolutePath, "$kustomizeConfigurationPath/$kustomizeBaseConfigurationPath/" + f.getName())
+						kustomizeResources.add("$kustomizeBaseConfigurationPath/" + f.getName())
+					}
+				}
+			}
 		}
 
 		// process all service definitions and select information

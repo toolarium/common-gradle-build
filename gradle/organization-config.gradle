@@ -70,8 +70,8 @@ projectValidation {
 			new File(binPath).mkdirs()
 			def commonBuildHome=System.getenv('CB_HOME') 
 			if (commonBuildHome!=null) {
-				copyFile("${commonBuildHome}/bin/sample/cb-custom.bat", "${binPath}/cb-custom.bat")
-				copyFile("${commonBuildHome}/bin/sample/cb-custom.sh", "${binPath}/cb-custom.sh")
+				copyFile("${commonBuildHome}/docs/sample/cb-custom.bat", "${binPath}/cb-custom.bat")
+				copyFile("${commonBuildHome}/docs/sample/cb-custom.sh", "${binPath}/cb-custom.sh")
 				//copyFile("${commonBuildHome}/conf/dockterm-types.properties", "${confPath}/dockterm-types.properties")
 				//copyFile("${commonBuildHome}/conf/dockterm-types.properties", "${confPath}/dockterm-types.properties")
 			}
@@ -109,7 +109,7 @@ projectValidation {
 			createFileFromTemplate("${gradleCheckstyleTemplatePath}/checkstyle.xml", getTemplateFile('checkstyle.xml.template', 'checkstyle'))
 			
 			delete "$editorConfigFile"
-			delete "$settingsGradleFile"			
+			delete "$settingsGradleFile"
 			delete "$rootDirectory/README.md"
 			delete "$gradlePropertiesFile"
 			delete "$buildGradleFile"

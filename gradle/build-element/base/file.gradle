@@ -432,12 +432,25 @@ ext.readPropertiesFile = { inputFile ->
 		logInfo("Read properties file " + colorize(HIGHLITE_LEVEL, inputFile) + colorize(INFO_LEVEL, "."))
 		File file = new File(inputFile);
 		if (file.exists() && file.canRead()) {
-			file.withInputStream { properties.load(it) }
+			// Custom parsing: Java Properties.load() treats ':' as a key-value delimiter,
+			// but we need to support ':' in keys (e.g. com.github.toolarium:toolarium-enum-configuration).
+			// Only '=' is used as key-value separator.
+			file.eachLine { line ->
+				def trimmed = line.trim()
+				if (!trimmed.isEmpty() && !trimmed.startsWith("#") && !trimmed.startsWith("!")) {
+					def idx = trimmed.indexOf("=")
+					if (idx > 0) {
+						def key = trimmed.substring(0, idx).trim()
+						def value = trimmed.substring(idx + 1).trim()
+						properties.setProperty(key, value)
+					}
+				}
+			}
 		}
 	} else {
 		logInfo("Could not read properties file.")
 	}
-	
+
 	return properties
 }
 

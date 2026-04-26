@@ -30,8 +30,8 @@ if ("windows" == getOsName()) {
 	setCommonGradleDefaultPropertyIfNull("userHomeDirectory", '~/')
 }
 
-setCommonGradleDefaultPropertyIfNull("snakeYamlVersion", "1.29")
-setCommonGradleDefaultPropertyIfNull("grgitCoreVersion", "4.1.1")
+setCommonGradleDefaultPropertyIfNull("snakeYamlVersion", "2.3")
+setCommonGradleDefaultPropertyIfNull("grgitCoreVersion", "5.3.2")
 setCommonGradleDefaultPropertyIfNull("jsurferVersion", "1.6.3")
 setCommonGradleDefaultPropertyIfNull("semver4jVersion", "3.1.0")
 setCommonGradleDefaultPropertyIfNull("gradleWrapperDefaultVersion", "8.13")
@@ -257,13 +257,6 @@ setCommonGradleDefaultPropertyIfNull("installGradleWrapper", true)
 
 
 /***************************************************************************************
- * Use git credentials manager
- * Issue in grgit
- ***************************************************************************************/
-setCommonGradleDefaultPropertyIfNull("scmUseCredentialManager", false)
-
-
-/***************************************************************************************
  * show created artefacts
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("showCreatedArtefacts", true)
@@ -343,15 +336,16 @@ if (Integer.valueOf(gradle.gradleVersion.toString().split('\\.')[0])<7) {
     setCommonGradleDefaultPropertyIfNull("allowJCenterRepository", false)
     setCommonGradleDefaultPropertyIfNull("allowMavenCenterRepository", true)
 }
-setCommonGradleDefaultPropertyIfNull("mavenPublishUrl", "https://oss.sonatype.org/service/local/staging/deploy/maven2") // or https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/
-setCommonGradleDefaultPropertyIfNull("mavenRepositoryUrl", "https://oss.sonatype.org/content/repositories/public")
+setCommonGradleDefaultPropertyIfNull("mavenPublishUrl", "https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/") // previous: https://oss.sonatype.org/service/local/staging/deploy/maven2
+setCommonGradleDefaultPropertyIfNull("mavenRepositoryUrl", "https://repo1.maven.org/maven2") // previous: https://oss.sonatype.org/content/repositories/public
 setCommonGradleDefaultPropertyIfNull("allowMavenRepository", false)
-setCommonGradleDefaultPropertyIfNull("mavenStagingPublishUrl", "https://oss.sonatype.org/service/local/staging/deploy/maven2")
-setCommonGradleDefaultPropertyIfNull("mavenStagingRepositoryUrl", "https://oss.sonatype.org/content/repositories/staging")
+setCommonGradleDefaultPropertyIfNull("mavenStagingPublishUrl", "https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/") // previous: https://oss.sonatype.org/service/local/staging/deploy/maven2
+setCommonGradleDefaultPropertyIfNull("mavenStagingRepositoryUrl", "https://ossrh-staging-api.central.sonatype.com/service/local/staging/") // previous: https://oss.sonatype.org/content/repositories/staging
 setCommonGradleDefaultPropertyIfNull("allowMavenStagingRepository", false)
-setCommonGradleDefaultPropertyIfNull("mavenSnapshotPublishUrl", "https://central.sonatype.com/repository/maven-snapshots") // https://oss.sonatype.org/content/repositories/snapshots or https://s01.oss.sonatype.org/content/repositories/snapshots
-setCommonGradleDefaultPropertyIfNull("mavenSnapshotRepositoryUrl", "https://central.sonatype.com/repository/maven-snapshots") // https://oss.sonatype.org/content/repositories/snapshots or https://s01.oss.sonatype.org/content/repositories/snapshots
+setCommonGradleDefaultPropertyIfNull("mavenSnapshotPublishUrl", "https://central.sonatype.com/repository/maven-snapshots/")
+setCommonGradleDefaultPropertyIfNull("mavenSnapshotRepositoryUrl", "https://central.sonatype.com/repository/maven-snapshots/")
 setCommonGradleDefaultPropertyIfNull("allowMavenSnapshotRepository", true)
+setCommonGradleDefaultPropertyIfNull("mavenPublishFinalizeUrl", "https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/")
 
 
 // use as default the sonatype repository -> url, username and password
@@ -388,7 +382,7 @@ setCommonGradleDefaultPropertyIfNull("testMaxHeapSize", "512m")
 
 if (initTesting) {
 	if (useJUnit) {
-		setCommonGradleDefaultPropertyIfNull("testDependencyVersion", "5.7.2") // 5.10.1
+		setCommonGradleDefaultPropertyIfNull("testDependencyVersion", "5.12.2") // aligned with Quarkus 3.20
 
 		if (testDependencyVersion!=null && !testDependencyVersion.isEmpty()) {
 			if (testDependencyVersion.startsWith("4.")) {
@@ -461,7 +455,7 @@ setCommonGradleDefaultPropertyIfNull("dependencyCheckReportFilter", "api, implem
  * code quality: checkstyle
  ***************************************************************************************/
 //setCommonGradleDefaultPropertyIfNull("checkstyleToolDefaultVersion", '10.3.3')
-setCommonGradleDefaultPropertyIfNull("checkstyleToolVersion", '10.3.3')
+setCommonGradleDefaultPropertyIfNull("checkstyleToolVersion", '13.4.0') // requires JDK 21+; for JDK 17 use 10.x
 setCommonGradleDefaultPropertyIfNull("checkstyleMaxWarnings", 0)
 setCommonGradleDefaultPropertyIfNull("checkstyleXMLReport", false)
 setCommonGradleDefaultPropertyIfNull("checkstyleHTMLReport", true)
@@ -475,7 +469,7 @@ setCommonGradleDefaultPropertyIfNull("checkstyleEclipseConfigurationOverwrite", 
 /***************************************************************************************
  * test coverage: jacoco
  ***************************************************************************************/
-setCommonGradleDefaultPropertyIfNull("jacocoToolDefaultVersion", '0.8.9')
+setCommonGradleDefaultPropertyIfNull("jacocoToolDefaultVersion", '0.8.14')
 setCommonGradleDefaultPropertyIfNull("jacocoXMLReport", true)
 setCommonGradleDefaultPropertyIfNull("jacocoCSVReport", false)
 setCommonGradleDefaultPropertyIfNull("jacocoHTMLReport", true)
@@ -486,7 +480,7 @@ setCommonGradleDefaultPropertyIfNull("jacocoReportPath", "${reportsPath}/testcov
  * sonar
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("sonarEnabled", false)
-setCommonGradleDefaultPropertyIfNull("sonarVersion", "4.4.1.3373")
+setCommonGradleDefaultPropertyIfNull("sonarVersion", "7.2.3.7755")
 
 
 /***************************************************************************************
@@ -532,7 +526,7 @@ setCommonGradleDefaultPropertyIfNull("servicePropertiesName", "toolarium-service
  ***************************************************************************************/
 // the quarkusPluginVersion is used for setup new projects where defaultQuarkusPluginVersion 
 // controls the used version and force for update.x
-setCommonGradleDefaultPropertyIfNull("defaultQuarkusPluginVersion", '3.20.4')
+setCommonGradleDefaultPropertyIfNull("defaultQuarkusPluginVersion", '3.20.6')
 //setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", '3.6.9')
 setCommonGradleDefaultPropertyIfNull("quarkusPluginVersion", "${defaultQuarkusPluginVersion}")
 setCommonGradleDefaultPropertyIfNull("quarkusReleaseUpdateVersion", true)
@@ -547,6 +541,16 @@ setCommonGradleDefaultPropertyIfNull("updateApplicationProperties", true)
 setCommonGradleDefaultPropertyIfNull("createServiceJavaRunner", true) // the dockerJavaRunner will be taken
 setCommonGradleDefaultPropertyIfNull("createServiceJavaAgent", false) // the dockerJavaAgent will be taken
 setCommonGradleDefaultPropertyIfNull("enablePatchRunTimeDefaultsConfigSource", false)
+
+if ("$quarkusPluginVersion".toString().equals("3.20.6")) {
+    configurations.all {
+        resolutionStrategy {
+            force 'com.fasterxml.jackson.core:jackson-core:2.18.6'
+            force 'io.netty:netty-codec-http:4.1.132.Final'
+            force 'io.netty:netty-codec-http2:4.1.132.Final'
+        }
+    }
+}
 
 
 /***************************************************************************************
@@ -565,7 +569,7 @@ setCommonGradleDefaultPropertyIfNull("nodeRegistry", "https://registry.npmjs.org
 
 setCommonGradleDefaultPropertyIfNull("webServerRunnerPackage", "com.github.toolarium")
 setCommonGradleDefaultPropertyIfNull("webServerRunnerName", "toolarium-jwebserver")
-setCommonGradleDefaultPropertyIfNull("webServerRunnerVersion", "1.2.7")
+setCommonGradleDefaultPropertyIfNull("webServerRunnerVersion", "1.2.8")
 setCommonGradleDefaultPropertyIfNull("webServerRunnerPropertiesName", "jwebserver.properties")
 setCommonGradleDefaultPropertyIfNull("resolveParentResourceIfNotFound", "")
 
@@ -575,7 +579,7 @@ setCommonGradleDefaultPropertyIfNull("resolveParentResourceIfNotFound", "")
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("srcMainApiSpecDirectoryName", "api-spec")
 setCommonGradleDefaultPropertyIfNull("srcMainApiSpecDirectory", "${srcMainDirectory}/${srcMainApiSpecDirectoryName}")
-setCommonGradleDefaultPropertyIfNull("defaultOpenapiPluginVersion", "7.2.0")
+setCommonGradleDefaultPropertyIfNull("defaultOpenapiPluginVersion", "7.12.0") // 7.21.0 has breaking changes in DTO generation (no longer extends HashMap)
 setCommonGradleDefaultPropertyIfNull("openapiPluginVersion", "${defaultOpenapiPluginVersion}")
 //setCommonGradleDefaultPropertyIfNull("openapiLibrary", 'okhttp-gson')
 //setCommonGradleDefaultPropertyIfNull("openapiGeneratorName", 'java')
@@ -648,6 +652,24 @@ if (project.hasProperty('installGradleWrapper') && project.getProperty('installG
 	addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/gradlew.bat")
 }
 
+addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/.settings")
+addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/.idea")
+addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/.vscode")
+
+
+/***************************************************************************************
+ * disallowed checked-in files & directories (git cleanup)
+ ***************************************************************************************/
+setCommonGradleDefaultPropertyIfNull("gitCleanupDisallowedFiles", true)
+addCommonGradlePropertyList("disallowedCheckedInFiles", "build")
+addCommonGradlePropertyList("disallowedCheckedInFiles", ".claude")
+addCommonGradlePropertyList("disallowedCheckedInFiles", ".gradle")
+addCommonGradlePropertyList("disallowedCheckedInFiles", ".classpath")
+addCommonGradlePropertyList("disallowedCheckedInFiles", ".project")
+addCommonGradlePropertyList("disallowedCheckedInFiles", ".settings")
+addCommonGradlePropertyList("disallowedCheckedInFiles", ".idea")
+addCommonGradlePropertyList("disallowedCheckedInFiles", ".vscode")
+
 
 /***************************************************************************************
  * online connection url
@@ -688,9 +710,15 @@ setCommonGradleDefaultPropertyIfNull("dockerExposePort", "${dockerDefaultPort}")
 setCommonGradleDefaultPropertyIfNull("dockerUser", "appuser")
 setCommonGradleDefaultPropertyIfNull("dockerGroup", "appgroup")
 setCommonGradleDefaultPropertyIfNull("dockerTimezone", "" + java.util.TimeZone.getDefault().getID())
+setCommonGradleDefaultPropertyIfNull("dockerOsVersion", "")
 setCommonGradleDefaultPropertyIfNull("dockerSubPathAccess", "")
 setCommonGradleDefaultPropertyIfNull("dockerScriptPath", "$scriptsConfigurationPath")
 setCommonGradleDefaultPropertyIfNull("dockerRemoveDanglingImages", true)
+setCommonGradleDefaultPropertyIfNull("dockerMultistageBuild", true)
+setCommonGradleDefaultPropertyIfNull("dockerRemoveNonEssentialBinaries", true)
+setCommonGradleDefaultPropertyIfNull("dockerMakeFilesystemReadonly", true)
+setCommonGradleDefaultPropertyIfNull("dockerReadonlyFilesystemPath", "/etc /usr /lib")
+setCommonGradleDefaultPropertyIfNull("dockerReadonlyFilesystemExcludePath", "/etc/ssl/certs /usr/local/share/ca-certificates \$JAVA_HOME/lib/security") 
 setCommonGradleDefaultPropertyIfNull("dockerDefaultEncoding", "${fileEncoding}")
 setCommonGradleDefaultPropertyIfNull("dockerDefaultLanguage", "en")
 setCommonGradleDefaultPropertyIfNull("dockerDefaultLocale", "${dockerDefaultLanguage}_US")
@@ -704,8 +732,25 @@ setCommonGradleDefaultPropertyIfNull("dockerHttpAgent", "")
 setCommonGradleDefaultPropertyIfNull("dockerKeepAlive", "")
 setCommonGradleDefaultPropertyIfNull("dockerMaxConnections", "")
 setCommonGradleDefaultPropertyIfNull("dockerMaxRedirects", "")
+setCommonGradleDefaultPropertyIfNull("vulnerabilityScannerEnabled", "false")
+setCommonGradleDefaultPropertyIfNull("vulnerabilityScannerCmd", "trivy")
+setCommonGradleDefaultPropertyIfNull("vulnerabilityScannerScanners", "vuln")
+setCommonGradleDefaultPropertyIfNull("vulnerabilityScannerSeverity", "CRITICAL,HIGH")
+setCommonGradleDefaultPropertyIfNull("vulnerabilityScannerExitCode", "0")
+setCommonGradleDefaultPropertyIfNull("vulnerabilityScannerFailWithoutFix", false)
 setCommonGradleDefaultPropertyIfNull("dockerLogLevel", "")
-setCommonGradleDefaultPropertyIfNull("dockerJavaRunner", "java-runner.sh")
+setCommonGradleDefaultPropertyIfNull("dockerGc", "UseG1GC")
+setCommonGradleDefaultPropertyIfNull("dockerGcLogging", "")
+setCommonGradleDefaultPropertyIfNull("dockerExitOnOutOfMemory", "true")
+setCommonGradleDefaultPropertyIfNull("dockerNativeMemoryTracking", "true")
+setCommonGradleDefaultPropertyIfNull("dockerObserveMemoryCycle", "5")
+setCommonGradleDefaultPropertyIfNull("dockerMeminfo", "cb-meminfo.sh")
+setCommonGradleDefaultPropertyIfNull("dockerJavaRunner", "toolarium-java-runner.sh")
+setCommonGradleDefaultPropertyIfNull("toolariumJavaRunnerLogPackage", "toolarium.java.runner")
+setCommonGradleDefaultPropertyIfNull("toolariumJavaRunnerLogCategoryWidth", "80")
+setCommonGradleDefaultPropertyIfNull("toolariumJavaRunnerLogCategoryMax", "79")
+setCommonGradleDefaultPropertyIfNull("toolariumJavaRunnerLogInfoWidth", "")
+setCommonGradleDefaultPropertyIfNull("toolariumJavaRunnerLogInfoMax", "")
 setCommonGradleDefaultPropertyIfNull("dockerEnableAccessLog", false)
 setCommonGradleDefaultPropertyIfNull("containerCmd", "nerdctl") // docker: docker
 setCommonGradleDefaultPropertyIfNull("dockerBuildCmd", "buildx build") // docker: buildx build
@@ -731,9 +776,6 @@ if (!"$dockerIgnoreFile".toString().isEmpty()) {
 	addCommonGradlePropertyList("allowedMainFiles", "$dockerIgnoreFile")
 }
 
-addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/.vscode")
-addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/.idea")
-
 // define the projects which are allowed to have a local Dockerfile.template
 setCommonGradleDefaultPropertyIfNull("dockerSupportProjectTemplateList", false)
 addCommonGradlePropertyList("allowedDockerfileTemplateProjects", "")
@@ -749,6 +791,7 @@ setCommonGradleDefaultPropertyIfNull("srcKubernetesDirectory", "${srcMainDirecto
 setCommonGradleDefaultPropertyIfNull("kubernetesInstallSupport", true)
 setCommonGradleDefaultPropertyIfNull("kubernetesDocSupport", true)
 setCommonGradleDefaultPropertyIfNull("kubernetesProductInformationSupport", true)
+setCommonGradleDefaultPropertyIfNull("kubernetesProductFailOnVulnerabilityDependencies", false)
 
 if (project.hasProperty('projectGroupId') && !project.getProperty('projectGroupId').trim().isEmpty()) {
 	setCommonGradleDefaultPropertyIfNull("kubernetesLabelId", project.getProperty('projectGroupId'))
@@ -776,6 +819,7 @@ setCommonGradleDefaultPropertyIfNull("kubernetesUrlPath", "${kubernetesUrlRootPa
 setCommonGradleDefaultPropertyIfNull("kubernetesConfigurationPathname", "kubernetes")
 setCommonGradleDefaultPropertyIfNull("kubernetesConfigurationPath", "$gradleBuildDirectory/${kubernetesConfigurationPathname}")
 setCommonGradleDefaultPropertyIfNull("kubernetesConfigurationProjctPath", "$kubernetesConfigurationPath")
+setCommonGradleDefaultPropertyIfNull("kubernetesDockerReferenceFile", "${kubernetesConfigurationPath}/${rootProject.name}-docker-reference.txt")
 setCommonGradleDefaultPropertyIfNull("kubernetesConfigurationServicesPath", "${kubernetesConfigurationPath}-services")
 setCommonGradleDefaultPropertyIfNull("kubernetesConfigurationElementsPath", "${kubernetesConfigurationPath}-elements")
 
@@ -809,13 +853,25 @@ setCommonGradleDefaultPropertyIfNull("kubernetesInstallMessage", "This file desc
 
 setCommonGradleDefaultPropertyIfNull("kubernetesIngresControlFilename", "$kubernetesConfigurationElementsPath/${rootProject.name}-ingress-controller.yaml")
 setCommonGradleDefaultPropertyIfNull("kubernetesControllerImage", "networking.k8s.io/v1")
-// imgress-nginx: https://github.com/kubernetes/ingress-nginx
+// ingress-nginx: DEPRECATED — project archived March 2026, no further security updates, migrate to Gateway API (kubernetesGatewayApiSupport=true) — see https://kubernetes.io/blog/2025/11/11/ingress-nginx-retirement/
 setCommonGradleDefaultPropertyIfNull("kubernetesSupportIngressNginx", true)
+setCommonGradleDefaultPropertyIfNull("kubernetesIngressNginxDeprecationWarning", true)
 setCommonGradleDefaultPropertyIfNull("kubernetesDownloadIngressNginxVersion", false)
-setCommonGradleDefaultPropertyIfNull("kubernetesIngressNginxVersion", "1.9.5") // see https://github.com/kubernetes/ingress-nginx
-setCommonGradleDefaultPropertyIfNull("kubernetesIngressUrl", "https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v${kubernetesIngressNginxVersion}/deploy/static/provider/cloud/deploy.yaml") 
-setCommonGradleDefaultPropertyIfNull("kubernetesIngressProxyBufferSize", "8k") 
-setCommonGradleDefaultPropertyIfNull("kubernetesIngressProxyBodySize", "10m") 
+setCommonGradleDefaultPropertyIfNull("kubernetesIngressNginxVersion", "1.15.1") // final release — see https://github.com/kubernetes/ingress-nginx (archived March 2026)
+setCommonGradleDefaultPropertyIfNull("kubernetesIngressUrl", "https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v${kubernetesIngressNginxVersion}/deploy/static/provider/cloud/deploy.yaml")
+setCommonGradleDefaultPropertyIfNull("kubernetesIngressProxyBufferSize", "8k")
+setCommonGradleDefaultPropertyIfNull("kubernetesIngressProxyBodySize", "10m")
+
+// Gateway API: modern replacement for Ingress — see https://gateway-api.sigs.k8s.io/
+setCommonGradleDefaultPropertyIfNull("kubernetesGatewayApiSupport", false)
+setCommonGradleDefaultPropertyIfNull("kubernetesGatewayClassName", "nginx") // gateway class: nginx, istio, envoy, etc.
+setCommonGradleDefaultPropertyIfNull("kubernetesGatewayListenerPort", "80")
+setCommonGradleDefaultPropertyIfNull("kubernetesGatewayListenerProtocol", "HTTP")
+
+// if Gateway API is enabled, disable ingress-nginx automatically
+if ("true".equalsIgnoreCase("${kubernetesGatewayApiSupport}".toString().trim())) {
+	setCommonGradleProperty("kubernetesSupportIngressNginx", false)
+}
 
 setCommonGradleDefaultPropertyIfNull("kubernetesFileAdditionalContent", "")
 
@@ -897,7 +953,7 @@ setCommonGradleDefaultPropertyIfNull("kubernetesSupportIdm", true)
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmTemplateFilename", "kubernetes-idm.template")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmConfigTemplateFilename", "kubernetes-idm-config.template")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmSecretTemplateFilename", "kubernetes-idm-secret.template")
-setCommonGradleDefaultPropertyIfNull("kubernetesIdmImageVersion", "23.0.3")
+setCommonGradleDefaultPropertyIfNull("kubernetesIdmImageVersion", "26.6.1")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmUrlPath", "/auth")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmUrlProtocol", "${kubernetesApplicationPrototcol}")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmFrontendUrl", "${kubernetesIdmUrlProtocol}${kubernetesApplicationHost}${kubernetesIdmUrlPath}")
@@ -1067,7 +1123,7 @@ setCommonGradleDefaultPropertyIfNull("commonGradleConfigResourcebundleMaxMemory"
 /***************************************************************************************
  * elastic
  ***************************************************************************************/
-setCommonGradleDefaultPropertyIfNull("esElasticsearchVersion", "8.8.2")
+setCommonGradleDefaultPropertyIfNull("esElasticsearchVersion", "9.3.3")
 setCommonGradleDefaultPropertyIfNull("esElasticsearchClusterName", "elastic")
 setCommonGradleDefaultPropertyIfNull("esElasticsearchReplicas", "${kubernetesReplicas}")
 setCommonGradleDefaultPropertyIfNull("esElasticsearchStorageSize", "3Gi")
@@ -1085,11 +1141,11 @@ setCommonGradleDefaultPropertyIfNull("commonGradleConfigBlacklistDependenciesNam
  * library version used in templates
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("commonGradleSlf4jApiVersion", "2.0.17")
-setCommonGradleDefaultPropertyIfNull("commonGradleLogbackVersion", "1.5.17")
+setCommonGradleDefaultPropertyIfNull("commonGradleLogbackVersion", "1.5.32")
 setCommonGradleDefaultPropertyIfNull("commonGradleJptoolsVersion", "1.7.12")
 setCommonGradleDefaultPropertyIfNull("commonGradleJavaxValidtionVersion", "2.0.1.Final")
 setCommonGradleDefaultPropertyIfNull("commonGradleJavaxWsRSApiVersion", "2.1.1")
-setCommonGradleDefaultPropertyIfNull("commonGradleJacksonAnnotationVersion", "2.15.3")
+setCommonGradleDefaultPropertyIfNull("commonGradleJacksonAnnotationVersion", "2.19.4")
 setCommonGradleDefaultPropertyIfNull("commonGradleJavaxAnnotationVersion", "1.3.2")
 setCommonGradleDefaultPropertyIfNull("commonGradleJakartaAnnotationVersion", "2.1.1")
 setCommonGradleDefaultPropertyIfNull("commonGradleJakartaValidtionVersion", "3.0.2")

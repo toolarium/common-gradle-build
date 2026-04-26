@@ -1,0 +1,589 @@
+#!/usr/bin/env sh
+
+#########################################################################
+#
+# toolarium-java-runner.sh
+#
+# Copyright by toolarium, all rights reserved.
+#
+# This file is part of the toolarium common-gradle-build.
+#
+# The common-build is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# The common-build is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+#
+#########################################################################
+
+CB_LINE="------------------------------------------------------------------------------------------------------------------------"
+CB_LINEHEADER=".: "
+ABS_PROG_PATH=$(cd -- "`dirname "$0" 2>/dev/null`" && pwd)
+PN=$(basename "$0" 2>/dev/null)
+PN_BASE="${PN%*.sh}"
+PID_FILE="$PWD/$PN_BASE.pid"
+MEMINFO_SCRIPT="${ABS_PROG_PATH}/cb-meminfo.sh"
+MEMINFO_FILE="/dev/shm/cb-meminfo.out"
+MEMINFO_PID=""
+TIMEZONE=$(date +"%Z %z")
+OS_VERSION="@@dockerOsVersion@@"
+OS_PRETTY_NAME="@@dockerOsPrettyName@@"
+LOG_PACKAGE="@@toolariumJavaRunnerLogPackage@@"
+LOG_CAT_WIDTH="@@toolariumJavaRunnerLogCategoryWidth@@"
+LOG_CAT_MAX="@@toolariumJavaRunnerLogCategoryMax@@"
+LOG_INFO_WIDTH="@@toolariumJavaRunnerLogInfoWidth@@"
+LOG_INFO_MAX="@@toolariumJavaRunnerLogInfoMax@@"
+exitCode=""
+printEndedMessage="false"
+
+
+#########################################################################
+# printUsage
+#########################################################################
+printUsage() {
+    cat <<USAGE
+$PN - start a java process
+usage: $PN [OPTION] [ARGUMENTS]
+
+The arguments are passed as java arguments.
+
+Overview of the available OPTIONs:
+ -h, --help                       Show this help message.
+ --version                        Print the version information.
+ --verbose                        Enables verbose mode.
+ --nocolor                        Disable colored output. Same behavior as TERM set to non-xterm.
+ --colorPalette <palette>         Set the color palette, default 1 (dark 2).
+ --executable <cmd>               Defines the executable, e.g. java.
+ --proxyHost <hostname>           Defines the proxy host, e.g. myhost.com.
+                                  If the hostname is missing, it will be ignored.
+ --proxyPort <port>               Defines the proxy port, e.g. 8080.
+                                  If the port is missing, it will be ignored.
+ --nonProxyHosts <list>           Defines non-proxy hosts (comma-separated):
+                                  e.g. localhost,.cluster.local,*.acpt.app.com
+                                  In case of an empty list, it will be ignored.
+ --javaAgent <jarpath>            Defines the path to the java agent jar, e.g. my-agent.jar.
+ --httpAgent <name>               Defines the http agent name, e.g. Java.
+ --keepAlive <true|false>         Defines the http keep alive, e.g. true.
+ --maxConnections <number>        Defines the number of http max connections, e.g. 5.
+ --maxRedirects <number>          Defines the number of http max redirects, e.g. 20.
+ --logLevel <LEVEL[,pkg1,pkg2]>   Set log level, optionally for specific packages:
+                                  e.g. --logLevel INFO
+                                       --logLevel WARN,my.package.name
+                                       --logLevel TRACE,org.hibernate,org.jboss
+                                  Multiple --logLevel entries are supported.
+ --gc <collector>                 Defines the garbage collector, e.g. UseG1GC (default).
+                                  The leading + is added automatically if not provided.
+ --gcLogging                      Enables garbage collector logging.
+ --exitOnOutOfMemory              Enables exit on out of memory error.
+ --nativeMemoryTracking           Enables native memory tracking summary.
+ --observeMemoryCycle <seconds>   Measure and observe memory usage at the given interval
+                                  until the java process ends (default: 5).
+                                  Output: /dev/shm/meminfo.out
+ --javaOptions <options>          Defines additional java options:
+                                  e.g. --javaOptions "-Xms2m -Xmx10m"
+ --port <port>                    Set the HTTP listen port:
+                                  e.g. --port 9090
+                                  Equivalent to setting EXPOSE_PORT env var.
+ --databaseKind <kind>            Set the Quarkus datasource db-kind:
+                                  e.g. --databaseKind postgresql
+                                  Equivalent to setting DATABASE_KIND env var.
+                                  Appends -Dquarkus.datasource.db-kind=<kind>
+                                  to the java options at startup.
+
+All parameters above can also be set as environment variables:
+e.g. proxyPort=9898 or logLevel="INFO WARN,my.package.name"
+USAGE
+}
+
+
+#########################################################################
+# colorIt
+#########################################################################
+[ -z "$CB_LINE_NOCOLOR" ] && CB_LINE_NOCOLOR="$CB_LINE"
+[ -z "$CB_LINEHEADER_NOCOLOR" ] && CB_LINEHEADER_NOCOLOR="$CB_LINEHEADER"
+
+colorIt() {
+    termIsColor="false"
+    case "$TERM" in xterm*) termIsColor="true" ;; esac
+    if [ -z "$TERM" ] || [ "$termIsColor" = "false" ] || [ "$COLOR_PALETTE" = "no" ]; then
+        BLACK="";RED="";GREEN="";YELLOW="";BLUE="";MAGENTA="";CYAN="";WHITE="";NO_COLOR=""
+        INFO_LEVEL="";WARN_LEVEL="";ERROR_LEVEL="";TITLE_LEVEL="";HIGHLITE_LEVEL="";SUCCESS_LEVEL=""
+        CB_LINE="$CB_LINE_NOCOLOR";CB_LINEHEADER="$CB_LINEHEADER_NOCOLOR"
+    else
+        escapeSign='\033['
+        [ -z "$COLOR_PALETTE" ] && COLOR_PALETTE="0"
+        [ -z "$INFO_LEVEL" ] && ESCAPE_STRING="${escapeSign}${COLOR_PALETTE};"
+        [ -z "$BLACK" ] && BLACK="${ESCAPE_STRING}30m"
+        [ -z "$RED" ] && RED="${ESCAPE_STRING}31m"
+        [ -z "$GREEN" ] && GREEN="${ESCAPE_STRING}32m"
+        [ -z "$YELLOW" ] && YELLOW="${ESCAPE_STRING}33m"
+        [ -z "$BLUE" ] && BLUE="${ESCAPE_STRING}34m"
+        [ -z "$MAGENTA" ] && MAGENTA="${ESCAPE_STRING}35m"
+        [ -z "$CYAN" ] && CYAN="${ESCAPE_STRING}36m"
+        [ -z "$WHITE" ] && WHITE="${ESCAPE_STRING}37m"
+        [ -z "$NO_COLOR" ] && NO_COLOR="${escapeSign}0m"
+        [ -z "$INFO_LEVEL" ] && INFO_LEVEL="$CYAN"
+        [ -z "$WARN_LEVEL" ] && WARN_LEVEL="$YELLOW"
+        [ -z "$ERROR_LEVEL" ] && ERROR_LEVEL="$RED"
+        [ -z "$TITLE_LEVEL" ] && TITLE_LEVEL="$YELLOW"
+        [ -z "$HIGHLITE_LEVEL" ] && HIGHLITE_LEVEL="$CYAN"
+        [ -z "$SUCCESS_LEVEL" ] && SUCCESS_LEVEL="$GREEN"
+        CB_LINE="${HIGHLITE_LEVEL}$CB_LINE_NOCOLOR${NO_COLOR}"
+        CB_LINEHEADER="${HIGHLITE_LEVEL}$CB_LINEHEADER_NOCOLOR"
+    fi
+}
+colorIt
+
+
+#########################################################################
+# parameterFailed
+#########################################################################
+parameterFailed() {
+    printf "${CB_LINEHEADER}Parameter failed: $1.${NO_COLOR}\n\n"
+    printUsage
+}
+
+
+#########################################################################
+# validate_number
+#########################################################################
+validate_number() {
+    case "$1" in
+        ''|*[!0-9]*) return 1 ;;
+        *) return 0 ;;
+    esac
+}
+
+
+#########################################################################
+# error handler
+#########################################################################
+errorhandler() {
+    [ -n "$DEBUG" ] && printf "${CB_LINEHEADER}ERROR on line #$LINENO, last command: ${BASH_COMMAND:-unknown}${NO_COLOR}\n"
+    exithandler
+}
+
+
+#########################################################################
+# signal handler - forward signal to Java process and run clean shutdown
+#   $1 = signal name (TERM, INT, HUP)
+#########################################################################
+signalhandler() {
+    _sig="$1"
+    if [ -n "$JAVA_PID" ]; then
+        kill -"$_sig" "$JAVA_PID" 2>/dev/null
+        wait "$JAVA_PID" 2>/dev/null
+    fi
+    # conventional exit code for signal: 128 + signal number
+    case "$_sig" in
+        TERM) exitCode=143 ;;  # 128 + 15
+        INT)  exitCode=130 ;;  # 128 + 2
+        HUP)  exitCode=129 ;;  # 128 + 1
+        *)    exitCode=1 ;;
+    esac
+    exithandler
+}
+
+
+#########################################################################
+# exit handler
+#########################################################################
+exithandler() {
+    # use exitCode if already set by signalhandler; otherwise use passed $? from trap
+    [ -z "$exitCode" ] && exitCode="${1:-0}"
+
+    [ -n "$DEBUG" ] && printf "${CB_LINEHEADER}ENDED${NO_COLOR}"
+
+    # stop memory observer if running
+    if [ -n "$MEMINFO_PID" ]; then
+        kill "$MEMINFO_PID" 2>/dev/null
+        wait "$MEMINFO_PID" 2>/dev/null
+    fi
+
+    if [ -r "$PID_FILE" ]; then
+        pid=$(cat "$PID_FILE" 2> /dev/null)
+        # wait may fail if process already exited or was waited on by signalhandler
+        wait "$pid" 2>/dev/null
+        rm -f "$PID_FILE" > /dev/null 2>&1
+    fi
+
+    if [ "$printEndedMessage" = "true" ]; then
+        CB_END_TIMESTAMP=$(getTimestamp)
+        # Duration: use epoch seconds (POSIX, no sed/expr forks)
+        _end=$(date +%s)
+        _dur=$((_end - _start_epoch))
+        if [ "$exitCode" -eq 0 ] 2>/dev/null; then
+            printLogMessage "I" "Stopped (duration: ${_dur}s, exit: $exitCode)"
+        else
+            printLogMessage "E" "Stopped (duration: ${_dur}s, exit: $exitCode)"
+        fi
+        printf "%s$CB_LINE\n"
+        printf "   ${INFO_LEVEL}ENDED${NO_COLOR} ${TITLE_LEVEL}${CB_END_TIMESTAMP} $TIMEZONE${NO_COLOR}, duration ${TITLE_LEVEL}${_dur} sec${NO_COLOR}, exit: ${TITLE_LEVEL}$exitCode${NO_COLOR}\n"
+        printf "%s$CB_LINE\n"
+        printEndedMessage="false"
+    fi
+
+    rm -f "$MEMINFO_FILE" > /dev/null 2>&1
+    [ -n "$exitCode" ] && exit $exitCode
+}
+
+
+#########################################################################
+# printWrapped - print text with word-wrapping at CB_LINE length.
+# Usage: printWrapped <prefix> <text> [<indent>]
+#   prefix: e.g. "   ENV   " — printed before first line
+#   text: the content to wrap
+#   indent: (optional) indent for continuation lines (default: same length as prefix)
+#########################################################################
+printWrapped() {
+    _pw_prefix="$1"; _pw_text="$2"
+    # strip ANSI escape sequences (literal \033[ and actual ESC) to calculate visible prefix length
+    _pw_prefix_plain=$(printf '%b' "$_pw_prefix" | sed 's/\x1b\[[0-9;]*m//g')
+    _pw_indent="${3:-$(printf '%*s' ${#_pw_prefix_plain} '')}"
+    _pw_max=${#CB_LINE_NOCOLOR}
+    _pw_first_max=$((_pw_max - ${#_pw_prefix_plain}))
+    _pw_cont_max=$((_pw_max - ${#_pw_indent}))
+    if [ ${#_pw_text} -le $_pw_first_max ]; then
+        printf '%b%b\n' "$_pw_prefix" "$_pw_text"
+        return
+    fi
+    _pw_rest="$_pw_text"
+    _pw_pfx="$_pw_prefix"
+    _pw_w=$_pw_first_max
+    while [ -n "$_pw_rest" ]; do
+        if [ ${#_pw_rest} -le $_pw_w ]; then
+            printf '%b%b\n' "$_pw_pfx" "$_pw_rest"
+            break
+        fi
+        # find last space within width
+        _pw_chunk=$(printf '%s' "$_pw_rest" | cut -c1-${_pw_w})
+        case "$_pw_chunk" in
+            *" "*)
+                # break at last space: reverse, find first space, calculate position
+                _pw_rev=$(printf '%s' "$_pw_chunk" | rev 2>/dev/null)
+                if [ -n "$_pw_rev" ]; then
+                    _pw_tail="${_pw_rev%%' '*}"
+                    _pw_pos=$(( _pw_w - ${#_pw_tail} ))
+                else
+                    _pw_pos=$_pw_w
+                fi
+                ;;
+            *) _pw_pos=$_pw_w ;;
+        esac
+        printf '%b%b\n' "$_pw_pfx" "$(printf '%s' "$_pw_rest" | cut -c1-${_pw_pos})"
+        _pw_rest=$(printf '%s' "$_pw_rest" | cut -c$((_pw_pos + 1))-)
+        _pw_rest="${_pw_rest# }"
+        _pw_pfx="$_pw_indent"
+        _pw_w=$_pw_cont_max
+    done
+}
+
+
+#########################################################################
+# getTimestamp
+#########################################################################
+getTimestamp() {
+    # BusyBox date does not support %N (nanoseconds); fall back to seconds-only
+    _ts=$(date '+%Y-%m-%d %H:%M:%S.%N' 2>/dev/null)
+    case "$_ts" in
+        *%N*|*N) date '+%Y-%m-%d %H:%M:%S.000' ;;
+        *)
+            _ms=$(printf '%s' "$_ts" | sed 's/.*\.\([0-9]*\).*/\1/')
+            _ms=$(printf '%-3s' "$_ms" | tr ' ' '0' | cut -c1-3)
+            printf '%s.%s\n' "$(printf '%s' "$_ts" | sed 's/\..*//')" "$_ms"
+            ;;
+    esac
+}
+
+
+#########################################################################
+# printLogMessage - print a Java-style log line matching the Quarkus
+# console format from application.properties (quarkus.log.console.format).
+# Dimensions are injected at build time via @@toolariumJavaRunnerLogCategoryWidth@@,
+# @@toolariumJavaRunnerLogCategoryMax@@, @@toolariumJavaRunnerLogInfoWidth@@,
+# @@toolariumJavaRunnerLogInfoMax@@.
+# On error level (E), appends MEMINFO_FILE content if available.
+# Usage: printLogMessage <level> <message> [<logInformation>]
+#   level: I (info), W (warn), E (error), D (debug)
+#########################################################################
+printLogMessage() {
+    _level="$1"; _msg="$2"; _logInfo="${3:-}"
+    # timestamp with comma-separated millis (Java convention)
+    _lts=$(date '+%Y-%m-%d %H:%M:%S.%N' 2>/dev/null)
+    case "$_lts" in
+        *%N*|*N) _lts=$(date '+%Y-%m-%d %H:%M:%S,000') ;;
+        *)
+            # extract millis: take 3 digits after the dot, pad with zeros if missing
+            _millis=$(printf '%s' "$_lts" | sed 's/.*\.\([0-9]*\).*/\1/')
+            _millis=$(printf '%-3s' "$_millis" | tr ' ' '0' | cut -c1-3)
+            _lts="$(printf '%s' "$_lts" | sed 's/\..*//'),$_millis"
+            ;;
+    esac
+    _host=$(hostname 2>/dev/null || printf 'unknown')
+    _pid="$$"
+    # category field: padded to LOG_CAT_WIDTH, truncated to LOG_CAT_MAX
+    _cw="${LOG_CAT_WIDTH:-80}"; _cm="${LOG_CAT_MAX:-79}"
+    if [ -n "$LOG_INFO_WIDTH" ] && [ -n "$LOG_INFO_MAX" ]; then
+        # format with logInformation column
+        printf "%s - %s - [%s|%s|1] - %-${_cw}.${_cm}s - %-${LOG_INFO_WIDTH}.${LOG_INFO_MAX}s | %s\n" \
+            "$_lts" "$_level" "$_host" "$_pid" "$LOG_PACKAGE" "$_logInfo" "$_msg"
+    else
+        # format without logInformation column
+        printf "%s - %s - [%s|%s|1] - %-${_cw}.${_cm}s | %s\n" \
+            "$_lts" "$_level" "$_host" "$_pid" "$LOG_PACKAGE" "$_msg"
+    fi
+    # on error: append last memory snapshot (header + values), formatted as log lines read and remove file first to prevent recursive calls
+    if [ "$_level" = "E" ] && [ -r "$MEMINFO_FILE" ]; then
+        _memheader=""; _memvalues=""
+        { IFS= read -r _memheader; IFS= read -r _memvalues; } < "$MEMINFO_FILE"
+        rm -f "$MEMINFO_FILE" 2>/dev/null
+        if [ -n "$_memheader" ] && [ -n "$_memvalues" ]; then
+            if [ -n "$LOG_INFO_WIDTH" ] && [ -n "$LOG_INFO_MAX" ]; then
+                printf "%s - %s - [%s|%s|1] - %-${_cw}.${_cm}s - %-${LOG_INFO_WIDTH}.${LOG_INFO_MAX}s | MEMINFO  %s\n" "$_lts" "$_level" "$_host" "$_pid" "$LOG_PACKAGE" "$_logInfo" "$_memheader"
+                printf "%s - %s - [%s|%s|1] - %-${_cw}.${_cm}s - %-${LOG_INFO_WIDTH}.${LOG_INFO_MAX}s | MEMINFO  %s\n" "$_lts" "$_level" "$_host" "$_pid" "$LOG_PACKAGE" "$_logInfo" "$_memvalues"
+            else
+                printf "%s - %s - [%s|%s|1] - %-${_cw}.${_cm}s | MEMINFO  %s\n" "$_lts" "$_level" "$_host" "$_pid" "$LOG_PACKAGE" "$_memheader"
+                printf "%s - %s - [%s|%s|1] - %-${_cw}.${_cm}s | MEMINFO  %s\n" "$_lts" "$_level" "$_host" "$_pid" "$LOG_PACKAGE" "$_memvalues"
+            fi
+        fi
+    fi
+}
+
+
+#########################################################################
+# check if the binary exists
+#########################################################################
+existBinary() {
+    # If path contains /, check directly
+    if ! [ "${1#*/}" = "$1" ]; then
+        [ -x "$1" ] && echo "$1" && return 0
+        return 1
+    fi
+
+    # POSIX: command -v works on both GNU and BusyBox
+    _bin=$(command -v "$1" 2>/dev/null) || return 1
+    [ "$2" = "true" ] || _bin="${_bin##*.exe}"
+    [ -n "$_bin" ] && echo "$_bin" && return 0
+    return 1
+}
+
+
+#########################################################################
+# Add the log level
+#########################################################################
+addLogLevel() {
+    [ -z "$1" ] && return 1
+    # Parse LEVEL or LEVEL,pkg1,pkg2,... using parameter expansion (no forks)
+    _input="$1"
+    # Normalize: accept = as separator (e.g. DEBUG=my.package)
+    case "$_input" in *=*) _input=$(printf '%s' "$_input" | tr '=' ',') ;; esac
+    _level="${_input%%,*}"
+    _packages="${_input#*,}"
+
+    if [ "$_packages" = "$_input" ]; then
+        # No package — set root log level
+        logLevel="${logLevel:+$logLevel }-Dquarkus.log.level=${_level}"
+    else
+        # One or more packages — iterate comma-separated list
+        _oldIFS="$IFS"; IFS=','
+        for _pkg in $_packages; do
+            [ -n "$_pkg" ] && logLevel="${logLevel:+$logLevel }-Dquarkus.log.category.\"${_pkg}\".level=${_level}"
+        done
+        IFS="$_oldIFS"
+    fi
+    return 0
+}
+
+
+#########################################################################
+# Read version
+#########################################################################
+readVersion() {
+    # Cache: only parse once
+    if [ -z "$_CACHED_VERSION" ]; then
+        _CACHED_VERSION="${SCRIPT_VERSION_NUMBER:-1.0.0}"
+        _vpath=""
+        [ -r "${ABS_PROG_PATH}/VERSION" ] && _vpath="${ABS_PROG_PATH}/VERSION"
+        [ -r "${ABS_PROG_PATH}/../VERSION" ] && _vpath="${ABS_PROG_PATH}/../VERSION"
+
+        if [ -r "$_vpath" ]; then
+            # Single awk pass instead of 4x grep|awk
+            _CACHED_VERSION=$(awk -F'= *' '
+                /major\.number/    {ma=$2}
+                /minor\.number/    {mi=$2}
+                /revision\.number/ {re=$2}
+                END {gsub(/\r/,"",ma); gsub(/\r/,"",mi); gsub(/\r/,"",re); printf "%s.%s.%s",ma,mi,re}
+            ' "$_vpath")
+        fi
+    fi
+    echo "$_CACHED_VERSION"
+}
+
+
+#########################################################################
+# main
+#########################################################################
+trap 'exithandler $?; exit' 0
+trap 'errorhandler; exit' 1 2 3 15
+
+EXECUTABLE="";JARFILE="";JAVAAGENT="";JAVA_OPTIONS="";PARAMETERS="";inputLogLevel=""
+#proxyHost="";proxyPort="";nonProxyHosts="";httpAgent="";keepAlive="";maxConnections="";maxRedirects="";logLevel=""; javaOptions=""
+
+[ -n "$verbose" ] && CB_VERBOSE="$verbose"
+[ -n "$nocolor" ] && COLOR_PALETTE="no" && colorIt
+[ -n "$colorPalette" ] && COLOR_PALETTE="no" && colorIt && COLOR_PALETTE="$colorPalette"; colorIt
+[ -n "$logLevel" ] && inputLogLevel="$logLevel"
+
+logLevel=
+[ -n "$inputLogLevel" ] && for i in $inputLogLevel; do addLogLevel "$i"; done
+
+CB_START_TIMESTAMP=$(getTimestamp)
+_start_epoch=$(date +%s)
+while [ $# -gt 0 ]; do
+    case "$1" in
+    -h)              printUsage; exit 0;;
+    --help)          printUsage; exit 0;;
+    --version)       echo "toolarium java runner $(readVersion)" && exit 0;;
+    --verbose)       CB_VERBOSE="true";;
+    --nocolor)       COLOR_PALETTE="no" && colorIt;;
+    --colorPalette)  case "$2" in --*|"") ;; *) COLOR_PALETTE="no" && colorIt && COLOR_PALETTE="$2"; colorIt; shift ;; esac;;
+    --executable)    case "$2" in --*|"") ;; *) EXECUTABLE="$2"; shift ;; esac;;
+    --jar)           case "$2" in --*|"") ;; *) JARFILE="$2"; shift ;; esac;;
+    --javaAgent)     case "$2" in --*|"") ;; *) JAVAAGENT="-javaAgent:$2"; shift ;; esac;;
+    --proxyHost)     case "$2" in --*|"") ;; *) proxyHost="$2"; shift ;; esac;;
+    --proxyPort)     case "$2" in --*|"") ;; *) validate_number "$2" && proxyPort="$2" && shift || parameterFailed "--proxyPort requires a number" ;; esac;;
+    --nonProxyHosts) case "$2" in --*|"") ;; *) _nph="${2#*=}"; nonProxyHosts=$(printf '%s' "$_nph" | tr ',' '|'); shift ;; esac;;
+    --httpAgent)     case "$2" in --*|"") ;; *) httpAgent="$2"; shift ;; esac;;
+    --keepAlive)     case "$2" in --*|"") ;; *) keepAlive="$2"; shift ;; esac;;
+    --maxConnections)case "$2" in --*|"") ;; *) validate_number "$2" && maxConnections="$2" && shift || parameterFailed "--maxConnections requires a number" ;; esac;;
+    --maxRedirects)  case "$2" in --*|"") ;; *) validate_number "$2" && maxRedirects="$2" && shift || parameterFailed "--maxRedirects requires a number" ;; esac;;
+    --gc)            case "$2" in --*|"") ;; *) gc="$2"; shift ;; esac;;
+    --gcLogging)     gcLogging="true";;
+    --exitOnOutOfMemory) exitOnOutOfMemory="true";;
+    --nativeMemoryTracking) nativeMemoryTracking="true";;
+    --observeMemoryCycle) observeMemoryCycle="5"; case "$2" in --*|"") ;; *) validate_number "$2" && observeMemoryCycle="$2" && shift || parameterFailed "--observeMemoryCycle requires a number (seconds)" ;; esac;;
+    --logLevel)      case "$2" in --*|"") ;; *) addLogLevel "$2"; shift ;; esac;;
+    --javaOptions)   case "$2" in "") ;; *) javaOptions="$2"; shift ;; esac;;
+    --port)          case "$2" in --*|"") ;; *) validate_number "$2" && EXPOSE_PORT="$2" && shift || parameterFailed "--port requires a number" ;; esac;;
+    --databaseKind)  case "$2" in --*|"") ;; *) DATABASE_KIND="$2"; shift ;; esac;;
+    -*)              parameterFailed "Invalid parameter $1"; exit 1;;
+    *)               PARAMETERS="${PARAMETERS} $1";;
+    esac
+    shift
+done
+printEndedMessage="true"
+
+# default values, see https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/net/doc-files/net-properties.html
+[ "$CB_VERBOSE" = "true" ] && printf "${CB_LINEHEADER}Prepare parameters...${NO_COLOR}\n"
+[ -z "$EXECUTABLE" ] && EXECUTABLE="java"
+#[ -z "$httpAgent" ] && httpAgent="${EXECUTABLE#*/}"
+[ "$CB_VERBOSE" = "true" ] && printf "${CB_LINEHEADER}Set java executable [${NO_COLOR}$EXECUTABLE${HIGHLITE_LEVEL}]${NO_COLOR}\n"
+
+JAVAAGENT="${JAVAAGENT# }"
+[ "$CB_VERBOSE" = "true" ] && printf "${CB_LINEHEADER}Set java agent      [${NO_COLOR}$JAVAAGENT${HIGHLITE_LEVEL}]${NO_COLOR}\n"
+
+! [ -n "$JARFILE" ] && JARFILE="app.jar" # prepare jar file
+[ -n "$proxyHost" ] && JAVA_OPTIONS="${JAVA_OPTIONS} -Dhttp.proxyHost=${proxyHost} -Dhttps.proxyHost=${proxyHost}" # proxyHost, e.g. "-Dhttp.proxyHost=192.168.1.1"
+[ -n "$proxyPort" ] && JAVA_OPTIONS="${JAVA_OPTIONS} -Dhttp.proxyPort=${proxyPort} -Dhttps.proxyPort=${proxyPort}" # proxyPort, e.g. "-Dhttps.proxyPort=8080"
+[ -n "$nonProxyHosts" ] && JAVA_OPTIONS="${JAVA_OPTIONS} -Dhttp.nonProxyHosts=\"${nonProxyHosts}\"" # nonProxyHosts e.g. "-Dhttp.nonProxyHosts=localhost|.cluster.local|*.acpt.app.com"
+[ -n "$httpAgent" ] && JAVA_OPTIONS="${JAVA_OPTIONS} -Dhttp.agent=${httpAgent}" # e.g. "-Dhttp.agent=java"
+[ -n "$keepAlive" ] && JAVA_OPTIONS="${JAVA_OPTIONS} -Dhttp.keepAlive=${keepAlive}" # e.g. "-Dhttp.keepAlive=true"
+[ -n "$maxConnections" ] && JAVA_OPTIONS="${JAVA_OPTIONS} -Dhttp.maxConnections=${maxConnections}" # e.g. "-Dhttp.maxConnections=5"
+[ -n "$maxRedirects" ] && JAVA_OPTIONS="${JAVA_OPTIONS} -Dhttp.maxRedirects=${maxRedirects}" # e.g. "-Dhttp.maxRedirects=20"
+if [ -n "$gc" ]; then
+    case "$gc" in +*|-*) ;; *) gc="+${gc}" ;; esac
+    JAVA_OPTIONS="${JAVA_OPTIONS} -XX:${gc}"
+fi
+[ "$gcLogging" = "true" ] && JAVA_OPTIONS="${JAVA_OPTIONS} -Xlog:gc*=info -XX:+PrintFlagsFinal"
+[ "$exitOnOutOfMemory" = "true" ] && JAVA_OPTIONS="${JAVA_OPTIONS} -XX:+ExitOnOutOfMemoryError"
+[ "$nativeMemoryTracking" = "true" ] && JAVA_OPTIONS="${JAVA_OPTIONS} -XX:NativeMemoryTracking=summary"
+[ -n "$logLevel" ] && JAVA_OPTIONS="${JAVA_OPTIONS} $logLevel"
+[ -n "$javaOptions" ] && JAVA_OPTIONS="${JAVA_OPTIONS} $javaOptions"
+
+# HTTP port: from --port CLI flag, or EXPOSE_PORT env var from Dockerfile ARG/ENV, or set at container start.
+[ -n "$EXPOSE_PORT" ] && JAVA_OPTIONS="${JAVA_OPTIONS} -Dquarkus.http.port=${EXPOSE_PORT}"
+
+# database kind: from --databaseKind CLI flag, or DATABASE_KIND env var baked by the image build (--build-arg DATABASE_KIND=<kind>), or set at container start.
+[ -n "$DATABASE_KIND" ] && JAVA_OPTIONS="${JAVA_OPTIONS} -Dquarkus.datasource.db-kind=${DATABASE_KIND}"
+JAVA_OPTIONS="${JAVA_OPTIONS# }"
+
+[ "$CB_VERBOSE" = "true" ] && printWrapped "${CB_LINEHEADER}Set java options    [${NO_COLOR}" "${JAVA_OPTIONS}${HIGHLITE_LEVEL}]${NO_COLOR}" "                        "
+
+PARAMETERS="${PARAMETERS# }"
+[ "$CB_VERBOSE" = "true" ] && printWrapped "${CB_LINEHEADER}Set java arguments  [${NO_COLOR}" "${PARAMETERS}${HIGHLITE_LEVEL}]${NO_COLOR}" "                        "
+
+linuxVersion=$(awk -F'"' '/PRETTY_NAME/{print $2}' /etc/os-release 2>/dev/null)
+[ -z "$linuxVersion" ] && [ -n "$OS_PRETTY_NAME" ] && linuxVersion="$OS_PRETTY_NAME"
+[ -z "$linuxVersion" ] && [ -n "$OS_VERSION" ] && linuxVersion="$OS_VERSION"
+# BusyBox ls has no --full-time; use stat or fall back to ls -l
+linuxInstallDate=$(stat -c '%y' /etc 2>/dev/null | awk '{print $1}') || linuxInstallDate=$(ls -ld /etc | awk '{print $6}')
+
+
+# start memory observer info (printed early, before executable/jar checks)
+MEMINFO_JVM_FLAG=""
+[ "$nativeMemoryTracking" = "true" ] && MEMINFO_JVM_FLAG="-jvm"
+if [ -n "$observeMemoryCycle" ] && [ -x "$MEMINFO_SCRIPT" ]; then
+    [ "$CB_VERBOSE" = "true" ] && printf "${CB_LINEHEADER}Memory observer started (interval: ${NO_COLOR}${observeMemoryCycle}s${HIGHLITE_LEVEL}, output: ${NO_COLOR}${MEMINFO_FILE}${HIGHLITE_LEVEL})${NO_COLOR}\n"
+elif [ -n "$observeMemoryCycle" ] && ! [ -x "$MEMINFO_SCRIPT" ]; then
+    printf "${CB_LINEHEADER}Memory observer not available: ${WARN_LEVEL}${MEMINFO_SCRIPT}${NO_COLOR}${HIGHLITE_LEVEL} not found.${NO_COLOR}\n"
+fi
+
+printf "%s${CB_LINE}\n"
+printf "   ${INFO_LEVEL}START${NO_COLOR} ${TITLE_LEVEL}$CB_START_TIMESTAMP $TIMEZONE${NO_COLOR}, toolarium java runner $(readVersion)\n"
+printf "   ${INFO_LEVEL}OS${NO_COLOR}    ${TITLE_LEVEL}${linuxVersion}${NO_COLOR}, ${linuxInstallDate} on $(hostname)\n"
+environment=$(env | grep -E "LANG|LC" | tr '\n' ',' | sed 's/,$//' | sed 's/,/, /g')
+
+if ! [ -n "$(existBinary "$EXECUTABLE")" ]; then
+    [ -n "$environment" ] && printWrapped "   ${INFO_LEVEL}ENV${NO_COLOR}   " "$environment"
+    printf "%s$CB_LINE\n"
+    printLogMessage "E" "Missing package: ${EXECUTABLE}"
+    printf "${CB_LINEHEADER}Missing package ${WARN_LEVEL}${EXECUTABLE}${NO_COLOR}${HIGHLITE_LEVEL}, please install it before you continue.${NO_COLOR}\n"
+    exitCode="1"
+elif ! [ -r "$JARFILE" ]; then
+    javaVersion=$("$EXECUTABLE" -version 2>&1 | tail -1)
+    printf "   ${INFO_LEVEL}JAVA${NO_COLOR}  ${javaVersion}\n"
+    [ -n "$environment" ] && printWrapped "   ${INFO_LEVEL}ENV${NO_COLOR}   " "$environment"
+    printf "%s$CB_LINE\n"
+    printLogMessage "E" "Missing jar file: ${JARFILE}"
+    printf "${CB_LINEHEADER}Missing jar file ${WARN_LEVEL}${JARFILE}${HIGHLITE_LEVEL}.${NO_COLOR}\n"
+    exitCode="1"
+else
+    javaVersion=$("$EXECUTABLE" -version 2>&1 | tail -1)
+    printf "   ${INFO_LEVEL}JAVA${NO_COLOR}  ${javaVersion}\n"
+    [ -n "$environment" ] && printWrapped "   ${INFO_LEVEL}ENV${NO_COLOR}   " "$environment"
+
+    printf "%s$CB_LINE\n"
+    printLogMessage "I" "Starting $EXECUTABLE -jar $JARFILE"
+    "$EXECUTABLE" $JAVAAGENT $JAVA_OPTIONS -jar "$JARFILE" $PARAMETERS &
+    JAVA_PID="$!"
+    echo "$JAVA_PID" > "$PID_FILE"
+    trap 'signalhandler TERM' 15
+    trap 'signalhandler INT' 2
+    trap 'signalhandler HUP' 1
+
+    # start memory observer
+    if [ -n "$observeMemoryCycle" ] && [ -x "$MEMINFO_SCRIPT" ]; then
+        (
+            while kill -0 "$JAVA_PID" 2>/dev/null; do
+                "$MEMINFO_SCRIPT" -ts -b -pid "$JAVA_PID" $MEMINFO_JVM_FLAG > "$MEMINFO_FILE"
+                sleep "$observeMemoryCycle"
+            done
+        ) &
+        MEMINFO_PID="$!"
+    fi
+
+    wait "$JAVA_PID"
+    exitCode=$?
+fi
+
+
+#########################################################################
+#  EOF
+#########################################################################
