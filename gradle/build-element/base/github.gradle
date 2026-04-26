@@ -125,7 +125,18 @@ ext.downloadAndUnzipGithubRelease = {url, preRelease = false, destDir, releaseNa
 		
 		mkdir "$destDir"
 		printInfo("> Download release " + colorize(HIGHLITE_LEVEL, releaseVersion) + " in " + colorize(HIGHLITE_LEVEL, "${destDir}/${releaseVersion}") + ".")
-		new URL(release.zipball_url).withInputStream { i -> fileZip.withOutputStream { it << i } }
+
+		// prefer release asset (.zip) over GitHub's auto-generated zipball (which includes .github, test, etc.)
+		def downloadUrl = release.zipball_url
+		if (release.assets != null && !release.assets.isEmpty()) {
+			def zipAsset = release.assets.find { it.name?.endsWith('.zip') }
+			if (zipAsset != null && zipAsset.browser_download_url != null) {
+				downloadUrl = zipAsset.browser_download_url
+				logInfo("Using release asset: " + colorize(HIGHLITE_LEVEL, zipAsset.name))
+			}
+		}
+
+		new URL(downloadUrl).withInputStream { i -> fileZip.withOutputStream { it << i } }
 		unzip(fileZip, destDir, releaseVersion)
 		fileZip.delete();
 	}

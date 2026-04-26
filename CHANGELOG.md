@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.5.1] - 2026-04-26
+
+### Fixed
+- `github.gradle`: release download now prefers uploaded release assets (`.zip`) over GitHub's auto-generated zipball, which included `.github/`, `test/`, `CLAUDE.md` and other excluded files in the cached framework
+- Shell script git permissions set to executable (`100755`)
+
 ## [v1.5.0] - 2026-04-18
 ### Added
 - New `vulnerability-scanner.gradle` (510 lines): integrated [Trivy](https://trivy.dev/) scanning for dependencies (`trivy rootfs`) and container images (`trivy image`); severity levels DENY/CRIT/HIGH/MED/LOW; snapshot builds scan all severities without failing, release builds fail on DENY/CRIT/HIGH; dependency tree resolution showing which top-level `build.gradle` dependency to update; integrates with whitelist/blacklist properties files
