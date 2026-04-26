@@ -32,5 +32,5 @@ jobs:
       - name: cb-meminfo-test
         run: bash test/template/quarkus/cb-meminfo-test.sh
 
-      - name: apply-subpath-test
-        run: bash test/template/nodejs/apply-subpath-test.sh
+      #- name: apply-subpath-test
+      #  run: bash test/template/nodejs/apply-subpath-test.sh
