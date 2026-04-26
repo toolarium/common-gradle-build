@@ -791,13 +791,13 @@ mock_jar=$(create_mock_jar)
 
 # create a fake meminfo file at the expected path
 MEMINFO_TEST="/dev/shm/cb-meminfo.out"
-printf '%s\n' "MEM: rss=256MB heap=128MB" > "$MEMINFO_TEST" 2>/dev/null
+printf '%s\n%s\n' "Total          Used           Free           Process[1]" "8192 M         4096 M         4096 M         256 M" > "$MEMINFO_TEST" 2>/dev/null
 
 output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor \
     --executable "$mock_java_fail" \
     --jar "$mock_jar" 2>&1)
 if [ -w "/dev/shm" ]; then
-    assert_output_contains "meminfo printed on error" "MEM: rss=256MB heap=128MB" "$output"
+    assert_output_contains "meminfo printed on error" "MEMINFO  Total" "$output"
     assert_output_contains "error log on failed exit" " - E - " "$output"
 else
     # /dev/shm not available (e.g. some CI), skip gracefully
@@ -816,7 +816,7 @@ mock_java=$(create_mock_java)
 mock_jar=$(create_mock_jar)
 
 # create a fake meminfo file
-printf '%s\n' "MEM: should-not-appear" > "$MEMINFO_TEST" 2>/dev/null
+printf '%s\n%s\n' "Total          Used" "should-not-appear" > "$MEMINFO_TEST" 2>/dev/null
 
 output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor \
     --executable "$mock_java" \

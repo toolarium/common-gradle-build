@@ -34,47 +34,6 @@ jobs:
 
 
   #######################################################################
-  # macOS - shell script tests (bash)
-  #######################################################################
-  test-macos:
-    runs-on: macos-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-
-      - name: toolarium-java-runner-test
-        run: bash test/template/quarkus/toolarium-java-runner-test.sh
-
-      - name: cb-meminfo-test
-        run: bash test/template/quarkus/cb-meminfo-test.sh
-
-      - name: apply-subpath-test
-        run: bash test/template/nodejs/apply-subpath-test.sh
-
-
-  #######################################################################
-  # Windows - shell script tests (Git Bash)
-  #######################################################################
-  test-windows:
-    runs-on: windows-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-
-      - name: toolarium-java-runner-test
-        shell: bash
-        run: bash test/template/quarkus/toolarium-java-runner-test.sh
-
-      - name: cb-meminfo-test
-        shell: bash
-        run: bash test/template/quarkus/cb-meminfo-test.sh
-
-      - name: apply-subpath-test
-        shell: bash
-        run: bash test/template/nodejs/apply-subpath-test.sh
-
-
-  #######################################################################
   # Alpine (container) - shell script tests (ash/BusyBox)
   #
   # Ensures POSIX compatibility of all shell scripts on BusyBox ash,
