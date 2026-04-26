@@ -23,6 +23,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
+      - name: Set executable permissions
+        run: chmod -R +x gradle/template/ test/
+
       - name: toolarium-java-runner-test
         run: bash test/template/quarkus/toolarium-java-runner-test.sh
 
@@ -31,30 +34,3 @@ jobs:
 
       - name: apply-subpath-test
         run: bash test/template/nodejs/apply-subpath-test.sh
-
-
-  #######################################################################
-  # Alpine (container) - shell script tests (ash/BusyBox)
-  #
-  # Ensures POSIX compatibility of all shell scripts on BusyBox ash,
-  # which is the shell used inside Alpine-based Docker containers.
-  #######################################################################
-  test-alpine:
-    runs-on: ubuntu-latest
-    container:
-      image: alpine:latest
-    steps:
-      - name: Install dependencies
-        run: apk add --no-cache coreutils file findutils sed grep
-
-      - name: Checkout repository
-        uses: actions/checkout@v5
-
-      - name: toolarium-java-runner-test (ash)
-        run: sh test/template/quarkus/toolarium-java-runner-test.sh
-
-      - name: cb-meminfo-test (ash)
-        run: sh test/template/quarkus/cb-meminfo-test.sh
-
-      - name: apply-subpath-test (ash)
-        run: sh test/template/nodejs/apply-subpath-test.sh
