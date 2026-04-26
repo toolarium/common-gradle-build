@@ -65,6 +65,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
+      - name: Set executable permissions
+        run: chmod -R +x gradle/template/ test/
+
       - name: toolarium-java-runner-test
         run: bash test/template/quarkus/toolarium-java-runner-test.sh
 
@@ -168,7 +171,7 @@ jobs:
           echo ""
           echo "Verifying exclusions in .tgz:"
           for pattern in '.github/' 'test/' '.gitattributes' '.gitignore' 'CLAUDE.md' '.claude/'; do
-            if tar -tzf "/tmp/$ARCHIVE_NAME.tgz" | grep -q "$pattern"; then
+            if tar -tzf "/tmp/$ARCHIVE_NAME.tgz" | grep -qF "$pattern"; then
               echo "  FAIL: $pattern found in archive!"
               exit 1
             else
