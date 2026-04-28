@@ -388,7 +388,7 @@
   </div>
   <div class="feature-card">
     <h4>Enum Configuration</h4>
-    <p>Type-safe config generation, duplicate key validation, mandatory field detection, K8s product assembly.</p>
+    <p>Type-safe config generation, duplicate key validation, mandatory field detection, K8s product assembly. Auto-generated AsciiDoc &amp; Markdown documentation with Overview, Mandatory Configurations, and Services chapters. Flag system (M/S/U/C/P), marker interface splitting, included in PDF/HTML processing and K8s JAR.</p>
   </div>
   <div class="feature-card">
     <h4>Resource Bundles</h4>
@@ -980,6 +980,15 @@ sonarToken   = <span class="string">"your-token"</span></code></pre>
   <tbody>
     <tr><td><code>hasToolariumEnumConfiguration</code></td><td><code>true</code></td><td>Enable enum configuration support</td></tr>
     <tr><td><code>toolariumEnumConfigurationVersion</code></td><td><code>1.2.0</code></td><td>Enum configuration library version</td></tr>
+    <tr><td><code>enumConfigurationDocAsciidoc</code></td><td><code>true</code></td><td>Generate AsciiDoc documentation</td></tr>
+    <tr><td><code>enumConfigurationDocMarkdown</code></td><td><code>true</code></td><td>Generate Markdown documentation</td></tr>
+    <tr><td><code>enumConfigurationDocOutputPath</code></td><td><code>build/generated/sources/doc</code></td><td>Documentation output directory</td></tr>
+    <tr><td><code>enumConfigurationDocKeyLowercase</code></td><td><code>false</code></td><td>Convert key names to lowercase in output</td></tr>
+    <tr><td><code>enumConfigurationDocGroupLowercase</code></td><td><code>false</code></td><td>Convert group/class names to lowercase in output</td></tr>
+    <tr><td><code>enumConfigurationDocProductLabel</code></td><td><code>${rootProject.name}</code></td><td>Label shown in HTML sidebar and PDF header</td></tr>
+    <tr><td><code>enumConfigurationDocIncludeInJar</code></td><td><code>true</code></td><td>Include generated docs (PDF, Markdown) in kubernetes JAR</td></tr>
+    <tr><td><code>enumConfigurationDocCustomerKeys</code></td><td><code>""</code></td><td>Comma-separated <code>configName#KEY</code> entries flagged as customer-responsible (C)</td></tr>
+    <tr><td><code>enumConfigurationDocProvisionedKeys</code></td><td><code>""</code></td><td>Comma-separated <code>configName#KEY</code> entries flagged as provisioned (P)</td></tr>
   </tbody>
 </table>
 </details>
@@ -1121,7 +1130,7 @@ service.resources = /myui</code></pre>
   <li><strong>base/</strong> &mdash; logging, ANSI colors, constants, properties, versioning, release, security, dependencies, vulnerability scanning, SonarQube, exec, file operations, JSON, changelog, Kubernetes, container, enum configuration, webjar, init, scripts</li>
   <li><strong>java/</strong> &mdash; compilation, testing, coverage, Javadoc, Checkstyle, Eclipse, repository, publication, signing, JReleaser</li>
   <li><strong>scm/</strong> &mdash; Git integration via grgit</li>
-  <li><strong>doc/</strong> &mdash; AsciiDoctor support</li>
+  <li><strong>doc/</strong> &mdash; AsciiDoctor support, enum configuration documentation generation</li>
   <li><strong>config/</strong> &mdash; Configuration publication</li>
   <li><strong>Aggregators:</strong> <code>base.gradle</code>, <code>java-base.gradle</code>, <code>language-base.gradle</code>, <code>nodejs.gradle</code></li>
 </ul>

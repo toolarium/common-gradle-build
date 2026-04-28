@@ -26,7 +26,7 @@ brand:
 #  content: '{copyright} | Page {page-number} of {page-count} | {localdate}'
 
 #header:
-  content: '{project-name} v{version} | {chapter-title}'
+#  content: '{project-name} v{version} | {chapter-title}'
 #footer:
 #  content: '{author} | {email} | Page {page-number}'
 
@@ -36,7 +36,16 @@ header:
   font_color: $brand_text_muted
   border_bottom_width: 0.5
   border_bottom_color: '#e2e8f0'
-  #content: '@@LICENSE_ORGANISATION@@ | {document-title}'
+  recto:
+    left:
+      content: '{document-title}'
+    right:
+      content: '{product-date}'
+  verso:
+    left:
+      content: '{document-title}'
+    right:
+      content: '{product-date}'
 
 footer:
   height: 36
@@ -44,24 +53,33 @@ footer:
   font_color: $brand_text_muted
   border_top_width: 0.5
   border_top_color: '#e2e8f0'
-  #content: 'Confidential | Page {page-number} of {page-count} | © ${YEAR} @@LICENSE_ORGANISATION@@'
-  #content: 'Page {page-number} of {page-count} | © ${YEAR} @@LICENSE_ORGANISATION@@'
+  recto:
+    left:
+      content: '{product-name} v{product-version}'
+    right:
+      content: '{page-number} / {page-count}'
+  verso:
+    left:
+      content: '{page-number} / {page-count}'
+    right:
+      content: '{product-name} v{product-version}'
+
+running_content:
+  start_at: toc
 
 # Page Layout
 page:
   background_color: '#ffffff'
   layout: portrait
-  # Measurement[top,right,bottom,left]:
-  margin: [2.5cm, 2cm, 2.5cm, 2cm]
-  # margin: [0.75in, 1in, 0.75in, 1in]
+  margin: [2cm, 2cm, 2cm, 2cm]
   size: A4
 
 # Base Typography
 base:
   align: justify
   font_color: $brand_text_primary
-  font_size: 11
-  line_height: 1.4
+  font_size: 9
+  line_height: 1.3
 
 # Links
 link:
@@ -72,23 +90,32 @@ heading:
   font_color: $brand_text_primary
   font_style: bold
   line_height: 1.2
-  margin_top: 20
-  margin_bottom: 10
+  margin_top: 8
+  margin_bottom: 4
 
 heading_h1:
+  font_size: 16
   font_color: $brand_primary
-  border_bottom_width: 3
+  border_bottom_width: 2
   border_bottom_color: $brand_primary
 
 heading_h2:
+  font_size: 16
   font_color: $brand_primary
   border_bottom_width: 1
-  border_bottom_color: $brand_text_muted
+  border_bottom_color: $brand_primary
+  break_before: always
+
+heading_h3:
+  font_size: 11
+
+heading_h4:
+  font_size: 10
 
 # Paragraphs
 prose:
   margin_top: 0
-  margin_bottom: 12
+  margin_bottom: 3
 
 # Lists
 list:
@@ -126,10 +153,18 @@ table:
   background_color: '#ffffff'
   border_color: '#e2e8f0'
   border_width: 0.5
+  font_size: 8
+  cell_padding: [2, 4, 2, 4]
+  caption:
+    end: bottom
+    font_size: 7
+    font_color: $brand_text_muted
+    font_style: italic
   head:
     background_color: $brand_text_muted
     font_color: '#ffffff'
     font_style: bold
+    font_size: 8
 
 # Admonitions
 admonition:
@@ -189,14 +224,3 @@ title_page:
     font_size: 18
     font_color: $brand_text_secondary
 
-# Footer
-footer:
-  font_size: 8
-  font_color: $brand_text_muted
-  height: 20
-
-# Header
-header:
-  font_size: 8
-  font_color: $brand_text_muted
-  height: 20

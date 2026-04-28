@@ -118,6 +118,7 @@ apply from: "${commonGradleBuildElementPath}/base/kubernetes.gradle"
 apply from: "${commonGradleBuildElementPath}/java/repository.gradle"
 apply from: "${commonGradleBuildElementPath}/java/signing.gradle"
 apply from: "${commonGradleBuildElementPath}/base/enumconfiguration.gradle"
+apply from: "${commonGradleBuildElementPath}/doc/enumconfiguration.gradle"
 
 
 // set product name, organisation and copy right
@@ -819,6 +820,67 @@ task processKubernetesDependencies() {
 
 
 /****************************************************************************************
+ * Generate enum configuration documentation
+ ****************************************************************************************/
+task generateEnumConfigurationDocumentation(dependsOn: ['prepareEnumConfigurationIndex', 'extractKubernetesInformation']) {
+	group = 'Documentation'
+	description = 'Generate enum configuration documentation (AsciiDoc and/or Markdown)'
+	onlyIf { return ((project.hasProperty('enumConfigurationDocAsciidoc') && project.getProperty('enumConfigurationDocAsciidoc')) 
+	              || (project.hasProperty('enumConfigurationDocMarkdown') && project.getProperty('enumConfigurationDocMarkdown'))) }
+	doLast {
+		new File("$gradleBuildDirectory/${generatedCommonGradleSubfolderName}").mkdirs()
+		new File("${generatedCommonGradleBaseBuildSources}").mkdirs()
+		new File("${generatedCommonGradleBuildSources}").mkdirs()
+		new File("${enumConfigurationDocOutputPath}").mkdirs()
+
+		printInfo("> Create enum configuration documentation in " + colorize(HIGHLITE_LEVEL, "${enumConfigurationDocOutputPath}".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")		
+		generateEnumConfigurationDoc("$kubernetesApplicationInformationPath/${kubernetesEnumConfigurationPathname}")
+	}
+}
+// copy generated adoc files into asciidoc source directory for processing
+ext.copyGeneratedAdocToSource = {
+	def generatedAdocDir = new File("${enumConfigurationDocOutputPath}")
+	if (generatedAdocDir.exists() && new File("${asciidocSourceDirectory}").exists()) {
+		copy {
+			from generatedAdocDir
+			include '*.adoc'
+			into "${asciidocSourceDirectory}"
+		}
+	}
+}
+
+// remove generated adoc files from asciidoc source directory after processing
+ext.cleanGeneratedAdocFromSource = {
+	def generatedAdocDir = new File("${enumConfigurationDocOutputPath}")
+	if (generatedAdocDir.exists()) {
+		generatedAdocDir.eachFile { file ->
+			if (file.getName().endsWith('.adoc')) {
+				def copied = new File("${asciidocSourceDirectory}/${file.getName()}")
+				if (copied.exists()) { copied.delete() }
+			}
+		}
+	}
+}
+
+if (project.tasks.findByName('convertAsciidoctorHtml')) {
+	generateEnumConfigurationDocumentation.finalizedBy('convertAsciidoctorHtml')
+	convertAsciidoctorHtml.doFirst {
+		copyGeneratedAdocToSource()
+		printInfo("> Generate HTML documentation in " + colorize(HIGHLITE_LEVEL, "${asciiDoctorHtmlPath}".replace('\\', '/').replace("${project.rootDir}".replace('\\', '/') + "/", "")) + "...")
+	}
+	convertAsciidoctorHtml.doLast { cleanGeneratedAdocFromSource() }
+}
+if (project.tasks.findByName('convertAsciidoctorPdf')) {
+	generateEnumConfigurationDocumentation.finalizedBy('convertAsciidoctorPdf')
+	convertAsciidoctorPdf.doFirst {
+		copyGeneratedAdocToSource()
+		printInfo("> Generate PDF documentation in " + colorize(HIGHLITE_LEVEL, "${asciiDoctorPdfPath}".replace('\\', '/').replace("${project.rootDir}".replace('\\', '/') + "/", "")) + "...")
+	}
+	convertAsciidoctorPdf.doLast { cleanGeneratedAdocFromSource() }
+}
+
+
+/****************************************************************************************
  * Extract kubernetes artefacts
  ****************************************************************************************/
 task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesGatewayApi', 'kubernetesIdm', 'extractKubernetes', 'extractKubernetesInformation', 'copyAppResources', 'processKubernetesDependencies', 'prepareEnumConfigurationIndex', 'kubernetesDatabase']) {
@@ -1204,6 +1266,22 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesGatewayApi', '
 build.dependsOn kubernetesConcat
 kubernetesConcat.dependsOn kubernetesConfiguration
 kubernetesJar.dependsOn kubernetesConcat
+kubernetesJar.dependsOn generateEnumConfigurationDocumentation
+generateEnumConfigurationDocumentation.mustRunAfter(kubernetesConcat)
+
+// include generated docs in kubernetes jar
+if ("true".equalsIgnoreCase("" + project.getProperty('enumConfigurationDocIncludeInJar'))) {
+	kubernetesJar {
+		into "docs", {
+			from "${asciiDoctorPdfPath}", {
+				include '*.pdf'
+			}
+			from "${enumConfigurationDocOutputPath}", {
+				include '*.md'
+			}
+		}
+	}
+}
 
 if (project.tasks.findByName('convertAsciidoctorHtml')) {
 	convertAsciidoctorHtml.mustRunAfter(kubernetesConcat)

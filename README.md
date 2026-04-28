@@ -323,6 +323,12 @@ Toolarium enum configuration processor integration:
 - Duplicate key validation across services (fails on release builds)
 - Mandatory configuration with missing default value detection
 - Index and initialization file generation for Kubernetes product assembly
+- **Documentation generation** — automatic AsciiDoc (`.adoc`) and Markdown (`.md`) documentation from enum configuration JSON data:
+  - Overview with service summary table, Mandatory Configurations chapter, detailed Services chapter with all configuration keys
+  - Flag system: **M** (Mandatory), S (Secure), U (Unique), **C** (Customer-responsible), P (Provisioned)
+  - Split by marker interface into separate documents (e.g. `configuration-ienumconfiguration.adoc`)
+  - Generated docs included in AsciiDoctor PDF/HTML processing and in the Kubernetes JAR (`docs/` folder)
+  - Configurable via `enumConfigurationDocAsciidoc`, `enumConfigurationDocMarkdown`, `enumConfigurationDocKeyLowercase`, `enumConfigurationDocGroupLowercase`, `enumConfigurationDocProductLabel`, `enumConfigurationDocIncludeInJar`, `enumConfigurationDocCustomerKeys`, `enumConfigurationDocProvisionedKeys`
 
 ### Resource Bundles & Localization
 
@@ -850,6 +856,15 @@ Example: `kubernetesQuarkusReadinessCheckPath`, `kubernetesNodeLivenessFailureTh
 |----------|---------|-------------|
 | `hasToolariumEnumConfiguration` | `true` | Enable enum configuration support |
 | `toolariumEnumConfigurationVersion` | `1.2.0` | Enum configuration library version |
+| `enumConfigurationDocAsciidoc` | `true` | Generate AsciiDoc documentation |
+| `enumConfigurationDocMarkdown` | `true` | Generate Markdown documentation |
+| `enumConfigurationDocOutputPath` | `build/generated/sources/doc` | Documentation output directory |
+| `enumConfigurationDocKeyLowercase` | `false` | Convert configuration key names to lowercase in output |
+| `enumConfigurationDocGroupLowercase` | `false` | Convert group/class names to lowercase in output |
+| `enumConfigurationDocProductLabel` | `${rootProject.name}` | Label shown in HTML sidebar and PDF header |
+| `enumConfigurationDocIncludeInJar` | `true` | Include generated docs (PDF, Markdown) in kubernetes JAR |
+| `enumConfigurationDocCustomerKeys` | `""` | Comma-separated `configName#KEY` entries flagged as customer-responsible (C) |
+| `enumConfigurationDocProvisionedKeys` | `""` | Comma-separated `configName#KEY` entries flagged as provisioned (P) |
 
 #### Java Application (Shadow JAR) — [github.com/GradleUp/shadow](https://github.com/GradleUp/shadow)
 
@@ -926,7 +941,7 @@ Modular, composable Gradle script fragments in `gradle/build-element/`:
 - **base/** — core utilities: logging (`logger.gradle`), ANSI colors (`ansi-support.gradle`, `constants.gradle`), properties (`defaults.gradle`, `properties.gradle`), versioning (`version.gradle`), release (`release.gradle`), security (`security.gradle`), dependencies (`dependencies.gradle`, `dependency-check.gradle`, `dependencies-json.gradle`), vulnerability scanning (`vulnerability-scanner.gradle`), SonarQube (`sonar.gradle`), exec (`exec.gradle`), file operations (`file.gradle`, `propertyreplacement.gradle`), JSON (`json.gradle`), changelog (`changelog.gradle`), Kubernetes (`kubernetes.gradle`), container (`container.gradle`), enum configuration (`enumconfiguration.gradle`), webjar (`webjar.gradle`), init (`init.gradle`, `initialisation.gradle`), scripts (`scripts.gradle`)
 - **java/** — compilation (`java.gradle`, `javaversion.gradle`), testing (`test.gradle`), coverage (`testcoverage.gradle`), Javadoc (`javadoc.gradle`), Checkstyle (`checkstyle.gradle`), Eclipse (`eclipse.gradle`), repository (`repository.gradle`, `supported-repositories.gradle`), publication (`publication.gradle`), signing (`signing.gradle`), JReleaser (`jreleaser.gradle`)
 - **scm/** — Git integration (`git.gradle`) via grgit
-- **doc/** — AsciiDoctor (`asciidoctor-support.gradle`)
+- **doc/** — AsciiDoctor (`asciidoctor-support.gradle`), enum configuration documentation (`enumconfiguration.gradle`)
 - **config/** — Configuration publication (`publication.gradle`)
 - Aggregators: `base.gradle`, `java-base.gradle`, `language-base.gradle`, `nodejs.gradle`
 

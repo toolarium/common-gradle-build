@@ -5,8 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v1.5.1] - 2026-04-26
+## [v1.5.2] - 2026-04-28
+### Added
+- Generated AsciiDoc files automatically included in AsciiDoctor HTML/PDF processing via staging copy into `src/doc/` during build
+- Generated documentation (PDF and Markdown) included in kubernetes JAR under `docs/` folder (controlled by `enumConfigurationDocIncludeInJar`)
+- Enum configuration documentation generator (`gradle/build-element/doc/enumconfiguration.gradle`): generates professional AsciiDoc and Markdown documentation from toolarium-enum-configuration JSON data with Overview, Mandatory Configurations, and Services chapters
+- Configuration documentation split by marker interface: services with marker interfaces get separate files
 
+### Changed
+- AsciiDoctor theme templates updated: reduced font sizes for PDF (base 9pt, tables 8pt), compact table cell padding, professional admonition block styling with colored left borders, hidden default HTML footer via CSS
+
+## [v1.5.1] - 2026-04-26
 ### Fixed
 - `github.gradle`: release download now prefers uploaded release assets (`.zip`) over GitHub's auto-generated zipball, which included `.github/`, `test/`, `CLAUDE.md` and other excluded files in the cached framework
 - Shell script git permissions set to executable (`100755`)

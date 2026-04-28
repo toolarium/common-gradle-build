@@ -33,7 +33,8 @@ addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/bin")
  ***************************************************************************************/
 projectValidation {
 	doFirst {
-		if (project.hasProperty('initEclipse') && project.getProperty('initEclipse')) {
+		if (project.hasProperty('initEclipse') && project.getProperty('initEclipse')
+			&& !"true".equalsIgnoreCase("" + project.getProperty('isReleaseVersion'))) {
 			createEclipseFiles()
 		}
 	}

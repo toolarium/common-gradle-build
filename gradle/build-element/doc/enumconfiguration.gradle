@@ -1,0 +1,739 @@
+/*
+ * enumconfiguration.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ *
+ * This file is part of the toolarium common-gradle-build.
+ *
+ * The common-gradle-build is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * The common-gradle-build is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+/****************************************************************************************
+ * Format cardinality as min..max notation (e.g. 1..1, 1..*, 0..3)
+ ****************************************************************************************/
+ext.formatEnumConfigCardinality = { cardinality ->
+	if (cardinality == null) {
+		return "1..1"
+	}
+	def min = cardinality.minSize
+	def max = cardinality.maxSize
+	def maxStr = (max >= 2147483647) ? "*" : "" + max
+	return "" + min + ".." + maxStr
+}
+
+
+/****************************************************************************************
+ * Format value size as min..max notation
+ ****************************************************************************************/
+ext.formatEnumConfigValueSize = { valueSize, dataType ->
+	if (valueSize == null) {
+		return ""
+	}
+	def min = "" + valueSize.minSize
+	def max = "" + valueSize.maxSize
+
+	if ("DATE".equalsIgnoreCase(dataType)) {
+		def skipMin = min.length() >= 4 && Integer.parseInt(min.substring(0, 4)) < 2024
+		def skipMax = max.length() >= 4 && Integer.parseInt(max.substring(0, 4)) >= 9999
+		if (skipMin && skipMax) { return "" }
+		if (skipMin) { return ".." + max }
+		if (skipMax) { return min + ".." }
+		return min + ".." + max
+	}
+
+	// suppress Integer.MAX_VALUE, Long.MAX_VALUE and Double.MAX_VALUE
+	if (valueSize.maxSize == 2147483647 || valueSize.maxSize == 9223372036854775807 || valueSize.maxSize == Double.MAX_VALUE) {
+		return min + ".."
+	}
+	return min + ".." + max
+}
+
+
+/****************************************************************************************
+ * Escape special characters for AsciiDoc table cells
+ ****************************************************************************************/
+ext.escapeAdocCell = { value ->
+	if (value == null || value.toString().trim().isEmpty()) {
+		return "--"
+	}
+	return value.toString().replace("|", "\\|")
+}
+
+
+/****************************************************************************************
+ * Escape special characters for Markdown table cells
+ ****************************************************************************************/
+ext.escapeMdCell = { value ->
+	if (value == null || value.toString().trim().isEmpty()) {
+		return "--"
+	}
+	return value.toString().replace("|", "\\|")
+}
+
+
+/****************************************************************************************
+ * Format configuration key name, optionally converting to lowercase
+ ****************************************************************************************/
+ext.formatEnumConfigKey = { key ->
+	if ("true".equalsIgnoreCase("" + project.getProperty('enumConfigurationDocKeyLowercase'))) {
+		return key.toString().toLowerCase()
+	}
+	return key.toString()
+}
+
+
+/****************************************************************************************
+ * Parse a comma-separated list of configName#KEY entries into a Set
+ ****************************************************************************************/
+ext.parseEnumConfigKeySet = { propertyName ->
+	def keySet = [] as Set
+	if (project.hasProperty(propertyName)) {
+		def value = "" + project.getProperty(propertyName)
+		if (!value.trim().isEmpty()) {
+			value.split(",").each { entry ->
+				keySet << entry.trim()
+			}
+		}
+	}
+	return keySet
+}
+
+
+/****************************************************************************************
+ * Format configuration group name, optionally converting to lowercase
+ ****************************************************************************************/
+ext.formatEnumConfigGroup = { groupName ->
+	if ("true".equalsIgnoreCase("" + project.getProperty('enumConfigurationDocGroupLowercase'))) {
+		return groupName.toString().toLowerCase()
+	}
+	return groupName.toString()
+}
+
+
+/****************************************************************************************
+ * Derive a file suffix from a marker interface name.
+ * e.g. com.github.toolarium.enumeration.configuration.IEnumConfiguration
+ *      -> ienumconfiguration
+ ****************************************************************************************/
+ext.markerInterfaceToFileSuffix = { markerInterface ->
+	def parts = markerInterface.toString().split("\\.")
+	return parts[parts.length - 1].toLowerCase()
+}
+
+
+/****************************************************************************************
+ * Load all enum configuration service data from inputPath (pure JSON).
+ * Returns a list of maps: [serviceName, version, configList (list of parsed JSON objects)]
+ ****************************************************************************************/
+ext.loadEnumConfigurationServiceData = { inputPath ->
+	def serviceDataList = []
+	if (!new File(inputPath).exists()) {
+		return serviceDataList
+	}
+
+	def files = []
+	new File(inputPath).eachFileRecurse(groovy.io.FileType.FILES) { file ->
+		if (file.getName().endsWith(".json")
+			&& !file.getName().equals("${kubernetesEnumConfigurationMapping}")
+			&& !file.getName().equals("${kubernetesEnumConfigurationToInitialize}")) {
+			files << file
+		}
+	}
+
+	files.sort { a, b -> a.name <=> b.name }.each { file ->
+		def rawJson = new groovy.json.JsonSlurper().parseText(file.text)
+		def serviceName = file.getName().replace(".json", "")
+		def ver = rawJson.version ?: ""
+		def configList = rawJson.enumConfigurationList ?: []
+		serviceDataList << [serviceName: serviceName, version: ver, configList: configList]
+	}
+
+	return serviceDataList
+}
+
+
+/****************************************************************************************
+ * Load mandatory (to-initialize) data from the to-initialize JSON file.
+ * Returns a map: "serviceName::configName" -> list of mandatory key names
+ ****************************************************************************************/
+ext.loadEnumConfigurationMandatoryData = { inputPath ->
+	def mandatoryMap = [:]
+	def toInitFile = new File(inputPath + "/${kubernetesEnumConfigurationToInitialize}")
+	if (!toInitFile.exists()) {
+		return mandatoryMap
+	}
+
+	def rawJson = new groovy.json.JsonSlurper().parseText(toInitFile.text)
+	if (rawJson.'enum-configuration-to-initialize' != null) {
+		for (def serviceEntry : rawJson.'enum-configuration-to-initialize') {
+			def svcName = serviceEntry.'service-name'
+			for (def configEntry : serviceEntry.configurationList) {
+				def configName = configEntry.name
+				def keyList = configEntry.keyList ?: []
+				mandatoryMap["${svcName}::${configName}"] = keyList
+			}
+		}
+	}
+
+	return mandatoryMap
+}
+
+
+/****************************************************************************************
+ * Load index data to get interface and marker interface information.
+ * Returns a map: configName -> [interfaceList, markerInterfaceList]
+ ****************************************************************************************/
+ext.loadEnumConfigurationIndexData = { inputPath ->
+	def indexMap = [:]
+	def indexFile = new File(inputPath + "/${kubernetesEnumConfigurationMapping}")
+	if (!indexFile.exists()) {
+		return indexMap
+	}
+
+	def rawJson = new groovy.json.JsonSlurper().parseText(indexFile.text)
+	if (rawJson.'enum-configuration-mapping' != null) {
+		for (def entry : rawJson.'enum-configuration-mapping') {
+			indexMap[entry.name] = [
+				interfaceList: entry.interfaceList ?: [],
+				markerInterfaceList: entry.markerInterfaceList ?: []
+			]
+		}
+	}
+
+	return indexMap
+}
+
+
+/****************************************************************************************
+ * Check if a service/config belongs to a given marker interface (or null for no marker)
+ ****************************************************************************************/
+ext.configBelongsToMarker = { enumConfig, indexMap, markerInterface ->
+	def idxData = indexMap[enumConfig.name] ?: [interfaceList: [], markerInterfaceList: []]
+	if (markerInterface == null) {
+		return idxData.markerInterfaceList.isEmpty()
+	}
+	return idxData.markerInterfaceList.contains(markerInterface)
+}
+
+
+/****************************************************************************************
+ * Generate AsciiDoc documentation for enum configurations
+ ****************************************************************************************/
+ext.generateEnumConfigurationAsciidoc = { serviceDataList, mandatoryMap, indexMap, outputFile, docTitle ->
+	logInfo("> Generate enum-configuration AsciiDoc " + colorize(HIGHLITE_LEVEL, "${outputFile}".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")
+
+	if (serviceDataList.isEmpty()) {
+		return
+	}
+
+	def out = new File(outputFile)
+	out.text = ""
+	def NL = NELINE
+	def customerKeys = parseEnumConfigKeySet('enumConfigurationDocCustomerKeys')
+	def provisionedKeys = parseEnumConfigKeySet('enumConfigurationDocProvisionedKeys')
+
+	// document header
+	out.append("= ${docTitle}" + NL)
+	out.append(":doctype: article" + NL)
+	out.append(":product-name: ${rootProject.name}" + NL)
+	out.append(":product-version: ${project.version}" + NL)
+	out.append(":product-date: ${project.ext.BUILD_TIMESTAMP_DATE}" + NL)
+	out.append(":toc: left" + NL)
+	out.append(":toc-title: ${enumConfigurationDocProductLabel}" + NL)
+	out.append(":toclevels: 3" + NL)
+	out.append(":sectnums:" + NL)
+	out.append(":icons: font" + NL)
+	out.append(":sectanchors:" + NL)
+	out.append(":source-highlighter: highlight.js" + NL)
+	out.append(NL)
+
+	// == Overview
+	out.append("== Overview" + NL)
+	out.append(NL)
+	out.append("This document describes the complete set of configurations for *${rootProject.name}* version ${project.version}. " + NL)
+	out.append("The first section provides an overview of all services that expose configurations. " + NL)
+	out.append("The second section identifies mandatory configurations that must be provisioned or configured prior to deploying the application. " + NL)
+	out.append("The third section provides a detailed reference of all configuration keys per service." + NL)
+	out.append(NL)
+
+	out.append(".Service Configuration Summary" + NL)
+	out.append('[cols="3,4,1,1",options="header"]' + NL)
+	out.append("|===" + NL)
+	out.append("| Service | Group | Version | Configurations" + NL)
+
+	// collect and sort by service name
+	def sortedOverview = []
+	for (def svcData : serviceDataList) {
+		for (def enumConfig : svcData.configList) {
+			sortedOverview << [serviceName: svcData.serviceName, configName: enumConfig.name, version: svcData.version, keyCount: enumConfig.keyList.size()]
+		}
+	}
+	sortedOverview.sort { a, b -> a.serviceName.toLowerCase() <=> b.serviceName.toLowerCase() }
+	for (def entry : sortedOverview) {
+		out.append(NL)
+		out.append("| ${entry.serviceName}" + NL)
+		out.append("| `${formatEnumConfigGroup(entry.configName)}`" + NL)
+		out.append("| ${entry.version}" + NL)
+		out.append("| ${entry.keyCount}" + NL)
+	}
+
+	out.append("|===" + NL)
+	out.append(NL)
+
+	// == Mandatory Configurations
+	out.append("== Mandatory Configurations" + NL)
+	out.append(NL)
+	out.append("The following configuration keys are mandatory and have no default value assigned. " + NL)
+	out.append("These parameters *must* be provisioned or explicitly configured prior to application startup. " + NL)
+	out.append("Failure to provide these values will prevent the application from initialising correctly." + NL)
+	out.append(NL)
+
+	for (def svcData : serviceDataList) {
+		for (def enumConfig : svcData.configList) {
+			def configName = enumConfig.name
+			def mandatoryKeys = mandatoryMap["${svcData.serviceName}::${configName}"] ?: []
+			if (mandatoryKeys.isEmpty()) {
+				continue
+			}
+
+			out.append("=== ${svcData.serviceName}" + NL)
+			out.append(NL)
+			out.append("*Group:* `${formatEnumConfigGroup(configName)}`" + NL)
+			out.append(NL)
+
+			out.append(".Mandatory Keys" + NL)
+			out.append('[cols="3,2,1,4",options="header"]' + NL)
+			out.append("|===" + NL)
+			out.append("| Key | Data Type | Cardinality | Description" + NL)
+
+			def sortedMandatoryKeys = enumConfig.keyList.findAll { mandatoryKeys.contains(it.key) }.sort { a, b -> a.key.toLowerCase() <=> b.key.toLowerCase() }
+			for (def keyElement : sortedMandatoryKeys) {
+				def dataType = keyElement.dataType ?: "--"
+				def cardinality = formatEnumConfigCardinality(keyElement.cardinality)
+				def desc = escapeAdocCell(keyElement.description)
+				out.append(NL)
+				out.append("| `${formatEnumConfigKey(keyElement.key)}`" + NL)
+				out.append("| ${dataType}" + NL)
+				out.append("| ${cardinality}" + NL)
+				out.append("| ${desc}" + NL)
+			}
+
+			out.append("|===" + NL)
+			out.append(NL)
+		}
+	}
+
+	// == Services
+	out.append("== Services" + NL)
+	out.append(NL)
+	out.append("This section provides a comprehensive reference of all configuration keys for each service. " + NL)
+	out.append("Each subsection includes the configuration class, version, description, and a detailed table of all available keys " + NL)
+	out.append("with their data type, size constraints, cardinality, default values, enumeration values, and confidentiality indicators." + NL)
+	out.append(NL)
+
+	for (def svcData : serviceDataList) {
+		for (def enumConfig : svcData.configList) {
+			def configName = enumConfig.name
+			def mandatoryKeys = mandatoryMap["${svcData.serviceName}::${configName}"] ?: []
+			def idxData = indexMap[configName] ?: [interfaceList: [], markerInterfaceList: []]
+
+			out.append("=== ${svcData.serviceName}" + NL)
+			out.append(NL)
+			out.append("*Group:* `${formatEnumConfigGroup(configName)}` +" + NL)
+			out.append("*Version:* ${svcData.version} +" + NL)
+			out.append("*Description:* ${escapeAdocCell(enumConfig.description)}" + NL)
+			out.append(NL)
+
+			// full configuration keys table
+			out.append("==== Configuration Keys" + NL)
+			out.append(NL)
+
+			// check if any key in this config has enumeration values or example values
+			def hasEnumeration = enumConfig.keyList.any { k -> k.enumerationValue != null && !k.enumerationValue.toString().trim().isEmpty() }
+			def hasExample = enumConfig.keyList.any { k -> "key-value".equals(k.type) && k.exampleValue != null && !k.exampleValue.toString().trim().isEmpty() && !"BINARY".equalsIgnoreCase(k.dataType ?: "") }
+			def colCount = 5 + (hasExample ? 1 : 0) + (hasEnumeration ? 1 : 0) + 1 // key + type + size + card + default + [example] + [enum] + flags
+
+			out.append(".Configuration Details" + NL)
+			def colSpec = "3,1,1,1,2"
+			def headerLine = "| Key | Data Type | Size | Cardinality | Default Value"
+			if (hasExample) { colSpec += ",2"; headerLine += " | Example" }
+			if (hasEnumeration) { colSpec += ",2"; headerLine += " | Enumeration" }
+			colSpec += ",1"; headerLine += " | Flags"
+			out.append("[cols=\"${colSpec}\",options=\"header\"]" + NL)
+			out.append("|===" + NL)
+			out.append(headerLine + NL)
+
+			def sortedKeysAdoc = enumConfig.keyList.sort { a, b -> a.key.toLowerCase() <=> b.key.toLowerCase() }
+			for (def keyElement : sortedKeysAdoc) {
+				def isMandatory = mandatoryKeys.contains(keyElement.key)
+				def isKeyValue = ("key-value".equals(keyElement.type))
+				def desc = escapeAdocCell(keyElement.description)
+
+				if (isKeyValue) {
+					def dataType = keyElement.dataType ?: "--"
+					def valueSize = formatEnumConfigValueSize(keyElement.valueSize, dataType)
+					def cardinality = formatEnumConfigCardinality(keyElement.cardinality)
+					def defaultVal = ("BINARY".equalsIgnoreCase(dataType) || keyElement.defaultValue == null || keyElement.defaultValue.toString().trim().isEmpty()) ? "" : "`${escapeAdocCell(keyElement.defaultValue)}`"
+					def uniqueKey = "" + configName + "#" + keyElement.key
+					def flags = []
+					if (isMandatory) { flags << "**M**" }
+					if (keyElement.confidential) { flags << "S" }
+					if (keyElement.uniqueness) { flags << "U" }
+					if (customerKeys.contains(uniqueKey)) { flags << "**C**" }
+					if (provisionedKeys.contains(uniqueKey)) { flags << "P" }
+					def flagsStr = flags.isEmpty() ? "" : flags.join(",")
+
+					out.append(NL)
+					out.append("| `${formatEnumConfigKey(keyElement.key)}`" + NL)
+					out.append("| ${dataType}" + NL)
+					out.append("| ${valueSize}" + NL)
+					out.append("| ${cardinality}" + NL)
+					out.append("| ${defaultVal}" + NL)
+					if (hasExample) {
+						def exampleVal = ("BINARY".equalsIgnoreCase(dataType) || keyElement.exampleValue == null || keyElement.exampleValue.toString().trim().isEmpty()) ? "" : "`${escapeAdocCell(keyElement.exampleValue)}`"
+						out.append("| ${exampleVal}" + NL)
+					}
+					if (hasEnumeration) {
+						def enumVal = (keyElement.enumerationValue == null || keyElement.enumerationValue.toString().trim().isEmpty()) ? "" : "`${escapeAdocCell(keyElement.enumerationValue)}`"
+						out.append("| ${enumVal}" + NL)
+					}
+					out.append("| ${flagsStr}" + NL)
+					out.append(NL)
+					out.append("${colCount}+| _${desc}_" + NL)
+				} else {
+					// key-only entry
+					def uniqueKey = "" + configName + "#" + keyElement.key
+					def flags = []
+					if (keyElement.confidential) { flags << "S" }
+					if (customerKeys.contains(uniqueKey)) { flags << "**C**" }
+					if (provisionedKeys.contains(uniqueKey)) { flags << "P" }
+					def flagsStr = flags.isEmpty() ? "" : flags.join(",")
+					def spanCols = colCount - 2 // key + spanning + flags
+					out.append(NL)
+					out.append("| `${formatEnumConfigKey(keyElement.key)}`" + NL)
+					out.append("${spanCols}+| _Key only (flag)_" + NL)
+					out.append("| ${flagsStr}" + NL)
+					out.append(NL)
+					out.append("${colCount}+| _${desc}_" + NL)
+				}
+			}
+
+			out.append("|===" + NL)
+			out.append(NL)
+		}
+	}
+
+	// Legend
+	out.append("== Legend" + NL)
+	out.append(NL)
+	out.append('[cols="1,4",options="header"]' + NL)
+	out.append("|===" + NL)
+	out.append("| Flag | Description" + NL)
+	out.append(NL)
+	out.append("| **M**" + NL)
+	out.append("| Mandatory -- must be configured before application startup" + NL)
+	out.append(NL)
+	out.append("| S" + NL)
+	out.append("| Secure -- contains sensitive or confidential data" + NL)
+	out.append(NL)
+	out.append("| U" + NL)
+	out.append("| Unique -- value must be unique across instances" + NL)
+	out.append(NL)
+	out.append("| **C**" + NL)
+	out.append("| Customer -- customer is responsible for providing this value" + NL)
+	out.append(NL)
+	out.append("| P" + NL)
+	out.append("| Provisioned -- value is provided through provisioning" + NL)
+	out.append("|===" + NL)
+	out.append(NL)
+
+	logInfo("  -> Created " + colorize(HIGHLITE_LEVEL, "${outputFile}".replace('\\', '/').replace("$gradleBuildDirectory/", "")))
+}
+
+
+/****************************************************************************************
+ * Generate Markdown documentation for enum configurations
+ ****************************************************************************************/
+ext.generateEnumConfigurationMarkdown = { serviceDataList, mandatoryMap, indexMap, outputFile, docTitle ->
+	logInfo("> Generate enum-configuration Markdown " + colorize(HIGHLITE_LEVEL, "${outputFile}".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")
+
+	if (serviceDataList.isEmpty()) {
+		return
+	}
+
+	def out = new File(outputFile)
+	out.text = ""
+	def NL = NELINE
+	def customerKeys = parseEnumConfigKeySet('enumConfigurationDocCustomerKeys')
+	def provisionedKeys = parseEnumConfigKeySet('enumConfigurationDocProvisionedKeys')
+
+	// document header
+	out.append("# ${docTitle}" + NL)
+	out.append(NL)
+
+	// ## Overview
+	out.append("## Overview" + NL)
+	out.append(NL)
+	out.append("This document describes the complete set of configurations for **${rootProject.name}** version ${project.version}. " + NL)
+	out.append("The first section provides an overview of all services that expose configurations. " + NL)
+	out.append("The second section identifies mandatory configurations that must be provisioned or configured prior to deploying the application. " + NL)
+	out.append("The third section provides a detailed reference of all configuration keys per service." + NL)
+	out.append(NL)
+
+	out.append("| Service | Group | Version | Configurations |" + NL)
+	out.append("|---------|---------------------|---------|----------------|" + NL)
+
+	// collect and sort by service name
+	def sortedOverviewMd = []
+	for (def svcData : serviceDataList) {
+		for (def enumConfig : svcData.configList) {
+			sortedOverviewMd << [serviceName: svcData.serviceName, configName: enumConfig.name, version: svcData.version, keyCount: enumConfig.keyList.size()]
+		}
+	}
+	sortedOverviewMd.sort { a, b -> a.serviceName.toLowerCase() <=> b.serviceName.toLowerCase() }
+	for (def entry : sortedOverviewMd) {
+		out.append("| ${entry.serviceName} | `${formatEnumConfigGroup(entry.configName)}` | ${entry.version} | ${entry.keyCount} |" + NL)
+	}
+
+	out.append(NL)
+	out.append("---" + NL)
+	out.append(NL)
+
+	// ## Mandatory Configurations
+	out.append("## Mandatory Configurations" + NL)
+	out.append(NL)
+	out.append("The following configuration keys are mandatory and have no default value assigned. " + NL)
+	out.append("These parameters **must** be provisioned or explicitly configured prior to application startup. " + NL)
+	out.append("Failure to provide these values will prevent the application from initialising correctly." + NL)
+	out.append(NL)
+
+	for (def svcData : serviceDataList) {
+		for (def enumConfig : svcData.configList) {
+			def configName = enumConfig.name
+			def mandatoryKeys = mandatoryMap["${svcData.serviceName}::${configName}"] ?: []
+			if (mandatoryKeys.isEmpty()) {
+				continue
+			}
+
+			out.append("### ${svcData.serviceName}" + NL)
+			out.append(NL)
+			out.append("**Group:** `${formatEnumConfigGroup(configName)}`" + NL)
+			out.append(NL)
+
+			out.append("| Key | Data Type | Cardinality | Description |" + NL)
+			out.append("|-----|-----------|-------------|-------------|" + NL)
+
+			def sortedMandatoryKeysMd = enumConfig.keyList.findAll { mandatoryKeys.contains(it.key) }.sort { a, b -> a.key.toLowerCase() <=> b.key.toLowerCase() }
+			for (def keyElement : sortedMandatoryKeysMd) {
+				def dataType = keyElement.dataType ?: "--"
+				def cardinality = formatEnumConfigCardinality(keyElement.cardinality)
+				def desc = escapeMdCell(keyElement.description)
+				out.append("| `${formatEnumConfigKey(keyElement.key)}` | ${dataType} | ${cardinality} | ${desc} |" + NL)
+			}
+
+			out.append(NL)
+		}
+	}
+
+	out.append("---" + NL)
+	out.append(NL)
+
+	// ## Services
+	out.append("## Services" + NL)
+	out.append(NL)
+	out.append("This section provides a comprehensive reference of all configuration keys for each service. " + NL)
+	out.append("Each subsection includes the configuration class, version, description, and a detailed table of all available keys " + NL)
+	out.append("with their data type, size constraints, cardinality, default values, enumeration values, and confidentiality indicators." + NL)
+	out.append(NL)
+
+	for (def svcData : serviceDataList) {
+		for (def enumConfig : svcData.configList) {
+			def configName = enumConfig.name
+			def mandatoryKeys = mandatoryMap["${svcData.serviceName}::${configName}"] ?: []
+			def idxData = indexMap[configName] ?: [interfaceList: [], markerInterfaceList: []]
+
+			out.append("### ${svcData.serviceName}" + NL)
+			out.append(NL)
+			out.append("**Group:** `${formatEnumConfigGroup(configName)}`  " + NL)
+			out.append("**Version:** ${svcData.version}  " + NL)
+			out.append("**Description:** ${escapeMdCell(enumConfig.description)}" + NL)
+			out.append(NL)
+
+			// full configuration keys table
+			out.append("#### Configuration Keys" + NL)
+			out.append(NL)
+
+			// check if any key in this config has enumeration values or example values
+			def hasEnumeration = enumConfig.keyList.any { k -> k.enumerationValue != null && !k.enumerationValue.toString().trim().isEmpty() }
+			def hasExample = enumConfig.keyList.any { k -> "key-value".equals(k.type) && k.exampleValue != null && !k.exampleValue.toString().trim().isEmpty() && !"BINARY".equalsIgnoreCase(k.dataType ?: "") }
+			def mdColCount = 5 + (hasExample ? 1 : 0) + (hasEnumeration ? 1 : 0) + 1
+
+			def mdHeader = "| Key | Data Type | Size | Cardinality | Default Value"
+			def mdSep = "|-----|-----------|------|-------------|---------------"
+			if (hasExample) { mdHeader += " | Example"; mdSep += "|--------" }
+			if (hasEnumeration) { mdHeader += " | Enumeration"; mdSep += "|-------------" }
+			mdHeader += " | Flags |"; mdSep += "|-------|"
+			out.append(mdHeader + NL)
+			out.append(mdSep + NL)
+
+			def emptyDescCols = (1..(mdColCount - 1)).collect { "|" }.join(" ")
+
+			def sortedKeysMd = enumConfig.keyList.sort { a, b -> a.key.toLowerCase() <=> b.key.toLowerCase() }
+			for (def keyElement : sortedKeysMd) {
+				def isMandatory = mandatoryKeys.contains(keyElement.key)
+				def isKeyValue = ("key-value".equals(keyElement.type))
+				def desc = escapeMdCell(keyElement.description)
+
+				if (isKeyValue) {
+					def dataType = keyElement.dataType ?: "--"
+					def valueSize = formatEnumConfigValueSize(keyElement.valueSize, dataType)
+					def cardinality = formatEnumConfigCardinality(keyElement.cardinality)
+					def defaultVal = ("BINARY".equalsIgnoreCase(dataType) || keyElement.defaultValue == null || keyElement.defaultValue.toString().trim().isEmpty()) ? "" : "`${escapeMdCell(keyElement.defaultValue)}`"
+					def uniqueKey = "" + configName + "#" + keyElement.key
+					def flags = []
+					if (isMandatory) { flags << "**M**" }
+					if (keyElement.confidential) { flags << "S" }
+					if (keyElement.uniqueness) { flags << "U" }
+					if (customerKeys.contains(uniqueKey)) { flags << "**C**" }
+					if (provisionedKeys.contains(uniqueKey)) { flags << "P" }
+					def flagsStr = flags.isEmpty() ? "" : flags.join(",")
+
+					def row = "| `${formatEnumConfigKey(keyElement.key)}` | ${dataType} | ${valueSize} | ${cardinality} | ${defaultVal}"
+					if (hasExample) {
+						def exampleVal = ("BINARY".equalsIgnoreCase(dataType) || keyElement.exampleValue == null || keyElement.exampleValue.toString().trim().isEmpty()) ? "" : "`${escapeMdCell(keyElement.exampleValue)}`"
+						row += " | ${exampleVal}"
+					}
+					if (hasEnumeration) {
+						def enumVal = (keyElement.enumerationValue == null || keyElement.enumerationValue.toString().trim().isEmpty()) ? "" : "`${escapeMdCell(keyElement.enumerationValue)}`"
+						row += " | ${enumVal}"
+					}
+					row += " | ${flagsStr} |"
+					out.append(row + NL)
+					out.append("| &nbsp;&nbsp;_${desc}_ ${emptyDescCols}" + NL)
+				} else {
+					// key-only entry
+					def uniqueKey = "" + configName + "#" + keyElement.key
+					def flags = []
+					if (keyElement.confidential) { flags << "S" }
+					if (customerKeys.contains(uniqueKey)) { flags << "**C**" }
+					if (provisionedKeys.contains(uniqueKey)) { flags << "P" }
+					def flagsStr = flags.isEmpty() ? "" : flags.join(",")
+					def emptyCols = (1..(mdColCount - 3)).collect { " |" }.join("")
+					out.append("| `${formatEnumConfigKey(keyElement.key)}` | _Key only_ |${emptyCols} ${flagsStr} |" + NL)
+					out.append("| &nbsp;&nbsp;_${desc}_ ${emptyDescCols}" + NL)
+				}
+			}
+
+			out.append(NL)
+			out.append("---" + NL)
+			out.append(NL)
+		}
+	}
+
+	// Legend
+	out.append("## Legend" + NL)
+	out.append(NL)
+	out.append("| Flag | Description |" + NL)
+	out.append("|------|-------------|" + NL)
+	out.append("| **M** | Mandatory -- must be configured before application startup |" + NL)
+	out.append("| S | Secure -- contains sensitive or confidential data |" + NL)
+	out.append("| U | Unique -- value must be unique across instances |" + NL)
+	out.append("| **C** | Customer -- customer is responsible for providing this value |" + NL)
+	out.append("| P | Provisioned -- value is provided through provisioning |" + NL)
+	out.append(NL)
+
+	logInfo("  -> Created " + colorize(HIGHLITE_LEVEL, "${outputFile}".replace('\\', '/').replace("$gradleBuildDirectory/", "")))
+}
+
+
+/****************************************************************************************
+ * Filter service data list: keep only configs matching the given marker interface.
+ * markerInterface == null means keep configs with no marker interfaces.
+ ****************************************************************************************/
+ext.filterServiceDataByMarker = { serviceDataList, indexMap, markerInterface ->
+	def filtered = []
+	for (def svcData : serviceDataList) {
+		def matchingConfigs = []
+		for (def enumConfig : svcData.configList) {
+			if (configBelongsToMarker(enumConfig, indexMap, markerInterface)) {
+				matchingConfigs << enumConfig
+			}
+		}
+		if (!matchingConfigs.isEmpty()) {
+			filtered << [serviceName: svcData.serviceName, version: svcData.version, configList: matchingConfigs]
+		}
+	}
+	return filtered
+}
+
+
+/****************************************************************************************
+ * Generate enum configuration documentation (AsciiDoc and/or Markdown).
+ * Splits output by marker interface into separate files.
+ ****************************************************************************************/
+ext.generateEnumConfigurationDoc = { inputPath ->
+	if (!new File(inputPath).exists()) {
+		return
+	}
+
+	new File("${enumConfigurationDocOutputPath}").mkdirs()
+	logInfo("> Generate enum-configuration documentation in " + colorize(HIGHLITE_LEVEL, "${enumConfigurationDocOutputPath}".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")
+
+	def serviceDataList = loadEnumConfigurationServiceData(inputPath)
+	def mandatoryMap = loadEnumConfigurationMandatoryData(inputPath)
+	def indexMap = loadEnumConfigurationIndexData(inputPath)
+
+	if (serviceDataList.isEmpty()) {
+		return
+	}
+
+	// collect all unique marker interfaces
+	def markerInterfaces = [] as Set
+	for (def svcData : serviceDataList) {
+		for (def enumConfig : svcData.configList) {
+			def idxData = indexMap[enumConfig.name] ?: [interfaceList: [], markerInterfaceList: []]
+			markerInterfaces.addAll(idxData.markerInterfaceList)
+		}
+	}
+
+	// generate main file (services without marker interfaces)
+	def mainData = filterServiceDataByMarker(serviceDataList, indexMap, null)
+	def defaultTitle = "Configuration Reference"
+	if (!mainData.isEmpty()) {
+		if ("true".equalsIgnoreCase("" + project.getProperty('enumConfigurationDocAsciidoc'))) {
+			generateEnumConfigurationAsciidoc(mainData, mandatoryMap, indexMap, "${enumConfigurationDocOutputPath}/configuration.adoc", defaultTitle)
+		}
+		if ("true".equalsIgnoreCase("" + project.getProperty('enumConfigurationDocMarkdown'))) {
+			generateEnumConfigurationMarkdown(mainData, mandatoryMap, indexMap, "${enumConfigurationDocOutputPath}/configuration.md", defaultTitle)
+		}
+	}
+
+	// generate separate files per marker interface
+	for (def marker : markerInterfaces) {
+		def markerData = filterServiceDataByMarker(serviceDataList, indexMap, marker)
+		if (!markerData.isEmpty()) {
+			def suffix = markerInterfaceToFileSuffix(marker)
+			def parts = marker.toString().split("\\.")
+			def markerSimpleName = parts[parts.length - 1]
+			def markerTitle = "${markerSimpleName} Configuration Reference"
+			if ("true".equalsIgnoreCase("" + project.getProperty('enumConfigurationDocAsciidoc'))) {
+				generateEnumConfigurationAsciidoc(markerData, mandatoryMap, indexMap, "${enumConfigurationDocOutputPath}/configuration-${suffix}.adoc", markerTitle)
+			}
+			if ("true".equalsIgnoreCase("" + project.getProperty('enumConfigurationDocMarkdown'))) {
+				generateEnumConfigurationMarkdown(markerData, mandatoryMap, indexMap, "${enumConfigurationDocOutputPath}/configuration-${suffix}.md", markerTitle)
+			}
+		}
+	}
+}
