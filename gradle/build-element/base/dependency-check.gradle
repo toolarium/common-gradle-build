@@ -33,15 +33,15 @@ buildscript {
 		}
     }
     dependencies {
-		def toolariumDependencyCheckVersion="12.1.8"
+		def toolariumDependencyCheckVersion="12.2.2"
 		if (project.hasProperty('toolariumDependencyCheckVersion')) {
 			toolariumDependencyCheckVersion = project.getProperty('toolariumDependencyCheckVersion')
 		}
-	
+
 		logInfo("toolarium dependency-check version: " + colorize(HIGHLITE_LEVEL, toolariumDependencyCheckVersion) + colorize(INFO_LEVEL, ".")); 
         classpath "org.owasp:dependency-check-gradle:${toolariumDependencyCheckVersion}"
 		
-		def toolariumDependencyCheckUtilVersion="1.0.2"
+		def toolariumDependencyCheckUtilVersion="1.1.0"
 		if (project.hasProperty('toolariumDependencyCheckUtilVersion')) {
 			toolariumDependencyCheckUtilVersion = project.getProperty('toolariumDependencyCheckUtilVersion')
 		}

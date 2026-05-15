@@ -149,7 +149,28 @@ sonarToken   = "your-token"
 - **Publication:** Maven publication with full POM metadata (developer, license, SCM), auto-detected Git remote URL, separate snapshot/release/staging repositories
 - **Signing:** GPG artifact signing for release builds (requires `signing.keyId`, `signing.password`, `signing.secretKeyRingFile` in `~/.gradle/gradle.properties`)
 - **Fat JARs:** Shadow plugin for java-application, fat web jars with embedded `toolarium-jwebserver` for Node.js projects, configurable package type (jar, tgz)
-- **JReleaser:** Automated release publishing to Maven Central and GitHub
+- **Executable JARs:** Any java-library can be made executable via `java -jar` by setting `mainClassName`
+
+**Example: Make a java-library executable**
+
+Set the main class in `gradle.properties`:
+
+```properties
+mainClassName=com.acme.mylib.Main
+```
+
+Optionally add a classpath — use `auto` to include all runtime dependencies, or list JARs explicitly:
+
+```properties
+mainClassPath=auto
+```
+
+Then run:
+
+```bash
+gradle build
+java -jar build/libs/my-library-1.0.0.jar
+```
 
 ### Container & Kubernetes
 
@@ -416,6 +437,8 @@ These are the properties you are most likely to customize. Set general/organizat
 | `fileEncoding` | `UTF-8` | Source file encoding |
 | `compileJavaFork` | `false` | Fork a separate JVM for compilation |
 | `compileJavaHome` | `""` | Custom JDK home for compilation (requires `compileJavaFork=true`) |
+| `mainClassName` | `""` | Fully qualified main class for executable JAR (`Main-Class` manifest attribute) |
+| `mainClassPath` | `""` | `Class-Path` manifest attribute for executable JAR. Use `auto` to resolve from runtime dependencies, or a space/comma-separated list of JARs |
 
 #### Testing
 
@@ -607,6 +630,8 @@ These are the properties you are most likely to customize. Set general/organizat
 | `excelFileEncoding` | `UTF-8` | Excel file encoding for resource bundles |
 | `compileJavaFork` | `false` | Fork a separate JVM for compilation |
 | `compileJavaHome` | `""` | Custom JDK home for compilation (requires `compileJavaFork=true`) |
+| `mainClassName` | `""` | Fully qualified main class for executable JAR (`Main-Class` manifest attribute). Set this to make a java-library JAR executable via `java -jar` |
+| `mainClassPath` | `""` | `Class-Path` manifest attribute for executable JAR. Use `auto` to resolve from runtime dependencies, or a space/comma-separated list of JARs (e.g. `lib/foo.jar lib/bar.jar`) |
 
 #### Testing
 
@@ -939,7 +964,7 @@ Example: `kubernetesQuarkusReadinessCheckPath`, `kubernetesNodeLivenessFailureTh
 Modular, composable Gradle script fragments in `gradle/build-element/`:
 
 - **base/** — core utilities: logging (`logger.gradle`), ANSI colors (`ansi-support.gradle`, `constants.gradle`), properties (`defaults.gradle`, `properties.gradle`), versioning (`version.gradle`), release (`release.gradle`), security (`security.gradle`), dependencies (`dependencies.gradle`, `dependency-check.gradle`, `dependencies-json.gradle`), vulnerability scanning (`vulnerability-scanner.gradle`), SonarQube (`sonar.gradle`), exec (`exec.gradle`), file operations (`file.gradle`, `propertyreplacement.gradle`), JSON (`json.gradle`), changelog (`changelog.gradle`), Kubernetes (`kubernetes.gradle`), container (`container.gradle`), enum configuration (`enumconfiguration.gradle`), webjar (`webjar.gradle`), init (`init.gradle`, `initialisation.gradle`), scripts (`scripts.gradle`)
-- **java/** — compilation (`java.gradle`, `javaversion.gradle`), testing (`test.gradle`), coverage (`testcoverage.gradle`), Javadoc (`javadoc.gradle`), Checkstyle (`checkstyle.gradle`), Eclipse (`eclipse.gradle`), repository (`repository.gradle`, `supported-repositories.gradle`), publication (`publication.gradle`), signing (`signing.gradle`), JReleaser (`jreleaser.gradle`)
+- **java/** — compilation (`java.gradle`, `javaversion.gradle`), testing (`test.gradle`), coverage (`testcoverage.gradle`), Javadoc (`javadoc.gradle`), Checkstyle (`checkstyle.gradle`), Eclipse (`eclipse.gradle`), repository (`repository.gradle`, `supported-repositories.gradle`), publication (`publication.gradle`), signing (`signing.gradle`)
 - **scm/** — Git integration (`git.gradle`) via grgit
 - **doc/** — AsciiDoctor (`asciidoctor-support.gradle`), enum configuration documentation (`enumconfiguration.gradle`)
 - **config/** — Configuration publication (`publication.gradle`)

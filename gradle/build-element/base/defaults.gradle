@@ -285,6 +285,8 @@ setCommonGradleDefaultPropertyIfNull("fileEncoding", "UTF-8")
 setCommonGradleDefaultPropertyIfNull("excelFileEncoding", "UTF-8")
 setCommonGradleDefaultPropertyIfNull("compileJavaFork", false)
 setCommonGradleDefaultPropertyIfNull("compileJavaHome", "")
+setCommonGradleDefaultPropertyIfNull("mainClassName", "")
+setCommonGradleDefaultPropertyIfNull("mainClassPath", "")
 
 
 /***************************************************************************************
@@ -306,7 +308,7 @@ setCommonGradleDefaultPropertyIfNull("scmVersionNumber", '')
  * toolarium enum configuration support
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("hasToolariumEnumConfiguration", true)
-setCommonGradleDefaultPropertyIfNull("toolariumEnumConfigurationVersion", "1.2.0") // in kubernetes-product.gradle there is an additional dependency
+setCommonGradleDefaultPropertyIfNull("toolariumEnumConfigurationVersion", "1.3.1") // in kubernetes-product.gradle there is an additional dependency
 setCommonGradleDefaultPropertyIfNull("enumConfigurationDocAsciidoc", true)
 setCommonGradleDefaultPropertyIfNull("enumConfigurationDocMarkdown", true)
 setCommonGradleDefaultPropertyIfNull("enumConfigurationDocOutputPath", "$generatedCommonGradleBuildSources/doc")
@@ -321,7 +323,7 @@ setCommonGradleDefaultPropertyIfNull("enumConfigurationDocProvisionedKeys", "") 
 /***************************************************************************************
  * toolarium changelog parser support
  ***************************************************************************************/
-setCommonGradleDefaultPropertyIfNull("toolariumChangelogParserVersion", "1.0.0")
+setCommonGradleDefaultPropertyIfNull("toolariumChangelogParserVersion", "1.1.0")
 
 
 /***************************************************************************************
@@ -423,7 +425,7 @@ setCommonGradleDefaultPropertyIfNull("dependenciesFile", "${dependenciesReportPa
 /***************************************************************************************
  * dependency-check: https://plugins.gradle.org/plugin/org.owasp.dependencycheck
  ***************************************************************************************/
-setCommonGradleDefaultPropertyIfNull("toolariumDependencyCheckVersion", '12.1.8')
+setCommonGradleDefaultPropertyIfNull("toolariumDependencyCheckVersion", '12.2.2')
 setCommonGradleDefaultPropertyIfNull("dependencyCheckFailBuildOnCVSS", 11) // 7  
 setCommonGradleDefaultPropertyIfNull("dependencyCheckAutoUpdate", true)
 setCommonGradleDefaultPropertyIfNull("dependencyCheckCveValidForHours", 12)
@@ -1166,4 +1168,4 @@ setCommonGradleDefaultPropertyIfNull("commonGradleJakartaWsRSApiVersion", "3.1.0
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("commonGradleJptoolsModelGeneratorVersion", "${commonGradleJptoolsVersion}")
 setCommonGradleDefaultPropertyIfNull("commonGradleJexcelapiModelGeneratorVersion", "2.6.12")
-setCommonGradleDefaultPropertyIfNull("commonGradleApachePoiVersion", "5.4.0")
+setCommonGradleDefaultPropertyIfNull("commonGradleApachePoiVersion", "5.5.1")

@@ -143,8 +143,22 @@ jar { jar ->
 					'Build-OS'			   	: "${System.properties['os.name']} (${System.properties['os.version']}), ${System.properties['os.arch']}",
 					'Source-Compatibility'  : project.sourceCompatibility,
 					'Target-Compatibility'  : project.targetCompatibility
-					//'Main-Class'			: rootMainClass
-					//'Class-Path'			: configurations.runtimeClasspath.files.collect { it.getName() }.join(' ')
+
+		if (project.hasProperty('mainClassName') && !project.getProperty('mainClassName').toString().trim().isEmpty()) {
+			attributes 'Main-Class': project.getProperty('mainClassName')
+		}
+	}
+
+	doFirst {
+		if (project.hasProperty('mainClassPath') && !project.getProperty('mainClassPath').toString().trim().isEmpty()) {
+			def classPath = project.getProperty('mainClassPath').toString().trim()
+			if (classPath == 'auto') {
+				classPath = configurations.runtimeClasspath.files.collect { it.getName() }.join(' ')
+			} else {
+				classPath = classPath.replace(',', ' ').replaceAll('\\s+', ' ').trim()
+			}
+			manifest.attributes 'Class-Path': classPath
+		}
 	}
 
 	doLast {

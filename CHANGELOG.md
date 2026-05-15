@@ -5,15 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v1.5.2] - 2026-04-28
+## [v1.5.2] - 2026-05-15
 ### Added
 - Generated AsciiDoc files automatically included in AsciiDoctor HTML/PDF processing via staging copy into `src/doc/` during build
 - Generated documentation (PDF and Markdown) included in kubernetes JAR under `docs/` folder (controlled by `enumConfigurationDocIncludeInJar`)
 - Enum configuration documentation generator (`gradle/build-element/doc/enumconfiguration.gradle`): generates professional AsciiDoc and Markdown documentation from toolarium-enum-configuration JSON data with Overview, Mandatory Configurations, and Services chapters
 - Configuration documentation split by marker interface: services with marker interfaces get separate files
+- `mainClassName` property: sets `Main-Class` manifest attribute in JAR, making java-library projects executable via `java -jar`
+- `mainClassPath` property: sets `Class-Path` manifest attribute; supports `auto` (resolves from `runtimeClasspath` dependencies) or explicit space/comma-separated list of JARs
 
 ### Changed
 - AsciiDoctor theme templates updated: reduced font sizes for PDF (base 9pt, tables 8pt), compact table cell padding, professional admonition block styling with colored left borders, hidden default HTML footer via CSS
+
+### Fixed
+- Vulnerability scanner: trivy non-zero exit code without findings no longer fails the build (now logs a warning instead)
+- Vulnerability scanner: blacklisted dependency checks are now evaluated even when trivy produces no output
 
 ## [v1.5.1] - 2026-04-26
 ### Fixed
