@@ -348,7 +348,7 @@
   </div>
   <div class="feature-card">
     <h4>Vulnerability Scanning</h4>
-    <p>Trivy integration for dependencies and container images. DENY/CRIT/HIGH/MED/LOW severity. Dependency tree resolution. Unfixable vulnerabilities reported with <code>[no fix available]</code> but don't fail the build (configurable). Container image whitelist/blacklist via <code>[container]</code> tag. Kubernetes-product referenced image scanning with summary table.</p>
+    <p>Trivy integration for dependencies and container images. <strong>Disabled by default</strong> — enable via <code>vulnerabilityScannerEnabled=true</code> in <code>gradle.properties</code> or the <code>CB_VULNERABILITY_SCANNER_ENABLED=true</code> environment variable. DENY/CRIT/HIGH/MED/LOW severity. Dependency tree resolution. Unfixable vulnerabilities reported with <code>[no fix available]</code> but don't fail the build (configurable). Set <code>vulnerabilityScannerAbortEnabled=false</code> (or <code>CB_VULNERABILITY_SCANNER_ABORT=false</code>) to report findings as warnings without failing the build. Container image whitelist/blacklist via <code>[container]</code> tag. Kubernetes-product referenced image scanning with summary table.</p>
   </div>
   <div class="feature-card">
     <h4>OWASP Dependency-Check</h4>
@@ -459,6 +459,9 @@ java -jar build/libs/my-library-1.0.0.jar</code></pre>
     <tr><td><code>CB_CUSTOM_CONFIG_VERSION</code></td><td>Pin custom configuration version</td></tr>
     <tr><td><code>GRGIT_USER</code></td><td>Git username for release operations</td></tr>
     <tr><td><code>GRGIT_PASS</code></td><td>Git password/token for release operations</td></tr>
+    <tr><td><code>CB_DISABLE_GIT_CLEANUP</code></td><td>Set to <code>true</code> to disable automatic cleanup of disallowed tracked files</td></tr>
+    <tr><td><code>CB_VULNERABILITY_SCANNER_ENABLED</code></td><td>Set to <code>true</code>/<code>false</code> to enable or disable vulnerability scanning (overrides <code>vulnerabilityScannerEnabled</code> property)</td></tr>
+    <tr><td><code>CB_VULNERABILITY_SCANNER_ABORT</code></td><td>Set to <code>false</code> to report vulnerability findings as warnings without failing the build (overrides <code>vulnerabilityScannerAbortEnabled</code> property)</td></tr>
   </tbody>
 </table>
 </section>
@@ -576,9 +579,12 @@ java -jar build/libs/my-library-1.0.0.jar</code></pre>
 <table class="settings"><colgroup><col><col><col></colgroup>
   <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
   <tbody>
-    <tr><td><code>vulnerabilityScannerEnabled</code></td><td><code>true</code></td><td>Enable Trivy vulnerability scanning</td></tr>
+    <tr><td><code>vulnerabilityScannerEnabled</code></td><td><code>false</code></td><td>Enable Trivy vulnerability scanning (also overridable via <code>CB_VULNERABILITY_SCANNER_ENABLED</code> env var)</td></tr>
+    <tr><td><code>vulnerabilityScannerAbortEnabled</code></td><td><code>true</code></td><td>When <code>false</code>, findings are reported as warnings without failing the build (also overridable via <code>CB_VULNERABILITY_SCANNER_ABORT</code> env var)</td></tr>
     <tr><td><code>vulnerabilityScannerCmd</code></td><td><code>trivy</code></td><td>Vulnerability scanner command</td></tr>
+    <tr><td><code>vulnerabilityScannerScanners</code></td><td><code>vuln</code></td><td>Scanner types to run</td></tr>
     <tr><td><code>vulnerabilityScannerSeverity</code></td><td><code>CRITICAL,HIGH</code></td><td>Severity levels to scan (release builds)</td></tr>
+    <tr><td><code>vulnerabilityScannerExitCode</code></td><td><code>0</code></td><td>Exit code handling for scanner</td></tr>
     <tr><td><code>vulnerabilityScannerFailWithoutFix</code></td><td><code>false</code></td><td>When <code>true</code>, unfixable vulnerabilities also fail the build</td></tr>
   </tbody>
 </table>
@@ -1118,7 +1124,8 @@ service.resources = /myui</code></pre>
 <table class="settings"><colgroup><col><col><col></colgroup>
   <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
   <tbody>
-    <tr><td><code>vulnerabilityScannerEnabled</code></td><td><code>true</code></td><td>Enable Trivy vulnerability scanning</td></tr>
+    <tr><td><code>vulnerabilityScannerEnabled</code></td><td><code>false</code></td><td>Enable Trivy vulnerability scanning (also overridable via <code>CB_VULNERABILITY_SCANNER_ENABLED</code> env var)</td></tr>
+    <tr><td><code>vulnerabilityScannerAbortEnabled</code></td><td><code>true</code></td><td>When <code>false</code>, findings are reported as warnings without failing the build (also overridable via <code>CB_VULNERABILITY_SCANNER_ABORT</code> env var)</td></tr>
     <tr><td><code>vulnerabilityScannerCmd</code></td><td><code>trivy</code></td><td>Vulnerability scanner command</td></tr>
     <tr><td><code>vulnerabilityScannerScanners</code></td><td><code>vuln</code></td><td>Scanner types to run</td></tr>
     <tr><td><code>vulnerabilityScannerSeverity</code></td><td><code>CRITICAL,HIGH</code></td><td>Severity levels to scan (release builds)</td></tr>

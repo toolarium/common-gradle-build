@@ -111,12 +111,23 @@ Version expressions support flexible matching (e.g., `1.2.*`, `>=1.0.2 <2.1.2`).
 
 ### Vulnerability Scanning
 
-Integrated [Trivy](https://trivy.dev/) scanning for dependencies and container images:
+Integrated [Trivy](https://trivy.dev/) scanning for dependencies and container images. **Disabled by default** — enable via property or environment variable:
+
+```properties
+# gradle.properties
+vulnerabilityScannerEnabled=true
+```
+
+```sh
+# or via environment variable (overrides property)
+CB_VULNERABILITY_SCANNER_ENABLED=true ./gradlew build
+```
 
 - Scans dependencies via `trivy rootfs` and container images via `trivy image` (only if `dockerBuild` succeeded)
 - Severity levels: **DENY** (blacklisted), **CRIT**, **HIGH**, **MED**, **LOW** — aligned to 5 chars
 - Snapshot builds scan all severities but don't fail; release builds fail on DENY, CRIT, or HIGH
 - Vulnerabilities without a fix available are reported with `[no fix available]` but don't fail the build (configurable via `vulnerabilityScannerFailWithoutFix`)
+- Set `vulnerabilityScannerAbortEnabled=false` (or `CB_VULNERABILITY_SCANNER_ABORT=false`) to report findings as warnings without failing the build
 - Dependency tree resolution shows which top-level `build.gradle` dependency to update (with configuration like `implementation`, `transitive`)
 - Whitelist bypass for known/accepted vulnerabilities using the same properties files
 - Container image whitelist/blacklist via `[container]` tag (e.g. `[container]registry.k8s.io/ingress-nginx/controller = 1.15.1`)
@@ -410,6 +421,8 @@ Framework defaults are defined in [`gradle/build-element/base/defaults.gradle`](
 | `GRGIT_USER` | Git username for release operations |
 | `GRGIT_PASS` | Git password/token for release operations |
 | `CB_DISABLE_GIT_CLEANUP` | Set to `true` to disable automatic cleanup of disallowed tracked files (see [Git Cleanup](#git-cleanup-of-disallowed-tracked-files)) |
+| `CB_VULNERABILITY_SCANNER_ENABLED` | Set to `true`/`false` to enable or disable vulnerability scanning (overrides `vulnerabilityScannerEnabled` property) |
+| `CB_VULNERABILITY_SCANNER_ABORT` | Set to `false` to report vulnerability findings as warnings without failing the build (overrides `vulnerabilityScannerAbortEnabled` property) |
 
 ---
 
@@ -500,9 +513,12 @@ These are the properties you are most likely to customize. Set general/organizat
 
 | Property | Default | Description |
 |----------|---------|-------------|
-| `vulnerabilityScannerEnabled` | `true` | Enable Trivy vulnerability scanning |
+| `vulnerabilityScannerEnabled` | `false` | Enable Trivy vulnerability scanning (also overridable via `CB_VULNERABILITY_SCANNER_ENABLED` env var) |
+| `vulnerabilityScannerAbortEnabled` | `true` | When `false`, findings are reported as warnings without failing the build (also overridable via `CB_VULNERABILITY_SCANNER_ABORT` env var) |
 | `vulnerabilityScannerCmd` | `trivy` | Vulnerability scanner command |
+| `vulnerabilityScannerScanners` | `vuln` | Scanner types to run |
 | `vulnerabilityScannerSeverity` | `CRITICAL,HIGH` | Severity levels to scan (release builds) |
+| `vulnerabilityScannerExitCode` | `0` | Exit code handling for scanner |
 | `vulnerabilityScannerFailWithoutFix` | `false` | When `true`, unfixable vulnerabilities also fail the build |
 
 #### Publishing & Repository
@@ -944,7 +960,8 @@ Example: `kubernetesQuarkusReadinessCheckPath`, `kubernetesNodeLivenessFailureTh
 
 | Property | Default | Description |
 |----------|---------|-------------|
-| `vulnerabilityScannerEnabled` | `true` | Enable Trivy vulnerability scanning |
+| `vulnerabilityScannerEnabled` | `false` | Enable Trivy vulnerability scanning (also overridable via `CB_VULNERABILITY_SCANNER_ENABLED` env var) |
+| `vulnerabilityScannerAbortEnabled` | `true` | When `false`, findings are reported as warnings without failing the build (also overridable via `CB_VULNERABILITY_SCANNER_ABORT` env var) |
 | `vulnerabilityScannerCmd` | `trivy` | Vulnerability scanner command |
 | `vulnerabilityScannerScanners` | `vuln` | Scanner types to run |
 | `vulnerabilityScannerSeverity` | `CRITICAL,HIGH` | Severity levels to scan (release builds) |
