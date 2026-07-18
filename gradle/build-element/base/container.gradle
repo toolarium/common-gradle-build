@@ -164,6 +164,7 @@ task dockerBuild {
 				}
 			}
 	
+			printLine(HIGHLITE_LEVEL, true)
 			if (supportProjectDockerfile && createProjectDockerfile) {			
 				if (!localFileExist) {
 					// create local file in project 

@@ -738,7 +738,7 @@ task processKubernetesDependencies() {
 		if (properties !=null || configMapProperties != null) {
 			printInfo("> Process kubernetes dependency " + colorize(HIGHLITE_LEVEL, "$kubernetesConfigurationServicesPath/${kubernetesConfigurationPathname}".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")
 			new File("$kubernetesConfigurationServicesPath/${kubernetesConfigurationPathname}").eachFileRecurse (groovy.io.FileType.FILES) { file ->
-				printInfo("  -> Process kubernetes dependency " + colorize(HIGHLITE_LEVEL, file.getName()) + "...")
+				logInfo("  -> Process kubernetes dependency " + colorize(HIGHLITE_LEVEL, file.getName()) + "...")
 
 				def tempFilename = getUniqueTempName("${rootProject.name}", "${project.version}-" + file.getName(), null)
 				def tempFile = new File(tempFilename)
@@ -822,6 +822,8 @@ task processKubernetesDependencies() {
 /****************************************************************************************
  * Generate enum configuration documentation
  ****************************************************************************************/
+ext.printDocumentationLine = false
+ext.printDocumentationEndLine = 0
 task generateEnumConfigurationDocumentation(dependsOn: ['prepareEnumConfigurationIndex', 'extractKubernetesInformation']) {
 	group = 'Documentation'
 	description = 'Generate enum configuration documentation (AsciiDoc and/or Markdown)'
@@ -833,12 +835,21 @@ task generateEnumConfigurationDocumentation(dependsOn: ['prepareEnumConfiguratio
 		new File("${generatedCommonGradleBuildSources}").mkdirs()
 		new File("${enumConfigurationDocOutputPath}").mkdirs()
 
+		if (!printDocumentationLine) {
+			printLine(HIGHLITE_LEVEL, true)		
+			printDocumentationLine = true
+		}
+
 		printInfo("> Create enum configuration documentation in " + colorize(HIGHLITE_LEVEL, "${enumConfigurationDocOutputPath}".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")		
 		generateEnumConfigurationDoc("$kubernetesApplicationInformationPath/${kubernetesEnumConfigurationPathname}")
 	}
 }
 // copy generated adoc files into asciidoc source directory for processing
 ext.copyGeneratedAdocToSource = {
+	if (!printDocumentationLine) {
+		printLine(HIGHLITE_LEVEL, true)		
+		printDocumentationLine = true
+	}
 	def generatedAdocDir = new File("${enumConfigurationDocOutputPath}")
 	if (generatedAdocDir.exists() && new File("${asciidocSourceDirectory}").exists()) {
 		copy {
@@ -860,6 +871,18 @@ ext.cleanGeneratedAdocFromSource = {
 			}
 		}
 	}
+	printDocumentationEndLine--
+	
+	if (printDocumentationLine && printDocumentationEndLine == 0) {
+		printLine(HIGHLITE_LEVEL, true)		
+	}
+}
+
+if (project.tasks.findByName('convertAsciidoctorHtml')) {
+	printDocumentationEndLine++
+}
+if (project.tasks.findByName('convertAsciidoctorPdf')) {
+	printDocumentationEndLine++
 }
 
 if (project.tasks.findByName('convertAsciidoctorHtml')) {
@@ -998,7 +1021,7 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesGatewayApi', '
 		def serviceImageMap=[:]
 		def urlMap =  [:]
 		new File("$kubernetesConfigurationServicesPath/${kubernetesConfigurationPathname}").eachFileRecurse (groovy.io.FileType.FILES) { file ->
-			printInfo("  -> Add kubernetes dependency " + colorize(HIGHLITE_LEVEL, file.getName()) + "...")
+			logInfo("Add kubernetes dependency " + colorize(HIGHLITE_LEVEL, file.getName()) + "...")
 
 			def labelsList =  []
 			def annotationsList =  []
@@ -1159,6 +1182,7 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesGatewayApi', '
 						
 						if (servicePathExternal!=null && !servicePathExternal.trim().isEmpty()) {
 							servicePath = servicePathExternal
+							printInfo("  -> Add product dependency " + colorize(HIGHLITE_LEVEL, imageName) + " -> " + colorize(HIGHLITE_LEVEL, servicePathExternal))
 							
 							// controller content
 							controllerContent += "      - path: $servicePathExternal" + NELINE
@@ -1168,6 +1192,8 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesGatewayApi', '
 							controllerContent += "            name: $serviceName" + NELINE
 							controllerContent += "            port:" + NELINE
 							controllerContent += "              number: $servicePort" + NELINE
+						} else {
+							printInfo("  -> Add product dependency " + colorize(HIGHLITE_LEVEL, imageName))
 						}
 
 						logInfo("  -> Found service " + colorize(HIGHLITE_LEVEL, serviceName + ":" + servicePort) +  " -> " + colorize(HIGHLITE_LEVEL, servicePath) + ".")
@@ -1339,7 +1365,7 @@ build { ->
 			def counter = 0
 			configurations.jar.collect { 
 				if ("$jarRunnerFile".toString().isEmpty() || !it.getName().toString().startsWith("$jarRunnerFile".toString())) {
-				    printInfo("  -> Add fat-jar lib dependency " + colorize(HIGHLITE_LEVEL, it.getName()) + "...")
+				    logInfo("  -> Add fat-jar lib dependency " + colorize(HIGHLITE_LEVEL, it.getName()) + "...")
 					copyFile(""+it, "$javaAppPath/lib/" + it.getName(), true) 
 					counter++
 				} else {
