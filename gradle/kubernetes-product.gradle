@@ -57,6 +57,7 @@ if (!project.hasProperty("createApplicationConfigFile")) {
 	project.ext.set("createApplicationConfigFile", true)
 }
 project.ext.set("kubernetesProjectConfiguration", true)
+project.ext.set("vulnerabilityScannerRunsAtEnd", false)
 
 if (!project.hasProperty('kubernetesUrlPath')) {
 	ext.kubernetesUrlPath=""
@@ -178,6 +179,7 @@ ext.createContainerImageFileList = { fileContent ->
 	def line
 	def imageList = []
 	def imageListContent = new File("${kubernetesDockerReferenceFile}")
+	imageListContent.delete()
 	printInfo("> Create container image reference " + colorize(HIGHLITE_LEVEL, "${imageListContent}".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")
 	def kubernetesInstallDockerPull = ""
 	fileContent.withReader {
@@ -473,7 +475,7 @@ ext.yamlIndentFilter = { LineNumberReader it, indentLevel ->
 	def result = []
 	def numberOfLines = 0
 	
-	it.mark(0)
+	it.mark(65536) // probe sections are always < 64KB; avoids BufferedReader buffer expansion to Integer.MAX_VALUE
 	def nextLine = ''
 	while ((nextLine = it.readLine()) != null) {
 		if (nextLine.length() > indentLevel && nextLine[indentLevel + 1] == ' ') {
@@ -844,18 +846,151 @@ task generateEnumConfigurationDocumentation(dependsOn: ['prepareEnumConfiguratio
 		generateEnumConfigurationDoc("$kubernetesApplicationInformationPath/${kubernetesEnumConfigurationPathname}")
 	}
 }
+
+
+/****************************************************************************************
+ * Generate vulnerability scanner reports (Markdown, AsciiDoc, SBOM, SARIF)
+ ****************************************************************************************/
+task generateVulnerabilityScannerReport {
+	group = 'Documentation'
+	description = 'Generate vulnerability scanner reports (Markdown, AsciiDoc, SBOM, SARIF).'
+	onlyIf {
+		return vulnerabilityScannerIsEnabled &&
+			["vulnerabilityScannerReportMarkdown", "vulnerabilityScannerReportAdoc",
+			 "vulnerabilityScannerReportSbom", "vulnerabilityScannerReportSarif"].any {
+				project.hasProperty(it) && "true".equalsIgnoreCase("${project.getProperty(it)}")
+			}
+	}
+
+	doLast {
+		if (!checkVulnerabilityScannerInstallation()) {
+			logInfo("Generate vulnerability report: trivy not available, skipping report generation.")
+			return
+		}
+
+		def isSnapshot = project.hasProperty('isSnapshotVersion') && project.getProperty('isSnapshotVersion')
+		def severity = isSnapshot ? "CRITICAL,HIGH,MEDIUM,LOW" : "${vulnerabilityScannerSeverity}"
+		def baseCmd = "${vulnerabilityScannerCmd} --quiet"
+		def baseOptions = "--scanners ${vulnerabilityScannerScanners} --severity ${severity} --format json --exit-code ${vulnerabilityScannerExitCode} --skip-dirs .gradle"
+		def scanPath = "${project.rootDir}"
+		def blacklistedEntries = collectBlacklistedDependencies()
+
+		def scanSections = []
+		def imageOverview = []
+
+		// dependency scan (rootfs)
+		def depTempFile = "${getCommonGradleBuildTempPath(rootProject.name)}/trivy-report-dep.json"
+		def depFullCmd = "${baseCmd} rootfs ${baseOptions} --output ${depTempFile} ${scanPath}".replaceAll("  ", " ").trim()
+		logInfo("Execute: " + colorize(HIGHLITE_LEVEL, depFullCmd) + colorize(INFO_LEVEL, "."))
+		def depStdout = new StringBuilder()
+		execCommand(depFullCmd, -1, depStdout, depStdout)
+		def depJsonFile = new File(depTempFile)
+		def depJsonOutput = (depJsonFile.exists() && depJsonFile.length() > 0) ? depJsonFile.text.trim() : '{"Results":[]}'
+		def depResult = collectVulnerabilityFindingsFromJson(depJsonOutput, severity, blacklistedEntries)
+		scanSections.add([label: "Container: ${rootProject.name}", findings: depResult.findings, whitelistedCount: depResult.whitelistedCount])
+		if (depJsonFile.exists()) { depJsonFile.delete() }
+
+		// container image scans
+		def dockerRefFile = project.hasProperty('kubernetesDockerReferenceFile') ? new File("${project.getProperty('kubernetesDockerReferenceFile')}") : null
+		if (dockerRefFile != null && dockerRefFile.exists()) {
+			def allImages = dockerRefFile.readLines().findAll { it.trim() && !it.trim().startsWith("#") }
+			def whitelistedImages = allImages.findAll { isContainerImageWhitelisted(it.trim()) }
+			def blacklistedImages = allImages.findAll { isContainerImageBlacklisted(it.trim()) }
+			def images = allImages.findAll { !isContainerImageWhitelisted(it.trim()) && !isContainerImageBlacklisted(it.trim()) }
+
+			// blacklisted images appear as DENY in the overview
+			blacklistedImages.each { img ->
+				imageOverview.add([name: img.trim(), crit: 0, high: 0, med: 0, low: 0, denied: true])
+			}
+
+			if (!images.isEmpty()) {
+				// try cb-container --scan <all> --csv for the image overview table (cached, fast)
+				def usedCbContainer = false
+				try {
+					def cbCheck = new StringBuilder()
+					def cbCheckErr = new StringBuilder()
+					def cbCheckExit = execCommand("cb-container --version", 2000, cbCheck, cbCheckErr)
+					if (cbCheckExit == 0 && cbCheck.toString().trim().length() > 0) {
+						def imageListArg = images.collect { it.trim() }.join(",")
+						def csvOutput = new StringBuilder()
+						def csvErr = new StringBuilder()
+						def csvExit = execCommand("cb-container --scan ${imageListArg} --csv", -1, csvOutput, csvErr)
+						if (csvExit == 0 && csvOutput.length() > 0) {
+							csvOutput.toString().trim().eachLine { csvLine ->
+								def cols = csvLine.split(",")
+								if (cols.length >= 5 && !cols[0].equalsIgnoreCase("image")) {
+									def imgName = cols[0].trim()
+									def crit = cols[1].trim().isInteger() ? cols[1].trim().toInteger() : 0
+									def high = cols[2].trim().isInteger() ? cols[2].trim().toInteger() : 0
+									def med  = cols[3].trim().isInteger() ? cols[3].trim().toInteger() : 0
+									def low  = cols[4].trim().isInteger() ? cols[4].trim().toInteger() : 0
+									imageOverview.add([name: imgName, crit: crit, high: high, med: med, low: low, denied: false])
+								}
+							}
+							if (!imageOverview.findAll { !it.denied }.isEmpty()) { usedCbContainer = true }
+						}
+					}
+				} catch (Exception ignored) {
+					logInfo("cb-container not available, falling back to trivy per image.")
+				}
+
+				// scan each image with trivy for detailed per-section findings
+				images.each { image ->
+					def imageName = image.trim()
+					def imgTempFile = "${getCommonGradleBuildTempPath(rootProject.name)}/trivy-report-img.json"
+					def imgFullCmd = "${baseCmd} image ${baseOptions} --output ${imgTempFile} ${imageName}".replaceAll("  ", " ").trim()
+					logInfo("Execute: " + colorize(HIGHLITE_LEVEL, imgFullCmd) + colorize(INFO_LEVEL, "."))
+					def imgStdout = new StringBuilder()
+					execCommand(imgFullCmd, -1, imgStdout, imgStdout)
+					def imgJsonFile = new File(imgTempFile)
+					def imgJsonOutput = (imgJsonFile.exists() && imgJsonFile.length() > 0) ? imgJsonFile.text.trim() : '{"Results":[]}'
+					def imgResult = collectVulnerabilityFindingsFromJson(imgJsonOutput, severity, [])
+					scanSections.add([label: "Container: ${imageName}", findings: imgResult.findings, whitelistedCount: imgResult.whitelistedCount])
+
+					// if cb-container was unavailable, compute overview counts from trivy findings
+					if (!usedCbContainer) {
+						def crit = imgResult.findings.count { it.severity == "CRITICAL" }
+						def high = imgResult.findings.count { it.severity == "HIGH" }
+						def med  = imgResult.findings.count { it.severity == "MEDIUM" }
+						def low  = imgResult.findings.count { it.severity == "LOW" }
+						imageOverview.add([name: imageName, crit: crit, high: high, med: med, low: low, denied: false])
+					}
+					if (imgJsonFile.exists()) { imgJsonFile.delete() }
+				}
+			}
+		}
+
+		// sort sections and overview alphabetically
+		scanSections.sort { a, b -> a.label <=> b.label }
+		imageOverview.sort { a, b -> a.name <=> b.name }
+
+		// generate all enabled report formats; adoc goes to enumConfigurationDocOutputPath so it is picked up by Asciidoctor
+		generateVulnerabilityScannerReports(scanSections, imageOverview, severity, "${vulnerabilityScannerReportOutputPath}", "${enumConfigurationDocOutputPath}")
+	}
+}
 // copy generated adoc files into asciidoc source directory for processing
 ext.copyGeneratedAdocToSource = {
 	if (!printDocumentationLine) {
-		printLine(HIGHLITE_LEVEL, true)		
+		printLine(HIGHLITE_LEVEL, true)
 		printDocumentationLine = true
 	}
+	def asciidocSrcDir = new File("${asciidocSourceDirectory}")
 	def generatedAdocDir = new File("${enumConfigurationDocOutputPath}")
-	if (generatedAdocDir.exists() && new File("${asciidocSourceDirectory}").exists()) {
+	if (generatedAdocDir.exists() && asciidocSrcDir.exists()) {
 		copy {
 			from generatedAdocDir
 			include '*.adoc'
 			into "${asciidocSourceDirectory}"
+		}
+	}
+	if ("true".equalsIgnoreCase("${project.getProperty('vulnerabilityScannerReportAdoc')}")) {
+		def vsAdocDir = new File("${vulnerabilityScannerReportOutputPath}")
+		if (vsAdocDir.exists() && asciidocSrcDir.exists()) {
+			copy {
+				from vsAdocDir
+				include '*.adoc'
+				into "${asciidocSourceDirectory}"
+			}
 		}
 	}
 }
@@ -868,6 +1003,17 @@ ext.cleanGeneratedAdocFromSource = {
 			if (file.getName().endsWith('.adoc')) {
 				def copied = new File("${asciidocSourceDirectory}/${file.getName()}")
 				if (copied.exists()) { copied.delete() }
+			}
+		}
+	}
+	if ("true".equalsIgnoreCase("${project.getProperty('vulnerabilityScannerReportAdoc')}")) {
+		def vsAdocDir = new File("${vulnerabilityScannerReportOutputPath}")
+		if (vsAdocDir.exists()) {
+			vsAdocDir.eachFile { file ->
+				if (file.getName().endsWith('.adoc')) {
+					def copied = new File("${asciidocSourceDirectory}/${file.getName()}")
+					if (copied.exists()) { copied.delete() }
+				}
 			}
 		}
 	}
@@ -886,7 +1032,7 @@ if (project.tasks.findByName('convertAsciidoctorPdf')) {
 }
 
 if (project.tasks.findByName('convertAsciidoctorHtml')) {
-	generateEnumConfigurationDocumentation.finalizedBy('convertAsciidoctorHtml')
+	convertAsciidoctorHtml.mustRunAfter(generateEnumConfigurationDocumentation)
 	convertAsciidoctorHtml.doFirst {
 		copyGeneratedAdocToSource()
 		printInfo("> Generate HTML documentation in " + colorize(HIGHLITE_LEVEL, "${asciiDoctorHtmlPath}".replace('\\', '/').replace("${project.rootDir}".replace('\\', '/') + "/", "")) + "...")
@@ -894,7 +1040,7 @@ if (project.tasks.findByName('convertAsciidoctorHtml')) {
 	convertAsciidoctorHtml.doLast { cleanGeneratedAdocFromSource() }
 }
 if (project.tasks.findByName('convertAsciidoctorPdf')) {
-	generateEnumConfigurationDocumentation.finalizedBy('convertAsciidoctorPdf')
+	convertAsciidoctorPdf.mustRunAfter(generateEnumConfigurationDocumentation)
 	convertAsciidoctorPdf.doFirst {
 		copyGeneratedAdocToSource()
 		printInfo("> Generate PDF documentation in " + colorize(HIGHLITE_LEVEL, "${asciiDoctorPdfPath}".replace('\\', '/').replace("${project.rootDir}".replace('\\', '/') + "/", "")) + "...")
@@ -1035,8 +1181,8 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesGatewayApi', '
 			def readinessPath = ""
 			def livenessPath = ""
 
-			try {			
-				file.withReader {
+			try {
+				[new LineNumberReader(new StringReader(file.getText('UTF-8')))].each {
 					if (countFiles>0) {
 						fileContent.append("---" + NELINE)
 					}
@@ -1295,25 +1441,77 @@ kubernetesJar.dependsOn kubernetesConcat
 kubernetesJar.dependsOn generateEnumConfigurationDocumentation
 generateEnumConfigurationDocumentation.mustRunAfter(kubernetesConcat)
 
+kubernetesJar.dependsOn generateVulnerabilityScannerReport
+generateVulnerabilityScannerReport.mustRunAfter(kubernetesConcat)
+if (project.tasks.findByName('vulnerabilityScanner') != null) {
+	generateVulnerabilityScannerReport.mustRunAfter(vulnerabilityScanner)
+}
+
 // include generated docs in kubernetes jar
 if ("true".equalsIgnoreCase("" + project.getProperty('enumConfigurationDocIncludeInJar'))) {
 	kubernetesJar {
-		into "docs", {
+		into "docs/configuration", {
 			from "${asciiDoctorPdfPath}", {
-				include '*.pdf'
+				include 'configuration*.pdf'
+			}
+			from "${asciiDoctorHtmlPath}", {
+				include 'configuration*.html'
 			}
 			from "${enumConfigurationDocOutputPath}", {
-				include '*.md'
+				include 'configuration*.md'
 			}
+		}
+	}
+}
+
+// include vulnerability scanner reports in kubernetes jar
+if ("true".equalsIgnoreCase("" + project.getProperty('vulnerabilityScannerReportIncludeInJar'))) {
+	kubernetesJar {
+		into "docs/vulnerability", {
+			from "${asciiDoctorPdfPath}", {
+				include 'vulnerability*.pdf'
+			}
+			from "${asciiDoctorHtmlPath}", {
+				include 'vulnerability*.html'
+			}
+			from "${vulnerabilityScannerReportOutputPath}", {
+				include '*.md'
+				include '*.cdx.json'
+				include '*.sarif'
+			}
+		}
+	}
+}
+
+// all other pdf/html files (not configuration, not vulnerability) go to docs/
+kubernetesJar {
+	into "docs", {
+		from "${asciiDoctorPdfPath}", {
+			include '*.pdf'
+			exclude 'configuration*.pdf'
+			exclude 'vulnerability*.pdf'
+		}
+		from "${asciiDoctorHtmlPath}", {
+			include '*.html'
+			exclude 'configuration*.html'
+			exclude 'vulnerability*.html'
 		}
 	}
 }
 
 if (project.tasks.findByName('convertAsciidoctorHtml')) {
 	convertAsciidoctorHtml.mustRunAfter(kubernetesConcat)
+	convertAsciidoctorHtml.mustRunAfter(generateVulnerabilityScannerReport)
+	if (project.tasks.findByName('vulnerabilityScanner') != null) {
+		convertAsciidoctorHtml.mustRunAfter(vulnerabilityScanner)
+	}
 }
 if (project.tasks.findByName('convertAsciidoctorPdf')) {
 	convertAsciidoctorPdf.mustRunAfter(kubernetesConcat)
+	convertAsciidoctorPdf.mustRunAfter(generateVulnerabilityScannerReport)
+	if (project.tasks.findByName('vulnerabilityScanner') != null) {
+		convertAsciidoctorPdf.mustRunAfter(vulnerabilityScanner)
+	}
 }
 
 
@@ -1442,7 +1640,7 @@ projectValidation {
 	doFirst {
 		if (project.getProperty('IS_NEW')) {
 			new File(srcKubernetesDirectory).mkdirs()
-			
+
 			// generate git files if necessary
 			if (project.hasProperty('initScmForNewProjects') && project.getProperty('initScmForNewProjects')) {
 				createGitFiles(true)
@@ -1452,6 +1650,12 @@ projectValidation {
 								<< "  To get started, go to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
 								<< "      " + colorize(HIGHLITE_LEVEL, "$startExecutable") + "" << NELINE )
 		}
+	}
+
+	// ensure vulnerability scanner runs after kubernetes artifacts are built
+	// (analogous to container.gradle mustRunAfter("dockerBuild") for container projects)
+	if (project.tasks.findByName('vulnerabilityScanner') != null) {
+		vulnerabilityScanner.mustRunAfter("kubernetesConcat")
 	}
 }
 

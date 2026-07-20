@@ -4,6 +4,25 @@
 #
 # apply-subpath-test.sh
 #
+# Copyright by toolarium, all rights reserved.
+#
+# This file is part of the toolarium common-gradle-build.
+#
+# The common-gradle-build is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# The common-gradle-build is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+#
+#########################################################################
+#
 # Test script for apply-subpath.sh
 # Validates subpath detection, file replacements, security guards,
 # nginx configuration, and edge cases.
@@ -193,7 +212,7 @@ create_nginx_conf() {
 server {
   listen 8080;
   root /deployment;
-  index index.html index.html;
+  index index.html;
   location / {
     try_files \$uri ${subdir}/index.html /${subdir}/index.html =404;
   }
@@ -531,6 +550,25 @@ assert_output_contains "redirect applied" "hierarchical 302 redirects" "$LAST_OU
 assert_file_contains "redirect for org" "location ~ ^/org/?$" "$nginx_dir/default.conf"
 assert_file_contains "redirect for org/team" "location ~ ^/org/team/?$" "$nginx_dir/default.conf"
 assert_file_contains "redirect target" "return 302 /org/team/myui/" "$nginx_dir/default.conf"
+
+#########################################################################
+echo ""
+echo "=== Nginx conf: __mypage__ with SUBPATH generates 302 redirect ==="
+#########################################################################
+deploy="$TEST_DIR/nginx-dunder-deploy"
+setup_deployment "$deploy" "__mypage__"
+create_text_file "$deploy/__mypage__/index.html" "__mypage__"
+nginx_dir="$TEST_DIR/nginx-dunder"
+create_nginx_conf "$nginx_dir" "__mypage__"
+props="$TEST_DIR/nginx-dunder.properties"
+printf '%s\n' 'service.root-path = /mypage' 'service.resources = /mypage' > "$props"
+# sourceSubdir=__mypage__, runtimeUrlPath=mypage, targetSubpath=ppp, replaceTo=ppp/mypage
+# targetSubpath(ppp) != runtimeUrlPath(mypage) -> generates redirect for /ppp
+run_script "$deploy" "ppp" "$props" "$nginx_dir"
+assert_exit_code "__mypage__+SUBPATH exit 0" 0 "$LAST_EXIT"
+assert_output_contains "__mypage__+SUBPATH redirect applied" "hierarchical 302 redirects" "$LAST_OUTPUT"
+assert_file_contains "__mypage__+SUBPATH redirect for ppp" "location ~ ^/ppp/?$" "$nginx_dir/default.conf"
+assert_file_contains "__mypage__+SUBPATH redirect target" "return 302 /ppp/mypage/" "$nginx_dir/default.conf"
 
 #########################################################################
 echo ""

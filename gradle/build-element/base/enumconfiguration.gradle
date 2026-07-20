@@ -32,7 +32,7 @@ buildscript {
 		}
 	}
 	dependencies {
-		def toolariumEnumConfigurationVersion="1.3.1"
+		def toolariumEnumConfigurationVersion="1.3.2"
 		if (project.hasProperty('toolariumEnumConfigurationVersion')) {
 			toolariumEnumConfigurationVersion = project.getProperty('toolariumEnumConfigurationVersion')
 		}
@@ -91,14 +91,14 @@ ext.createEnumConfigurationIndex = { inputPath, indexFilename ->
 			
 			if (enumConfiguration.getInterfaceList()!=null && !enumConfiguration.getInterfaceList().isEmpty()) {
 				separator = ""
-				if (enumConfiguration.getInterfaceList()!=null && !enumConfiguration.getMarkerInterfaceList().isEmpty()) {
+				if (enumConfiguration.getMarkerInterfaceList()!=null && !enumConfiguration.getMarkerInterfaceList().isEmpty()) {
 					separator = ","
 				}
-				
+			
 				enumConfigurationIndexFile.append(createJsonArray(3, "interfaceList", enumConfiguration.getInterfaceList()) + separator + NELINE)
 			}
-			
-			if (enumConfiguration.getInterfaceList()!=null && !enumConfiguration.getMarkerInterfaceList().isEmpty()) {
+
+			if (enumConfiguration.getMarkerInterfaceList()!=null && !enumConfiguration.getMarkerInterfaceList().isEmpty()) {
 				enumConfigurationIndexFile.append(createJsonArray(3, "markerInterfaceList", enumConfiguration.getMarkerInterfaceList()) + NELINE)
 			}
 			

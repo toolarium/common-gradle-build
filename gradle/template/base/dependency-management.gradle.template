@@ -1,0 +1,39 @@
+/*
+ * dependency-management.gradle
+ *
+ * In this file you can define organization-wide dependency management rules such as
+ * BOM imports, forced versions, and resolution strategies. These settings apply to
+ * all projects that use this common-gradle-build home configuration and are applied
+ * after the built-in dependency-management.gradle.
+ */
+
+
+/***************************************************************************************
+ * Example: force a specific dependency version across all configurations
+ ***************************************************************************************/
+//configurations.all {
+//    resolutionStrategy {
+//        force 'com.example:my-library:1.2.3'
+//    }
+//}
+
+
+/***************************************************************************************
+ * Example: pin a dependency minor line to a known-safe patch version
+ ***************************************************************************************/
+//configurations.all {
+//    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+//        if (details.requested.group == 'com.example' && details.requested.name == 'my-library') {
+//            def ver = details.requested.version
+//            if (ver?.startsWith('1.2.')) { details.useVersion '1.2.3'; details.because 'pin 1.2.x to latest patch' }
+//        }
+//    }
+//}
+
+
+/***************************************************************************************
+ * Example: import a BOM (Bill of Materials) to align dependency versions
+ ***************************************************************************************/
+//dependencies {
+//    implementation platform('com.example:my-bom:1.0.0')
+//}

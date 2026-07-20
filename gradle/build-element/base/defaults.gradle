@@ -308,7 +308,7 @@ setCommonGradleDefaultPropertyIfNull("scmVersionNumber", '')
  * toolarium enum configuration support
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("hasToolariumEnumConfiguration", true)
-setCommonGradleDefaultPropertyIfNull("toolariumEnumConfigurationVersion", "1.3.1") // in kubernetes-product.gradle there is an additional dependency
+setCommonGradleDefaultPropertyIfNull("toolariumEnumConfigurationVersion", "1.3.2") // in kubernetes-product.gradle there is an additional dependency
 setCommonGradleDefaultPropertyIfNull("enumConfigurationDocAsciidoc", true)
 setCommonGradleDefaultPropertyIfNull("enumConfigurationDocMarkdown", true)
 setCommonGradleDefaultPropertyIfNull("enumConfigurationDocOutputPath", "$generatedCommonGradleBuildSources/doc")
@@ -553,33 +553,6 @@ setCommonGradleDefaultPropertyIfNull("createServiceJavaRunner", true) // the doc
 setCommonGradleDefaultPropertyIfNull("createServiceJavaAgent", false) // the dockerJavaAgent will be taken
 setCommonGradleDefaultPropertyIfNull("enablePatchRunTimeDefaultsConfigSource", false)
 
-if ("$quarkusPluginVersion".toString().equals("3.20.6")) {
-    configurations.all {
-        resolutionStrategy {
-            force 'com.fasterxml.jackson.core:jackson-core:2.18.6'
-            force 'io.netty:netty-codec-http:4.1.132.Final'
-            force 'io.netty:netty-codec-http2:4.1.132.Final'
-        }
-    }
-}
-
-if ("$quarkusPluginVersion".toString().equals("3.20.6.2")) {
-    configurations.all {
-        resolutionStrategy {
-            force 'com.fasterxml.jackson.core:jackson-core:2.18.6'
-            force 'io.netty:netty-codec:4.1.133.Final'
-            force 'io.netty:netty-codec-http:4.1.135.Final'
-            force 'io.netty:netty-codec-http2:4.1.135.Final'
-            force 'io.netty:netty-codec-dns:4.1.133.Final'
-            force 'io.netty:netty-codec-haproxy:4.1.135.Final'			
-            force 'io.netty:netty-handler:4.1.135.Final'			
-            force 'io.netty:netty-resolver-dns:4.1.135.Final'	
-            force 'io.netty:netty-handler-proxy:4.1.133.Final'	
-            force 'io.vertx:vertx-core:4.5.27'
-        }
-    }
-}
-
 
 /***************************************************************************************
  * java-app defaults
@@ -743,8 +716,11 @@ setCommonGradleDefaultPropertyIfNull("dockerSubPathAccess", "")
 setCommonGradleDefaultPropertyIfNull("dockerScriptPath", "$scriptsConfigurationPath")
 setCommonGradleDefaultPropertyIfNull("dockerRemoveDanglingImages", true)
 setCommonGradleDefaultPropertyIfNull("dockerMultistageBuild", true)
-setCommonGradleDefaultPropertyIfNull("dockerRemoveNonEssentialBinaries", true)
-setCommonGradleDefaultPropertyIfNull("dockerMakeFilesystemReadonly", true)
+setCommonGradleDefaultPropertyIfNull("dockerRemoveNonEssentialBinaries", false)
+setCommonGradleDefaultPropertyIfNull("dockerMakeFilesystemReadonly", false)
+setCommonGradleDefaultPropertyIfNull("dockerRemovePackageInstallationBinaries", true)
+setCommonGradleDefaultPropertyIfNull("dockerRemoveImageVersion", false)
+setCommonGradleDefaultPropertyIfNull("dockerRemovePackageVersions", false)
 setCommonGradleDefaultPropertyIfNull("dockerReadonlyFilesystemPath", "/etc /usr /lib")
 setCommonGradleDefaultPropertyIfNull("dockerReadonlyFilesystemExcludePath", "/etc/ssl/certs /usr/local/share/ca-certificates \$JAVA_HOME/lib/security") 
 setCommonGradleDefaultPropertyIfNull("dockerDefaultEncoding", "${fileEncoding}")
@@ -761,12 +737,19 @@ setCommonGradleDefaultPropertyIfNull("dockerKeepAlive", "")
 setCommonGradleDefaultPropertyIfNull("dockerMaxConnections", "")
 setCommonGradleDefaultPropertyIfNull("dockerMaxRedirects", "")
 setCommonGradleDefaultPropertyIfNull("vulnerabilityScannerEnabled", "false")
-setCommonGradleDefaultPropertyIfNull("vulnerabilityScannerAbortEnabled", "true")
+setCommonGradleDefaultPropertyIfNull("vulnerabilityScannerAbortEnabled", "false")
+setCommonGradleDefaultPropertyIfNull("vulnerabilityScannerForceScanningFilesystem", false)
 setCommonGradleDefaultPropertyIfNull("vulnerabilityScannerCmd", "trivy")
 setCommonGradleDefaultPropertyIfNull("vulnerabilityScannerScanners", "vuln")
 setCommonGradleDefaultPropertyIfNull("vulnerabilityScannerSeverity", "CRITICAL,HIGH")
 setCommonGradleDefaultPropertyIfNull("vulnerabilityScannerExitCode", "0")
 setCommonGradleDefaultPropertyIfNull("vulnerabilityScannerFailWithoutFix", false)
+setCommonGradleDefaultPropertyIfNull("vulnerabilityScannerReportMarkdown", true)
+setCommonGradleDefaultPropertyIfNull("vulnerabilityScannerReportAdoc", true)
+setCommonGradleDefaultPropertyIfNull("vulnerabilityScannerReportSbom", false)
+setCommonGradleDefaultPropertyIfNull("vulnerabilityScannerReportSarif", false)
+setCommonGradleDefaultPropertyIfNull("vulnerabilityScannerReportOutputPath", "$generatedCommonGradleBuildSources/vulnerability-report")
+setCommonGradleDefaultPropertyIfNull("vulnerabilityScannerReportIncludeInJar", true)
 setCommonGradleDefaultPropertyIfNull("dockerLogLevel", "")
 setCommonGradleDefaultPropertyIfNull("dockerGc", "UseG1GC")
 setCommonGradleDefaultPropertyIfNull("dockerGcLogging", "")
@@ -982,7 +965,7 @@ setCommonGradleDefaultPropertyIfNull("kubernetesSupportIdm", true)
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmTemplateFilename", "kubernetes-idm.template")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmConfigTemplateFilename", "kubernetes-idm-config.template")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmSecretTemplateFilename", "kubernetes-idm-secret.template")
-setCommonGradleDefaultPropertyIfNull("kubernetesIdmImageVersion", "26.6.1")
+setCommonGradleDefaultPropertyIfNull("kubernetesIdmImageVersion", "26.7.0")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmUrlPath", "/auth")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmUrlProtocol", "${kubernetesApplicationPrototcol}")
 setCommonGradleDefaultPropertyIfNull("kubernetesIdmFrontendUrl", "${kubernetesIdmUrlProtocol}${kubernetesApplicationHost}${kubernetesIdmUrlPath}")
@@ -1169,8 +1152,8 @@ setCommonGradleDefaultPropertyIfNull("commonGradleConfigBlacklistDependenciesNam
 /***************************************************************************************
  * library version used in templates
  ***************************************************************************************/
-setCommonGradleDefaultPropertyIfNull("commonGradleSlf4jApiVersion", "2.0.17")
-setCommonGradleDefaultPropertyIfNull("commonGradleLogbackVersion", "1.5.32")
+setCommonGradleDefaultPropertyIfNull("commonGradleSlf4jApiVersion", "2.0.18")
+setCommonGradleDefaultPropertyIfNull("commonGradleLogbackVersion", "1.5.38")
 setCommonGradleDefaultPropertyIfNull("commonGradleJptoolsVersion", "1.7.12")
 setCommonGradleDefaultPropertyIfNull("commonGradleJavaxValidtionVersion", "2.0.1.Final")
 setCommonGradleDefaultPropertyIfNull("commonGradleJavaxWsRSApiVersion", "2.1.1")

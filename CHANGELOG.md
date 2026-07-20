@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.6.0] - 2026-07-20
+### Added
+- Vulnerability scanner reports for kubernetes-product: generates Markdown, AsciiDoc (converted to PDF via Asciidoctor pipeline), SBOM (CycloneDX 1.4), and SARIF 2.1.0 reports from trivy scans; reports are packaged into the JAR under `docs/`. New properties: `vulnerabilityScannerReportMarkdown`, `vulnerabilityScannerReportAdoc`, `vulnerabilityScannerReportSbom`, `vulnerabilityScannerReportSarif`, `vulnerabilityScannerReportOutputPath`, `vulnerabilityScannerReportIncludeInJar`. Report structure: summary table + container image overview (via `cb-container --scan --csv`) + per-section detail chapters for dependency and each container image.
+- New `dockerRemovePackageInstallationBinaries` property (default: `true`) — removes package manager binaries from the container image (see Dockerfile templates).
+- New `dockerRemoveImageVersion` property (default: `false`) — removes OS version information files from the container image.
+- New `dockerRemovePackageVersions` property (default: `false`) — removes package version information from the container image.
+- Docker build log now shows active hardening flags (strip-bin, read-only, no-img-version, no-pkg-versions, no-pkg-mgr, access-logs) next to the image name when creating container images.
+- New Dockerfile template test suite (`test/template/dockerfile/`): `dockerfile-test.sh` (placeholder coverage + all boolean flag matrix combinations), `verify-dockerfile-test.sh` (token coverage + mutation test), `signal-test.sh` (SIGTERM delivery per ENTRYPOINT pattern), `signal-app.sh` (minimal signal-aware test helper process).
+- New `test/template/run-all-tests.sh` convenience script to run all test suites in one command.
+- New `gradle/build-element/base/dependency-management.gradle` with centralized built-in dependency management: security pinning.
+- Organization-specific `dependency-management.gradle` override: `base.gradle` now loads `<commonGradleBuildHome>/gradle/dependency-management.gradle` after `defaults.gradle` if present, allowing organizations to define forced versions, resolution strategies, and BOM imports on top of the built-in rules.
+- New `gradle/template/base/dependency-management.gradle.template` scaffolded by the `organization-config` project type with commented examples for forced versions, `eachDependency` pinning, and BOM imports.
+
+### Changed
+- Default for `dockerRemoveNonEssentialBinaries` changed from `true` to `false`.
+- Default for `dockerMakeFilesystemReadonly` changed from `true` to `false`.
+- Default for `vulnerabilityScannerAbortEnabled` changed from `true` to `false`.
+- NuxtJS Docker entrypoint changed to exec form `["/bin/sh", "-c", "NUXT_PORT=... exec npm start"]` for proper SIGTERM signal delivery.
+- Quarkus multistage: `dockerRuntimeImage` default (`alpine:latest`) now set only inside the multistage branch.
+- All Dockerfile templates updated to support all new Docker hardening flags.
+- Documentation: expanded Vulnerability Scanning section with `trivy.yaml` configuration guide — clarifies that the file is picked up automatically from the project root (no `--config` flag), which settings are overridden by Gradle properties (`severity`, `scan.scanners`, `format`, `exit-code`), and that `skip-files`/`skip-dirs` are the primary useful settings; fixed incorrect `gradle/conf/trivy.yaml` path reference (template lives in `gradle/experimental/conf/trivy.yaml`).
+- Documentation: added console output example for vulnerability scanner showing CRIT/HIGH/LOW findings with fix versions, `[no fix available]`, and dependency tree resolution lines.
+- `organization-config` scaffolding now generates `gradle/dependency-management.gradle` from the new template alongside `defaults.gradle` and `custom.gradle`; `dependency-management.gradle.template` is excluded from the bulk template copy to `gradle/template/base/`.
+- Documentation: expanded Organization-Specific Overrides section in README and `docs/index.html` to include `dependency-management.gradle` in the home directory structure listing, file descriptions with code examples, scaffolding description, and a dependency resolution order note alongside the property override priority diagram.
+
 ## [v1.5.4] - 2026-07-18
 ### Fixed
 - Build log output on kubernetes product and container based builds.

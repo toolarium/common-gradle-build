@@ -88,6 +88,7 @@ if (project.hasProperty("fatWebSubContext")) {
  * Set additional template path
  ***************************************************************************************/
 ext.projectTypeTemplatePath='nodejs'
+ext.vulnerabilityScannerForceScanningFilesystem=true
 
 
 /***************************************************************************************

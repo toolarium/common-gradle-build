@@ -15,7 +15,7 @@ concurrency:
 jobs:
 
   #######################################################################
-  # Linux - shell script tests (bash)
+  # Linux - shell script tests (no Docker required)
   #######################################################################
   test-linux:
     runs-on: ubuntu-latest
@@ -32,5 +32,36 @@ jobs:
       - name: cb-meminfo-test
         run: bash test/template/quarkus/cb-meminfo-test.sh
 
-      #- name: apply-subpath-test
-      #  run: bash test/template/nodejs/apply-subpath-test.sh
+      - name: apply-subpath-test
+        run: bash test/template/nodejs/apply-subpath-test.sh
+
+      - name: dockerfile token coverage + mutation test
+        run: bash test/template/dockerfile/verify-dockerfile-test.sh
+
+      - name: dockerfile placeholder substitution check
+        run: bash test/template/dockerfile/dockerfile-test.sh
+
+  #######################################################################
+  # Linux - Docker-based Dockerfile template tests
+  # Requires Docker 27+ for `docker build --check`
+  #######################################################################
+  test-docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set executable permissions
+        run: chmod -R +x gradle/template/ test/
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker version info
+        run: docker version
+
+      - name: dockerfile lint (docker build --check)
+        run: bash test/template/dockerfile/dockerfile-test.sh --lint
+
+      - name: signal handling test
+        run: bash test/template/dockerfile/signal-test.sh

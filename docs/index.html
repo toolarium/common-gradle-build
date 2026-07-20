@@ -348,7 +348,7 @@
   </div>
   <div class="feature-card">
     <h4>Vulnerability Scanning</h4>
-    <p>Trivy integration for dependencies and container images. <strong>Disabled by default</strong> — enable via <code>vulnerabilityScannerEnabled=true</code> in <code>gradle.properties</code> or the <code>CB_VULNERABILITY_SCANNER_ENABLED=true</code> environment variable. DENY/CRIT/HIGH/MED/LOW severity. Dependency tree resolution. Unfixable vulnerabilities reported with <code>[no fix available]</code> but don't fail the build (configurable). Set <code>vulnerabilityScannerAbortEnabled=false</code> (or <code>CB_VULNERABILITY_SCANNER_ABORT=false</code>) to report findings as warnings without failing the build. Container image whitelist/blacklist via <code>[container]</code> tag. Kubernetes-product referenced image scanning with summary table.</p>
+    <p>Trivy integration for dependencies and container images. <strong>Disabled by default</strong> — enable via <code>vulnerabilityScannerEnabled=true</code> in <code>gradle.properties</code> or the <code>CB_VULNERABILITY_SCANNER_ENABLED=true</code> environment variable. DENY/CRIT/HIGH/MED/LOW severity. Dependency tree resolution shows which top-level <code>build.gradle</code> dependency to update. Unfixable vulnerabilities reported with <code>[no fix available]</code> but don't fail the build (configurable). Set <code>vulnerabilityScannerAbortEnabled=false</code> (or <code>CB_VULNERABILITY_SCANNER_ABORT=false</code>) to report findings as warnings without failing the build. Container image whitelist/blacklist via <code>[container]</code> tag. Kubernetes-product referenced image scanning with summary table. Fine-tune via <code>trivy.yaml</code> in the project root (Trivy picks it up automatically).</p>
   </div>
   <div class="feature-card">
     <h4>OWASP Dependency-Check</h4>
@@ -582,12 +582,44 @@ java -jar build/libs/my-library-1.0.0.jar</code></pre>
     <tr><td><code>vulnerabilityScannerEnabled</code></td><td><code>false</code></td><td>Enable Trivy vulnerability scanning (also overridable via <code>CB_VULNERABILITY_SCANNER_ENABLED</code> env var)</td></tr>
     <tr><td><code>vulnerabilityScannerAbortEnabled</code></td><td><code>true</code></td><td>When <code>false</code>, findings are reported as warnings without failing the build (also overridable via <code>CB_VULNERABILITY_SCANNER_ABORT</code> env var)</td></tr>
     <tr><td><code>vulnerabilityScannerCmd</code></td><td><code>trivy</code></td><td>Vulnerability scanner command</td></tr>
-    <tr><td><code>vulnerabilityScannerScanners</code></td><td><code>vuln</code></td><td>Scanner types to run</td></tr>
-    <tr><td><code>vulnerabilityScannerSeverity</code></td><td><code>CRITICAL,HIGH</code></td><td>Severity levels to scan (release builds)</td></tr>
+    <tr><td><code>vulnerabilityScannerScanners</code></td><td><code>vuln</code></td><td>Scanner types to run (passed as <code>--scanners</code>; overrides <code>scan.scanners</code> in <code>trivy.yaml</code>)</td></tr>
+    <tr><td><code>vulnerabilityScannerSeverity</code></td><td><code>CRITICAL,HIGH</code></td><td>Severity levels for release builds (passed as <code>--severity</code>; overrides <code>severity</code> in <code>trivy.yaml</code>)</td></tr>
     <tr><td><code>vulnerabilityScannerExitCode</code></td><td><code>0</code></td><td>Exit code handling for scanner</td></tr>
     <tr><td><code>vulnerabilityScannerFailWithoutFix</code></td><td><code>false</code></td><td>When <code>true</code>, unfixable vulnerabilities also fail the build</td></tr>
   </tbody>
 </table>
+<h4>Trivy Configuration (<code>trivy.yaml</code>)</h4>
+<p>Trivy natively picks up a <code>trivy.yaml</code> file from the <strong>project root</strong> (the working directory during build) or from <code>~/.config/trivy/trivy.yaml</code>. The scanner does not pass a <code>--config</code> flag &mdash; discovery is handled by Trivy itself. A starter template is available in <a href="../gradle/experimental/conf/trivy.yaml"><code>gradle/experimental/conf/trivy.yaml</code></a>.</p>
+<p>The settings that are actually useful to configure here are <code>skip-dirs</code> and <code>skip-files</code> — everything else is controlled (and overridden) by Gradle properties passed as CLI flags:</p>
+<pre><code># trivy.yaml — place in the project root
+
+# skip-dirs is additive: .gradle is always skipped by the scanner via --skip-dirs
+skip-dirs:
+  - node_modules
+  - .git
+
+# skip-files has no Gradle property equivalent — configure it here
+skip-files:
+  - "**/*.test.js"
+  - "**/test/**"
+
+# Do NOT set these here — they are always overridden by Gradle properties:
+#   severity      → overridden by vulnerabilityScannerSeverity (--severity)
+#   scan.scanners → overridden by vulnerabilityScannerScanners (--scanners)
+#   format        → hardcoded to json by the scanner (--format json)
+#   exit-code     → controlled by vulnerabilityScannerExitCode (--exit-code)</code></pre>
+<h4>Console Output Example</h4>
+<p>A scan with findings (colors stripped):</p>
+<pre><code>&gt; Dependency scan: 3 issues found (CRIT: 1, HIGH: 1, LOW: 1). (1 no fix available)
+  CRIT CVE-2024-29025: io.netty:netty-codec-http 4.1.107.Final -&gt; 4.1.108.Final
+       -&gt; io.quarkus:quarkus-resteasy-reactive:3.8.1 (implementation, transitive)
+  HIGH CVE-2024-12797: org.bouncycastle:bcprov-jdk18on 1.77 [no fix available]
+       -&gt; io.quarkus:quarkus-smallrye-jwt:3.8.1 (implementation, transitive)
+  LOW  CVE-2023-52428: com.nimbusds:nimbus-jose-jwt 9.37.3 -&gt; 9.40
+       -&gt; io.quarkus:quarkus-smallrye-jwt:3.8.1 (implementation, transitive)</code></pre>
+<p>When no vulnerabilities are found:</p>
+<pre><code>&gt; Dependency scan: no vulnerabilities (CRITICAL,HIGH) found.</code></pre>
+<p>Each finding shows: severity label (<code>DENY</code>/<code>CRIT</code>/<code>HIGH</code>/<code>MED</code>/<code>LOW</code>) padded to 5 chars, CVE ID, package name and version, fix version (<code>-&gt; x.y.z</code>) or <code>[no fix available]</code>, and the top-level <code>build.gradle</code> dependency that pulls it in with its Gradle configuration and whether it is direct or <code>transitive</code>.</p>
 </details>
 
 <details open>
@@ -1255,8 +1287,9 @@ Result: ~/.common-build/conf/github.com@443_acme-corp/</code></pre>
 <p>Once the home directory is resolved, the framework looks for these files:</p>
 <pre><code>~/.common-build/conf/github.com@443_acme-corp/
 ├── gradle/
-│   ├── defaults.gradle        <span class="comment"># Override framework default properties</span>
-│   └── custom.gradle          <span class="comment"># Add custom tasks and build extensions</span>
+│   ├── defaults.gradle               <span class="comment"># Override framework default properties</span>
+│   ├── dependency-management.gradle  <span class="comment"># Override dependency resolution strategies</span>
+│   └── custom.gradle                 <span class="comment"># Add custom tasks and build extensions</span>
 ├── conf/                      <span class="comment"># Configuration files (checkstyle, security keys, etc.)</span>
 └── lastCheck.properties       <span class="comment"># Auto-generated version tracking</span></code></pre>
 
@@ -1267,6 +1300,19 @@ setCommonGradleProperty(<span class="string">"sourceCompatibility"</span>, JavaV
 setCommonGradleProperty(<span class="string">"targetCompatibility"</span>, JavaVersion.VERSION_21)
 setCommonGradleProperty(<span class="string">"mavenPublishUrl"</span>, <span class="string">"https://nexus.acme.internal/repository/releases/"</span>)
 setCommonGradleProperty(<span class="string">"dockerTagPrefix"</span>, <span class="string">"registry.acme.internal"</span>)</code></pre>
+
+<p><strong><code>gradle/dependency-management.gradle</code></strong> &mdash; loaded <strong>after</strong> <code>defaults.gradle</code>, applied before the rest of the build. Use this to define organization-wide dependency resolution rules such as forced versions, resolution strategies, and BOM imports:</p>
+<pre><code><span class="comment">// Pin a transitive dependency to a known-safe version</span>
+configurations.all {
+    resolutionStrategy {
+        force <span class="string">'com.example:my-library:1.2.3'</span>
+    }
+}
+
+<span class="comment">// Import an organization BOM</span>
+dependencies {
+    implementation platform(<span class="string">'com.acme:acme-bom:2.0.0'</span>)
+}</code></pre>
 
 <p><strong><code>gradle/custom.gradle</code></strong> &mdash; loaded <strong>after</strong> the project type is applied. Use this for custom tasks or build extensions:</p>
 <pre><code><span class="comment">// Organization-specific custom tasks</span>
@@ -1294,7 +1340,7 @@ task complianceReport {
 <pre><code><span class="comment">// build.gradle</span>
 projectType = <span class="string">'organization-config'</span>
 <span class="keyword">apply from</span>: <span class="string">"https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/common.gradle"</span></code></pre>
-<p>This generates the directory structure with template <code>defaults.gradle</code> and <code>custom.gradle</code> files ready to customize.</p>
+<p>This generates the directory structure with template <code>defaults.gradle</code>, <code>dependency-management.gradle</code>, and <code>custom.gradle</code> files ready to customize.</p>
 
 <h3>Overriding Templates</h3>
 <p>Templates can also be overridden by placing custom versions in the home directory's <code>gradle/template/</code> folder. The framework checks the home directory first before falling back to the built-in templates. See the full <a href="TEMPLATES.html">Template Reference</a> for all available templates.</p>
@@ -1312,6 +1358,7 @@ projectType = <span class="string">'organization-config'</span>
           &darr;
           Framework defaults.gradle (via setCommonGradleDefaultPropertyIfNull)
 Lowest:   Built-in framework defaults</code></pre>
+<p><strong>Dependency resolution</strong> follows a separate but analogous order: the built-in <code>dependency-management.gradle</code> runs first, then the home <code>gradle/dependency-management.gradle</code> (if present) is applied on top, allowing organizations to add or override forced versions, resolution strategies, and BOM imports.</p>
 
 </section>
 

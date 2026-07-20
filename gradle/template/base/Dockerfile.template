@@ -22,6 +22,7 @@ ARG DEFAULT_JAVA_OPTIONS="@@dockerDefaultJavaOptions@@"
 ARG MAKE_FILESYSTEM_READONLY="@@dockerMakeFilesystemReadonly@@"
 ARG READONLY_FILESYSTEM_PATH="@@dockerReadonlyFilesystemPath@@"
 ARG READONLY_FILESYSTEM_EXCLUDE_PATH="@@dockerReadonlyFilesystemExcludePath@@"
+ARG REMOVE_PACKAGE_INSTALLATION_BINARIES="@@dockerRemovePackageInstallationBinaries@@"
 
 # set meta data
 LABEL vendor="@@LICENSE_ORGANISATION@@" \
@@ -51,10 +52,14 @@ RUN apk --no-cache -U upgrade \
     # remove docs, man pages, includes
     && rm -rf /usr/share/man /usr/share/doc /usr/include \
     # remove version information
-    && rm -f /etc/alpine-release /etc/os-release /etc/issue \
-    # remove apk to prevent package installation
-    && apk del apk-tools alpine-keys 2>/dev/null; \
-    rm -rf /sbin/apk /etc/apk /lib/apk /usr/share/apk /var/lib/apk
+    && rm -f /etc/alpine-release /etc/os-release /etc/issue
+
+# remove version information and apk to prevent package installation
+RUN if [ "${REMOVE_PACKAGE_INSTALLATION_BINARIES}" = "true" ]; then \
+    apk del apk-tools alpine-keys 2>/dev/null; \
+    rm /var/log/apk.log; \
+    rm -rf /sbin/apk /etc/apk /lib/apk /usr/share/apk /var/lib/apk; \
+    fi
 
 # create path and set permissions for user
 RUN mkdir -p ${DEPLOYMENT_PATH} \

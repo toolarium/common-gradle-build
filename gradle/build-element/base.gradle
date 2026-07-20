@@ -47,6 +47,7 @@ logInfo(LINE)
 apply from: "${commonGradleBuildElementPath}/base/common-gradle-build.gradle"
 apply from: "${commonGradleBuildElementPath}/base/initialisation.gradle"
 apply from: "${commonGradleBuildElementPath}/base/defaults.gradle"
+apply from: "${commonGradleBuildElementPath}/base/dependency-management.gradle"
 
 
 /***************************************************************************************
@@ -61,12 +62,27 @@ if (project.hasProperty('commonGradleBuildHome')) {
 		if (new File(commonGradleBuildHomeDefaultsFile).exists()) {
 			bootStraplogLifecycle(" > Found defaults in common-gradle-build home path, apply.")
 			def userDefined = "[${commonGradleBuildHomeDefaultsFile}]"
-			
+		
 			if (LINE.length()>userDefined.length()) {
 				userDefined += LINE.substring(userDefined.length())
 			}
 			logInfo(userDefined)
 			apply from: "${commonGradleBuildHomeDefaultsFile}"
+			logInfo(userDefined)
+		}
+
+		def commonGradleBuildHomeDependencyManagementFile = "${commonGradleBuildHome}/gradle/dependency-management.gradle"
+
+		// apply from home
+		if (new File(commonGradleBuildHomeDependencyManagementFile).exists()) {
+			bootStraplogLifecycle(" > Found dependency-management in common-gradle-build home path, apply.")
+			def userDefined = "[${commonGradleBuildHomeDependencyManagementFile}]"
+
+			if (LINE.length()>userDefined.length()) {
+				userDefined += LINE.substring(userDefined.length())
+			}
+			logInfo(userDefined)
+			apply from: "${commonGradleBuildHomeDependencyManagementFile}"
 			logInfo(userDefined)
 		}
 	}
@@ -122,6 +138,8 @@ try {
 	apply from: "${commonGradleBuildElementPath}/base/vulnerability-scanner.gradle"
 } catch (Exception e) {
 	printWarn("Ignore vulnerability-scanner.gradle!");
+	logInfo("Ignore vulnerability-scanner.gradle: " + e.getMessage());
+	//e.printStackTrace()
 }
 
 

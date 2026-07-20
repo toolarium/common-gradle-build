@@ -228,8 +228,50 @@ task dockerBuild {
 			if (tempDockerFile.startsWith("./")) {
 				tempDockerFile = cbProjectRootDir + "/" + tempDockerFile.substring(2)
 			}
-				
-			printInfo("> Create container image " + colorize(HIGHLITE_LEVEL,  dockerBuildName) + " (${dockerSourceMessage} dockerfile)")
+			
+			def dockerHardeningMessage=""
+			if ("true".equalsIgnoreCase("" + project.getProperty('dockerRemoveNonEssentialBinaries'))) {
+				if (!dockerHardeningMessage.toString().isEmpty()) {
+				    dockerHardeningMessage = "${dockerHardeningMessage},"
+				}
+				dockerHardeningMessage = "${dockerHardeningMessage}strip-bin"
+			}
+			if ("true".equalsIgnoreCase("" + project.getProperty('dockerMakeFilesystemReadonly'))) {
+				if (!dockerHardeningMessage.toString().isEmpty()) {
+				    dockerHardeningMessage = "${dockerHardeningMessage},"
+				}
+				dockerHardeningMessage = "${dockerHardeningMessage}read-only"
+				//dockerHardeningMessage = "${dockerHardeningMessage}read-only [$dockerReadonlyFilesystemPath] except [$dockerReadonlyFilesystemExcludePath]"
+			}
+			if ("true".equalsIgnoreCase("" + project.getProperty('dockerRemoveImageVersion'))) {
+				if (!dockerHardeningMessage.toString().isEmpty()) {
+				    dockerHardeningMessage = "${dockerHardeningMessage},"
+				}
+				dockerHardeningMessage = "${dockerHardeningMessage}no-img-version"
+			}
+			if ("true".equalsIgnoreCase("" + project.getProperty('dockerRemovePackageVersions'))) {
+				if (!dockerHardeningMessage.toString().isEmpty()) {
+				    dockerHardeningMessage = "${dockerHardeningMessage},"
+				}
+				dockerHardeningMessage = "${dockerHardeningMessage}no-pkg-versions"
+			}
+			if ("true".equalsIgnoreCase("" + project.getProperty('dockerRemovePackageInstallationBinaries'))) {
+				if (!dockerHardeningMessage.toString().isEmpty()) {
+				    dockerHardeningMessage = "${dockerHardeningMessage},"
+				}
+				dockerHardeningMessage = "${dockerHardeningMessage}no-pkg-mgr"
+			}
+			if ("true".equalsIgnoreCase("" + project.getProperty('dockerEnableAccessLog'))) {
+				if (!dockerHardeningMessage.toString().isEmpty()) {
+				    dockerHardeningMessage = "${dockerHardeningMessage},"
+				}
+				dockerHardeningMessage = "${dockerHardeningMessage}access-logs"
+			}
+			if (!dockerHardeningMessage.toString().isEmpty()) {
+				dockerHardeningMessage = ":${dockerHardeningMessage}" 
+			}
+
+			printInfo("> Create container image " + colorize(HIGHLITE_LEVEL,  dockerBuildName) + " (${dockerSourceMessage} dockerfile${dockerHardeningMessage})")
 			logInfo("Use dockerfile [" +colorize(HIGHLITE_LEVEL,  dockerBuildName) + colorize(INFO_LEVEL, "]."))
 			
 			def dockerTag="-t ${dockerBuildName}"
@@ -363,7 +405,12 @@ $cmd -f ${tempDockerFile} $cbProjectRootDir
 							break;
 						}
 					}
-					printInfo("> Container images id " + colorize(HIGHLITE_LEVEL, "" + images.get("ID")) + ": " + colorize(HIGHLITE_LEVEL, sizeStr) + " (base:" + colorize(HIGHLITE_LEVEL,  dockerImage) + ")")
+
+					def dockerRuntimeInformation = ""
+					if (project.hasProperty("dockerRuntimeImage") && !project.getProperty("dockerRuntimeImage").toString().trim().isEmpty()) {
+						dockerRuntimeInformation = ", runtime:" + colorize(HIGHLITE_LEVEL,  dockerRuntimeImage)
+					}					
+					printInfo("> Container images id " + colorize(HIGHLITE_LEVEL, "" + images.get("ID")) + ": " + colorize(HIGHLITE_LEVEL, sizeStr) + " (base:" + colorize(HIGHLITE_LEVEL,  dockerImage) + dockerRuntimeInformation + ")")
 				} catch (Exception e) {
 					printWarn("Could not add artefact depdendency: " + e.getMessage())
 					throw e
@@ -544,11 +591,14 @@ projectValidation {
 			}
 
 			// ensure vulnerability scanner runs after dockerBuild so it can scan the container image
+			// (skipped when vulnerabilityScannerRunsAtEnd=false, e.g. kubernetes-product where scan runs before jar assembly)
 			if (project.tasks.findByName('vulnerabilityScanner') != null) {
-				vulnerabilityScanner.mustRunAfter("dockerBuild")
+				if (!project.hasProperty('vulnerabilityScannerRunsAtEnd') || "true".equalsIgnoreCase("${project.getProperty('vulnerabilityScannerRunsAtEnd')}")) {
+					vulnerabilityScanner.mustRunAfter("dockerBuild")
 
-				if (project.hasProperty('taskNameBeforeReleaseArtefacts')) {
-					vulnerabilityScanner.mustRunAfter("${taskNameBeforeReleaseArtefacts}")
+					if (project.hasProperty('taskNameBeforeReleaseArtefacts')) {
+						vulnerabilityScanner.mustRunAfter("${taskNameBeforeReleaseArtefacts}")
+					}
 				}
 			}
 		}

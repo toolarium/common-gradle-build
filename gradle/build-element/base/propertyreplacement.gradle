@@ -300,6 +300,15 @@ ext.searchReplaceByProperties = { inputLine, replacePlaceHolders = true ->
 		if (project.hasProperty('dockerMakeFilesystemReadonly')) {
 			line = line.replace('@@dockerMakeFilesystemReadonly@@', "${project.ext.dockerMakeFilesystemReadonly}".toString())
 		}
+		if (project.hasProperty('dockerRemovePackageInstallationBinaries')) {
+			line = line.replace('@@dockerRemovePackageInstallationBinaries@@', "${project.ext.dockerRemovePackageInstallationBinaries}".toString())
+		}
+		if (project.hasProperty('dockerRemoveImageVersion')) {
+			line = line.replace('@@dockerRemoveImageVersion@@', "${project.ext.dockerRemoveImageVersion}".toString())
+		}
+		if (project.hasProperty('dockerRemovePackageVersions')) {
+			line = line.replace('@@dockerRemovePackageVersions@@', "${project.ext.dockerRemovePackageVersions}".toString())
+		}
 		if (project.hasProperty('dockerReadonlyFilesystemPath')) {
 			line = line.replace('@@dockerReadonlyFilesystemPath@@', "${project.ext.dockerReadonlyFilesystemPath}".toString())
 		}

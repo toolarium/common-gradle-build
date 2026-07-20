@@ -257,6 +257,7 @@ ext.generateEnumConfigurationAsciidoc = { serviceDataList, mandatoryMap, indexMa
 	out.append(":icons: font" + NL)
 	out.append(":sectanchors:" + NL)
 	out.append(":source-highlighter: highlight.js" + NL)
+	out.append(":pdf-page-layout: landscape" + NL)
 	out.append(NL)
 
 	// == Overview

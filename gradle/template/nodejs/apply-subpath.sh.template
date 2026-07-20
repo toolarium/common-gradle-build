@@ -23,7 +23,7 @@
 #
 #########################################################################
 
-CB_LINE="----------------------------------------------------------------------------------------"
+CB_LINE="------------------------------------------------------------------------------------------------------------------------"
 CB_LINEHEADER=".: "
 #dockerSubPathAccess=$(echo "@@dockerSubPathAccess@@" | grep -v "@" | sed -E 's:^/*::; s:/*$::')
 
@@ -33,8 +33,17 @@ echo "$CB_LINE"
 
 # find base subdirectory (not files or symlinks), ignore . and ..
 subdirs=$(find "$DEPLOYMENT_DIR" -mindepth 1 -maxdepth 1 -type d 2>/dev/null)
-sourceSubdir=$(basename "$subdirs" | sed -E 's:^/*::; s:/*$::')
+subdir_count=$(echo "$subdirs" | grep -c .)
+if [ "$subdir_count" -gt 1 ]; then
+    echo "${CB_LINEHEADER}WARNING: multiple subdirectories found in $DEPLOYMENT_DIR, using first one."
+fi
+sourceSubdir=$(echo "$subdirs" | head -1)
+sourceSubdir=$(basename "$sourceSubdir" | sed -E 's:^/*::; s:/*$::')
 [ -z "$sourceSubdir" ] && echo "${CB_LINEHEADER}Skip apply subpath, no source subdirectory found." && echo "$CB_LINE" && exit 0
+# reject subdirectory names with unsafe characters (prevents sed/regex injection downstream)
+case "$sourceSubdir" in
+    *[!a-zA-Z0-9._-]*) echo "${CB_LINEHEADER}ERROR: subdirectory name '$sourceSubdir' contains unsafe characters." && echo "$CB_LINE" && exit 1 ;;
+esac
 
 # if we have a configuration file, take path form there: runtimeUrlPath={where the resources are located}, kubernetesUrlPath={where the access is granted from}
 [ -z "$PROPERTIES_FILE" ] && PROPERTIES_FILE="/opt/@@servicePropertiesName@@"
@@ -49,6 +58,11 @@ if [ -z "$SUBPATH" ]; then
     echo "${CB_LINEHEADER}No specific subpath defined as SUBPATH environment variable, use default $targetSubpath"
 else
     targetSubpath=$(echo "$SUBPATH" | sed -E 's:^/*::; s:/*$::')
+    # reject path traversal and unsafe characters (prevents sed/regex injection in nginx location blocks)
+    case "$targetSubpath" in
+        *..* ) echo "${CB_LINEHEADER}ERROR: SUBPATH contains '..', rejected for security." && echo "$CB_LINE" && exit 1 ;;
+        *[!a-zA-Z0-9._/-]*) echo "${CB_LINEHEADER}ERROR: SUBPATH contains unsafe characters." && echo "$CB_LINE" && exit 1 ;;
+    esac
     replaceTo=$targetSubpath/$runtimeUrlPath
     echo "${CB_LINEHEADER}Specific subpath set as environment variable, use $targetSubpath"
 fi
@@ -58,83 +72,108 @@ sourceConfigSubdir=$sourceSubdir
 # 1) in case of a subpath inside the container looks differently than the runtimeUrlPath, e.g. __mypath__ -> mypath and move if a SUBPATH is defined to the proper place
 if ! [ "$sourceSubdir" = "$runtimeUrlPath" ]; then 
     echo "${CB_LINEHEADER}Apply container subpath from $sourceSubdir -> $runtimeUrlPath..."
-    mv -f $DEPLOYMENT_DIR/$sourceSubdir $DEPLOYMENT_DIR/$runtimeUrlPath 2>/dev/null
+    mv -f "$DEPLOYMENT_DIR/$sourceSubdir" "$DEPLOYMENT_DIR/$runtimeUrlPath" 2>/dev/null
     sourceSubdir=$runtimeUrlPath
 fi
 if ! [ "$sourceSubdir" = "$targetSubpath" ]; then
     echo "${CB_LINEHEADER}Apply subpath from $sourceSubdir -> $replaceTo"
     mkdir -p "$DEPLOYMENT_DIR/$targetSubpath"
-    mv -f $DEPLOYMENT_DIR/$sourceSubdir $DEPLOYMENT_DIR/$targetSubpath 2>/dev/null
+    mv -f "$DEPLOYMENT_DIR/$sourceSubdir" "$DEPLOYMENT_DIR/$targetSubpath" 2>/dev/null
 fi
 
 # 2) apply replacements in static resources, except locales
 echo "${CB_LINEHEADER}Apply source files path from $sourceConfigSubdir -> $replaceTo (in $DEPLOYMENT_DIR/$targetSubpath)..."
 normalizedReplaceTo=$(echo "$replaceTo" | sed 's:/*$::')
+[ -z "$REPLACE_WHITESPACE_VARIATIONS" ] && REPLACE_WHITESPACE_VARIATIONS="false"
+[ -z "$REPLACE_CASE_VARIATIONS" ] && REPLACE_CASE_VARIATIONS="false"
+if [ "$REPLACE_CASE_VARIATIONS" = "true" ]; then
+    source_upper=$(echo "$sourceConfigSubdir" | tr '[:lower:]' '[:upper:]')
+    source_title=$(echo "$sourceConfigSubdir" | sed 's/\b\w/\U&/g')
+fi
 find "$DEPLOYMENT_DIR/$targetSubpath" -type d -name locales -prune -o -type f -print | while read -r file; do
-    # skip binary files
-    if file -b --mime-encoding "$file" | grep -q binary; then
-        continue
-    fi        
+    # skip known binary file extensions (avoids spawning file+grep subprocesses per file)
+    case "${file##*.}" in
+        png|jpg|jpeg|gif|ico|webp|avif|svg|\
+        woff|woff2|ttf|eot|otf|\
+        mp3|mp4|ogg|webm|wav|flac|\
+        zip|gz|br|zst|tar|map|bin|dat|wasm) continue ;;
+    esac
+    # skip file command for known text file extensions
+    case "${file##*.}" in
+        html|htm|js|mjs|cjs|jsx|ts|tsx|css|scss|less|\
+        json|json5|jsonl|jsonc|\
+        xml|xsl|xslt|xsd|dtd|\
+        yaml|yml|toml|ini|conf|cfg|env|\
+        txt|md|csv|tsv|log|\
+        sh|bash|zsh|fish|ps1|bat|cmd) ;;
+        # fallback: check remaining unknown extensions with file command
+        *) file -b --mime-encoding "$file" | grep -q binary && continue ;;
+    esac
 
-    # protect API paths first
-    sed -i "s|api/$sourceConfigSubdir|__PROTECTED_API__|g" "$file"
-		
-    # handle different encodings and formats
-    # 1. standard replacement (use normalized target)
-    sed -i "s|$sourceConfigSubdir|$normalizedReplaceTo|g" "$file"
-    
-    # 2. Unicode escape sequences (\u002F for /) - the \u002F IS the slash
-    sed -i "s|${sourceConfigSubdir}\\\\u002[Ff]|${normalizedReplaceTo}/|g" "$file"
-    sed -i "s|${sourceConfigSubdir%/}\\\\u002[Ff]|${normalizedReplaceTo}/|g" "$file"
-    
-    # 3. URL encoding (%2F for /) - the %2F IS the slash    
-    sed -i "s|${sourceConfigSubdir}%2[Ff]|${normalizedReplaceTo}/|g" "$file"
-    sed -i "s|${sourceConfigSubdir%/}%2[Ff]|${normalizedReplaceTo}/|g" "$file"
-    
-    # 4. JSON/JavaScript escaped slashes (\/) - the \/ IS the slash
-    sed -i "s|${sourceConfigSubdir}\\\\/|${normalizedReplaceTo}/|g" "$file"
-    sed -i "s|${sourceConfigSubdir%/}\\\\/|${normalizedReplaceTo}/|g" "$file"
-    
-    # 5. Double escaped slashes (\\/) - the \\/ IS the slash
-    sed -i "s|${sourceConfigSubdir}\\\\\\\\/|${normalizedReplaceTo}/|g" "$file"
-    sed -i "s|${sourceConfigSubdir%/}\\\\\\\\/|${normalizedReplaceTo}/|g" "$file"
-    
-    # 6. Handle quoted contexts with different quote types (use normalized target) 
-    sed -i "s|\"$sourceConfigSubdir\"|\"$normalizedReplaceTo\"|g" "$file"
-    sed -i "s|'$sourceConfigSubdir'|'$normalizedReplaceTo'|g" "$file"
-    sed -i "s|\`$sourceConfigSubdir\`|\`$normalizedReplaceTo\`|g" "$file"
-    
-    # 7. handle whitespace variations (common in config files)
-    #sed -i "s|$sourceConfigSubdir[[:space:]]\+|$normalizedReplaceTo |g" "$file"
-    #sed -i "s|[[:space:]]\+$sourceConfigSubdir| $normalizedReplaceTo|g" "$file"
-    
-    # 8. handle case variations (if GNU sed is available)
-    #if sed --version 2>/dev/null | grep -q GNU; then
-    #    # case insensitive replacement for common variations
-    #    local source_upper=$(echo "$sourceConfigSubdir" | tr '[:lower:]' '[:upper:]')
-    #    local source_title=$(echo "$sourceConfigSubdir" | sed 's/\b\w/\U&/g')
-    #    
-    #    # only apply if different from original
-    #    if [ "$sourceConfigSubdir" != "$source_upper" ]; then
-    #        sed -i "s|$source_upper|$normalizedReplaceTo|g" "$file"
-    #    fi
-    #    if [ "$sourceConfigSubdir" != "$source_title" ] && [ "$source_title" != "$source_upper" ]; then
-    #        sed -i "s|$source_title|$normalizedReplaceTo|g" "$file"
-    #    fi
-    #fi
-    
-	# restore protected API paths
+    # Replacements split into two sed calls to avoid double-replacement: encoded patterns must
+    # run first in a separate pass, then standard replacement in a second pass. Within a single
+    # sed call, all -e expressions share the same in-memory buffer — so a catch-all would
+    # re-match text already replaced by a specific pattern. Two calls reduce I/O from 13 to 2.
+    #
+    # Call 1: encoded slash patterns (must run before standard replacement)
+    #   1. Double escaped slashes (\\/) - the \\/ IS the slash
+    #   2. JSON/JavaScript escaped slashes (\/) - the \/ IS the slash
+    #   3. Unicode escape sequences (\u002F for /) - the \u002F IS the slash
+    #   4. URL encoding (%2F for /) - the %2F IS the slash
+    # Each encoded pattern has two variants: with and without trailing slash on source.
+    sed -i \
+        -e "s|${sourceConfigSubdir}\\\\\\\\/|${normalizedReplaceTo}/|g" \
+        -e "s|${sourceConfigSubdir%/}\\\\\\\\/|${normalizedReplaceTo}/|g" \
+        -e "s|${sourceConfigSubdir}\\\\/|${normalizedReplaceTo}/|g" \
+        -e "s|${sourceConfigSubdir%/}\\\\/|${normalizedReplaceTo}/|g" \
+        -e "s|${sourceConfigSubdir}\\\\u002[Ff]|${normalizedReplaceTo}/|g" \
+        -e "s|${sourceConfigSubdir%/}\\\\u002[Ff]|${normalizedReplaceTo}/|g" \
+        -e "s|${sourceConfigSubdir}%2[Ff]|${normalizedReplaceTo}/|g" \
+        -e "s|${sourceConfigSubdir%/}%2[Ff]|${normalizedReplaceTo}/|g" \
+        "$file"
+
+    # Call 2: protect API paths, standard replacement, quoted contexts
+    #   - protect API paths: "api/<subdir>" -> sentinel to prevent rewriting
+    #   5. standard replacement (use normalized target)
+    #   6. Handle quoted contexts with different quote types (use normalized target)
+    sed -i \
+        -e "s|api/$sourceConfigSubdir|__PROTECTED_API__|g" \
+        -e "s|$sourceConfigSubdir|$normalizedReplaceTo|g" \
+        -e "s|\"$sourceConfigSubdir\"|\"$normalizedReplaceTo\"|g" \
+        -e "s|'$sourceConfigSubdir'|'$normalizedReplaceTo'|g" \
+        -e "s|\`$sourceConfigSubdir\`|\`$normalizedReplaceTo\`|g" \
+        "$file"
+
+    # 7. handle whitespace variations (common in config files, disabled by default)
+    if [ "$REPLACE_WHITESPACE_VARIATIONS" = "true" ]; then
+        sed -i \
+            -e "s|$sourceConfigSubdir[[:space:]]\+|$normalizedReplaceTo |g" \
+            -e "s|[[:space:]]\+$sourceConfigSubdir| $normalizedReplaceTo|g" \
+            "$file"
+    fi
+
+    # 8. handle case variations (disabled by default, requires GNU sed)
+    if [ "$REPLACE_CASE_VARIATIONS" = "true" ]; then
+        if [ "$sourceConfigSubdir" != "$source_upper" ]; then
+            sed -i "s|$source_upper|$normalizedReplaceTo|g" "$file"
+        fi
+        if [ "$sourceConfigSubdir" != "$source_title" ] && [ "$source_title" != "$source_upper" ]; then
+            sed -i "s|$source_title|$normalizedReplaceTo|g" "$file"
+        fi
+    fi
+
+    # restore protected API paths
     sed -i "s|__PROTECTED_API__|api/$sourceConfigSubdir|g" "$file"
 done
 
 # 3 apply replacements in nginx conf, e.g. location / { try_files $uri myui/index.html /myui/index.html =404; }
 [ -z "$NGINX_CONF_DIR" ] && NGINX_CONF_DIR="/etc/nginx/conf.d/"
-if [ -r $NGINX_CONF_DIR/default.conf ]; then
+if [ -r "$NGINX_CONF_DIR/default.conf" ]; then
     echo "${CB_LINEHEADER}Apply nginx replacement path from $sourceConfigSubdir -> $replaceTo"
 
     # avoid sed temp file
     TEMP_SED=$(sed "s|$sourceConfigSubdir|$replaceTo|g" "$NGINX_CONF_DIR/default.conf")
-    echo "$TEMP_SED" > $NGINX_CONF_DIR/default.conf
+    echo "$TEMP_SED" > "$NGINX_CONF_DIR/default.conf"
     unset TEMP_SED
 
     redirectBlocks=""
@@ -157,14 +196,14 @@ if [ -r $NGINX_CONF_DIR/default.conf ]; then
 			while IFS= read -r line; do
 				echo "$line" >> "$TEMP_NGINX"
 				# Insert redirect blocks after the index line and before location /
-				if echo "$line" | grep -q "index index.html index.html"; then
+				if echo "$line" | grep -q "index index.html"; then
 					echo "$redirectBlocks" >> "$TEMP_NGINX"
 				fi
 			done < "$NGINX_CONF_DIR/default.conf"
 		fi
 	
 		# Replace original file with updated configuration
-		cat "$TEMP_NGINX" > "$NGINX_CONF_DIR/default.conf" && rm $TEMP_NGINX
+		cat "$TEMP_NGINX" > "$NGINX_CONF_DIR/default.conf" && rm "$TEMP_NGINX"
 	fi
 fi
 echo "$CB_LINE"

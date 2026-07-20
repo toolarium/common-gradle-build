@@ -37,6 +37,9 @@ ARG REMOVE_NON_ESSENTIAL_BINARIES="@@dockerRemoveNonEssentialBinaries@@"
 ARG MAKE_FILESYSTEM_READONLY="@@dockerMakeFilesystemReadonly@@"
 ARG READONLY_FILESYSTEM_PATH="@@dockerReadonlyFilesystemPath@@"
 ARG READONLY_FILESYSTEM_EXCLUDE_PATH="@@dockerReadonlyFilesystemExcludePath@@"
+ARG REMOVE_IMAGE_VERSION="@@dockerRemoveImageVersion@@"
+ARG REMOVE_PACKAGE_VERSIONS="@@dockerRemovePackageVersions@@"
+ARG REMOVE_PACKAGE_INSTALLATION_BINARIES="@@dockerRemovePackageInstallationBinaries@@"
 
 # set meta data
 LABEL vendor="@@LICENSE_ORGANISATION@@" \
@@ -67,12 +70,19 @@ RUN OS_PRETTY_NAME=$(awk -F'"' '/PRETTY_NAME/{print $2}' /etc/os-release 2>/dev/
     # remove unnecessary system accounts
     && sed -i '/^root/!{/^nobody/!{/^'${RUNTIMEUSER}'/!d}}' /etc/passwd /etc/shadow /etc/group \
     # remove docs, man pages, includes
-    && rm -rf /usr/share/man /usr/share/doc /usr/include \
-    # remove version information
-    && rm -f /etc/alpine-release /etc/os-release /etc/issue \
-    # remove apk to prevent package installation
-    && apk del apk-tools alpine-keys 2>/dev/null; \
-    rm -rf /sbin/apk /etc/apk /lib/apk /usr/share/apk /var/lib/apk
+    && rm -rf /usr/share/man /usr/share/doc /usr/include
+
+# remove image version information
+RUN if [ "${REMOVE_IMAGE_VERSION}" = "true" ]; then \
+    rm -f /etc/alpine-release /etc/os-release /etc/issue; \
+    fi
+    
+# remove version information and apk to prevent package installation
+RUN if [ "${REMOVE_PACKAGE_INSTALLATION_BINARIES}" = "true" ]; then \
+    apk del apk-tools alpine-keys 2>/dev/null; \
+    rm -f /var/log/apk.log; \
+    rm -rf /sbin/apk /etc/apk /lib/apk /usr/share/apk /var/lib/apk; \
+    fi
 
 # create path and set permissions for user
 RUN mkdir -p ${DEPLOYMENT_PATH} \
@@ -88,6 +98,11 @@ RUN chmod -R 755 ${DEPLOYMENT_PATH}/@@dockerJavaRunner@@ \
        OS_PN=$(cat /tmp/.os-pretty-name) && \
        sed -i "s|@@dockerOsPrettyName@@|${OS_PN}|" ${DEPLOYMENT_PATH}/@@dockerJavaRunner@@ && \
        rm -f /tmp/.os-pretty-name; \
+    fi
+
+# remove package version information
+RUN if [ "${REMOVE_PACKAGE_VERSIONS}" = "true" ]; then \
+    rm -f /deployment/quarkus-app-dependencies.txt; \
     fi
 
 # set language
@@ -139,4 +154,4 @@ USER ${RUNTIMEUSER}
 WORKDIR ${DEPLOYMENT_PATH}
 
 # start service
-ENTRYPOINT /deployment/@@dockerJavaRunner@@ --jar /deployment/quarkus-run.jar
+ENTRYPOINT ["/deployment/@@dockerJavaRunner@@", "--jar", "/deployment/quarkus-run.jar"]

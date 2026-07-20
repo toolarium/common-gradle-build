@@ -148,11 +148,11 @@ ext.readChangelog = { ->
 	def changelog = null;
 	
 	try {
-		if (!new File("${changelogFile}").exists()) {
+		if (!new File("${project.rootDir}/${changelogFile}".replace('\\', '/')).exists()) {
 			changelog = new Changelog("${rootProject.name}", "${changelogDescription}")
-			logInfo("Created changelog file [" + colorize(HIGHLITE_LEVEL, changelogFile) + colorize(INFO_LEVEL, ".")); 
+			logInfo("Created changelog file [" + colorize(HIGHLITE_LEVEL, changelogFile) + colorize(INFO_LEVEL, "."));
 		} else {
-			changelog = ChangelogFactory.getInstance().parse(Paths.get("${changelogFile}")).getChangelog();
+			changelog = ChangelogFactory.getInstance().parse(Paths.get("${project.rootDir}/${changelogFile}".replace('\\', '/'))).getChangelog();
 			logInfo("Parsed successful changelog file [" + colorize(HIGHLITE_LEVEL, changelogFile) + colorize(INFO_LEVEL, ".")); 
 		}
 		

@@ -132,7 +132,59 @@ CB_VULNERABILITY_SCANNER_ENABLED=true ./gradlew build
 - Whitelist bypass for known/accepted vulnerabilities using the same properties files
 - Container image whitelist/blacklist via `[container]` tag (e.g. `[container]registry.k8s.io/ingress-nginx/controller = 1.15.1`)
 - Kubernetes-product: referenced container images scanned with summary table; configurable build failure via `kubernetesProductFailOnVulnerabilityDependencies`
-- Configurable via `gradle/conf/trivy.yaml`
+- Fine-tune scanning via `trivy.yaml` in the project root (see below)
+
+#### Trivy Configuration (`trivy.yaml`)
+
+Trivy natively picks up a `trivy.yaml` file from the **project root** (the working directory during build) or from `~/.config/trivy/trivy.yaml`. The scanner does not pass a `--config` flag — discovery is handled by Trivy itself.
+
+A starter template is available in [`gradle/experimental/conf/trivy.yaml`](gradle/experimental/conf/trivy.yaml). The settings that are actually useful to configure here are `skip-dirs` and `skip-files` — everything else is controlled (and overridden) by Gradle properties:
+
+```yaml
+# trivy.yaml — place in the project root
+
+# skip-dirs is additive: .gradle is always skipped by the scanner via --skip-dirs
+skip-dirs:
+  - node_modules
+  - .git
+
+# skip-files has no Gradle property equivalent — configure it here
+skip-files:
+  - "**/*.test.js"
+  - "**/test/**"
+
+# Do NOT set these here — they are always overridden by Gradle properties passed as CLI flags:
+#   severity      → overridden by vulnerabilityScannerSeverity (--severity)
+#   scan.scanners → overridden by vulnerabilityScannerScanners (--scanners)
+#   format        → hardcoded to json by the scanner (--format json)
+#   exit-code     → controlled by vulnerabilityScannerExitCode (--exit-code)
+```
+
+#### Console Output Example
+
+A scan with findings (colors stripped):
+
+```
+> Dependency scan: 3 issues found (CRIT: 1, HIGH: 1, LOW: 1). (1 no fix available)
+  CRIT CVE-2024-29025: io.netty:netty-codec-http 4.1.107.Final -> 4.1.108.Final
+       -> io.quarkus:quarkus-resteasy-reactive:3.8.1 (implementation, transitive)
+  HIGH CVE-2024-12797: org.bouncycastle:bcprov-jdk18on 1.77 [no fix available]
+       -> io.quarkus:quarkus-smallrye-jwt:3.8.1 (implementation, transitive)
+  LOW  CVE-2023-52428: com.nimbusds:nimbus-jose-jwt 9.37.3 -> 9.40
+       -> io.quarkus:quarkus-smallrye-jwt:3.8.1 (implementation, transitive)
+```
+
+When no vulnerabilities are found:
+
+```
+> Dependency scan: no vulnerabilities (CRITICAL,HIGH) found.
+```
+
+Each finding line shows:
+- **Severity label** (`DENY`/`CRIT`/`HIGH`/`MED`/`LOW`) padded to 5 characters
+- **CVE ID** and affected package `name version`
+- **Fix version** (`-> x.y.z`) or `[no fix available]` when no fix exists
+- **Top-level `build.gradle` dependency** that pulls in the vulnerable package, with its declared Gradle configuration (`implementation`, `testImplementation`, etc.) and whether it is a direct or `transitive` dependency
 
 ### OWASP Dependency-Check
 
@@ -1089,8 +1141,9 @@ Once the home directory is resolved, the framework looks for these files:
 ```
 ~/.common-build/conf/github.com@443_acme-corp/
 ├── gradle/
-│   ├── defaults.gradle        # Override framework default properties
-│   └── custom.gradle          # Add custom tasks and build extensions
+│   ├── defaults.gradle               # Override framework default properties
+│   ├── dependency-management.gradle  # Override dependency resolution strategies
+│   └── custom.gradle                 # Add custom tasks and build extensions
 ├── conf/                      # Configuration files (checkstyle, security keys, etc.)
 └── lastCheck.properties       # Auto-generated version tracking
 ```
@@ -1104,6 +1157,22 @@ setCommonGradleProperty("sourceCompatibility", JavaVersion.VERSION_21)
 setCommonGradleProperty("targetCompatibility", JavaVersion.VERSION_21)
 setCommonGradleProperty("mavenPublishUrl", "https://nexus.acme.internal/repository/releases/")
 setCommonGradleProperty("dockerTagPrefix", "registry.acme.internal")
+```
+
+**`gradle/dependency-management.gradle`** — loaded **after** `defaults.gradle`, applied before the rest of the build. Use this to define organization-wide dependency resolution rules such as forced versions, resolution strategies, and BOM imports:
+
+```groovy
+// Pin a transitive dependency to a known-safe version
+configurations.all {
+    resolutionStrategy {
+        force 'com.example:my-library:1.2.3'
+    }
+}
+
+// Import an organization BOM
+dependencies {
+    implementation platform('com.acme:acme-bom:2.0.0')
+}
 ```
 
 **`gradle/custom.gradle`** — loaded **after** the project type is applied. Use this for custom tasks or build extensions:
@@ -1139,7 +1208,7 @@ projectType = 'organization-config'
 apply from: "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/common.gradle"
 ```
 
-This generates the directory structure with template `defaults.gradle` and `custom.gradle` files ready to customize.
+This generates the directory structure with template `defaults.gradle`, `dependency-management.gradle`, and `custom.gradle` files ready to customize.
 
 ### Overriding Templates
 
@@ -1165,6 +1234,8 @@ Highest:  gradle.properties / -P command line (project-specific)
           Framework defaults.gradle (via setCommonGradleDefaultPropertyIfNull)
 Lowest:   Built-in framework defaults
 ```
+
+> **Dependency resolution** follows a separate but analogous order: the built-in `dependency-management.gradle` runs first, then the home `gradle/dependency-management.gradle` (if present) is applied on top, allowing organizations to add or override forced versions, resolution strategies, and BOM imports.
 
 ## Local Development
 

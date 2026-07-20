@@ -205,6 +205,8 @@ if (!project.getProperty('IS_NEW') && project.hasProperty('supportAsciiDoctor') 
         group = 'documentation'
         description = 'Generate the asciidoctor document artefacts'
     }
+    convertAsciidoctorHtml.mustRunAfter cleanAsciidoctorDocs
+    convertAsciidoctorPdf.mustRunAfter cleanAsciidoctorDocs
 
 	projectValidation.finalizedBy(generateAsciidoctorArtefacts)
 }

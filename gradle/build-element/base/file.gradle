@@ -423,15 +423,25 @@ ext.replaceFile = { filePath, fileExtension, searchContext, replacesearchContext
 }
 
 
-/** 
+/**
  * Read properties file: gradle.properties, application.properties
  */
 ext.readPropertiesFile = { inputFile ->
 	def properties = new Properties()
 	if (inputFile!=null && !"${inputFile}".isEmpty()) {
 		logInfo("Read properties file " + colorize(HIGHLITE_LEVEL, inputFile) + colorize(INFO_LEVEL, "."))
-		File file = new File(inputFile);
-		if (file.exists() && file.canRead()) {
+		File file
+		try {
+			def inputStr = "${inputFile}"
+			if (inputStr.startsWith("file:")) {
+				file = new URI(inputStr).toFile()
+			} else {
+				file = new File(inputStr)
+			}
+		} catch (Exception e) {
+			file = new File("${inputFile}")
+		}
+		if (file != null && file.exists() && file.canRead()) {
 			// Custom parsing: Java Properties.load() treats ':' as a key-value delimiter,
 			// but we need to support ':' in keys (e.g. com.github.toolarium:toolarium-enum-configuration).
 			// Only '=' is used as key-value separator.

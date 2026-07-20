@@ -65,7 +65,7 @@ if (new File(nuxtConfig).exists()) {
 }
 
 // set docker image standards
-if (project.hasProperty("targetStatic") && project.getProperty("targetStatic")) {
+if (project.hasProperty("targetStatic") && "true".equalsIgnoreCase("" + project.getProperty("targetStatic"))) {
 	if (!project.hasProperty("dockerImage")) {
 		project.ext.set("dockerImage", "nginx:alpine")
 	}
@@ -86,7 +86,8 @@ if (project.hasProperty("targetStatic") && project.getProperty("targetStatic")) 
 		project.ext.set("dockerFileTemplateName", 'Dockerfile-node.template')
 	}
 	if (!project.hasProperty("dockerEntrypoint")) {
-		project.ext.set("dockerEntrypoint", 'NUXT_PORT=${EXPOSE_PORT} exec npm start')
+		//project.ext.set("dockerEntrypoint", 'NUXT_PORT=${EXPOSE_PORT} exec npm run start')
+		project.ext.set("dockerEntrypoint", '["/bin/sh", "-c", "NUXT_PORT=${EXPOSE_PORT} exec npm run start"]')
 	}
 	if (!project.hasProperty("dockerDeploymentSourcePath")) {
 		project.ext.set("dockerDeploymentSourcePath", '.')
@@ -254,7 +255,7 @@ projectValidation {
 if (!project.getProperty('IS_NEW')) {
 	build() {
 		doFirst {
-			if (project.hasProperty("targetStatic") && project.getProperty("targetStatic")) {
+            if (project.hasProperty("targetStatic") && "true".equalsIgnoreCase("" + project.getProperty("targetStatic"))) {
 				printInfo("> Create " + colorize(HIGHLITE_LEVEL, "static") + " build.")
 			} else {
 				printInfo("> Create node " + colorize(HIGHLITE_LEVEL, "server") + " build.")
@@ -262,7 +263,7 @@ if (!project.getProperty('IS_NEW')) {
 		}
 		
 		doLast {
-			if (project.hasProperty("targetStatic") && project.getProperty("targetStatic")) {
+            if (project.hasProperty("targetStatic") && "true".equalsIgnoreCase("" + project.getProperty("targetStatic"))) {
 				addCommonGradlePropertyList("allowedMainDirectories", "$commonGradleBuildDistPath")
 				copyFile("$rootDirectory/$versionFilename", "$commonGradleBuildDistPath/$versionFilename")
 

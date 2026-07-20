@@ -60,6 +60,7 @@ projectValidation {
 
 			new File(gradlePath).mkdirs()
 			copyFile("${commonGradleTemplateBasePath}/defaults.gradle.template", "${gradlePath}/defaults.gradle")
+			copyFile("${commonGradleTemplateBasePath}/dependency-management.gradle.template", "${gradlePath}/dependency-management.gradle")
 			copyFile("${commonGradleTemplateBasePath}/custom.gradle.template", "${gradlePath}/custom.gradle")
 
 			def confPath = "$rootDirectory/conf"
@@ -80,7 +81,7 @@ projectValidation {
 			new File(gradleTemplatePath).mkdirs()
 			def gradleBaseTemplatePath = "${gradleTemplatePath}/base"
 			new File(gradleBaseTemplatePath).mkdirs()
-			copy { from "${commonGradleTemplateBasePath}" include "*.template" exclude "defaults.gradle.template" into "${gradleBaseTemplatePath}" }
+			copy { from "${commonGradleTemplateBasePath}" include "*.template" exclude "defaults.gradle.template" exclude "dependency-management.gradle.template" into "${gradleBaseTemplatePath}" }
 
 			def gradleConfigTemplatePath = "${gradleTemplatePath}/config"
 			new File(gradleConfigTemplatePath).mkdirs()
