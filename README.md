@@ -552,10 +552,13 @@ These are the properties you are most likely to customize. Set general/organizat
 | `dockerSubPathAccess` | `""` | URL subpath for container deployment |
 | `buildAlwaysDockerImage` | `false` | Build container image on every build |
 | `dockerRemoveDanglingImages` | `true` | Clean up dangling images after build |
-| `dockerRemoveNonEssentialBinaries` | `true` | Remove non-essential binaries from container (keeps only what entrypoint scripts need) |
-| `dockerMakeFilesystemReadonly` | `true` | Make `/etc`, `/usr`, `/lib` read-only in container |
+| `dockerRemoveNonEssentialBinaries` | `false` | Remove non-essential binaries from container (Alpine only; keeps only what entrypoint scripts need) |
+| `dockerMakeFilesystemReadonly` | `false` | Make `/etc`, `/usr`, `/lib` read-only in container |
 | `dockerReadonlyFilesystemPath` | `"/etc /usr /lib"` | Space-separated paths to make read-only |
 | `dockerReadonlyFilesystemExcludePath` | `"/etc/ssl/certs /usr/local/share/ca-certificates $JAVA_HOME/lib/security"` | Space-separated paths to keep writable within read-only dirs (Alpine CA certs, Java truststore) |
+| `dockerRemoveImageVersion` | `false` | Remove OS version info files (`/etc/alpine-release`, `/etc/os-release`, `/etc/issue`) from container image |
+| `dockerRemovePackageVersions` | `false` | Remove package version information from container image (e.g. `package.json`, dependency list files) |
+| `dockerRemovePackageInstallationBinaries` | `true` | Remove package manager binaries (`apk`) from container image |
 | `dockerSupportLatestTag` | `true` | Add `:latest` tag to built image |
 | `dockerAddAnnotation` | `false` | Add OCI metadata annotations |
 | `dockerCleanupAfterBuild` | `false` | Remove image after successful build |
@@ -828,10 +831,15 @@ These are the properties you are most likely to customize. Set general/organizat
 | `dockerAddAnnotation` | `false` | Add OCI metadata annotations |
 | `dockerMetadataFile` | `build/container-metadata.json` | Build metadata output file |
 | `dockerRemoveDanglingImages` | `true` | Clean up dangling images after build |
-| `dockerRemoveNonEssentialBinaries` | `true` | Remove non-essential binaries from container |
-| `dockerMakeFilesystemReadonly` | `true` | Make `/etc`, `/usr`, `/lib` read-only in container |
+| `dockerMultistageBuild` | `true` | Use jlink multistage build to create a minimal JRE in the container |
+| `dockerJlinkModules` | *(full module list)* | Comma-separated Java modules for `jlink --add-modules`; spaces/tabs stripped automatically |
+| `dockerRemoveNonEssentialBinaries` | `false` | Remove non-essential binaries from container (Alpine only; keeps only what entrypoint scripts need) |
+| `dockerMakeFilesystemReadonly` | `false` | Make `/etc`, `/usr`, `/lib` read-only in container |
 | `dockerReadonlyFilesystemPath` | `"/etc /usr /lib"` | Space-separated paths to make read-only |
 | `dockerReadonlyFilesystemExcludePath` | `"/etc/ssl/certs /usr/local/share/ca-certificates $JAVA_HOME/lib/security"` | Paths to keep writable within read-only dirs (Alpine CA certs, Java truststore) |
+| `dockerRemoveImageVersion` | `false` | Remove OS version info files from container image |
+| `dockerRemovePackageVersions` | `false` | Remove package version information from container image |
+| `dockerRemovePackageInstallationBinaries` | `true` | Remove package manager binaries (`apk`) from container image |
 | `dockerCleanupAfterBuild` | `false` | Remove image after successful build |
 | `dockerCleanupAfterPublish` | `true` | Remove local image after push |
 | `buildAlwaysDockerImage` | `false` | Build container image on every build |

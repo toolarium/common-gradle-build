@@ -562,10 +562,13 @@ java -jar build/libs/my-library-1.0.0.jar</code></pre>
     <tr><td><code>dockerSubPathAccess</code></td><td><code>""</code></td><td>URL subpath for container deployment</td></tr>
     <tr><td><code>buildAlwaysDockerImage</code></td><td><code>false</code></td><td>Build container image on every build</td></tr>
     <tr><td><code>dockerRemoveDanglingImages</code></td><td><code>true</code></td><td>Clean up dangling images after build</td></tr>
-    <tr><td><code>dockerRemoveNonEssentialBinaries</code></td><td><code>true</code></td><td>Remove non-essential binaries from container</td></tr>
-    <tr><td><code>dockerMakeFilesystemReadonly</code></td><td><code>true</code></td><td>Make <code>/etc</code>, <code>/usr</code>, <code>/lib</code> read-only</td></tr>
+    <tr><td><code>dockerRemoveNonEssentialBinaries</code></td><td><code>false</code></td><td>Remove non-essential binaries from container (Alpine only; keeps only what entrypoint scripts need)</td></tr>
+    <tr><td><code>dockerMakeFilesystemReadonly</code></td><td><code>false</code></td><td>Make <code>/etc</code>, <code>/usr</code>, <code>/lib</code> read-only</td></tr>
     <tr><td><code>dockerReadonlyFilesystemPath</code></td><td><code>"/etc /usr /lib"</code></td><td>Space-separated paths to make read-only</td></tr>
     <tr><td><code>dockerReadonlyFilesystemExcludePath</code></td><td><code>"/etc/ssl/certs /usr/local/share/ca-certificates $JAVA_HOME/lib/security"</code></td><td>Paths to keep writable within read-only dirs (Alpine CA certs, Java truststore)</td></tr>
+    <tr><td><code>dockerRemoveImageVersion</code></td><td><code>false</code></td><td>Remove OS version info files (<code>/etc/alpine-release</code>, <code>/etc/os-release</code>, <code>/etc/issue</code>) from container image</td></tr>
+    <tr><td><code>dockerRemovePackageVersions</code></td><td><code>false</code></td><td>Remove package version information from container image (e.g. <code>package.json</code>, dependency list files)</td></tr>
+    <tr><td><code>dockerRemovePackageInstallationBinaries</code></td><td><code>true</code></td><td>Remove package manager binaries (<code>apk</code>) from container image</td></tr>
     <tr><td><code>dockerSupportLatestTag</code></td><td><code>true</code></td><td>Add <code>:latest</code> tag to built image</td></tr>
     <tr><td><code>dockerAddAnnotation</code></td><td><code>false</code></td><td>Add OCI metadata annotations</td></tr>
     <tr><td><code>dockerCleanupAfterBuild</code></td><td><code>false</code></td><td>Remove image after successful build</td></tr>
@@ -903,10 +906,15 @@ skip-files:
     <tr><td><code>dockerSupportLatestTag</code></td><td><code>true</code></td><td>Add <code>:latest</code> tag to built image</td></tr>
     <tr><td><code>dockerAddAnnotation</code></td><td><code>false</code></td><td>Add OCI metadata annotations</td></tr>
     <tr><td><code>dockerRemoveDanglingImages</code></td><td><code>true</code></td><td>Clean up dangling images after build</td></tr>
-    <tr><td><code>dockerRemoveNonEssentialBinaries</code></td><td><code>true</code></td><td>Remove non-essential binaries from container</td></tr>
-    <tr><td><code>dockerMakeFilesystemReadonly</code></td><td><code>true</code></td><td>Make <code>/etc</code>, <code>/usr</code>, <code>/lib</code> read-only</td></tr>
+    <tr><td><code>dockerMultistageBuild</code></td><td><code>true</code></td><td>Use jlink multistage build to create a minimal JRE in the container</td></tr>
+    <tr><td><code>dockerJlinkModules</code></td><td><em>(full module list)</em></td><td>Comma-separated Java modules for <code>jlink --add-modules</code>; spaces/tabs stripped automatically</td></tr>
+    <tr><td><code>dockerRemoveNonEssentialBinaries</code></td><td><code>false</code></td><td>Remove non-essential binaries from container (Alpine only; keeps only what entrypoint scripts need)</td></tr>
+    <tr><td><code>dockerMakeFilesystemReadonly</code></td><td><code>false</code></td><td>Make <code>/etc</code>, <code>/usr</code>, <code>/lib</code> read-only</td></tr>
     <tr><td><code>dockerReadonlyFilesystemPath</code></td><td><code>"/etc /usr /lib"</code></td><td>Space-separated paths to make read-only</td></tr>
     <tr><td><code>dockerReadonlyFilesystemExcludePath</code></td><td><code>"/etc/ssl/certs /usr/local/share/ca-certificates $JAVA_HOME/lib/security"</code></td><td>Paths to keep writable within read-only dirs (Alpine CA certs, Java truststore)</td></tr>
+    <tr><td><code>dockerRemoveImageVersion</code></td><td><code>false</code></td><td>Remove OS version info files from container image</td></tr>
+    <tr><td><code>dockerRemovePackageVersions</code></td><td><code>false</code></td><td>Remove package version information from container image</td></tr>
+    <tr><td><code>dockerRemovePackageInstallationBinaries</code></td><td><code>true</code></td><td>Remove package manager binaries (<code>apk</code>) from container image</td></tr>
     <tr><td><code>dockerCleanupAfterBuild</code></td><td><code>false</code></td><td>Remove image after successful build</td></tr>
     <tr><td><code>dockerCleanupAfterPublish</code></td><td><code>true</code></td><td>Remove local image after push</td></tr>
     <tr><td><code>buildAlwaysDockerImage</code></td><td><code>false</code></td><td>Build container image on every build</td></tr>

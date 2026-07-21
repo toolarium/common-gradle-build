@@ -537,8 +537,14 @@ build { ->
 		if (project.hasProperty('createServiceJavaRunner') && project.getProperty('createServiceJavaRunner')) {
 			if (project.hasProperty("dockerMultistageBuild") && "true".equalsIgnoreCase("${project.getProperty('dockerMultistageBuild')}".toString().trim())) {
 				project.ext.set("dockerFileTemplateName", 'Dockerfile-java-runner-multistage.template')
+				// guard: empty dockerJlinkModules causes jlink to fail at build time
+				if (!project.hasProperty("dockerJlinkModules") || project.getProperty("dockerJlinkModules").toString().trim().isEmpty()) {
+					logInfo("dockerMultistageBuild=true but dockerJlinkModules is empty — jlink will fail. Set dockerJlinkModules in gradle.properties or remove it to restore the default.")
+					addError("Configuration mismatch: dockerJlinkModules must not be empty when dockerMultistageBuild=true.")
+				}
 			} else {
 				project.ext.set("dockerFileTemplateName", 'Dockerfile-java-runner.template')
+				logInfo("dockerMultistageBuild=false" + colorize(INFO_LEVEL, ": dockerJlinkModules has no effect."))
 			}
 			
 			// override log package with projectRootPackageName if available

@@ -30,13 +30,14 @@ buildscript {
 		//maven { url("https://oss.sonatype.org/content/repositories/snapshots") }
 	}
 	dependencies {
-		def toolariumChangelogParserVersion="1.1.0"
+		def toolariumChangelogParserVersion="1.1.1"
 		if (project.hasProperty('toolariumChangelogParserVersion')) {
 			toolariumChangelogParserVersion = project.getProperty('toolariumChangelogParserVersion')
 		}
 	
 		logInfo("toolarium changelog parser version: " + colorize(HIGHLITE_LEVEL, toolariumChangelogParserVersion) + colorize(INFO_LEVEL, ".")); 
 		classpath "com.github.toolarium:toolarium-changelog-parser:${toolariumChangelogParserVersion}"
+		classpath "com.github.toolarium:toolarium-common:1.0.0"
 	}
 }
 

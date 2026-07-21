@@ -41,6 +41,8 @@ if (!project.hasProperty("dockerFileTemplateName")) {
 if (!project.hasProperty("dockerEntrypoint")) {
 	project.ext.set("dockerEntrypoint", '["npx", "playwright", "test"]')
 }
+// testing project: binary removal would wipe node/npx/npm — force disabled
+project.ext.set("dockerRemoveNonEssentialBinaries", false)
 
 
 /***************************************************************************************

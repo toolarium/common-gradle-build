@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.6.1] - 2026-07-21
+### Added
+- `dockerJlinkModules` property (default: full module list) makes the `jlink --add-modules` list in `Dockerfile-java-runner-multistage.template` configurable via `gradle.properties`; spaces and tabs are stripped automatically at substitution time.
+- All Dockerfile templates now guard `REMOVE_NON_ESSENTIAL_BINARIES` at Docker build time: if `busybox` is not found (non-Alpine image), the wipe step is skipped with a `WARNING` written to stderr instead of crashing the build.
+- `REMOVE_IMAGE_VERSION` hardening flag added to all Dockerfile templates that were missing it (`base`, `docker`, `nodejs/Dockerfile-node`); previously hardcoded removal is now conditional.
+- `REMOVE_PACKAGE_VERSIONS` hardening flag added to `nodejs/Dockerfile-node.template`: removes `package.json`, `package-lock.json`, `yarn.lock`, `.npmrc`, `.yarnrc` from the deployment path when enabled.
+- `REMOVE_NON_ESSENTIAL_BINARIES` is now force-disabled (with a warning) for the `testing` project type — enabling it would wipe `node`/`npx`/`npm` needed by Playwright.
+
+### Changed
+- `REMOVE_NON_ESSENTIAL_BINARIES` removed entirely from `nodejs/Dockerfile-node.template` (node SSR runtime) — the busybox wipe would destroy the `node` binary making the container unusable.
+- `kubernetes/Dockerfile.template` `MAKE_FILESYSTEM_READONLY` block now correctly excludes `/etc/nginx /etc/nginx/conf.d` so the `01-apply-port.sh` entrypoint script can modify the nginx config at container startup.
+
 ## [v1.6.0] - 2026-07-20
 ### Added
 - Vulnerability scanner reports for kubernetes-product: generates Markdown, AsciiDoc (converted to PDF via Asciidoctor pipeline), SBOM (CycloneDX 1.4), and SARIF 2.1.0 reports from trivy scans; reports are packaged into the JAR under `docs/`. New properties: `vulnerabilityScannerReportMarkdown`, `vulnerabilityScannerReportAdoc`, `vulnerabilityScannerReportSbom`, `vulnerabilityScannerReportSarif`, `vulnerabilityScannerReportOutputPath`, `vulnerabilityScannerReportIncludeInJar`. Report structure: summary table + container image overview (via `cb-container --scan --csv`) + per-section detail chapters for dependency and each container image.

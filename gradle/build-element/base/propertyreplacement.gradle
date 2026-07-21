@@ -294,6 +294,9 @@ ext.searchReplaceByProperties = { inputLine, replacePlaceHolders = true ->
 		if (project.hasProperty('dockerEnableAccessLog')) {
 			line = line.replace('@@dockerEnableAccessLog@@', "${project.ext.dockerEnableAccessLog}".toString())
 		}
+		if (project.hasProperty('dockerJlinkModules')) {
+			line = line.replace('@@dockerJlinkModules@@', "${project.ext.dockerJlinkModules}".toString().replaceAll('[\\s\\t]+', ''))
+		}
 		if (project.hasProperty('dockerRemoveNonEssentialBinaries')) {
 			line = line.replace('@@dockerRemoveNonEssentialBinaries@@', "${project.ext.dockerRemoveNonEssentialBinaries}".toString())
 		}

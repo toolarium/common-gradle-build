@@ -218,6 +218,7 @@ render_template() {
         -e "s|@@PROJECT_NAME@@|test-app|g" \
         -e "s|@@dockerRemoveImageVersion@@|false|g" \
         -e "s|@@dockerRemovePackageVersions@@|false|g" \
+        -e "s|@@dockerJlinkModules@@|java.base,java.compiler,java.logging,java.naming,java.sql,java.transaction.xa,java.management,java.net.http,java.security.jgss,java.security.sasl,java.xml,java.xml.crypto,java.prefs,java.desktop,jdk.management,jdk.management.agent,jdk.unsupported,jdk.crypto.ec,jdk.crypto.cryptoki,jdk.zipfs,jdk.net,jdk.jcmd,jdk.naming.dns|g" \
         "$input" > "$output"
 }
 

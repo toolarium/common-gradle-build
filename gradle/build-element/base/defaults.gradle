@@ -323,7 +323,7 @@ setCommonGradleDefaultPropertyIfNull("enumConfigurationDocProvisionedKeys", "") 
 /***************************************************************************************
  * toolarium changelog parser support
  ***************************************************************************************/
-setCommonGradleDefaultPropertyIfNull("toolariumChangelogParserVersion", "1.1.0")
+setCommonGradleDefaultPropertyIfNull("toolariumChangelogParserVersion", "1.1.1")
 
 
 /***************************************************************************************
@@ -716,6 +716,8 @@ setCommonGradleDefaultPropertyIfNull("dockerSubPathAccess", "")
 setCommonGradleDefaultPropertyIfNull("dockerScriptPath", "$scriptsConfigurationPath")
 setCommonGradleDefaultPropertyIfNull("dockerRemoveDanglingImages", true)
 setCommonGradleDefaultPropertyIfNull("dockerMultistageBuild", true)
+// jlink modules for multistage build (java.base,java.compiler,java.logging,java.naming,java.sql,java.transaction.xa,java.management,java.net.http,java.security.jgss,java.security.sasl,java.xml,java.xml.crypto,java.prefs,java.desktop,jdk.management,jdk.management.agent,jdk.unsupported,jdk.crypto.ec,jdk.crypto.cryptoki,jdk.zipfs,jdk.net,jdk.jcmd,jdk.naming.dns)
+setCommonGradleDefaultPropertyIfNull("dockerJlinkModules", "java.base,java.compiler,java.logging,java.naming,java.sql,java.transaction.xa,java.management,java.net.http,java.security.jgss,java.security.sasl,java.xml,java.xml.crypto,java.prefs,java.desktop,jdk.management,jdk.management.agent,jdk.unsupported,jdk.crypto.ec,jdk.crypto.cryptoki,jdk.zipfs,jdk.net,jdk.jcmd,jdk.naming.dns")
 setCommonGradleDefaultPropertyIfNull("dockerRemoveNonEssentialBinaries", false)
 setCommonGradleDefaultPropertyIfNull("dockerMakeFilesystemReadonly", false)
 setCommonGradleDefaultPropertyIfNull("dockerRemovePackageInstallationBinaries", true)

@@ -22,6 +22,7 @@ ARG DEFAULT_LOCALE="@@dockerDefaultLocale@@"
 ARG DEFAULT_LANGUAGE="@@dockerDefaultLanguage@@"
 ARG ENABLE_ACCESS_LOG=@@dockerEnableAccessLog@@
 ARG REMOVE_NON_ESSENTIAL_BINARIES="@@dockerRemoveNonEssentialBinaries@@"
+ARG REMOVE_IMAGE_VERSION="@@dockerRemoveImageVersion@@"
 ARG MAKE_FILESYSTEM_READONLY="@@dockerMakeFilesystemReadonly@@"
 ARG READONLY_FILESYSTEM_PATH="@@dockerReadonlyFilesystemPath@@"
 ARG READONLY_FILESYSTEM_EXCLUDE_PATH="@@dockerReadonlyFilesystemExcludePath@@"
@@ -54,15 +55,18 @@ RUN apk --no-cache -U upgrade \
     # remove unnecessary system accounts
     && sed -i '/^root/!{/^nobody/!{/^nginx/!{/^'${RUNTIMEUSER}'/!d}}}' /etc/passwd /etc/shadow /etc/group \
     # remove docs, man pages, includes
-    && rm -rf /usr/share/man /usr/share/doc /usr/include \
-    # remove version information
-    && rm -f /etc/alpine-release /etc/os-release /etc/issue
+    && rm -rf /usr/share/man /usr/share/doc /usr/include
 
 # remove version information and apk to prevent package installation
 RUN if [ "${REMOVE_PACKAGE_INSTALLATION_BINARIES}" = "true" ]; then \
     apk del apk-tools alpine-keys 2>/dev/null; \
     rm /var/log/apk.log; \
     rm -rf /sbin/apk /etc/apk /lib/apk /usr/share/apk /var/lib/apk; \
+    fi
+
+# remove image version information
+RUN if [ "${REMOVE_IMAGE_VERSION}" = "true" ]; then \
+    rm -f /etc/alpine-release /etc/os-release /etc/issue; \
     fi
 
 # disable access log
@@ -127,6 +131,9 @@ ENV EXPOSE_PORT="${EXPOSE_PORT}"
 
 # remove non-essential binaries (keep only what nginx entrypoint and apply-subpath.sh need)
 RUN if [ "${REMOVE_NON_ESSENTIAL_BINARIES}" = "true" ]; then \
+    if ! command -v busybox >/dev/null 2>&1; then \
+    echo "WARNING: REMOVE_NON_ESSENTIAL_BINARIES=true requires an Alpine-based image (busybox not found). Skipping." >&2; \
+    else \
     cp "$(command -v busybox)" /tmp/bb && \
     for cmd in envsubst file getconf; do [ -e "/usr/bin/$cmd" ] && /tmp/bb cp "/usr/bin/$cmd" "/tmp/$cmd" 2>/dev/null; done; \
     [ -e "/usr/sbin/nginx" ] && /tmp/bb cp /usr/sbin/nginx /tmp/nginx 2>/dev/null; \
@@ -135,11 +142,13 @@ RUN if [ "${REMOVE_NON_ESSENTIAL_BINARIES}" = "true" ]; then \
     for cmd in sh cat chmod cut date dirname basename pwd ls echo find grep head md5sum mkdir mktemp mv printf rm sed seq sort touch tr uniq wc awk cp; do /bin/busybox ln -s busybox /bin/$cmd 2>/dev/null; done && \
     for cmd in envsubst file getconf; do [ -e "/tmp/$cmd" ] && /bin/cp "/tmp/$cmd" "/usr/bin/$cmd" && /bin/chmod 755 "/usr/bin/$cmd"; done; \
     [ -e "/tmp/nginx" ] && /bin/cp /tmp/nginx /usr/sbin/nginx && /bin/chmod 755 /usr/sbin/nginx; \
+    /bin/rm -rf /etc/apk /lib/apk /usr/share/apk /var/lib/apk /var/log/apk.log 2>/dev/null; \
     /bin/rm -f /tmp/bb /tmp/nginx /tmp/envsubst /tmp/file /tmp/getconf 2>/dev/null; \
+    fi; \
     fi
 
 # make filesystem read-only friendly (exclude /etc/nginx: apply-subpath.sh modifies nginx config at runtime)
-RUN if [ "${MAKE_FILESYSTEM_READONLY}" = "true" ]; then \
+RUN if [ "${MAKE_FILESYSTEM_READONLY}" = "true" ] && [ -n "${READONLY_FILESYSTEM_PATH}" ]; then \
     chmod a-w ${READONLY_FILESYSTEM_PATH} \
     && chmod u+w /etc/nginx /etc/nginx/conf.d; \
     for p in ${READONLY_FILESYSTEM_EXCLUDE_PATH}; do \

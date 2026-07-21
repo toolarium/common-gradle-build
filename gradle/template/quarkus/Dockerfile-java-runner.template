@@ -127,17 +127,22 @@ ENV observeMemoryCycle="${observeMemoryCycle}"
 
 # remove non-essential binaries (keep only what toolarium-java-runner.sh, cb-meminfo.sh and java need)
 RUN if [ "${REMOVE_NON_ESSENTIAL_BINARIES}" = "true" ]; then \
+    if ! command -v busybox >/dev/null 2>&1; then \
+    echo "WARNING: REMOVE_NON_ESSENTIAL_BINARIES=true requires an Alpine-based image (busybox not found). Skipping." >&2; \
+    else \
     cp "$(command -v busybox)" /tmp/bb && \
     [ -e /sbin/tini ] && /tmp/bb cp /sbin/tini /tmp/tini; \
     /tmp/bb rm -f /bin/* /sbin/* /usr/bin/* /usr/sbin/* 2>/dev/null; \
     /tmp/bb cp /tmp/bb /bin/busybox && \
     for cmd in sh cat chmod date dirname basename pwd ls hostname env grep tr sed stat tail sleep uname ps kill rm echo printf awk free cp mv; do /bin/busybox ln -s busybox /bin/$cmd 2>/dev/null; done && \
     [ -e /tmp/tini ] && /bin/cp /tmp/tini /sbin/tini && /bin/chmod 755 /sbin/tini; \
+    /bin/rm -rf /etc/apk /lib/apk /usr/share/apk /var/lib/apk /var/log/apk.log 2>/dev/null; \
     /bin/rm -f /tmp/bb /tmp/tini 2>/dev/null; \
+    fi; \
     fi
 
 # make filesystem read-only friendly
-RUN if [ "${MAKE_FILESYSTEM_READONLY}" = "true" ]; then \
+RUN if [ "${MAKE_FILESYSTEM_READONLY}" = "true" ] && [ -n "${READONLY_FILESYSTEM_PATH}" ]; then \
     chmod a-w ${READONLY_FILESYSTEM_PATH}; \
     for p in ${READONLY_FILESYSTEM_EXCLUDE_PATH}; do \
         if [ -e "$p" ]; then chmod u+w "$p"; fi; \

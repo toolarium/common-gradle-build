@@ -268,7 +268,10 @@ task dockerBuild {
 				dockerHardeningMessage = "${dockerHardeningMessage}access-logs"
 			}
 			if (!dockerHardeningMessage.toString().isEmpty()) {
-				dockerHardeningMessage = ":${dockerHardeningMessage}" 
+				dockerHardeningMessage = ":${dockerHardeningMessage}"
+			}
+			if (!"true".equalsIgnoreCase("" + project.getProperty('dockerMakeFilesystemReadonly'))) {
+				logInfo("Configuratoin mismatch: dockerMakeFilesystemReadonly=false" + colorize(INFO_LEVEL, ": dockerReadonlyFilesystemPath and dockerReadonlyFilesystemExcludePath have no effect."))
 			}
 
 			printInfo("> Create container image " + colorize(HIGHLITE_LEVEL,  dockerBuildName) + " (${dockerSourceMessage} dockerfile${dockerHardeningMessage})")
