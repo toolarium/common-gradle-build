@@ -277,14 +277,15 @@ if (!project.hasProperty("dockerImage")) {
 	if (project.hasProperty("dockerMultistageBuild") && "true".equalsIgnoreCase("${project.getProperty('dockerMultistageBuild')}".toString().trim())) {
 		// multistage build: JDK for build stage, minimal runtime image for final stage
 		project.ext.set("dockerImage", "eclipse-temurin:25-jdk-alpine") // previous: eclipse-temurin:21-jdk-alpine, eclipse-temurin:21-jre-alpine
-		
-		// set runtime image for multistage builds (independent of dockerImage)
-		if (!project.hasProperty("dockerRuntimeImage")) {
-			project.ext.set("dockerRuntimeImage", "alpine:latest")
-		}
 	} else {
 		// single-stage build: JRE only
 		project.ext.set("dockerImage", "eclipse-temurin:25-jre-alpine") // previous: eclipse-temurin:21-jdk-alpine, eclipse-temurin:21-jre-alpine
+	}
+}
+// set runtime image default for multistage builds (must be set regardless of whether dockerImage was already set)
+if (project.hasProperty("dockerMultistageBuild") && "true".equalsIgnoreCase("${project.getProperty('dockerMultistageBuild')}".toString().trim())) {
+	if (!project.hasProperty("dockerRuntimeImage") || project.getProperty("dockerRuntimeImage").toString().trim().isEmpty()) {
+		project.ext.set("dockerRuntimeImage", "alpine:latest")
 	}
 }
 // set dockerOsVersion fallback: dockerRuntimeImage > dockerImage

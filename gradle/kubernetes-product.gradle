@@ -842,8 +842,20 @@ task generateEnumConfigurationDocumentation(dependsOn: ['prepareEnumConfiguratio
 			printDocumentationLine = true
 		}
 
-		printInfo("> Create enum configuration documentation in " + colorize(HIGHLITE_LEVEL, "${enumConfigurationDocOutputPath}".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")		
+		printInfo("> Create enum configuration documentation in " + colorize(HIGHLITE_LEVEL, "${enumConfigurationDocOutputPath}".replace('\\', '/').replace("$gradleBuildDirectory/", "")) + "...")
 		generateEnumConfigurationDoc("$kubernetesApplicationInformationPath/${kubernetesEnumConfigurationPathname}")
+
+		// copy enum-configuration adoc files into the asciidoc staging directory
+		if (project.tasks.findByName('convertAsciidoctorHtml') || project.tasks.findByName('convertAsciidoctorPdf')) {
+			def stagingDir = new File("${asciidocStagingDirectory}")
+			if (stagingDir.exists()) {
+				copy {
+					from "${enumConfigurationDocOutputPath}"
+					include '*.adoc'
+					into "${asciidocStagingDirectory}"
+				}
+			}
+		}
 	}
 }
 
@@ -964,88 +976,51 @@ task generateVulnerabilityScannerReport {
 		scanSections.sort { a, b -> a.label <=> b.label }
 		imageOverview.sort { a, b -> a.name <=> b.name }
 
-		// generate all enabled report formats; adoc goes to enumConfigurationDocOutputPath so it is picked up by Asciidoctor
-		generateVulnerabilityScannerReports(scanSections, imageOverview, severity, "${vulnerabilityScannerReportOutputPath}", "${enumConfigurationDocOutputPath}")
-	}
-}
-// copy generated adoc files into asciidoc source directory for processing
-ext.copyGeneratedAdocToSource = {
-	if (!printDocumentationLine) {
-		printLine(HIGHLITE_LEVEL, true)
-		printDocumentationLine = true
-	}
-	def asciidocSrcDir = new File("${asciidocSourceDirectory}")
-	def generatedAdocDir = new File("${enumConfigurationDocOutputPath}")
-	if (generatedAdocDir.exists() && asciidocSrcDir.exists()) {
-		copy {
-			from generatedAdocDir
-			include '*.adoc'
-			into "${asciidocSourceDirectory}"
-		}
-	}
-	if ("true".equalsIgnoreCase("${project.getProperty('vulnerabilityScannerReportAdoc')}")) {
-		def vsAdocDir = new File("${vulnerabilityScannerReportOutputPath}")
-		if (vsAdocDir.exists() && asciidocSrcDir.exists()) {
-			copy {
-				from vsAdocDir
-				include '*.adoc'
-				into "${asciidocSourceDirectory}"
-			}
-		}
-	}
-}
+		// generate all enabled report formats; adoc goes to the vulnerability report folder (same as md)
+		generateVulnerabilityScannerReports(scanSections, imageOverview, severity, "${vulnerabilityScannerReportOutputPath}", "${vulnerabilityScannerReportOutputPath}")
 
-// remove generated adoc files from asciidoc source directory after processing
-ext.cleanGeneratedAdocFromSource = {
-	def generatedAdocDir = new File("${enumConfigurationDocOutputPath}")
-	if (generatedAdocDir.exists()) {
-		generatedAdocDir.eachFile { file ->
-			if (file.getName().endsWith('.adoc')) {
-				def copied = new File("${asciidocSourceDirectory}/${file.getName()}")
-				if (copied.exists()) { copied.delete() }
-			}
-		}
-	}
-	if ("true".equalsIgnoreCase("${project.getProperty('vulnerabilityScannerReportAdoc')}")) {
-		def vsAdocDir = new File("${vulnerabilityScannerReportOutputPath}")
-		if (vsAdocDir.exists()) {
-			vsAdocDir.eachFile { file ->
-				if (file.getName().endsWith('.adoc')) {
-					def copied = new File("${asciidocSourceDirectory}/${file.getName()}")
-					if (copied.exists()) { copied.delete() }
+		// copy vulnerability adoc files into the asciidoc staging directory
+		if (project.tasks.findByName('convertAsciidoctorHtml') || project.tasks.findByName('convertAsciidoctorPdf')) {
+			def stagingDir = new File("${asciidocStagingDirectory}")
+			if (stagingDir.exists()) {
+				copy {
+					from "${vulnerabilityScannerReportOutputPath}"
+					include '*.adoc'
+					into "${asciidocStagingDirectory}"
 				}
 			}
 		}
 	}
-	printDocumentationEndLine--
-	
-	if (printDocumentationLine && printDocumentationEndLine == 0) {
-		printLine(HIGHLITE_LEVEL, true)		
-	}
 }
-
-if (project.tasks.findByName('convertAsciidoctorHtml')) {
-	printDocumentationEndLine++
-}
-if (project.tasks.findByName('convertAsciidoctorPdf')) {
-	printDocumentationEndLine++
-}
-
 if (project.tasks.findByName('convertAsciidoctorHtml')) {
 	convertAsciidoctorHtml.mustRunAfter(generateEnumConfigurationDocumentation)
+	convertAsciidoctorHtml.mustRunAfter(generateVulnerabilityScannerReport)
 	convertAsciidoctorHtml.doFirst {
-		copyGeneratedAdocToSource()
+		if (!printDocumentationLine) {
+			printLine(HIGHLITE_LEVEL, true)
+			printDocumentationLine = true
+		}
 		printInfo("> Generate HTML documentation in " + colorize(HIGHLITE_LEVEL, "${asciiDoctorHtmlPath}".replace('\\', '/').replace("${project.rootDir}".replace('\\', '/') + "/", "")) + "...")
 	}
-	convertAsciidoctorHtml.doLast { cleanGeneratedAdocFromSource() }
+	if (!project.tasks.findByName('convertAsciidoctorPdf')) {
+		convertAsciidoctorHtml.doLast { printLine(HIGHLITE_LEVEL, true) }
+	}
 }
 if (project.tasks.findByName('convertAsciidoctorPdf')) {
 	convertAsciidoctorPdf.mustRunAfter(generateEnumConfigurationDocumentation)
+	convertAsciidoctorPdf.mustRunAfter(generateVulnerabilityScannerReport)
 	convertAsciidoctorPdf.doFirst {
-		copyGeneratedAdocToSource()
+		if (!printDocumentationLine) {
+			printLine(HIGHLITE_LEVEL, true)
+			printDocumentationLine = true
+		}
 		printInfo("> Generate PDF documentation in " + colorize(HIGHLITE_LEVEL, "${asciiDoctorPdfPath}".replace('\\', '/').replace("${project.rootDir}".replace('\\', '/') + "/", "")) + "...")
 	}
-	convertAsciidoctorPdf.doLast { cleanGeneratedAdocFromSource() }
+	convertAsciidoctorPdf.doLast { printLine(HIGHLITE_LEVEL, true) }
+}
+if (project.tasks.findByName('prepareAsciidocSource')) {
+	generateEnumConfigurationDocumentation.mustRunAfter(prepareAsciidocSource)
+	generateVulnerabilityScannerReport.mustRunAfter(prepareAsciidocSource)
 }
 
 
@@ -1328,8 +1303,8 @@ task kubernetesConcat(dependsOn: ['kubernetesIngress', 'kubernetesGatewayApi', '
 						
 						if (servicePathExternal!=null && !servicePathExternal.trim().isEmpty()) {
 							servicePath = servicePathExternal
-							printInfo("  -> Add product dependency " + colorize(HIGHLITE_LEVEL, imageName) + " -> " + colorize(HIGHLITE_LEVEL, servicePathExternal))
-							
+							printInfo("  -> Add product dependency " + colorize(HIGHLITE_LEVEL, imageName) + " -> " + colorize(INFO_LEVEL, servicePathExternal))
+
 							// controller content
 							controllerContent += "      - path: $servicePathExternal" + NELINE
 							controllerContent += "        pathType: Prefix" + NELINE

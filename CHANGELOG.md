@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.6.2] - 2026-07-24
+### Added
+- New `asciidocStagingDirectory` property (default: `build/asciidoc-source`): intermediate staging directory used by the Asciidoctor pipeline to assemble sources before rendering.
+- New `prepareAsciidocSource` task in `asciidoctor-support.gradle`: copies `src/doc/` into the staging directory, creates required subdirectories (`images/`, theme paths), and initialises default HTML/PDF themes if absent; both `convertAsciidoctorHtml` and `convertAsciidoctorPdf` now depend on it.
+
+### Changed
+- Asciidoctor tasks (`convertAsciidoctorHtml`, `convertAsciidoctorPdf`) now read from the staging directory (`asciidocStagingDirectory`) instead of `src/doc/` directly, so generated files (enum-config, vulnerability-scanner reports) can be injected without touching the source tree.
+- `kubernetes-product.gradle`: generated enum-configuration `.adoc` files and vulnerability-scanner report `.adoc` files are now copied into the staging directory instead of `src/doc/`, removing the old `copyGeneratedAdocToSource` / `cleanGeneratedAdocFromSource` helpers.
+- `quarkus.gradle`: `dockerRuntimeImage` default (`alpine:latest`) is now applied unconditionally after the multistage/single-stage branch, so it is correctly set even when `dockerImage` was already defined by the consumer project.
+- Dependency management (quarkus 3.20.6.2): bumped `jackson-core` to `2.18.9`; all `netty` components unified to `4.1.136.Final` (previously mixed 4.1.133/4.1.135).
+- `toolariumEnumConfigurationVersion` bumped to `1.3.3`.
+- `commonGradleJavaxAnnotationVersion` bumped to `1.3.3`.
+
 ## [v1.6.1] - 2026-07-21
 ### Added
 - `dockerJlinkModules` property (default: full module list) makes the `jlink --add-modules` list in `Dockerfile-java-runner-multistage.template` configurable via `gradle.properties`; spaces and tabs are stripped automatically at substitution time.

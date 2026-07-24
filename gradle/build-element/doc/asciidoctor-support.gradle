@@ -48,19 +48,50 @@ import org.asciidoctor.gradle.jvm.pdf.AsciidoctorPdfTask
 import org.asciidoctor.gradle.jvm.AsciidoctorTask
 import org.asciidoctor.gradle.jvm.AsciidoctorJExtension
 
-if (!project.getProperty('IS_NEW') && project.hasProperty('supportAsciiDoctor') && project.getProperty('supportAsciiDoctor') && new File("$asciidocSourceDirectory").exists()) {
+if (!project.getProperty('IS_NEW') && project.hasProperty('supportAsciiDoctor') && project.getProperty('supportAsciiDoctor') /*&& new File("$asciidocSourceDirectory").exists()*/) {
 
     // Create asciidoctorj extension manually
     extensions.create('asciidoctorj', AsciidoctorJExtension, project)
 
 
     /***************************************************************************************
+     * Prepare staging directory: copy src/doc into build/asciidoc-source
+     ***************************************************************************************/
+    task prepareAsciidocSource {
+        group = 'documentation'
+        description = 'Prepare the asciidoc staging directory from src/doc'
+        doFirst {
+            def stagingDir = new File("${asciidocStagingDirectory}")
+            if (stagingDir.exists()) {
+                stagingDir.deleteDir()
+            }
+            stagingDir.mkdirs()
+            if (new File("${asciidocSourceDirectory}").exists()) {
+                copy {
+                    from "${asciidocSourceDirectory}"
+                    into "${asciidocStagingDirectory}"
+                }
+            }
+            new File("${asciidocStagingDirectory}/${asciiDoctorImagePath}").mkdirs()
+            new File("${asciidocStagingDirectory}/${asciiDoctorHtmlThemePath}").mkdirs()
+            new File("${asciidocStagingDirectory}/${asciiDoctorPdfThemePath}").mkdirs()
+            if (!new File("${asciidocStagingDirectory}/${asciiDoctorHtmlThemePath}/$asciiDoctorHtmlTheme").exists()) {
+                createFileFromTemplate("${asciidocStagingDirectory}/${asciiDoctorHtmlThemePath}/$asciiDoctorHtmlTheme", getTemplateFile('asciidoctor-theme.css.template', 'doc'), true /*overwrite*/, false /*print*/, true /*replace*/, NELINE /*only nl*/)
+            }
+            if (!new File("${asciidocStagingDirectory}/${asciiDoctorPdfThemePath}/$asciiDoctorPdfTheme").exists()) {
+                createFileFromTemplate("${asciidocStagingDirectory}/${asciiDoctorPdfThemePath}/$asciiDoctorPdfTheme", getTemplateFile('asciidoctor-theme.yml.template', 'doc'), true /*overwrite*/, false /*print*/, true /*replace*/, NELINE /*only nl*/)
+            }
+        }
+    }
+
+
+    /***************************************************************************************
      * HTML generation task with theme
      ***************************************************************************************/
-    task convertAsciidoctorHtml(type: AsciidoctorTask) {
+    task convertAsciidoctorHtml(type: AsciidoctorTask, dependsOn: 'prepareAsciidocSource') {
         group = 'documentation'
         description = 'Generate HTML documentation from asciidoctor files'
-        
+
         forkOptions {
             jvmArgs = [
                 '--add-opens', 'java.base/sun.nio.ch=ALL-UNNAMED',
@@ -70,20 +101,22 @@ if (!project.getProperty('IS_NEW') && project.hasProperty('supportAsciiDoctor') 
             ]
         }
 
-		if (!new File("$asciidocSourceDirectory/$asciiDoctorImagePath").exists()) {
-			new File("$asciidocSourceDirectory/$asciiDoctorImagePath").mkdirs()
-		}
-		if (!new File("$asciidocSourceDirectory/$asciiDoctorHtmlThemePath").exists()) {
-			new File("$asciidocSourceDirectory/$asciiDoctorHtmlThemePath").mkdirs()
-		}
-		if (!new File("${asciidocSourceDirectory}/${asciiDoctorHtmlThemePath}/$asciiDoctorHtmlTheme").exists()) {
-			createFileFromTemplate("${asciidocSourceDirectory}/${asciiDoctorHtmlThemePath}/$asciiDoctorHtmlTheme", getTemplateFile('asciidoctor-theme.css.template', 'doc'), true /*overwrite*/, false /*print*/, true /*replace*/, NELINE /*only nl*/)
-			//new File("${asciidocSourceDirectory}/${asciiDoctorHtmlThemePath}/$asciiDoctorHtmlTheme").createNewFile() 
+		if (new File("$asciidocSourceDirectory").exists()) {
+			if (!new File("$asciidocSourceDirectory/$asciiDoctorImagePath").exists()) {
+				new File("$asciidocSourceDirectory/$asciiDoctorImagePath").mkdirs()
+			}
+			if (!new File("$asciidocSourceDirectory/$asciiDoctorHtmlThemePath").exists()) {
+				new File("$asciidocSourceDirectory/$asciiDoctorHtmlThemePath").mkdirs()
+			}
+			if (!new File("${asciidocSourceDirectory}/${asciiDoctorHtmlThemePath}/$asciiDoctorHtmlTheme").exists()) {
+				createFileFromTemplate("${asciidocSourceDirectory}/${asciiDoctorHtmlThemePath}/$asciiDoctorHtmlTheme", getTemplateFile('asciidoctor-theme.css.template', 'doc'), true /*overwrite*/, false /*print*/, true /*replace*/, NELINE /*only nl*/)
+				//new File("${asciidocSourceDirectory}/${asciiDoctorHtmlThemePath}/$asciiDoctorHtmlTheme").createNewFile()
+			}
 		}
 
         doFirst {
             copy {
-                from "${asciidocSourceDirectory}/${asciiDoctorHtmlTheme}"
+                from "${asciidocStagingDirectory}/${asciiDoctorHtmlTheme}"
                 into "${asciiDoctorHtmlPath}"
             }
         }
@@ -115,7 +148,7 @@ if (!project.getProperty('IS_NEW') && project.hasProperty('supportAsciiDoctor') 
                     'copycss': ''
         }
 
-        sourceDir = file("${asciidocSourceDirectory}")
+        sourceDir = file("${asciidocStagingDirectory}")
         outputDir = file("${asciiDoctorHtmlPath}")
     }
 
@@ -123,10 +156,10 @@ if (!project.getProperty('IS_NEW') && project.hasProperty('supportAsciiDoctor') 
     /***************************************************************************************
      * PDF generation task with theme
      ***************************************************************************************/
-    task convertAsciidoctorPdf(type: AsciidoctorPdfTask) {
+    task convertAsciidoctorPdf(type: AsciidoctorPdfTask, dependsOn: 'prepareAsciidocSource') {
         group = 'documentation'
         description = 'Generate PDF documentation from asciidoctor files'
-        
+
         forkOptions {
             jvmArgs = [
                 '--add-opens', 'java.base/sun.nio.ch=ALL-UNNAMED',
@@ -136,18 +169,20 @@ if (!project.getProperty('IS_NEW') && project.hasProperty('supportAsciiDoctor') 
             ]
         }
 
-		if (!new File("$asciidocSourceDirectory/$asciiDoctorImagePath").exists()) {
-			new File("$asciidocSourceDirectory/$asciiDoctorImagePath").mkdirs()
-		}
-		if (!new File("${asciidocSourceDirectory}/$asciiDoctorPdfThemePath").exists()) {
-			new File("${asciidocSourceDirectory}/$asciiDoctorPdfThemePath").mkdirs()
-		}
-		if (file("$asciidocSourceDirectory/$asciiDoctorFontPath").exists()) {
-			new File("$asciidocSourceDirectory/$asciiDoctorFontPath").mkdirs()
-		}
-		if (!new File("${asciidocSourceDirectory}/${asciiDoctorPdfThemePath}/$asciiDoctorPdfTheme").exists()) {
-			//new File("${asciidocSourceDirectory}/${asciiDoctorPdfThemePath}/$asciiDoctorPdfTheme").createNewFile() 
-			createFileFromTemplate("${asciidocSourceDirectory}/${asciiDoctorPdfThemePath}/$asciiDoctorPdfTheme", getTemplateFile('asciidoctor-theme.yml.template', 'doc'), true /*overwrite*/, false /*print*/, true /*replace*/, NELINE /*only nl*/)
+		if (new File("$asciidocSourceDirectory").exists()) {
+			if (!new File("$asciidocSourceDirectory/$asciiDoctorImagePath").exists()) {
+				new File("$asciidocSourceDirectory/$asciiDoctorImagePath").mkdirs()
+			}
+			if (!new File("${asciidocSourceDirectory}/$asciiDoctorPdfThemePath").exists()) {
+				new File("${asciidocSourceDirectory}/$asciiDoctorPdfThemePath").mkdirs()
+			}
+			if (file("$asciidocSourceDirectory/$asciiDoctorFontPath").exists()) {
+				new File("$asciidocSourceDirectory/$asciiDoctorFontPath").mkdirs()
+			}
+			if (!new File("${asciidocSourceDirectory}/${asciiDoctorPdfThemePath}/$asciiDoctorPdfTheme").exists()) {
+				//new File("${asciidocSourceDirectory}/${asciiDoctorPdfThemePath}/$asciiDoctorPdfTheme").createNewFile()
+				createFileFromTemplate("${asciidocSourceDirectory}/${asciiDoctorPdfThemePath}/$asciiDoctorPdfTheme", getTemplateFile('asciidoctor-theme.yml.template', 'doc'), true /*overwrite*/, false /*print*/, true /*replace*/, NELINE /*only nl*/)
+			}
 		}
 
         baseDirFollowsSourceFile()
@@ -179,12 +214,12 @@ if (!project.getProperty('IS_NEW') && project.hasProperty('supportAsciiDoctor') 
                     'pdf-themesdir': "$asciiDoctorPdfThemePath"
         }
         
-        sourceDir = file("${asciidocSourceDirectory}")
+        sourceDir = file("${asciidocStagingDirectory}")
         outputDir = file("${asciiDoctorPdfPath}")
 
         // Optional fonts directory
         if (file("$asciidocSourceDirectory/$asciiDoctorFontPath").exists()) {
-            fontsDir file(asciiDoctorFontPath)
+            fontsDir file("$asciidocStagingDirectory/$asciiDoctorFontPath")
         }
     }
 
@@ -201,7 +236,7 @@ if (!project.getProperty('IS_NEW') && project.hasProperty('supportAsciiDoctor') 
      * Generate the artefacts
      ***************************************************************************************/
     task generateAsciidoctorArtefacts {
-        dependsOn cleanAsciidoctorDocs, convertAsciidoctorHtml, convertAsciidoctorPdf
+        dependsOn prepareAsciidocSource, cleanAsciidoctorDocs, convertAsciidoctorHtml, convertAsciidoctorPdf
         group = 'documentation'
         description = 'Generate the asciidoctor document artefacts'
     }
