@@ -53,6 +53,9 @@ dependencies {
 		annotationProcessor "com.github.toolarium:toolarium-enum-configuration:${toolariumEnumConfigurationVersion}"
 		compileOnly "com.github.toolarium:toolarium-enum-configuration:${toolariumEnumConfigurationVersion}"
 		//testImplementation "com.github.toolarium:toolarium-enum-configuration:${toolariumEnumConfigurationVersion}"
+		
+        // silence SLF4J NOP warning from the enum-configuration annotation processor
+        annotationProcessor "org.slf4j:slf4j-nop:${commonGradleSlf4jApiVersion}"
 	}
 }
 

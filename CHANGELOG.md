@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.6.3] - 2026-07-24
+### Fixed
+- Vulnerability scanner: fixed `could not parse JSON summary: unexpected character T` error on VMware/Windows containers. Trivy's stderr (warnings, environment messages) was previously merged into the stdout JSON stream; stdout and stderr are now captured separately so only stdout is parsed as JSON. Added defensive JSON-prefix stripping to handle any text written before the JSON object on stdout.
+- `java-library.gradle`: added `org.slf4j:slf4j-nop` as an `annotationProcessor` dependency (version `commonGradleSlf4jApiVersion`, default `2.0.18`) when `toolariumEnumConfigurationEnabled` is active, to suppress the SLF4J "no SLF4J provider found" warning emitted during compilation by the enum-configuration annotation processor.
+
 ## [v1.6.2] - 2026-07-24
 ### Added
 - New `asciidocStagingDirectory` property (default: `build/asciidoc-source`): intermediate staging directory used by the Asciidoctor pipeline to assemble sources before rendering.
