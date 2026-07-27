@@ -717,8 +717,15 @@ setCommonGradleDefaultPropertyIfNull("dockerSubPathAccess", "")
 setCommonGradleDefaultPropertyIfNull("dockerScriptPath", "$scriptsConfigurationPath")
 setCommonGradleDefaultPropertyIfNull("dockerRemoveDanglingImages", true)
 setCommonGradleDefaultPropertyIfNull("dockerMultistageBuild", true)
-// jlink modules for multistage build (java.base,java.compiler,java.logging,java.naming,java.sql,java.transaction.xa,java.management,java.net.http,java.security.jgss,java.security.sasl,java.xml,java.xml.crypto,java.prefs,java.desktop,jdk.management,jdk.management.agent,jdk.unsupported,jdk.crypto.ec,jdk.crypto.cryptoki,jdk.zipfs,jdk.net,jdk.jcmd,jdk.naming.dns)
-setCommonGradleDefaultPropertyIfNull("dockerJlinkModules", "java.base,java.compiler,java.logging,java.naming,java.sql,java.transaction.xa,java.management,java.net.http,java.security.jgss,java.security.sasl,java.xml,java.xml.crypto,java.prefs,java.desktop,jdk.management,jdk.management.agent,jdk.unsupported,jdk.crypto.ec,jdk.crypto.cryptoki,jdk.zipfs,jdk.net,jdk.jcmd,jdk.naming.dns")
+// jlink modules for multistage build.
+// java.desktop      – required for java.beans.* (Liquibase, Jackson introspection) since JDK 9; AWT native libs
+//                    (libawt.so, libfontmanager.so) are loaded lazily so fontconfig/freetype are not needed.
+// java.instrument   – required for Quarkus CDI runtime bytecode transformation and -javaagent (OpenTelemetry etc.).
+// java.rmi          – required by jdk.management.agent RMI connector and some JNDI lookup paths.
+// jdk.charsets      – charset implementations beyond US-ASCII/UTF-8/ISO-8859-1 (DB content, HTTP, log encoding).
+// jdk.attach        – dynamic attach API; required by jdk.jcmd and OpenTelemetry/profiler agents.
+// jdk.security.auth – JAAS LoginModule/Subject; used by Quarkus Security extensions (OIDC, JWT, etc.).
+setCommonGradleDefaultPropertyIfNull("dockerJlinkModules", "java.base,java.compiler,java.logging,java.naming,java.rmi,java.sql,java.transaction.xa,java.management,java.instrument,java.net.http,java.security.jgss,java.security.sasl,java.xml,java.xml.crypto,java.prefs,java.desktop,jdk.management,jdk.management.agent,jdk.attach,jdk.charsets,jdk.security.auth,jdk.unsupported,jdk.crypto.ec,jdk.crypto.cryptoki,jdk.zipfs,jdk.net,jdk.jcmd,jdk.naming.dns")
 setCommonGradleDefaultPropertyIfNull("dockerRemoveNonEssentialBinaries", false)
 setCommonGradleDefaultPropertyIfNull("dockerMakeFilesystemReadonly", false)
 setCommonGradleDefaultPropertyIfNull("dockerRemovePackageInstallationBinaries", true)
