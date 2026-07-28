@@ -237,7 +237,8 @@ ext.generateEnumConfigurationAsciidoc = { serviceDataList, mandatoryMap, indexMa
 	if (serviceDataList.isEmpty()) {
 		return
 	}
-
+	
+	def now = new java.text.SimpleDateFormat("yyyy-MM-dd").format(new Date())
 	def out = new File(outputFile)
 	out.text = ""
 	def NL = NELINE
@@ -250,6 +251,8 @@ ext.generateEnumConfigurationAsciidoc = { serviceDataList, mandatoryMap, indexMa
 	out.append(":product-name: ${rootProject.name}" + NL)
 	out.append(":product-version: ${project.version}" + NL)
 	out.append(":product-date: ${project.ext.BUILD_TIMESTAMP_DATE}" + NL)
+	out.append(":revnumber: ${project.version}" + NL)
+	out.append(":revdate: ${now}" + NL)
 	out.append(":toc: left" + NL)
 	out.append(":toc-title: ${enumConfigurationDocProductLabel}" + NL)
 	out.append(":toclevels: 3" + NL)
@@ -257,6 +260,7 @@ ext.generateEnumConfigurationAsciidoc = { serviceDataList, mandatoryMap, indexMa
 	out.append(":icons: font" + NL)
 	out.append(":sectanchors:" + NL)
 	out.append(":source-highlighter: highlight.js" + NL)
+    out.append(":title-page:" + NL)	
 	out.append(":pdf-page-layout: landscape" + NL)
 	out.append(NL)
 

@@ -890,7 +890,11 @@ task generateVulnerabilityScannerReport {
 		def scanSections = []
 		def imageOverview = []
 
-		// dependency scan (rootfs)
+		// check for docker reference file before deciding which scans to include
+		def dockerRefFile = project.hasProperty('kubernetesDockerReferenceFile') ? new File("${project.getProperty('kubernetesDockerReferenceFile')}") : null
+		def hasDockerRefFile = dockerRefFile != null && dockerRefFile.exists()
+
+		// dependency scan (rootfs) – only added as a section when no container images are referenced
 		def depTempFile = "${getCommonGradleBuildTempPath(rootProject.name)}/trivy-report-dep.json"
 		def depFullCmd = "${baseCmd} rootfs ${baseOptions} --output ${depTempFile} ${scanPath}".replaceAll("  ", " ").trim()
 		logInfo("Execute: " + colorize(HIGHLITE_LEVEL, depFullCmd) + colorize(INFO_LEVEL, "."))
@@ -899,12 +903,13 @@ task generateVulnerabilityScannerReport {
 		def depJsonFile = new File(depTempFile)
 		def depJsonOutput = (depJsonFile.exists() && depJsonFile.length() > 0) ? depJsonFile.text.trim() : '{"Results":[]}'
 		def depResult = collectVulnerabilityFindingsFromJson(depJsonOutput, severity, blacklistedEntries)
-		scanSections.add([label: "Container: ${rootProject.name}", findings: depResult.findings, whitelistedCount: depResult.whitelistedCount])
+		if (!hasDockerRefFile) {
+			scanSections.add([label: "${rootProject.name}:${project.version}", findings: depResult.findings, whitelistedCount: depResult.whitelistedCount])
+		}
 		if (depJsonFile.exists()) { depJsonFile.delete() }
 
 		// container image scans
-		def dockerRefFile = project.hasProperty('kubernetesDockerReferenceFile') ? new File("${project.getProperty('kubernetesDockerReferenceFile')}") : null
-		if (dockerRefFile != null && dockerRefFile.exists()) {
+		if (hasDockerRefFile) {
 			def allImages = dockerRefFile.readLines().findAll { it.trim() && !it.trim().startsWith("#") }
 			def whitelistedImages = allImages.findAll { isContainerImageWhitelisted(it.trim()) }
 			def blacklistedImages = allImages.findAll { isContainerImageBlacklisted(it.trim()) }

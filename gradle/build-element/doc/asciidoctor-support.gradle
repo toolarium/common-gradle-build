@@ -211,7 +211,8 @@ if (!project.getProperty('IS_NEW') && project.hasProperty('supportAsciiDoctor') 
                     //'pagenums': "",
                     'encoding': "$asciiDoctorEncoding",
                     'pdf-theme': "$asciiDoctorPdfTheme",
-                    'pdf-themesdir': "$asciiDoctorPdfThemePath"
+                    'pdf-themesdir': "$asciiDoctorPdfThemePath",
+                    'compress': ''
         }
         
         sourceDir = file("${asciidocStagingDirectory}")
