@@ -3,22 +3,6 @@
 # @@LICENSE@@
 #
 
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  labels:
-    app.@@KUBERNETES_LABEL_ID@@.configmap: keycloak-cache-config
-  name: keycloak-cache-config
-  namespace: @@KUBERNETES_NAMESPACE@@
-data:
-  configure-cache.cli: |
-    embed-server --server-config=standalone-ha.xml --std-out=echo
-    batch
-    echo * Setting CACHE_OWNERS to "${env.CACHE_OWNERS}" in session cache-containers
-    /subsystem=infinispan/cache-container=keycloak/distributed-cache=sessions:write-attribute(name=owners, value=${env.CACHE_OWNERS:1})
-    run-batch
-    stop-embedded-server
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -45,12 +29,20 @@ spec:
       - image: @@KUBERNETES_IDM_IMAGE@@
         imagePullPolicy: ""
         name: @@KUBERNETES_IDM_SERVICE_NAME@@
+        args:
+        - start
         resources: {}
         env:
         - name: @@KUBERNETES_IDM_USER_FILE_ENV_NAME@@
-          value: /etc/secret/@@KUBERNETES_IDM_ADMIN_USERNAME_KEY@@
+          valueFrom:
+            secretKeyRef:
+              name: @@KUBERNETES_IDM_SECRET_NAME@@
+              key: @@KUBERNETES_IDM_ADMIN_USERNAME_KEY@@
         - name: @@KUBERNETES_IDM_PASSWORD_FILE_ENV_NAME@@
-          value: /etc/secret/@@KUBERNETES_IDM_ADMIN_PASSWORD_KEY@@
+          valueFrom:
+            secretKeyRef:
+              name: @@KUBERNETES_IDM_SECRET_NAME@@
+              key: @@KUBERNETES_IDM_ADMIN_PASSWORD_KEY@@
         - name: @@KUBERNETES_IDM_DATABASE_VENDOR_ENV_NAME@@
           valueFrom:
             configMapKeyRef:
@@ -77,9 +69,15 @@ spec:
               name: @@KUBERNETES_IDM_CONFIG_NAME@@
               key: @@KUBERNETES_IDM_DATABASESCHEMA_KEY@@
         - name: @@KUBERNETES_IDM_DATABASE_USER_FILE_ENV_NAME@@
-          value: /etc/secret/@@KUBERNETES_IDM_DATABASE_USERNAME_KEY@@
+          valueFrom:
+            secretKeyRef:
+              name: @@KUBERNETES_IDM_SECRET_NAME@@
+              key: @@KUBERNETES_IDM_DATABASE_USERNAME_KEY@@
         - name: @@KUBERNETES_IDM_DATABASE_PASSWORD_FILE_ENV_NAME@@
-          value: /etc/secret/@@KUBERNETES_IDM_DATABASE_PASSWORD_KEY@@
+          valueFrom:
+            secretKeyRef:
+              name: @@KUBERNETES_IDM_SECRET_NAME@@
+              key: @@KUBERNETES_IDM_DATABASE_PASSWORD_KEY@@
         - name: @@KUBERNETES_IDM_LOG_LEVEL_ENV_NAME@@
           valueFrom:
             configMapKeyRef:
@@ -95,37 +93,19 @@ spec:
             configMapKeyRef:
               name: @@KUBERNETES_IDM_CONFIG_NAME@@
               key: @@KUBERNETES_IDM_FRONTEND_URL_KEY@@
-        - name: JGROUPS_DISCOVERY_PROTOCOL
-          value: dns.DNS_PING
-        - name: JGROUPS_DISCOVERY_PROPERTIES
-          value: dns_query=keycloak-cluster
-        - name: POD_NAME
-          valueFrom:
-            fieldRef:
-              apiVersion: v1
-              fieldPath: metadata.name
-        - name: KUBERNETES_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-        - name: JAVA_OPTS_APPEND
-          value: >-
-              -Djboss.tx.node.id=$(echo $POD_NAME | cut -d'-' -f 1)-$(echo $POD_NAME | cut -d'-' -f 3)
-              -Djboss.site.name=$(KUBERNETES_NAMESPACE)
-        - name: CACHE_OWNERS
-          value: "@@KUBERNETES_IDM_CACHE_OWNERS@@"
-        volumeMounts:
-        - mountPath: /etc/secret
-          name: idm-credentials
-          readOnly: true
-        - mountPath: /opt/jboss/startup-scripts/
-          name: keycloak-cache-config
-          readOnly: true
+        - name: @@KUBERNETES_IDM_HTTP_ENABLED_ENV_NAME@@
+          value: "@@KUBERNETES_IDM_HTTP_ENABLED_VALUE@@"
+        - name: @@KUBERNETES_IDM_HOSTNAME_STRICT_ENV_NAME@@
+          value: "@@KUBERNETES_IDM_HOSTNAME_STRICT_VALUE@@"
+        - name: @@KUBERNETES_IDM_CACHE_ENV_NAME@@
+          value: "@@KUBERNETES_IDM_CACHE_VALUE@@"
+        - name: @@KUBERNETES_IDM_CACHE_STACK_ENV_NAME@@
+          value: "@@KUBERNETES_IDM_CACHE_STACK_VALUE@@"
         readinessProbe:
           failureThreshold: @@KUBERNETES_IDM_READINESS_FAILURE_THRESHOLD@@
           httpGet:
             path: "@@KUBERNETES_IDM_READINESS_CHECK_PATH@@"
-            port: @@DOCKER_EXPOSE_PORT@@
+            port: @@KUBERNETES_IDM_MANAGEMENT_PORT@@
             scheme: "@@KUBERNETES_IDM_READINESS_SCHEME@@"
           initialDelaySeconds: @@KUBERNETES_IDM_READINESS_INITIAL_DELAY_SECONDS@@
           periodSeconds: @@KUBERNETES_IDM_READINESS_PERIOD_SECONDS@@
@@ -135,37 +115,23 @@ spec:
           failureThreshold: @@KUBERNETES_IDM_LIVENESS_FAILURE_THRESHOLD@@
           httpGet:
             path: "@@KUBERNETES_IDM_LIVENESS_CHECK_PATH@@"
-            port: @@DOCKER_EXPOSE_PORT@@
+            port: @@KUBERNETES_IDM_MANAGEMENT_PORT@@
             scheme: "@@KUBERNETES_IDM_LIVENESS_SCHEME@@"
           initialDelaySeconds: @@KUBERNETES_IDM_LIVENESS_INITIAL_DELAY_SECONDS@@
           periodSeconds: @@KUBERNETES_IDM_LIVENESS_PERIOD_SECONDS@@
           successThreshold: @@KUBERNETES_IDM_LIVENESS_SUCCESS_THRESHOLD@@
           timeoutSeconds: @@KUBERNETES_IDM_LIVENESS_TIMEOUT_SECONDS@@
+        startupProbe:
+          failureThreshold: @@KUBERNETES_IDM_STARTUP_FAILURE_THRESHOLD@@
+          httpGet:
+            path: "@@KUBERNETES_IDM_STARTUP_CHECK_PATH@@"
+            port: @@KUBERNETES_IDM_MANAGEMENT_PORT@@
+            scheme: "@@KUBERNETES_IDM_STARTUP_SCHEME@@"
+          initialDelaySeconds: @@KUBERNETES_IDM_STARTUP_INITIAL_DELAY_SECONDS@@
+          periodSeconds: @@KUBERNETES_IDM_STARTUP_PERIOD_SECONDS@@
+          successThreshold: @@KUBERNETES_IDM_STARTUP_SUCCESS_THRESHOLD@@
+          timeoutSeconds: @@KUBERNETES_IDM_STARTUP_TIMEOUT_SECONDS@@
       restartPolicy: Always
-      volumes:
-        - name: idm-credentials
-          secret:
-            secretName: @@KUBERNETES_IDM_SECRET_NAME@@
-        - name: keycloak-cache-config
-          configMap:
-            name: keycloak-cache-config
-            defaultMode: 0755
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: keycloak-cluster
-  labels:
-    app.@@KUBERNETES_LABEL_ID@@.idm: keycloak
-  namespace: @@KUBERNETES_NAMESPACE@@
-spec:
-  clusterIP: None
-  ports:
-    - protocol: TCP
-      port: @@KUBERNETES_IDM_PORT@@
-      targetPort: @@KUBERNETES_IDM_PORT@@
-  selector:
-    app.@@KUBERNETES_LABEL_ID@@.idm: keycloak
 ---
 apiVersion: v1
 kind: Service

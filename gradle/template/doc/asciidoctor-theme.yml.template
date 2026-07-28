@@ -64,6 +64,9 @@ footer:
     right:
       content: '{product-name} v{product-version}'
 
+toc:
+  padding: [0, 0, 12, 0]
+
 running_content:
   start_at: toc
 

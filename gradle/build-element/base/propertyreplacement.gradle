@@ -606,8 +606,35 @@ ext.searchReplaceByProperties = { inputLine, replacePlaceHolders = true ->
 		}			
 		if (project.hasProperty('kubernetesIdmCacheOwners')) {
 			line = line.replace('@@KUBERNETES_IDM_CACHE_OWNERS@@', "${project.ext.kubernetesIdmCacheOwners}".toString())
-		}			
-		
+		}
+		if (project.hasProperty('kubernetesIdmManagementPort')) {
+			line = line.replace('@@KUBERNETES_IDM_MANAGEMENT_PORT@@', "${project.ext.kubernetesIdmManagementPort}".toString())
+		}
+		if (project.hasProperty('kubernetesIdmHttpEnabledEnvName')) {
+			line = line.replace('@@KUBERNETES_IDM_HTTP_ENABLED_ENV_NAME@@', "${project.ext.kubernetesIdmHttpEnabledEnvName}".toString())
+		}
+		if (project.hasProperty('kubernetesIdmHttpEnabledValue')) {
+			line = line.replace('@@KUBERNETES_IDM_HTTP_ENABLED_VALUE@@', "${project.ext.kubernetesIdmHttpEnabledValue}".toString())
+		}
+		if (project.hasProperty('kubernetesIdmHostnameStrictEnvName')) {
+			line = line.replace('@@KUBERNETES_IDM_HOSTNAME_STRICT_ENV_NAME@@', "${project.ext.kubernetesIdmHostnameStrictEnvName}".toString())
+		}
+		if (project.hasProperty('kubernetesIdmHostnameStrictValue')) {
+			line = line.replace('@@KUBERNETES_IDM_HOSTNAME_STRICT_VALUE@@', "${project.ext.kubernetesIdmHostnameStrictValue}".toString())
+		}
+		if (project.hasProperty('kubernetesIdmCacheEnvName')) {
+			line = line.replace('@@KUBERNETES_IDM_CACHE_ENV_NAME@@', "${project.ext.kubernetesIdmCacheEnvName}".toString())
+		}
+		if (project.hasProperty('kubernetesIdmCacheValue')) {
+			line = line.replace('@@KUBERNETES_IDM_CACHE_VALUE@@', "${project.ext.kubernetesIdmCacheValue}".toString())
+		}
+		if (project.hasProperty('kubernetesIdmCacheStackEnvName')) {
+			line = line.replace('@@KUBERNETES_IDM_CACHE_STACK_ENV_NAME@@', "${project.ext.kubernetesIdmCacheStackEnvName}".toString())
+		}
+		if (project.hasProperty('kubernetesIdmCacheStackValue')) {
+			line = line.replace('@@KUBERNETES_IDM_CACHE_STACK_VALUE@@', "${project.ext.kubernetesIdmCacheStackValue}".toString())
+		}
+
 		// IDM secret
 		if (project.hasProperty('kubernetesIdmSecretName')) {
 			line = line.replace('@@KUBERNETES_IDM_SECRET_NAME@@', "${project.ext.kubernetesIdmSecretName}".toString())
