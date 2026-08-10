@@ -726,6 +726,7 @@ setCommonGradleDefaultPropertyIfNull("dockerMultistageBuild", true)
 // jdk.attach        – dynamic attach API; required by jdk.jcmd and OpenTelemetry/profiler agents.
 // jdk.security.auth – JAAS LoginModule/Subject; used by Quarkus Security extensions (OIDC, JWT, etc.).
 setCommonGradleDefaultPropertyIfNull("dockerJlinkModules", "java.base,java.compiler,java.logging,java.naming,java.rmi,java.sql,java.transaction.xa,java.management,java.instrument,java.net.http,java.security.jgss,java.security.sasl,java.xml,java.xml.crypto,java.prefs,java.desktop,jdk.management,jdk.management.agent,jdk.attach,jdk.charsets,jdk.security.auth,jdk.unsupported,jdk.crypto.ec,jdk.crypto.cryptoki,jdk.zipfs,jdk.net,jdk.jcmd,jdk.naming.dns")
+setCommonGradleDefaultPropertyIfNull("dockerAdditionalPackages", "") // additional packages to install in the runtime image, e.g. fonts: fontconfig ttf-dejavu
 setCommonGradleDefaultPropertyIfNull("dockerRemoveNonEssentialBinaries", false)
 setCommonGradleDefaultPropertyIfNull("dockerMakeFilesystemReadonly", false)
 setCommonGradleDefaultPropertyIfNull("dockerRemovePackageInstallationBinaries", true)

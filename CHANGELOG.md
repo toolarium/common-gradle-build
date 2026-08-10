@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.6.7] - 2026-08-10
+### Added
+- New `dockerAdditionalPackages` property (default: `""`): space-separated Alpine packages installed in the runtime image alongside `tzdata`, before `apk` is removed. Use this to add OS-level dependencies that the JVM or application requires at runtime — e.g. `fontconfig ttf-dejavu` for services that use AWT (image generation, PDF rendering, font metrics). See README for details, setCommonGradleProperty("dockerAdditionalPackages", "fontconfig ttf-dejavu").
+
 ## [v1.6.6] - 2026-08-10
 ### Fixed
 - `exec.gradle`: fixed truncated process output capture in `execRawCommand` — pump threads are now joined before the final drain, which fixes "could not parse JSON summary" errors on large trivy scan outputs (~300 KB+). Also hardened the incremental drain in the polling loop against a secondary race by snapshotting the buffer atomically before iterating.

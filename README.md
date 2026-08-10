@@ -552,6 +552,7 @@ These are the properties you are most likely to customize. Set general/organizat
 | `dockerSubPathAccess` | `""` | URL subpath for container deployment |
 | `buildAlwaysDockerImage` | `false` | Build container image on every build |
 | `dockerRemoveDanglingImages` | `true` | Clean up dangling images after build |
+| `dockerAdditionalPackages` | `""` | Space-separated Alpine packages to install in the runtime image (e.g. `fontconfig ttf-dejavu` for AWT font support) |
 | `dockerRemoveNonEssentialBinaries` | `false` | Remove non-essential binaries from container (Alpine only; keeps only what entrypoint scripts need) |
 | `dockerMakeFilesystemReadonly` | `false` | Make `/etc`, `/usr`, `/lib` read-only in container |
 | `dockerReadonlyFilesystemPath` | `"/etc /usr /lib"` | Space-separated paths to make read-only |
@@ -563,6 +564,22 @@ These are the properties you are most likely to customize. Set general/organizat
 | `dockerAddAnnotation` | `false` | Add OCI metadata annotations |
 | `dockerCleanupAfterBuild` | `false` | Remove image after successful build |
 | `dockerCleanupAfterPublish` | `true` | Remove local image after push |
+
+##### Additional OS packages
+
+`dockerAdditionalPackages` installs extra Alpine packages in the runtime image in the same `apk add` step as `tzdata`, before the package manager itself is removed. This makes them available in the final hardened container regardless of whether `dockerRemovePackageInstallationBinaries` is enabled.
+
+**Example — AWT / font support:**
+Alpine ships with no fonts and no `fontconfig` library. Any code using `java.desktop` (AWT, image generation, PDF rendering, font metrics) will fail at runtime unless these are present. Add to the project's `build.gradle`:
+
+```groovy
+setCommonGradleProperty("dockerAdditionalPackages", "fontconfig ttf-dejavu")
+```
+
+- `fontconfig` provides `libfontconfig.so.1`, which the JVM's font manager loads at startup.
+- `ttf-dejavu` provides the actual font files — `fontconfig` alone is not sufficient without at least one font on the filesystem.
+
+> **Quarkus multi-stage note:** `java.desktop` is already included in the default `dockerJlinkModules`, so no jlink module change is needed — only the OS packages above are missing from the Alpine runtime image.
 
 #### Vulnerability Scanner
 
@@ -833,6 +850,7 @@ These are the properties you are most likely to customize. Set general/organizat
 | `dockerRemoveDanglingImages` | `true` | Clean up dangling images after build |
 | `dockerMultistageBuild` | `true` | Use jlink multistage build to create a minimal JRE in the container |
 | `dockerJlinkModules` | *(full module list)* | Comma-separated Java modules for `jlink --add-modules`; spaces/tabs stripped automatically |
+| `dockerAdditionalPackages` | `""` | Space-separated Alpine packages to install in the runtime image alongside `tzdata`, before `apk` is removed. See [Additional OS packages](#additional-os-packages). |
 | `dockerRemoveNonEssentialBinaries` | `false` | Remove non-essential binaries from container (Alpine only; keeps only what entrypoint scripts need) |
 | `dockerMakeFilesystemReadonly` | `false` | Make `/etc`, `/usr`, `/lib` read-only in container |
 | `dockerReadonlyFilesystemPath` | `"/etc /usr /lib"` | Space-separated paths to make read-only |
@@ -853,6 +871,10 @@ These are the properties you are most likely to customize. Set general/organizat
 | `dockerSupportProjectTemplateList` | `false` | Restrict which projects can have custom Dockerfiles |
 | `createServiceProperties` | `true` | Generate `toolarium-service.properties` |
 | `servicePropertiesName` | `toolarium-service.properties` | Service properties filename |
+
+##### AWT / font support
+
+The multi-stage Dockerfile copies a jlink-created minimal JRE into a clean Alpine runtime image which ships with no fonts and no `fontconfig` library. Use `dockerAdditionalPackages` to install them — see [Additional OS packages](#additional-os-packages) for details and an example. `java.desktop` is already included in the default `dockerJlinkModules`, so no module change is needed.
 
 #### Kubernetes
 

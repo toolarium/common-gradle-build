@@ -26,6 +26,7 @@ ARG READONLY_FILESYSTEM_EXCLUDE_PATH="@@dockerReadonlyFilesystemExcludePath@@"
 ARG REMOVE_IMAGE_VERSION="@@dockerRemoveImageVersion@@"
 ARG REMOVE_PACKAGE_VERSIONS="@@dockerRemovePackageVersions@@"
 ARG REMOVE_PACKAGE_INSTALLATION_BINARIES="@@dockerRemovePackageInstallationBinaries@@"
+ARG ADDITIONAL_PACKAGES="@@dockerAdditionalPackages@@"
 
 # set meta data
 LABEL vendor="@@LICENSE_ORGANISATION@@" \
@@ -44,6 +45,7 @@ RUN adduser -D ${RUNTIMEUSER}
 # update, set timezone and harden
 RUN apk --no-cache -U upgrade \
     && apk --no-cache add tzdata \
+    && if [ -n "${ADDITIONAL_PACKAGES}" ]; then apk --no-cache add ${ADDITIONAL_PACKAGES}; fi \
     && cp "/usr/share/zoneinfo/${TIMEZONE}" /etc/localtime \
     && echo "${TIMEZONE}" > /etc/timezone \
     # remove setuid/setgid binaries
