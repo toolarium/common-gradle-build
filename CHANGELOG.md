@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.6.6] - 2026-08-10
+### Fixed
+- `exec.gradle`: fixed truncated process output capture in `execRawCommand` — pump threads are now joined before the final drain, which fixes "could not parse JSON summary" errors on large trivy scan outputs (~300 KB+). Also hardened the incremental drain in the polling loop against a secondary race by snapshotting the buffer atomically before iterating.
+
 ## [v1.6.5] - 2026-07-28
 ### Changed
 - `kubernetes-idm.template`: updated for modern Keycloak (v17+, Quarkus-based). Removed WildFly/JBoss legacy configuration (`keycloak-cache-config` ConfigMap with `configure-cache.cli`, `standalone-ha.xml`). Removed file-based credential env vars (`KEYCLOAK_USER_FILE`, `KEYCLOAK_PASSWORD_FILE`, `DB_USER_FILE`, `DB_PASSWORD_FILE`) in favour of `secretKeyRef`. Replaced JBoss/WildFly cluster env vars with `KC_CACHE=ispn` and `KC_CACHE_STACK=jdbc-ping` — `jdbc-ping` is used because multicast is blocked by virtually all Kubernetes CNI implementations and `KC_CACHE_STACK=kubernetes` (KUBE_PING) requires Kubernetes API RBAC grants; `jdbc-ping` uses the existing database for cluster membership and works reliably with any CNI without additional permissions. Removed headless `keycloak-cluster` service (not required by `jdbc-ping`). Added `KC_HTTP_ENABLED`, `KC_HOSTNAME_STRICT` for reverse-proxy deployments. Added `args: [start]` for Quarkus startup mode. Health probes now target the management port (`kubernetesIdmManagementPort`, default `9000`) with paths `/health/ready`, `/health/live`, `/health/started`. Added `startupProbe`.

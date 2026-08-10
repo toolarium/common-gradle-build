@@ -103,26 +103,29 @@ ext.execRawCommand = { args, timeout=-1, sout=null, serr=null, workingPath=null 
 		proc.directory(new File(workingPath.toString()));
 	}
 	Process process = proc.start()
-	process.consumeProcessOutput(out, err)
+	def outConsumer = process.consumeProcessOutputStream(out)
+	def errConsumer = process.consumeProcessErrorStream(err)
 	while(true) {
 		try {
-			err.eachLine {line, count ->
+			def errChunk
+			synchronized(err) { errChunk = err.toString(); err.setLength(0) }
+			errChunk.eachLine {line, count ->
 				logInfo("${line}")
 
 				if (serr!=null) {
 					serr.append("${line}\n")
 				}
-				err.setLength(0)
 			}
-			out.eachLine { line, count ->
+			def outChunk
+			synchronized(out) { outChunk = out.toString(); out.setLength(0) }
+			outChunk.eachLine { line, count ->
 				logInfo("${line}")
-				
+
 				if (sout!=null) {
 					sout.append("${line}\n")
 				}
-				out.setLength(0)
 			}
-		
+
 			try {
 				Thread.sleep(500)
 			} catch(Exception e) {
@@ -143,7 +146,10 @@ ext.execRawCommand = { args, timeout=-1, sout=null, serr=null, workingPath=null 
 		} catch (Exception ex) {
 			ex.printStackTrace()
 		}
-	}	
+	}
+
+	try { outConsumer.join(10000) } catch (Exception ignore) {}
+	try { errConsumer.join(10000) } catch (Exception ignore) {}
 
 	err.eachLine {line, count ->
 		logInfo("${line}")
@@ -154,7 +160,7 @@ ext.execRawCommand = { args, timeout=-1, sout=null, serr=null, workingPath=null 
 	}
 	out.eachLine { line, count ->
 		logInfo("${line}")
-				
+
 		if (sout!=null) {
 			sout.append("${line}\n")
 		}
