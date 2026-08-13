@@ -212,6 +212,13 @@ if (new File("${srcKubernetesDirectory}").exists()) {
 	publish.finalizedBy(dockerPush)
 } else {
 	defaultTasks 'clean', 'projectValidation', 'dockerBuild'
+	if (project.tasks.findByName('build')) {
+		build.finalizedBy(dockerBuild)
+	}
+	publish.finalizedBy(dockerPush)
+	if (project.tasks.findByName('vulnerabilityScanner') != null) {
+		vulnerabilityScanner.mustRunAfter(dockerBuild)
+	}
 }
 
 
