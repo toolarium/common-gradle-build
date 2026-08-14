@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.6.9] - 2026-08-14
+### Added
+- New `kubernetesTerminationGraceperiodSeconds` property (default: `45`) controls the pod graceful shutdown window; added as a commented-out field in all seven Kubernetes Deployment templates so it is visible and ready to activate.
+
+### Fixed
+- Busybox binary dispatch bug in all Dockerfile hardening templates: busybox was copied as `/tmp/bb` but dispatches applets from `argv[0]`, causing every save/restore command to fail silently; renamed to `/tmp/busybox` across all eight templates. Also fixes missing `mkdir`/`chown` symlinks in `Dockerfile-node.template`.
+- Vulnerability scanner container image scan now works with `nerdctl` and Rancher Desktop on Linux/macOS.
+- All Dockerfile templates now correctly preserve the CA-certificate update chain (`update-ca-certificates`, `c_rehash`, `openssl`) through the binary wipe, so customer certificate overlays continue to work on hardened images. Quarkus templates additionally preserve `tini`; kubernetes and nodejs templates additionally preserve `nginx` and `envsubst`.
+
+### Changed
+- `dockerfile-test.sh` expanded with binary-preservation assertions for all templates and inline certificate-overlay build tests for kubernetes, java-runner, and multistage templates.
+
 ## [v1.6.8] - 2026-08-13
 ### Fixed
 - `container.gradle`: vulnerability scanner now correctly scans the Docker image during `cb release` for container projects without a kubernetes directory.

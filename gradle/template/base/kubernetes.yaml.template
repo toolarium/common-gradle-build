@@ -64,6 +64,7 @@ spec:
 #          successThreshold: @@KUBERNETES_LIVENESS_SUCCESS_THRESHOLD@@
 #          timeoutSeconds: @@KUBERNETES_LIVENESS_TIMEOUT_SECONDS@@
       restartPolicy: Always
+      #terminationGracePeriodSeconds: @@KUBERNETES_TERMINATION_GRACEPERIOD_SECONDS@@
 ---
 apiVersion: v1
 kind: Service

@@ -983,7 +983,10 @@ ext.searchReplaceByProperties = { inputLine, replacePlaceHolders = true ->
 		if (project.hasProperty('kubernetesStartupTimeoutSeconds')) {
 			line = line.replace('@@KUBERNETES_STARTUP_TIMEOUT_SECONDS@@', "${kubernetesStartupTimeoutSeconds}")
 		}
-		
+		if (project.hasProperty('kubernetesTerminationGraceperiodSeconds')) {
+			line = line.replace('@@KUBERNETES_TERMINATION_GRACEPERIOD_SECONDS@@', "${kubernetesTerminationGraceperiodSeconds}")
+		}
+
 		// elastic
 		if (project.hasProperty('esElasticsearchVersion')) {
 			line = line.replace('@@ES_ELASTICSEARCH_VERSION@@', "${esElasticsearchVersion}")

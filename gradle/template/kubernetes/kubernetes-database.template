@@ -109,6 +109,7 @@ spec:
           mountPath: /docker-entrypoint-initdb.d
           readOnly: true
       restartPolicy: Always
+      #terminationGracePeriodSeconds: @@KUBERNETES_TERMINATION_GRACEPERIOD_SECONDS@@
       volumes:
         - name: @@KUBERNETES_DATABASE_VOLUME_NAME@@
           persistentVolumeClaim:

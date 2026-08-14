@@ -213,6 +213,63 @@ if grep -qF "$MUTATION_TOKEN" "$MUTATION_TARGET" 2>/dev/null; then
 fi
 
 #########################################################################
+# CHECK 3: CUSTOMER CERTIFICATE PATTERN COVERAGE
+# The --cert level is only meaningful as long as it builds the patterns
+# the customers really use. Assert that both patterns are present in
+# dockerfile-test.sh verbatim, so a silent weakening of the test (e.g.
+# dropping the keytool import or the apk repository swap) is caught.
+#########################################################################
+printf "\n=== Check 3: Customer certificate pattern coverage ===\n"
+
+assert_test_contains() {
+    local name="$1" pattern="$2"
+    TOTAL=$((TOTAL + 1))
+    if grep -qF -- "$pattern" "$TEST_SCRIPT" 2>/dev/null; then
+        printf "  PASS: %s\n" "$name"
+        PASSED=$((PASSED + 1))
+    else
+        printf "  FAIL: %s (missing in %s)\n        %s\n" "$name" "${TEST_SCRIPT#$REPO_DIR/}" "$pattern"
+        FAILED=$((FAILED + 1))
+    fi
+}
+
+# services pattern (quarkus / images with keytool)
+assert_test_contains "services pattern: certificate copy" \
+    "COPY cacerts/* /usr/local/share/ca-certificates/"
+assert_test_contains "services pattern: keytool import into the JVM truststore" \
+    "keytool -importcert -cacerts -storepass changeit"
+assert_test_contains "services pattern: update-ca-certificates" \
+    "RUN update-ca-certificates"
+
+# ui pattern (nuxtjs / images without keytool)
+assert_test_contains "ui pattern: ash shell with pipefail" \
+    'SHELL ["/bin/ash", "-eo", "pipefail", "-c"]'
+assert_test_contains "ui pattern: append certificate to the CA bundle" \
+    "cat /usr/local/share/ca-certificates/customer-internal*.crt >> /etc/ssl/certs/ca-certificates.crt"
+assert_test_contains "ui pattern: apk repository swap (custom)" \
+    "mv /custom/repositories /etc/apk/repositories"
+assert_test_contains "ui pattern: ca-certificates installation" \
+    "apk add --no-cache ca-certificates"
+assert_test_contains "ui pattern: deployment permissions" \
+    "chgrp -R root /deployment"
+
+# ui pattern for images without apk (dockerRemovePackageInstallationBinaries)
+assert_test_contains "ui-hardened pattern: append certificate and update the trust store" \
+    "cat /usr/local/share/ca-certificates/customer-internal*.crt >> /etc/ssl/certs/ca-certificates.crt \\
+&& update-ca-certificates"
+
+# the verification itself must check the trust stores, not only the build
+assert_test_contains "verification: JVM truststore is checked" \
+    "keytool -list -cacerts"
+assert_test_contains "verification: CA bundle is checked" \
+    "/etc/ssl/certs/ca-certificates.crt"
+assert_test_contains "verification: update-ca-certificates hash symlink is checked" \
+    '/etc/ssl/certs/$CERT_HASH.0'
+
+printf "  INFO: the --cert level carries its own negative control (an image without\n"
+printf "        the overlay must be reported as not trusted), so no mutation run is needed here.\n"
+
+#########################################################################
 # Summary
 #########################################################################
 printf "\n=== Summary ===\n"

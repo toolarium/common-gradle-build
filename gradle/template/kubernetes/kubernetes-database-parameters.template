@@ -53,6 +53,7 @@ spec:
         - mountPath: @@KUBERNETES_DATABASE_MOUNT_PATH@@
           name: @@KUBERNETES_DATABASE_VOLUME_NAME@@
       restartPolicy: Always
+      #terminationGracePeriodSeconds: @@KUBERNETES_TERMINATION_GRACEPERIOD_SECONDS@@
       volumes:
       - name: @@KUBERNETES_DATABASE_VOLUME_NAME@@
         persistentVolumeClaim:

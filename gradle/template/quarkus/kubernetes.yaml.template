@@ -123,6 +123,7 @@ spec:
           successThreshold: @@KUBERNETES_QUARKUS_STARTUP_SUCCESS_THRESHOLD@@
           timeoutSeconds: @@KUBERNETES_QUARKUS_STARTUP_TIMEOUT_SECONDS@@
       restartPolicy: Always
+      #terminationGracePeriodSeconds: @@KUBERNETES_TERMINATION_GRACEPERIOD_SECONDS@@
 ---
 apiVersion: v1
 kind: Service

@@ -132,6 +132,7 @@ spec:
           successThreshold: @@KUBERNETES_IDM_STARTUP_SUCCESS_THRESHOLD@@
           timeoutSeconds: @@KUBERNETES_IDM_STARTUP_TIMEOUT_SECONDS@@
       restartPolicy: Always
+      #terminationGracePeriodSeconds: @@KUBERNETES_TERMINATION_GRACEPERIOD_SECONDS@@
 ---
 apiVersion: v1
 kind: Service

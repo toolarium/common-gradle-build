@@ -96,7 +96,6 @@ RUN cp /etc/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf.org \
   root $DEPLOYMENT_PATH;\n \
   index index.html;\n \
   location ~* \"/(_nuxt|_next|static|assets|chunks|immutable)/\" {\n \
-    expires 1y;\n \
     add_header Cache-Control \"public, max-age=31536000, immutable\";\n \
     try_files \$uri =404;\n \
   }\n \
@@ -109,6 +108,21 @@ RUN cp /etc/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf.org \
 }" > /etc/nginx/conf.d/default.conf \
   && chown ${RUNTIMEUSER} /etc/nginx/conf.d/default.conf
 
+# enable response compression: nginx ships with gzip disabled, so the bundled js/css of a
+# single page application goes over the wire uncompressed (js ~3.5x, css ~8x larger). Written
+# as a separate conf.d file (included in the http context) instead of patching nginx.conf, so
+# it is independent of the base image layout and untouched by apply-subpath.sh.
+# gzip_static serves a pre-compressed *.gz sibling when the build produces one and falls back
+# to on-the-fly compression otherwise. text/html is always compressed and must not be listed.
+RUN echo -e "gzip on;\n \
+gzip_vary on;\n \
+gzip_static on;\n \
+gzip_comp_level 6;\n \
+gzip_min_length 1024;\n \
+gzip_proxied any;\n \
+gzip_types application/javascript text/javascript application/json application/manifest+json text/css image/svg+xml application/wasm application/xml text/plain;" > /etc/nginx/conf.d/00-compression.conf \
+  && chown ${RUNTIMEUSER} /etc/nginx/conf.d/00-compression.conf
+  
 # comment user directive because we run as non root user
 RUN cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.org \
   && cat /etc/nginx/nginx.conf.org | sed 's/^user /#user /' > /etc/nginx/nginx.conf
@@ -136,16 +150,22 @@ RUN if [ "${REMOVE_NON_ESSENTIAL_BINARIES}" = "true" ]; then \
     if ! command -v busybox >/dev/null 2>&1; then \
     echo "WARNING: REMOVE_NON_ESSENTIAL_BINARIES=true requires an Alpine-based image (busybox not found). Skipping." >&2; \
     else \
-    cp "$(command -v busybox)" /tmp/bb && \
-    for cmd in envsubst file getconf; do [ -e "/usr/bin/$cmd" ] && /tmp/bb cp "/usr/bin/$cmd" "/tmp/$cmd" 2>/dev/null; done; \
-    [ -e "/usr/sbin/nginx" ] && /tmp/bb cp /usr/sbin/nginx /tmp/nginx 2>/dev/null; \
-    /tmp/bb rm -f /bin/* /sbin/* /usr/bin/* /usr/sbin/* 2>/dev/null; \
-    /tmp/bb cp /tmp/bb /bin/busybox && \
-    for cmd in sh cat chmod cut date dirname basename pwd ls echo find grep head md5sum mkdir mktemp mv printf rm sed seq sort touch tr uniq wc awk cp; do /bin/busybox ln -s busybox /bin/$cmd 2>/dev/null; done && \
+    cp "$(command -v busybox)" /tmp/busybox && \
+    for cmd in envsubst file getconf; do [ -e "/usr/bin/$cmd" ] && /tmp/busybox cp "/usr/bin/$cmd" "/tmp/$cmd" 2>/dev/null; done; \
+    [ -e "/usr/sbin/nginx" ] && /tmp/busybox cp /usr/sbin/nginx /tmp/nginx 2>/dev/null; \
+    [ -e /usr/sbin/update-ca-certificates ] && /tmp/busybox cp /usr/sbin/update-ca-certificates /tmp/update-ca-certificates 2>/dev/null; \
+    [ -e /usr/bin/c_rehash ] && /tmp/busybox cp /usr/bin/c_rehash /tmp/c_rehash 2>/dev/null; \
+    [ -e /usr/bin/openssl ] && /tmp/busybox cp /usr/bin/openssl /tmp/openssl 2>/dev/null; \
+    /tmp/busybox rm -f /bin/* /sbin/* /usr/bin/* /usr/sbin/* 2>/dev/null; \
+    /tmp/busybox cp /tmp/busybox /bin/busybox && \
+    for cmd in sh cat chmod cut date dirname basename pwd ls echo find grep head md5sum mkdir mktemp mv printf rm sed seq sort touch tr uniq wc awk cp readlink run-parts ash chgrp chown; do /bin/busybox ln -s busybox /bin/$cmd 2>/dev/null; done && \
     for cmd in envsubst file getconf; do [ -e "/tmp/$cmd" ] && /bin/cp "/tmp/$cmd" "/usr/bin/$cmd" && /bin/chmod 755 "/usr/bin/$cmd"; done; \
     [ -e "/tmp/nginx" ] && /bin/cp /tmp/nginx /usr/sbin/nginx && /bin/chmod 755 /usr/sbin/nginx; \
+    [ -e /tmp/update-ca-certificates ] && /bin/cp /tmp/update-ca-certificates /usr/sbin/update-ca-certificates && /bin/chmod 755 /usr/sbin/update-ca-certificates; \
+    [ -e /tmp/c_rehash ] && /bin/cp /tmp/c_rehash /usr/bin/c_rehash && /bin/chmod 755 /usr/bin/c_rehash; \
+    [ -e /tmp/openssl ] && /bin/cp /tmp/openssl /usr/bin/openssl && /bin/chmod 755 /usr/bin/openssl; \
     /bin/rm -rf /etc/apk /lib/apk /usr/share/apk /var/lib/apk /var/log/apk.log 2>/dev/null; \
-    /bin/rm -f /tmp/bb /tmp/nginx /tmp/envsubst /tmp/file /tmp/getconf 2>/dev/null; \
+    /bin/rm -f /tmp/busybox /tmp/nginx /tmp/envsubst /tmp/file /tmp/getconf /tmp/update-ca-certificates /tmp/c_rehash /tmp/openssl 2>/dev/null; \
     fi; \
     fi
 

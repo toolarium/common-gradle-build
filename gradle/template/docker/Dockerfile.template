@@ -101,12 +101,18 @@ RUN if [ "${REMOVE_NON_ESSENTIAL_BINARIES}" = "true" ]; then \
     if ! command -v busybox >/dev/null 2>&1; then \
     echo "WARNING: REMOVE_NON_ESSENTIAL_BINARIES=true requires an Alpine-based image (busybox not found). Skipping." >&2; \
     else \
-    cp "$(command -v busybox)" /tmp/bb && \
-    /tmp/bb rm -f /bin/* /sbin/* /usr/bin/* /usr/sbin/* 2>/dev/null; \
-    /tmp/bb cp /tmp/bb /bin/busybox && \
-    for cmd in sh cat chmod date dirname basename pwd ls hostname env grep tr sed stat tail sleep uname ps kill rm echo printf awk free cp mv; do /bin/busybox ln -s busybox /bin/$cmd 2>/dev/null; done; \
+    cp "$(command -v busybox)" /tmp/busybox && \
+    [ -e /usr/sbin/update-ca-certificates ] && /tmp/busybox cp /usr/sbin/update-ca-certificates /tmp/update-ca-certificates; \
+    [ -e /usr/bin/c_rehash ] && /tmp/busybox cp /usr/bin/c_rehash /tmp/c_rehash; \
+    [ -e /usr/bin/openssl ] && /tmp/busybox cp /usr/bin/openssl /tmp/openssl; \
+    /tmp/busybox rm -f /bin/* /sbin/* /usr/bin/* /usr/sbin/* 2>/dev/null; \
+    /tmp/busybox cp /tmp/busybox /bin/busybox && \
+    for cmd in sh cat chmod date dirname basename pwd ls hostname env grep tr sed stat tail sleep uname ps kill rm echo printf awk free cp mv readlink run-parts ash chgrp chown mkdir; do /bin/busybox ln -s busybox /bin/$cmd 2>/dev/null; done; \
+    [ -e /tmp/update-ca-certificates ] && /bin/cp /tmp/update-ca-certificates /usr/sbin/update-ca-certificates && /bin/chmod 755 /usr/sbin/update-ca-certificates; \
+    [ -e /tmp/c_rehash ] && /bin/cp /tmp/c_rehash /usr/bin/c_rehash && /bin/chmod 755 /usr/bin/c_rehash; \
+    [ -e /tmp/openssl ] && /bin/cp /tmp/openssl /usr/bin/openssl && /bin/chmod 755 /usr/bin/openssl; \
     /bin/rm -rf /etc/apk /lib/apk /usr/share/apk /var/lib/apk /var/log/apk.log 2>/dev/null; \
-    /bin/rm -f /tmp/bb 2>/dev/null; \
+    /bin/rm -f /tmp/busybox /tmp/update-ca-certificates /tmp/c_rehash /tmp/openssl 2>/dev/null; \
     fi; \
     fi
 
