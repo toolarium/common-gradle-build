@@ -317,6 +317,19 @@ docker_build_enhancement() {
 }
 
 #########################################################################
+# check_ca_certificates_installed <slug>
+# Asserts that the ca-certificates package is explicitly installed via apk.
+# Required for Alpine-based images that do not ship a CA bundle by default
+# (e.g. alpine:3.21, node:22-alpine).  Without this the CA trust store is
+# absent and customer certificate overlays silently fail.
+#########################################################################
+check_ca_certificates_installed() {
+    local file="$TEST_DIR/${1}.Dockerfile"
+    assert_file_contains "$1: ca-certificates package installed via apk" \
+        "apk --no-cache add tzdata ca-certificates" "$file"
+}
+
+#########################################################################
 # check_tini_preserved <slug>
 # Asserts that /sbin/tini is saved before the busybox wipe and restored
 # after (quarkus templates only).
@@ -894,6 +907,7 @@ render_check "base-all-false"  "$TMPL" "MAKE_READONLY=false" "RM_PKG_BINARIES=fa
 render_check "base-ro-only"    "$TMPL" "MAKE_READONLY=true"  "RM_PKG_BINARIES=false"
 render_check "base-pkg-only"   "$TMPL" "MAKE_READONLY=false" "RM_PKG_BINARIES=true"
 check_update_ca_certificates_preserved "base-defaults"
+check_ca_certificates_installed "base-defaults"
 
 if [ "$LEVEL" -ge 1 ]; then
     render_template "$TMPL" "$TEST_DIR/base-lint.Dockerfile"
@@ -927,6 +941,7 @@ render_check "docker-all-false" "$TMPL" \
     "MAKE_READONLY=false" "RM_PKG_BINARIES=false" \
     'DOCKER_ENTRYPOINT="sh", "-c", "echo hello"'
 check_update_ca_certificates_preserved "docker-defaults"
+check_ca_certificates_installed "docker-defaults"
 
 if [ "$LEVEL" -ge 1 ]; then
     render_template "$TMPL" "$TEST_DIR/docker-lint.Dockerfile" 'DOCKER_ENTRYPOINT="sh", "-c", "echo hello"'
@@ -1087,6 +1102,7 @@ render_check "node-all-false"   "$TMPL" \
     "DOCKER_IMAGE=node:22-alpine" "DOCKER_ENTRYPOINT=$NUXT_ENTRYPOINT" \
     "RM_NON_ESSENTIAL=false" "MAKE_READONLY=false" "RM_PKG_BINARIES=false"
 check_update_ca_certificates_preserved "node-defaults"
+check_ca_certificates_installed "node-defaults"
 
 if [ "$LEVEL" -ge 1 ]; then
     render_template "$TMPL" "$TEST_DIR/node-lint.Dockerfile" \

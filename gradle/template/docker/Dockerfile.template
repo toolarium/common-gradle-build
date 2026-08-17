@@ -42,7 +42,7 @@ RUN adduser -D ${RUNTIMEUSER}
 
 # update, set timezone and harden
 RUN apk --no-cache -U upgrade \
-    && apk --no-cache add tzdata \
+    && apk --no-cache add tzdata ca-certificates \
     && if [ -n "${ADDITIONAL_PACKAGES}" ]; then apk --no-cache add ${ADDITIONAL_PACKAGES}; fi \
     && cp "/usr/share/zoneinfo/${TIMEZONE}" /etc/localtime \
     && echo "${TIMEZONE}" > /etc/timezone \

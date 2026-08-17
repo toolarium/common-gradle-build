@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.6.10] - 2026-08-17
+### Fixed
+- Fixed missing `ca-certificates` installation in `base`, `docker`, and `Dockerfile-node` templates; Alpine-based images lacked a CA trust store, preventing customer certificate overlays.
+- Fixed missing test coverage for CA certificate installation in Dockerfile templates.
+
 ## [v1.6.9] - 2026-08-14
 ### Added
 - New `kubernetesTerminationGraceperiodSeconds` property (default: `45`) controls the pod graceful shutdown window; added as a commented-out field in all seven Kubernetes Deployment templates so it is visible and ready to activate.
