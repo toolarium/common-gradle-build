@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.6.11] - 2026-08-18
+### Fixed
+- Fixed shebang in `cb-meminfo.sh` and `toolarium-java-runner.sh.template`: changed `#!/usr/bin/env sh` to `#!/bin/sh` for reliable execution inside Alpine/BusyBox containers where `/usr/bin/env` may not be available.
+
 ## [v1.6.10] - 2026-08-17
 ### Fixed
 - Fixed missing `ca-certificates` installation in `base`, `docker`, and `Dockerfile-node` templates; Alpine-based images lacked a CA trust store, preventing customer certificate overlays.
