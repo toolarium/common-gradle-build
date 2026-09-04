@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.6.13] - 2026-09-04
+### Fixed
+- `nodejs/Dockerfile.template`, `kubernetes/Dockerfile.template`: fixed silent nginx startup script failures in hardened images — port override and subpath rewriting now work correctly at container start.
+
 ## [v1.6.12] - 2026-09-04
 ### Changed
 - `nodejs/Dockerfile.template`, `kubernetes/Dockerfile.template`: added `http2 on;` to the generated nginx server block (requires nginx ≥ 1.25.1, satisfied by the default `nginx:alpine` base image). HTTP/2 is negotiated automatically when TLS is present; on plain HTTP it is inert but ready.

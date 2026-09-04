@@ -357,9 +357,45 @@ check_nginx_preserved() {
         "envsubst" "$file"
     assert_file_contains "$1: extended symlink set (cut find md5sum)" \
         "find grep head md5sum" "$file"
+    # the nginx base entrypoint gates /docker-entrypoint.d on the hardcoded /usr/bin/find
+    assert_file_contains "$1: find restored at /usr/bin/find for the base entrypoint" \
+        "ln -s /bin/busybox /usr/bin/find" "$file"
 }
 
+#########################################################################
+# check_nginx_config_writable <slug>
+# Asserts that /etc/nginx is writable for the runtime user. 01-apply-port.sh
+# and 05-apply-subpath.sh patch conf.d with sed -i, which creates a temp file
+# in the directory; on the root owned 755 default this fails silently.
+#########################################################################
+check_nginx_config_writable() {
+    local file="$TEST_DIR/${1}.Dockerfile"
+    assert_file_contains "$1: nginx config owned by the runtime user" \
+        "chown -R \${RUNTIMEUSER} /etc/nginx" "$file"
+    assert_file_contains "$1: nginx config group root for an arbitrary UID" \
+        "chgrp -R root /etc/nginx" "$file"
+    assert_file_contains "$1: nginx config group permissions follow the owner" \
+        "chmod -R g=u /etc/nginx" "$file"
+}
 
+#########################################################################
+# check_nginx_http2 <slug>
+# Asserts that HTTP/2 is enabled in the server block of default.conf. nginx
+# serves HTTP/1.1 only by default, so without this a TLS terminator in front of
+# the container cannot negotiate h2.
+#########################################################################
+check_nginx_http2() {
+    local file="$TEST_DIR/${1}.Dockerfile"
+    # part of the echo -e that writes default.conf, hence the trailing \n
+    assert_file_contains "$1: http2 enabled in the default.conf server block" \
+        "http2 on;\\n" "$file"
+    assert_file_not_contains "$1: not written as a separate conf.d file" \
+        "00-http2.conf" "$file"
+    # the "listen ... http2" parameter is deprecated since nginx 1.25.1 and no
+    # longer matches the sed of 01-apply-port.sh, silently dropping EXPOSE_PORT
+    assert_file_not_contains "$1: http2 not set as listen parameter" \
+        "listen \$EXPOSE_PORT http2;" "$file"
+}
 
 #########################################################################
 # check_nginx_compression <slug>
@@ -387,7 +423,6 @@ check_nginx_compression() {
     assert_file_not_contains "$1: no duplicate Cache-Control from expires" \
         "expires 1y;" "$file"
 }
-
 
 #########################################################################
 # docker_lint <label> <dockerfile>
@@ -981,6 +1016,8 @@ render_check "k8s-subpath"     "$TMPL" "DOCKER_IMAGE=nginx:alpine" "SUBPATH=myap
 render_check "k8s-acclog-on"   "$TMPL" "DOCKER_IMAGE=nginx:alpine" "ENABLE_ACCESS_LOG=true"
 check_update_ca_certificates_preserved "k8s-defaults"
 check_nginx_preserved "k8s-defaults"
+check_nginx_http2 "k8s-defaults"
+check_nginx_config_writable "k8s-defaults"
 
 if [ "$LEVEL" -ge 1 ]; then
     render_template "$TMPL" "$TEST_DIR/k8s-lint.Dockerfile" "DOCKER_IMAGE=nginx:alpine"
@@ -1056,6 +1093,9 @@ render_check "nodejs-subpath"   "$TMPL" "DOCKER_IMAGE=nginx:alpine" "SUBPATH=app
 render_check "nodejs-acclog-on" "$TMPL" "DOCKER_IMAGE=nginx:alpine" "ENABLE_ACCESS_LOG=true"
 check_update_ca_certificates_preserved "nodejs-defaults"
 check_nginx_preserved "nodejs-defaults"
+check_nginx_compression "nodejs-defaults"
+check_nginx_http2 "nodejs-defaults"
+check_nginx_config_writable "nodejs-defaults"
 
 if [ "$LEVEL" -ge 1 ]; then
     render_template "$TMPL" "$TEST_DIR/nodejs-lint.Dockerfile" "DOCKER_IMAGE=nginx:alpine"
