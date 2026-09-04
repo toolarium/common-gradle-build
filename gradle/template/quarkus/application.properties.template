@@ -26,7 +26,21 @@ quarkus.log.console.format =%d{yyyy-MM-dd HH:mm:ss,SSS} - %.1p - [%H|%i|%t{id}] 
 %prod.quarkus.datasource.username = ${@@KUBERNETES_DATABASE_USERNAME_ENV_NAME@@}
 %prod.quarkus.datasource.password = ${@@KUBERNETES_DATABASE_PASSWORD_ENV_NAME@@}
 %prod.quarkus.datasource.jdbc.url = ${@@KUBERNETES_DATABASE_JDBC_URL_ENV_NAME@@}
+%prod.quarkus.datasource.jdbc.initial-size = ${DATABASE_JDBC_INITIALSIZE:2}
+%prod.quarkus.datasource.jdbc.min-size = ${DATABASE_JDBC_MINSIZE:2}
 %prod.quarkus.datasource.jdbc.max-size = ${@@KUBERNETES_DATABASE_JDBC_MAXSIZE_ENV_NAME@@:@@KUBERNETES_DATABASE_MAXSIZE_VALUE@@}
+%prod.quarkus.datasource.jdbc.max-lifetime = ${DATABASE_JDBC_MAX_LIFETIME:30M}
+%prod.quarkus.datasource.jdbc.background-validation-interval = ${DATABASE_JDBC_BACKGROUND_VALIDATION_INTERVAL:1M}
+#%prod.quarkus.datasource.jdbc.foreground-validation-interval = ${DATABASE_JDBC_FOREGROUND_VALIDATION_INTERVAL:10S}
+%prod.quarkus.datasource.jdbc.acquisition-timeout = ${DATABASE_JDBC_ACQUISITION_TIMEOUT:5S}
+%prod.quarkus.datasource.jdbc.leak-detection-interval = ${DATABASE_JDBC_LEAK_DETECTION_INTERVAL:2M}
+%prod.quarkus.datasource.jdbc.idle-removal-interval = ${DATABASE_JDBC_IDLE_REMOVAL_INTERVAL:5M}
+%prod.quarkus.transaction-manager.default-transaction-timeout = ${TRANSACTION_DEFAULT_TIMEOUT:30S}
+# vendor specific socket read timeout: protection against half-open sockets, the oracle driver expects milliseconds, the postgresql driver seconds
+%prod.quarkus.datasource.jdbc.additional-jdbc-properties.oracle.net.CONNECT_TIMEOUT = ${DATABASE_JDBC_ORACLE_CONNECT_TIMEOUT:5000}
+%prod.quarkus.datasource.jdbc.additional-jdbc-properties.oracle.jdbc.ReadTimeout = ${DATABASE_JDBC_ORACLE_READ_TIMEOUT:30000}
+%prod.quarkus.datasource.jdbc.additional-jdbc-properties.oracle.jdbc.implicitStatementCacheSize = ${DATABASE_JDBC_ORACLE_STATEMENT_CACHE_SIZE:20}
+%prod.quarkus.datasource.jdbc.additional-jdbc-properties.socketTimeout = ${DATABASE_JDBC_POSTGRES_SOCKET_TIMEOUT:30}
 
 # test configuration: drop and create the database in memory database, log debug -> cb test
 %test.quarkus.log.category."@@PACKAGE@@".level = DEBUG

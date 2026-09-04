@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.6.12] - 2026-09-04
+### Changed
+- `nodejs/Dockerfile.template`, `kubernetes/Dockerfile.template`: added `http2 on;` to the generated nginx server block (requires nginx ≥ 1.25.1, satisfied by the default `nginx:alpine` base image). HTTP/2 is negotiated automatically when TLS is present; on plain HTTP it is inert but ready.
+- `quarkus/application.properties.template`: extended JDBC connection-pool configuration with production-ready defaults — `initial-size`/`min-size` (2), `max-lifetime` (30M), `background-validation-interval` (1M), `acquisition-timeout` (5S), `leak-detection-interval` (2M), `idle-removal-interval` (5M), `transaction-manager.default-transaction-timeout` (30S). Added vendor-specific socket-timeout properties for Oracle (`oracle.net.CONNECT_TIMEOUT` 5000 ms, `oracle.jdbc.ReadTimeout` 30000 ms, `oracle.jdbc.implicitStatementCacheSize` 20) and PostgreSQL (`socketTimeout` 30 s) to protect against half-open sockets. All values are overridable via environment variables.
+
 ## [v1.6.11] - 2026-08-18
 ### Fixed
 - Fixed shebang in `cb-meminfo.sh` and `toolarium-java-runner.sh.template`: changed `#!/usr/bin/env sh` to `#!/bin/sh` for reliable execution inside Alpine/BusyBox containers where `/usr/bin/env` may not be available.
