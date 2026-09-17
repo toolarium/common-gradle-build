@@ -548,6 +548,10 @@ These are the properties you are most likely to customize. Set general/organizat
 |----------|---------|-------------|
 | `containerCmd` | `nerdctl` | Container tool command (`nerdctl` or `docker`) |
 | `dockerImage` | *(per project type)* | Base container image |
+| `dockerPinImageDigest` | `true` | Resolve and pin the base image digest (`image:tag@sha256:…`) before build. When `dockerImageRegistryApiUrl` is reachable the newest matching tag is resolved via the Docker Hub API (daily cached); otherwise falls back to a local `docker pull` + inspect. Images already containing `@sha256:` are passed through unchanged. |
+| `dockerImageRegistryAuthUrl` | `https://auth.docker.io` | Authentication service URL for Docker Hub image tag resolution |
+| `dockerImageRegistryApiUrl` | `https://registry-1.docker.io` | Registry API URL for Docker Hub image tag resolution |
+| `dockerImageVersionCacheDir` | `<tmp>/cgb-<user>/cgb-image-version-cache` | Directory for daily-cached resolved image tag results. Override via `CB_IMAGE_VERSION_RESOLVER_PATH` environment variable. |
 | `dockerDefaultPort` | `8080` | Container exposed port |
 | `dockerSubPathAccess` | `""` | URL subpath for container deployment |
 | `buildAlwaysDockerImage` | `false` | Build container image on every build |
@@ -757,7 +761,7 @@ setCommonGradleProperty("dockerAdditionalPackages", "fontconfig ttf-dejavu")
 |----------|---------|-------------|
 | `dependencyTextReport` | `true` | Generate text dependency report |
 | `dependencyHTMLReport` | `true` | Generate HTML dependency report |
-| `dependenciesReport` | `build/reports/dependencies/dependencies.txt` | Text report output path |
+| `dependenciesReport` | `build/reports/dependencies/runtime-dependencies.txt` | Text report output path |
 | `dependenciesFile` | `build/reports/dependencies/dependencies.json` | JSON report output path |
 
 #### Release & Versioning
@@ -773,7 +777,7 @@ setCommonGradleProperty("dockerAdditionalPackages", "fontconfig ttf-dejavu")
 | `commonGradleBuildReleasePublish` | `true` | Publish artifacts during release |
 | `commonGradleBuildReleaseBranchName` | `""` | Required branch for release (empty = any branch) |
 | `commonGradleBuildValidateReleaseArtefact` | `true` | Validate artifacts before release |
-| `copyReleaseArtefactInformation` | `true` | Copy build artifacts to release directory |
+| `copyReleaseArtefactInformation` | `true` | Copy build artifacts to release directory (`build.gradle`, `settings.gradle`, `VERSION`, `*.properties`, reports, `runtime-dependencies.txt`). The copied `build.gradle` has all `${VAR}` and `$VAR` patterns resolved in order from OS environment variables, Gradle project properties, and Java system properties (`-D` flags); unresolved patterns are left as-is. `runtime-dependencies.txt` lists all direct runtime dependencies (`group:artifact:version`, sorted) for Java-based projects. |
 | `releaseAddComponentIdIntoReleasePath` | `true` | Include component ID in release path |
 | `taskNameBeforeReleaseArtefacts` | `build` | Task that must run before release artifacts |
 
@@ -826,6 +830,10 @@ setCommonGradleProperty("dockerAdditionalPackages", "fontconfig ttf-dejavu")
 | `dockerBuildPull` | `""` | Pull base image flags (docker: `--pull --force-rm`) |
 | `dockerBuildCompress` | `""` | Compress layers flag (docker: `--compress`) |
 | `dockerBuildArgs` | `""` | Additional `--build-arg` arguments |
+| `dockerPinImageDigest` | `true` | Resolve and pin the base image digest (`image:tag@sha256:…`) before build. When `dockerImageRegistryApiUrl` is reachable the newest matching tag is resolved via the Docker Hub API (daily cached); otherwise falls back to a local `docker pull` + inspect. Images already containing `@sha256:` are passed through unchanged. |
+| `dockerImageRegistryAuthUrl` | `https://auth.docker.io` | Authentication service URL for Docker Hub image tag resolution |
+| `dockerImageRegistryApiUrl` | `https://registry-1.docker.io` | Registry API URL for Docker Hub image tag resolution |
+| `dockerImageVersionCacheDir` | `<tmp>/cgb-<user>/cgb-image-version-cache` | Directory for daily-cached resolved image tag results. Override via `CB_IMAGE_VERSION_RESOLVER_PATH` environment variable. |
 | `dockerName` | `""` | Custom image name (default: `rootProject:version`) |
 | `dockerDefaultPort` | `8080` | Default exposed port |
 | `dockerUID` | `3000` | Container user ID |
@@ -835,7 +843,7 @@ setCommonGradleProperty("dockerAdditionalPackages", "fontconfig ttf-dejavu")
 | `dockerDefaultEncoding` | `${fileEncoding}` | Container encoding |
 | `dockerDefaultLanguage` | `en` | Container language |
 | `dockerJavaOptions` | `-Djava.security.egd=file:/dev/./urandom` | JVM options in container |
-| `dockerJavaAgent` | `""` | Java agent JAR path |
+| `dockerJavaAgent` | `""` | Full container path of the Java agent JAR (set automatically when `toolariumJavaAgentEnabled=true`) |
 | `dockerProxyHost` | `""` | HTTP proxy host |
 | `dockerProxyPort` | `""` | HTTP proxy port |
 | `dockerGc` | `UseG1GC` | JVM garbage collector |
@@ -890,6 +898,7 @@ The multi-stage Dockerfile copies a jlink-created minimal JRE into a clean Alpin
 | `kubernetesInstallSupport` | `true` | Generate install scripts |
 | `kubernetesProductInformationSupport` | `true` | Generate product information |
 | `kubernetesProductFailOnVulnerabilityDependencies` | `false` | When `true`, referenced container image vulnerabilities fail the build |
+| `kubernetesEnableServiceLinks` | `false` | Sets `enableServiceLinks` in the pod spec; `false` prevents environment variable injection for every service in the namespace (avoids startup slowdown and env pollution in large clusters) |
 | `kustomizeSupport` | `true` | Enable kustomize output |
 | `kubernetesSupportIngressNginx` | `true` | **Deprecated** — include ingress-nginx controller (archived March 2026, no security updates) |
 | `kubernetesIngressNginxVersion` | `1.9.5` | Ingress-nginx version (archived) |
@@ -1035,7 +1044,10 @@ Example: `kubernetesQuarkusReadinessCheckPath`, `kubernetesNodeLivenessFailureTh
 | `quarkusAppSubPathName` | `app` | Sub-path for Quarkus app |
 | `updateApplicationProperties` | `true` | Strip test/dev profiles from app properties |
 | `createServiceJavaRunner` | `true` | Generate toolarium-java-runner.sh for container |
-| `createServiceJavaAgent` | `false` | Include Java agent in container |
+| `toolariumJavaAgentEnabled` | `false` | Resolve and embed [toolarium-java-agent](https://github.com/toolarium/toolarium-java-agent) in the container image and attach it at JVM startup via `-javaAgent:` |
+| `toolariumJavaAgentVersion` | `1.0.0` | Version of `toolarium-java-agent` to resolve |
+| `toolariumJavaAgentGroup` | `com.github.toolarium` | Maven group ID of the agent artifact |
+| `toolariumJavaAgentArtifact` | `toolarium-java-agent` | Maven artifact ID of the agent artifact |
 | `enablePatchRunTimeDefaultsConfigSource` | `false` | Patch RunTimeDefaultsConfigSource class |
 
 #### Vulnerability Scanner (Trivy) — [trivy.dev](https://trivy.dev/)
@@ -1080,7 +1092,7 @@ The framework stores data under the Gradle home directory (overridable via [Envi
 | Directory | Override | Purpose |
 |-----------|----------|---------|
 | `~/.gradle/common-gradle-build/` | `COMMON_GRADLE_BUILD_CACHE` | Cached framework scripts, version tracking (`lastCheck.properties`) |
-| `~/.gradle/common-gradle-build-releases/` | `COMMON_GRADLE_BUILD_HOME` | Release build artifacts and information (only for non-snapshot releases) |
+| `~/.gradle/common-gradle-build-releases/` | `COMMON_GRADLE_BUILD_HOME` | Release build artifacts and information (only for non-snapshot releases). Always includes `build.txt` (with `Java-Version`, `Base-Image`, `Runtime-Image`, `Quarkus-Version`, `Node-Version`, `Npm-Version` when applicable), the resolved `Dockerfile` (container projects), and the resolved `<project>-kubernetes.yaml` (Kubernetes projects). |
 | `~/.gradle/dependency-check-data/` | — | OWASP dependency-check NVD database (when `dependencyCheckEnabled=true`) |
 
 On Windows, `~` corresponds to `%USERPROFILE%` (e.g. `C:\Users\<name>\.gradle\...`).

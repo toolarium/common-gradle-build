@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.6.14] - 2026-09-17
+### Added
+- `dockerPinImageDigest=true` now resolves the newest matching tag via the Docker Hub API before pinning the digest — e.g. `eclipse-temurin:25-jdk-alpine` → `eclipse-temurin:25.0.4_7-jdk-alpine@sha256:…`. Already-pinned references (`image:tag@sha256:…`) are passed through unchanged. Falls back to `docker pull` + inspect for private/non-Hub registries. Results are cached daily under `<tmp>/cgb-<user>/cgb-image-version-cache/` (configurable via `dockerImageVersionCacheDir` or `CB_IMAGE_VERSION_RESOLVER_PATH`).
+- New properties: `dockerImageRegistryAuthUrl` (default: `https://auth.docker.io`), `dockerImageRegistryApiUrl` (default: `https://registry-1.docker.io`), `dockerImageVersionCacheDir` (default: `<tmp>/cgb-<user>/cgb-image-version-cache`; overridable via `CB_IMAGE_VERSION_RESOLVER_PATH` env var, set automatically by the `cb` launcher).
+- New `kubernetesEnableServiceLinks` property (default: `false`): disables Kubernetes service-link injection in all deployment templates, avoiding startup slowdown and environment pollution in large clusters.
+- Release info directory now includes the resolved `Dockerfile` (container projects) and `<project>-kubernetes.yaml` (Kubernetes projects), copied alongside `build.txt`.
+- `build.txt` records additional build context: `Java-Version`, `Quarkus-Version`, `Node-Version`, `Npm-Version`, `Base-Image`, `Runtime-Image` (where applicable).
+- The `build.gradle` copied to the release info directory (when `copyReleaseArtefactInformation=true`) has `${VAR}` / `$VAR` patterns resolved from OS environment variables, Gradle project properties, and Java system properties (`-D` flags); unresolved patterns are left as-is.
+- `runtime-dependencies.txt` written to the release info directory (when `copyReleaseArtefactInformation=true`) listing all direct runtime dependencies as `group:artifact:version`, sorted alphabetically.
+- Optional `toolarium-java-agent` integration for Quarkus and java-application containers: `toolariumJavaAgentEnabled=true` resolves the agent JAR from Maven (`toolariumJavaAgentGroup:toolariumJavaAgentArtifact:toolariumJavaAgentVersion`), embeds it in the image, and attaches it at JVM startup. Supported in all four Java Dockerfile templates: `Dockerfile-java-runner.template` and `Dockerfile-java-runner-multistage.template` (via `javaAgent` env var picked up by `toolarium-java-runner.sh`), `quarkus/Dockerfile.template` and `base/Dockerfile.template` (via `${JAVA_AGENT:+-javaAgent:${JAVA_AGENT}}` in the shell-form ENTRYPOINT). Override at runtime via `javaAgent`/`JAVA_AGENT` env var or `--javaAgent` CLI flag.
+
 ## [v1.6.13] - 2026-09-04
 ### Fixed
 - `nodejs/Dockerfile.template`, `kubernetes/Dockerfile.template`: fixed silent nginx startup script failures in hardened images — port override and subpath rewriting now work correctly at container start.

@@ -202,7 +202,7 @@ render_template() {
         -e "s|@@dockerExposePort@@|8080|g" \
         -e "s|@@dockerUser@@|appuser|g" \
         -e "s|@@dockerTimezone@@|UTC|g" \
-        -e "s|@@dockerDeploymentSourcePath@@|build/app|g" \
+        -e "s|@@dockerDeploymentSourcePath@@|build/container-deployment|g" \
         -e "s|@@dockerDefaultEncoding@@|UTF-8|g" \
         -e "s|@@dockerDefaultLocale@@|en_US|g" \
         -e "s|@@dockerDefaultLanguage@@|en|g" \
@@ -361,6 +361,7 @@ check_nginx_preserved() {
     assert_file_contains "$1: find restored at /usr/bin/find for the base entrypoint" \
         "ln -s /bin/busybox /usr/bin/find" "$file"
 }
+
 
 #########################################################################
 # check_nginx_config_writable <slug>

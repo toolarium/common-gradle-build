@@ -1,0 +1,353 @@
+/*
+ * image-version-resolver.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ *
+ * This file is part of the toolarium common-gradle-build.
+ *
+ * The common-gradle-build is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * The common-gradle-build is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+import groovy.json.JsonSlurper
+import java.net.HttpURLConnection
+import java.net.URL
+import java.util.regex.Pattern
+
+/**
+ * Resolves the newest published tag for a Docker Hub image within the same
+ * version family as a given base tag, using the Docker Hub registry API.
+ * Results are returned as a fully pinnable reference: image:newestTag@digest.
+ */
+class ImageVersionResolver {
+
+    /** The authentication service base URL (e.g. https://auth.docker.io). */
+    String authUrl
+
+    /** The registry API base URL (e.g. https://registry-1.docker.io). */
+    String registryUrl
+
+    /**
+     * Creates a new resolver with explicit registry URLs.
+     *
+     * @param authUrl     authentication service base URL
+     * @param registryUrl registry API base URL
+     */
+    ImageVersionResolver(String authUrl, String registryUrl) {
+        this.authUrl = authUrl
+        this.registryUrl = registryUrl
+    }
+
+
+    // --- HTTP layer -------------------------------------------------------
+
+    /**
+     * Performs an HTTP GET request and returns the response body as a string.
+     *
+     * @param url     the URL to request
+     * @param headers optional request headers
+     * @return the response body
+     * @throws RuntimeException when the server returns a non-2xx status code
+     */
+    String httpGet(String url, Map<String, String> headers = [:]) {
+        HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection()
+        conn.requestMethod = 'GET'
+        conn.connectTimeout = 15000
+        conn.readTimeout    = 15000
+        headers.each { k, v -> conn.setRequestProperty(k, v) }
+        int code = conn.responseCode
+        if (code < 200 || code >= 300) {
+            throw new RuntimeException("GET ${url} failed with HTTP ${code}")
+        }
+        return conn.inputStream.getText('UTF-8')
+    }
+
+    /**
+     * Performs an HTTP HEAD request and returns the response headers as a map.
+     *
+     * @param url     the URL to request
+     * @param headers optional request headers
+     * @return map of lowercase response header names to their values
+     */
+    Map<String, String> httpHead(String url, Map<String, String> headers = [:]) {
+        HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection()
+        conn.requestMethod = 'HEAD'
+        conn.connectTimeout = 15000
+        conn.readTimeout    = 15000
+        headers.each { k, v -> conn.setRequestProperty(k, v) }
+        conn.connect()
+        Map<String, String> result = [:]
+        conn.headerFields.each { k, v ->
+            if (k) result[k.toLowerCase()] = v.join(', ')
+        }
+        return result
+    }
+
+
+    // --- argument parsing -------------------------------------------------
+
+    /**
+     * Parses an image reference into its components.
+     * Official library images (no '/') are prefixed with "library/".
+     *
+     * @param input image reference, e.g. "alpine:latest" or "eclipse-temurin:25-jdk-alpine"
+     * @return map with keys: rawImage, image (registry path), baseTag
+     */
+    Map parseArgs(String input) {
+        String rawImage, tag
+        if (input.contains(':')) {
+            int idx = input.indexOf(':')
+            rawImage = input.substring(0, idx)
+            tag = input.substring(idx + 1)
+        } else {
+            rawImage = input
+            tag = 'latest'
+        }
+        String image = rawImage.contains('/') ? rawImage : "library/${rawImage}"
+        return [rawImage: rawImage, image: image, baseTag: tag]
+    }
+
+
+    // --- registry calls ---------------------------------------------------
+
+    /**
+     * Obtains a pull token for the given image from the authentication service.
+     *
+     * @param image registry path, e.g. "library/alpine"
+     * @return bearer token string
+     */
+    String getToken(String image) {
+        def url = "${authUrl}/token?service=registry.docker.io&scope=repository:${image}:pull"
+        def body = httpGet(url)
+        def json = new JsonSlurper().parseText(body)
+        return json.token
+    }
+
+    /**
+     * Lists all available tags for an image from the registry.
+     *
+     * @param image registry path, e.g. "library/alpine"
+     * @param token bearer token obtained from {@link #getToken}
+     * @return list of tag strings
+     */
+    List<String> listTags(String image, String token) {
+        def url = "${registryUrl}/v2/${image}/tags/list"
+        def body = httpGet(url, ['Authorization': "Bearer ${token}"])
+        def json = new JsonSlurper().parseText(body)
+        return json.tags as List<String>
+    }
+
+    /**
+     * Resolves the content digest for a specific image tag via a HEAD request
+     * against the manifest endpoint.
+     *
+     * @param image  registry path, e.g. "library/alpine"
+     * @param token  bearer token obtained from {@link #getToken}
+     * @param tag    image tag to resolve
+     * @return the docker-content-digest value (sha256:...)
+     * @throws RuntimeException when the digest header is absent
+     */
+    String digestForTag(String image, String token, String tag) {
+        def url = "${registryUrl}/v2/${image}/manifests/${tag}"
+        def headers = [
+            'Authorization': "Bearer ${token}",
+            'Accept'       : 'application/vnd.docker.distribution.manifest.list.v2+json, ' +
+                              'application/vnd.oci.image.index.v1+json, ' +
+                              'application/vnd.docker.distribution.manifest.v2+json, ' +
+                              'application/vnd.oci.image.manifest.v1+json'
+        ]
+        def responseHeaders = httpHead(url, headers)
+        String digest = responseHeaders['docker-content-digest']
+        if (!digest) {
+            throw new RuntimeException("Failed to resolve digest for tag '${tag}'. Headers: ${responseHeaders}")
+        }
+        return digest
+    }
+
+
+    // --- version comparison -----------------------------------------------
+
+    /**
+     * Compares two version strings using natural sort order (equivalent to {@code sort -V}).
+     * Splits each string into alternating numeric and non-numeric chunks; numeric chunks
+     * are compared as longs, non-numeric chunks as strings.
+     *
+     * @param a first version string
+     * @param b second version string
+     * @return negative, zero, or positive as a is less than, equal to, or greater than b
+     */
+    static int versionCompare(String a, String b) {
+        def splitChunks = { String s -> (s =~ /\d+|\D+/).collect { it } }
+        def ca = splitChunks(a)
+        def cb = splitChunks(b)
+        int n = Math.max(ca.size(), cb.size())
+        for (int i = 0; i < n; i++) {
+            String x = i < ca.size() ? ca[i] : ''
+            String y = i < cb.size() ? cb[i] : ''
+            if (x == y) continue
+            boolean xNum = x ==~ /\d+/
+            boolean yNum = y ==~ /\d+/
+            if (xNum && yNum) {
+                int cmp = (x as long) <=> (y as long)
+                if (cmp != 0) return cmp
+            } else {
+                int cmp = x <=> y
+                if (cmp != 0) return cmp
+            }
+        }
+        return 0
+    }
+
+
+    // --- tag selection ----------------------------------------------------
+
+    /**
+     * Selects the newest tag from {@code allTags} that matches the same version
+     * family as {@code baseTag}.
+     *
+     * <p>Selection strategy:
+     * <ol>
+     *   <li>If a suffix is present, prefer tags of the form {@code baseTag-X.Y}
+     *       (e.g. eclipse-temurin "25-jre-alpine-3.24").</li>
+     *   <li>Otherwise, filter by major version + suffix and pick the highest.</li>
+     *   <li>When no suffix is present but a major version exists (e.g. "24"),
+     *       restrict to that major line.</li>
+     *   <li>For floating tags ("latest", "edge"), pick the newest x.y[.z] release.</li>
+     * </ol>
+     *
+     * @param allTags list of all available tags for the image
+     * @param baseTag the original tag from the image reference
+     * @param major   leading numeric portion of the tag, or empty string
+     * @param suffix  non-numeric remainder after the major version, or empty string
+     * @return the selected newest tag
+     * @throws RuntimeException when no matching candidates are found
+     */
+    String resolveNewestTag(List<String> allTags, String baseTag, String major, String suffix) {
+        if (suffix) {
+            def trailingPattern = ~/^${Pattern.quote(baseTag)}-\d+\.\d+$/
+            def trailing = allTags.findAll { it ==~ trailingPattern }
+            if (trailing) {
+                return trailing.sort { a, b -> versionCompare(a, b) }.last()
+            }
+        }
+
+        List<String> candidates
+        if (suffix) {
+            def majorPattern = ~/^${Pattern.quote(major)}([._-]|$)/
+            candidates = allTags.findAll { t ->
+                (t ==~ /^\d.*/) && (t =~ majorPattern) && t.contains(suffix)
+            }
+        } else if (major) {
+            def pattern = ~/^${Pattern.quote(major)}(\.\d+)*$/
+            candidates = allTags.findAll { it ==~ pattern }
+        } else {
+            candidates = allTags.findAll { it ==~ /^\d+\.\d+(\.\d+)?$/ }
+        }
+
+        if (!candidates) {
+            throw new RuntimeException("No version tags found matching suffix '${suffix}'")
+        }
+
+        return candidates.sort { a, b ->
+            versionCompare(a.replace('_', '.'), b.replace('_', '.'))
+        }.last()
+    }
+
+
+    // --- entry point ------------------------------------------------------
+
+    /**
+     * Resolves the newest tag and digest for the given image reference.
+     *
+     * @param input image reference with optional tag, e.g. "alpine:latest"
+     * @return fully pinnable reference: "rawImage:newestTag@sha256:digest"
+     * @throws RuntimeException when token acquisition, tag listing, or digest resolution fails
+     */
+    String resolve(String input) {
+        def args = parseArgs(input)
+        String image    = args.image
+        String rawImage = args.rawImage
+        String baseTag  = args.baseTag
+
+        String token = getToken(image)
+        if (!token) {
+            throw new RuntimeException("Failed to obtain auth token for ${image}")
+        }
+
+        String major  = ''
+        String suffix = ''
+        if (baseTag ==~ /^\d.*/) {
+            major  = (baseTag =~ /^\d+/)[0]
+            suffix = baseTag.replaceFirst(/^\d[\d._]*/, '')
+        }
+
+        List<String> allTags = listTags(image, token)
+        String newestTag = resolveNewestTag(allTags, baseTag, major, suffix)
+        String digest    = digestForTag(image, token, newestTag)
+
+        return "${rawImage}:${newestTag}@${digest}"
+    }
+}
+
+
+/***************************************************************************************
+ * Resolve the newest tag+digest for a Docker Hub image with daily caching.
+ * Returns the fully-qualified pinnable reference: "<image>:<newest-tag>@<digest>"
+ * or null when resolution fails (network unavailable, non-Hub registry, etc.).
+ *
+ * Cache location (configurable via dockerImageVersionCacheDir, default: <tmp>/cgb-<user>/cgb-image-version-cache):
+ *   <dockerImageVersionCacheDir>/<YYYYMMDD>-<safe-name>.txt
+ ***************************************************************************************/
+ext.resolveImageVersion = { String image ->
+    // Already fully pinned — return as-is, re-resolution would replace an explicit user pin
+    if (image.contains('@sha256:')) {
+        logInfo("Image already pinned: ${image}")
+        return image
+    }
+    def cleanImage = image
+    def safeKey = cleanImage.replaceAll('[:/]', '_').replaceAll('[^a-zA-Z0-9._-]', '_')
+    def today = new java.text.SimpleDateFormat('yyyyMMdd').format(new Date())
+    def cacheDir = new File("${project.getProperty('dockerImageVersionCacheDir')}")
+    def cacheFile = new File(cacheDir, "${today}-${safeKey}.txt")
+
+    if (cacheFile.exists() && cacheFile.length() > 0) {
+        def cached = cacheFile.text.trim()
+        logInfo("Using cached image resolution for [${cleanImage}]: ${cached}")
+        return cached
+    }
+
+    try {
+        def resolver = new ImageVersionResolver(
+            project.getProperty('dockerImageRegistryAuthUrl').toString(),
+            project.getProperty('dockerImageRegistryApiUrl').toString()
+        )
+        def resolved = resolver.resolve(cleanImage)
+        if (resolved) {
+            cacheDir.mkdirs()
+            cacheFile.text = resolved
+            logInfo("Resolved image [${cleanImage}] -> ${resolved}")
+            // Remove stale cache files (any file whose yyyyMMdd date prefix is older than today)
+            cacheDir.eachFile { file ->
+                def m = file.name =~ /^(\d{8})-/
+                if (m && m[0][1] < today) {
+                    file.delete()
+                    logInfo("Removed stale image version cache file: ${file.name}")
+                }
+            }
+            return resolved
+        }
+    } catch (Exception e) {
+        logWarn("Could not resolve latest tag for ${cleanImage}: " + e.getMessage())
+    }
+    return null
+}

@@ -20,6 +20,9 @@
  */
 
 
+apply from: "${commonGradleBuildElementPath}/base/image-version-resolver.gradle"
+
+
 /***************************************************************************************
  * Check if container installation is ready to use
  ***************************************************************************************/
@@ -126,6 +129,80 @@ ext.execDocker = { cmd, errorMessage, failOnError = true, printWarnOnFail = true
 
 
 /***************************************************************************************
+ * Format an image reference for display. Strips the full sha256 digest; when
+ * showDigest is true a short 12-character digest suffix is appended, e.g.
+ *   eclipse-temurin:25.0.4_7-jdk-alpine@sha256:09349d79... -> eclipse-temurin:25.0.4_7-jdk-alpine (sha256:09349d79941f)
+ * Unpinned references are returned unchanged.
+ ***************************************************************************************/
+ext.formatImageDisplay = { image, boolean showDigest = false ->
+	def s = image.toString()
+	if (s.contains("@sha256:")) {
+		def idx = s.indexOf("@sha256:")
+		def tag = s.substring(0, idx)
+		if (showDigest) {
+			def digest = s.substring(idx + "@sha256:".length())
+			def shortDigest = digest.substring(0, Math.min(12, digest.length()))
+			return "${tag} (sha256:${shortDigest})"
+		}
+		return tag
+	}
+	return s
+}
+
+
+/***************************************************************************************
+ * Resolve container image digest for pinning.
+ * Pulls the image (required for the build anyway) then reads RepoDigests[0].
+ * Works with docker and nerdctl on Linux and Windows.
+ ***************************************************************************************/
+ext.resolveDockerImageDigest = { image ->
+	if (!image || image.toString().trim().isEmpty() || image.toString().contains("@sha256:")) {
+		return image
+	}
+	try {
+		def sout = new StringBuilder(), serr = new StringBuilder()
+		def exitStatus = execCommand("${containerCmd} pull ${image}", -1, sout, serr)
+		if (exitStatus == 0) {
+			// Use execRawCommand with explicit arg lists to bypass the PowerShell wrapper used by
+			// execCommand on Windows: PowerShell interprets {{...}} as script-block syntax and
+			// mangles the --format argument before nerdctl ever sees it. cmd.exe /c is neutral.
+			def baseArgs = ("windows" == getOsName()) ? ['cmd.exe', '/c', containerCmd.toString()] : [containerCmd.toString()]
+
+			sout = new StringBuilder(); serr = new StringBuilder()
+			exitStatus = execRawCommand(baseArgs + ['image', 'inspect', '--format', '{{index .RepoDigests 0}}', image.toString()], -1, sout, serr)
+			if (exitStatus == 0) {
+				def repoDigest = sout.toString().trim()
+				if (repoDigest && repoDigest.contains("@sha256:")) {
+					def digest = repoDigest.substring(repoDigest.indexOf("@sha256:") + 1)
+					def pinned = "${image}@${digest}"
+					logInfo("Pinned image [" + image + "] to [" + pinned + "].")
+					return pinned
+				}
+			}
+			// Fallback: nerdctl may return <no value> for {{index .RepoDigests 0}} when the slice
+			// is not populated the same way as Docker. Try the json format and regex-extract the first digest.
+			sout = new StringBuilder(); serr = new StringBuilder()
+			exitStatus = execRawCommand(baseArgs + ['image', 'inspect', '--format', '{{json .RepoDigests}}', image.toString()], -1, sout, serr)
+			if (exitStatus == 0) {
+				def matcher = (sout.toString().trim()) =~ /"([^"]+@sha256:[a-f0-9]{64}[^"]*)"/
+				if (matcher.find()) {
+					def repoDigest = matcher.group(1)
+					def digest = repoDigest.substring(repoDigest.indexOf("@sha256:") + 1)
+					def pinned = "${image}@${digest}"
+					logInfo("Pinned image [" + image + "] to [" + pinned + "].")
+					return pinned
+				}
+			}
+		}
+		printWarn("Could not resolve digest for image ${image}, using unpinned reference.")
+	} catch (Exception e) {
+		printWarn("Could not resolve digest for image ${image}: " + e.getMessage() + ", using unpinned reference.")
+	}
+	return image
+}
+
+
+/***************************************************************************************
  * container build task
  ***************************************************************************************/
 task dockerBuild {
@@ -135,6 +212,31 @@ task dockerBuild {
 
 	doLast {
 		if (!project.getProperty('IS_NEW') && checkDockerInstallation()) {
+			if (project.hasProperty('dockerPinImageDigest') && project.getProperty('dockerPinImageDigest').toString().equalsIgnoreCase("true")) {
+				if (project.hasProperty('dockerImage') && !project.getProperty('dockerImage').toString().trim().isEmpty()) {
+					def resolved = resolveImageVersion("${dockerImage}")
+					if (resolved) {
+						project.ext.set("dockerImage", resolved)
+						logInfo("Resolved base image: " + colorize(HIGHLITE_LEVEL, resolved))
+					} else {
+						def pinned = resolveDockerImageDigest("${dockerImage}")
+						project.ext.set("dockerImage", pinned)
+						logInfo("Pinned base image: " + colorize(HIGHLITE_LEVEL, pinned))
+					}
+				}
+				if (project.hasProperty('dockerRuntimeImage') && !project.getProperty('dockerRuntimeImage').toString().trim().isEmpty()) {
+					def resolved = resolveImageVersion("${dockerRuntimeImage}")
+					if (resolved) {
+						project.ext.set("dockerRuntimeImage", resolved)
+						logInfo("Resolved runtime image: " + colorize(HIGHLITE_LEVEL, resolved))
+					} else {
+						def pinned = resolveDockerImageDigest("${dockerRuntimeImage}")
+						project.ext.set("dockerRuntimeImage", pinned)
+						logInfo("Pinned runtime image: " + colorize(HIGHLITE_LEVEL, pinned))
+					}
+				}
+			}
+
 			def dockerSourceMessage="project"
 			def deleteDockerIgnoreFile=false
 			def localDockerFileExist=new File("$dockerFile").exists()
@@ -376,6 +478,8 @@ $cmd -f ${tempDockerFile} $cbProjectRootDir
 				}
 			}
 			
+			project.ext.set("resolvedDockerFile", "$cbProjectRootDir/build/Dockerfile")
+			copyFile("$tempDockerFile", "$cbProjectRootDir/build/Dockerfile")
 			new File("$tempDockerFile").delete()
 			if (dockerExecuteAsScript && !"$tempDockerFileScript".toString().isEmpty()) {
 				new File("$tempDockerFileScript").delete()
@@ -411,9 +515,9 @@ $cmd -f ${tempDockerFile} $cbProjectRootDir
 
 					def dockerRuntimeInformation = ""
 					if (project.hasProperty("dockerRuntimeImage") && !project.getProperty("dockerRuntimeImage").toString().trim().isEmpty()) {
-						dockerRuntimeInformation = ", runtime:" + colorize(HIGHLITE_LEVEL,  dockerRuntimeImage)
-					}					
-					printInfo("> Container images id " + colorize(HIGHLITE_LEVEL, "" + images.get("ID")) + ": " + colorize(HIGHLITE_LEVEL, sizeStr) + " (base:" + colorize(HIGHLITE_LEVEL,  dockerImage) + dockerRuntimeInformation + ")")
+						dockerRuntimeInformation = ", runtime:" + colorize(HIGHLITE_LEVEL, formatImageDisplay(dockerRuntimeImage.toString()))
+					}
+					printInfo("> Container images id " + colorize(HIGHLITE_LEVEL, "" + images.get("ID")) + ": " + colorize(HIGHLITE_LEVEL, sizeStr) + " (base:" + colorize(HIGHLITE_LEVEL, formatImageDisplay(dockerImage.toString())) + dockerRuntimeInformation + ")")
 				} catch (Exception e) {
 					printWarn("Could not add artefact depdendency: " + e.getMessage())
 					throw e

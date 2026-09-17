@@ -38,6 +38,7 @@ spec:
         version: "@@VERSION@@"
         app.@@KUBERNETES_LABEL_ID@@/instance: @@PROJECT_NAME@@
     spec:
+      enableServiceLinks: @@KUBERNETES_ENABLE_SERVICE_LINKS@@
       containers:
       - image: @@KUBERNETES_DOCKER_IMAGE@@
         name: @@PROJECT_NAME@@

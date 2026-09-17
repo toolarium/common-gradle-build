@@ -40,7 +40,7 @@ Shared templates used across all project types.
 | `editorconfig.template` | `.editorconfig` with encoding, indentation, and line ending rules |
 | `Dockerfile.template` | Generic Dockerfile for container builds |
 | `dockerignore.template` | `.dockerignore` excluding build artifacts, IDE files, and logs |
-| `kubernetes.yaml.template` | Generic Kubernetes deployment and service manifest |
+| `kubernetes.yaml.template` | Generic Kubernetes deployment and service manifest; pod spec sets `enableServiceLinks: false` by default (configurable via `kubernetesEnableServiceLinks`) |
 | `jwebserver.properties.template` | Configuration for embedded toolarium-jwebserver |
 | `redirectIndexFile.template` | HTML redirect index file for subpath deployments |
 | `robots.template` | `robots.txt` template |
@@ -87,7 +87,7 @@ Templates for Quarkus REST services.
 | `index.html.template` | Welcome page for Quarkus dev UI |
 | `Dockerfile.template` | Quarkus Dockerfile with JRE Alpine base image |
 | `Dockerfile-java-runner.template` | Optimized Dockerfile using `toolarium-java-runner.sh` |
-| `Dockerfile-java-runner-multistage.template` | Multistage build Dockerfile — compiles with JDK, runs on minimal Alpine image |
+| `Dockerfile-java-runner-multistage.template` | Multistage build Dockerfile — compiles with JDK, runs on minimal Alpine runtime image |
 | `RunTimeDefaultsConfigSource.template` | MicroProfile Config source for runtime defaults |
 | `kubernetes.yaml.template` | Kubernetes manifest with Quarkus health probes |
 | `toolarium-java-runner.sh.template` | POSIX shell script for running Quarkus JARs in containers with JVM memory options, GC configuration, and graceful startup |
@@ -114,7 +114,7 @@ Templates for Node.js-based projects (Nuxt.js, Vue.js, React).
 | `README.template` | Node.js project README |
 | `Dockerfile.template` | Nginx Alpine Dockerfile for static web apps |
 | `Dockerfile-node.template` | Node.js Alpine Dockerfile for server-side rendering |
-| `kubernetes.yaml.template` | Kubernetes manifest for Node.js containers |
+| `kubernetes.yaml.template` | Kubernetes manifest for Node.js containers; pod spec sets `enableServiceLinks: false` |
 | `apply-subpath.sh.template` | Runtime subpath remapping script for dynamic context paths. See [full documentation](../README.md#runtime-subpath-remapping). |
 
 ### Kubernetes (`gradle/template/kubernetes/`)

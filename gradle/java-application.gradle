@@ -65,6 +65,49 @@ apply from: "${commonGradleBuildElementPath}/base/container.gradle"
 
 
 /***************************************************************************************
+ * Stage deployment directory before dockerBuild: always copies app.jar, optionally
+ * resolves and adds the toolarium-java-agent JAR alongside it.
+ ***************************************************************************************/
+dockerBuild.doFirst {
+	if (!project.getProperty('IS_NEW')) {
+		// Stage deployment directory: copy app JAR as app.jar, then override dockerDeploymentSourcePath
+		// so the Dockerfile template receives the staging directory path (not the versioned JAR path).
+		// Only stage when dockerDeploymentSourcePath points to a file (default: build/libs/<app>.jar).
+		// If already pointing to a directory (user override), skip staging and use it directly.
+		def sourcePath = project.getProperty('dockerDeploymentSourcePath')
+		def sourceFile = new File("${cbProjectRootDir}/${sourcePath}")
+		def stageDir = new File("${cbProjectRootDir}/build/container-deployment")
+		if (sourceFile.isFile()) {
+			stageDir.mkdirs()
+			copyFile("${sourceFile}", "${stageDir}/app.jar")
+			setCommonGradleProperty("dockerDeploymentSourcePath", "build/container-deployment")
+		} else {
+			logInfo("dockerDeploymentSourcePath is a directory — using directly: ${sourcePath}")
+		}
+
+		if (project.hasProperty('toolariumJavaAgentEnabled') && project.getProperty('toolariumJavaAgentEnabled')) {
+			def agentCoords = "${toolariumJavaAgentGroup}:${toolariumJavaAgentArtifact}:${toolariumJavaAgentVersion}"
+			logInfo("Resolving toolarium-java-agent ${agentCoords}...")
+			try {
+				def agentCfg = configurations.detachedConfiguration(dependencies.create(agentCoords))
+				def agentFile = agentCfg.resolvedConfiguration.resolvedArtifacts
+					.find { it.name == toolariumJavaAgentArtifact }?.file
+				if (agentFile) {
+					copyFile("${agentFile}", "${stageDir}/${agentFile.name}")
+					setCommonGradleProperty("dockerJavaAgent", "/deployment/${agentFile.name}")
+					logInfo("toolarium-java-agent packaged: ${agentFile.name}")
+				} else {
+					logWarn("Could not find toolarium-java-agent artifact in resolved configuration")
+				}
+			} catch (Exception e) {
+				logWarn("Could not resolve toolarium-java-agent ${agentCoords}: ${e.getMessage()}")
+			}
+		}
+	}
+}
+
+
+/***************************************************************************************
  * excludes
  ***************************************************************************************/
 if (project.tasks.findByName('shadowJar')) {

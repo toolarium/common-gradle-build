@@ -514,8 +514,18 @@ projectValidation {
 				if (nodeVersion.length() > 1 && nodeVersion.startsWith("v")) {
 					nodeVersion = nodeVersion.substring(1).trim()
 				}
-				
+				project.ext.set("resolvedNodeVersion", nodeVersion)
 				printInfo("> " + colorize(HIGHLITE_LEVEL, "Node") + " version " + colorize(HIGHLITE_LEVEL, nodeVersion) + ".");
+			}
+		} catch(Exception e) {
+			// NOP
+		}
+		try {
+			def stdout = new StringBuilder()
+			def exitStatus = execCommand("npm --version", -1, stdout, stdout)
+			if (exitStatus==0) {
+				def npmVersion = stdout.toString().replaceAll("\\r?\\n", "").trim()
+				project.ext.set("resolvedNpmVersion", npmVersion)
 			}
 		} catch(Exception e) {
 			// NOP

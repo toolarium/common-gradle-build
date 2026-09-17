@@ -18,7 +18,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
  */
- 
+
 
 
 /* Release process description:
@@ -178,8 +178,26 @@ ext.updateReleaseArtefact = { isSnapshotArtefact = false ->
 			  << "Built-By        : " << publishingUsername << NELINE \
 			  << "Build-Timestamp : " << BUILD_TIMESTAMP << NELINE \
 			  << "Build-JDK       : " << "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})" << NELINE \
-			  << "Build-OS        : " << "${System.properties['os.name']} (${System.properties['os.version']}), ${System.properties['os.arch']}" << NELINE \
-			  << "" << NELINE
+			  << "Build-OS        : " << "${System.properties['os.name']} (${System.properties['os.version']}), ${System.properties['os.arch']}" << NELINE
+			if (project.plugins.hasPlugin('java')) {
+				w << "Java-Version    : " << System.properties['java.version'] << NELINE
+			}
+			if (project.hasProperty("quarkusPlatformVersion") && !project.getProperty("quarkusPlatformVersion").toString().trim().isEmpty()) {
+				w << "Quarkus-Version : " << project.getProperty("quarkusPlatformVersion") << NELINE
+			}
+			if (project.hasProperty("resolvedNodeVersion") && !project.getProperty("resolvedNodeVersion").toString().trim().isEmpty()) {
+				w << "Node-Version    : " << project.getProperty("resolvedNodeVersion") << NELINE
+			}
+			if (project.hasProperty("resolvedNpmVersion") && !project.getProperty("resolvedNpmVersion").toString().trim().isEmpty()) {
+				w << "Npm-Version     : " << project.getProperty("resolvedNpmVersion") << NELINE
+			}
+			if (project.hasProperty("dockerImage") && !project.getProperty("dockerImage").toString().trim().isEmpty()) {
+				w << "Base-Image      : " << project.getProperty("dockerImage") << NELINE
+			}
+			if (project.hasProperty("dockerRuntimeImage") && !project.getProperty("dockerRuntimeImage").toString().trim().isEmpty()) {
+				w << "Runtime-Image   : " << project.getProperty("dockerRuntimeImage") << NELINE
+			}
+			w << "" << NELINE
 		}
 	}
 
@@ -188,6 +206,48 @@ ext.updateReleaseArtefact = { isSnapshotArtefact = false ->
 		copy { from "$rootDirectory" include "settings.gradle" into "${releaseInfoDirectory}" } 
 		copy { from "$rootDirectory" include "*.properties" into "${releaseInfoDirectory}" } 
 		copy { from "$rootDirectory" include "VERSION" into "${releaseInfoDirectory}" } 
+
+		if (project.hasProperty("resolvedDockerFile") && new File(project.getProperty("resolvedDockerFile").toString()).exists()) {
+			logInfo("Copy resolved Dockerfile to " + colorize(HIGHLITE_LEVEL, releaseInfoDirectory) + colorize(INFO_LEVEL, "."))
+			copy { from project.getProperty("resolvedDockerFile") into "${releaseInfoDirectory}" }
+		}
+
+		if (project.hasProperty("kubernetesConfigurationPath")) {
+			def kubernetesYaml = new File("${project.getProperty('kubernetesConfigurationPath')}/${rootProject.name}-kubernetes.yaml")
+			if (kubernetesYaml.exists()) {
+				logInfo("Copy resolved Kubernetes manifest to " + colorize(HIGHLITE_LEVEL, releaseInfoDirectory) + colorize(INFO_LEVEL, "."))
+				copy { from kubernetesYaml into "${releaseInfoDirectory}" }
+			}
+		}
+
+		def copiedBuildGradle = new File("${releaseInfoDirectory}/build.gradle")
+		if (copiedBuildGradle.exists()) {
+			def content = copiedBuildGradle.text
+			content = content.replaceAll(/\$\{([A-Za-z_][A-Za-z0-9_]*)\}/) { full, varName ->
+				def val = System.getenv(varName)
+				if (val == null && project.hasProperty(varName)) val = project.getProperty(varName).toString()
+				if (val == null) val = System.getProperty(varName)
+				val != null ? val : full
+			}
+			content = content.replaceAll(/\$([A-Za-z_][A-Za-z0-9_]*)/) { full, varName ->
+				def val = System.getenv(varName)
+				if (val == null && project.hasProperty(varName)) val = project.getProperty(varName).toString()
+				if (val == null) val = System.getProperty(varName)
+				val != null ? val : full
+			}
+			copiedBuildGradle.text = content
+		}
+
+		if (project.configurations.findByName('runtimeClasspath')) {
+			try {
+				def deps = getRuntimeDependencies().collect { "${it.group}:${it.artifact}:${it.version}" }.sort()
+				def depsFile = new File("${releaseInfoDirectory}/runtime-dependencies.txt")
+				logInfo("Write " + colorize(HIGHLITE_LEVEL, depsFile.name) + colorize(INFO_LEVEL, " (${deps.size()} direct runtime dependencies)."))
+				depsFile.withWriter { w -> deps.each { w << it << NELINE } }
+			} catch (Exception e) {
+				logWarn("Could not write runtime-dependencies.txt: " + e.getMessage())
+			}
+		} 
 
 		if (new File("$rootDirectory/build/docs/javadoc").exists()) {
 			new File("${releaseInfoDirectory}/javadoc").mkdirs()

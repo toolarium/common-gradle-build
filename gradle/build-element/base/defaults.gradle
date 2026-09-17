@@ -551,8 +551,13 @@ setCommonGradleDefaultPropertyIfNull("quarkusAppSubPathName", "app")
 setCommonGradleDefaultPropertyIfNull("quarkusAppJar", "quarkus-run.jar")
 setCommonGradleDefaultPropertyIfNull("updateApplicationProperties", true)
 setCommonGradleDefaultPropertyIfNull("createServiceJavaRunner", true) // the dockerJavaRunner will be taken
-setCommonGradleDefaultPropertyIfNull("createServiceJavaAgent", false) // the dockerJavaAgent will be taken
 setCommonGradleDefaultPropertyIfNull("enablePatchRunTimeDefaultsConfigSource", false)
+
+// toolarium-java-agent integration: resolves and embeds the agent JAR into the container image
+setCommonGradleDefaultPropertyIfNull("toolariumJavaAgentEnabled", false)         // set to true to enable
+setCommonGradleDefaultPropertyIfNull("toolariumJavaAgentVersion", "1.0.0")       // version to resolve from Maven
+setCommonGradleDefaultPropertyIfNull("toolariumJavaAgentGroup", "com.github.toolarium")
+setCommonGradleDefaultPropertyIfNull("toolariumJavaAgentArtifact", "toolarium-java-agent")
 
 
 /***************************************************************************************
@@ -784,6 +789,10 @@ setCommonGradleDefaultPropertyIfNull("dockerMetadataFile", "$gradleBuildDirector
 setCommonGradleDefaultPropertyIfNull("dockerBuildPull", "") // docker: --pull --force-rm
 setCommonGradleDefaultPropertyIfNull("dockerBuildCompress", "") // docker: --compress
 setCommonGradleDefaultPropertyIfNull("dockerBuildArgs", "") // "--build-arg "
+setCommonGradleDefaultPropertyIfNull("dockerPinImageDigest", true) // resolve and pin base image digest before build
+setCommonGradleDefaultPropertyIfNull("dockerImageRegistryAuthUrl", "https://auth.docker.io") // authentication service URL for image tag resolution
+setCommonGradleDefaultPropertyIfNull("dockerImageRegistryApiUrl", "https://registry-1.docker.io") // registry API URL for image tag resolution
+setCommonGradleDefaultPropertyIfNull("dockerImageVersionCacheDir", System.getenv("CB_IMAGE_VERSION_RESOLVER_PATH") ?: getCommonGradleBuildTempPath("cgb-image-version-cache")) // cache directory for resolved image tags; override via CB_IMAGE_VERSION_RESOLVER_PATH env var
 setCommonGradleDefaultPropertyIfNull("dockerBuildLatestTag", false)
 setCommonGradleDefaultPropertyIfNull("dockerBuildLatestTagName", "")
 setCommonGradleDefaultPropertyIfNull("dockerRepositoryHost", "")
@@ -816,6 +825,7 @@ setCommonGradleDefaultPropertyIfNull("kubernetesInstallSupport", true)
 setCommonGradleDefaultPropertyIfNull("kubernetesDocSupport", true)
 setCommonGradleDefaultPropertyIfNull("kubernetesProductInformationSupport", true)
 setCommonGradleDefaultPropertyIfNull("kubernetesProductFailOnVulnerabilityDependencies", false)
+setCommonGradleDefaultPropertyIfNull("kubernetesEnableServiceLinks", false)
 
 if (project.hasProperty('projectGroupId') && !project.getProperty('projectGroupId').trim().isEmpty()) {
 	setCommonGradleDefaultPropertyIfNull("kubernetesLabelId", project.getProperty('projectGroupId'))

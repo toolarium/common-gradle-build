@@ -13,7 +13,6 @@ FROM @@dockerImage@@
 ARG EXPOSE_PORT="@@dockerExposePort@@"
 ARG RUNTIMEUSER="@@dockerUser@@"
 ARG TIMEZONE="@@dockerTimezone@@"
-ARG DEPLOYMENT_SOURCE_PATH="@@dockerDeploymentSourcePath@@"
 ARG DEPLOYMENT_PATH=/deployment
 ARG DEFAULT_ENCODING="@@dockerDefaultEncoding@@"
 ARG DEFAULT_LOCALE="@@dockerDefaultLocale@@"
@@ -126,6 +125,7 @@ ENV gcLogging="${gcLogging}"
 ENV exitOnOutOfMemory="${exitOnOutOfMemory}"
 ENV nativeMemoryTracking="${nativeMemoryTracking}"
 ENV observeMemoryCycle="${observeMemoryCycle}"
+ENV javaAgent="${JAVA_AGENT}"
 
 # remove non-essential binaries (keep only what toolarium-java-runner.sh, cb-meminfo.sh and java need)
 RUN if [ "${REMOVE_NON_ESSENTIAL_BINARIES}" = "true" ]; then \

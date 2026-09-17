@@ -350,6 +350,9 @@ ext.searchReplaceByProperties = { inputLine, replacePlaceHolders = true ->
 		if (project.hasProperty('kubernetesReplicas')) {
 			line = line.replace('@@KUBERNETES_REPLICAS@@', "${project.ext.kubernetesReplicas}".toString())
 		}
+		if (project.hasProperty('kubernetesEnableServiceLinks')) {
+			line = line.replace('@@KUBERNETES_ENABLE_SERVICE_LINKS@@', "${project.ext.kubernetesEnableServiceLinks}".toString())
+		}
 		if (project.hasProperty('kubernetesDockerImage')) {
 			line = line.replace('@@KUBERNETES_DOCKER_IMAGE@@', "${project.ext.kubernetesDockerImage}".toString())
 		}

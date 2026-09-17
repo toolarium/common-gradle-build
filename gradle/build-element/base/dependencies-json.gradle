@@ -23,7 +23,45 @@ apply from: "${commonGradleBuildElementPath}/base/json.gradle"
 
 
 /****************************************************************************************
- * Export request dependency 
+ * Get direct (first-level) dependencies for a given configuration.
+ * Defaults to runtimeClasspath which covers implementation + runtimeOnly deps.
+ * Use compileClasspath to additionally include compileOnly / annotation-processor deps.
+ *
+ * Returns a list of maps: [group, artifact, version, file]
+ ****************************************************************************************/
+ext.getDirectDependencies = { String configName = 'runtimeClasspath' ->
+    configurations[configName].resolvedConfiguration.firstLevelModuleDependencies
+        .collect { dep -> [
+            group   : dep.module.id.group,
+            artifact: dep.module.id.name,
+            version : dep.module.id.version,
+            file    : dep.moduleArtifacts[0]?.file?.toString()?.replace('\\', '/')
+        ]}
+}
+
+
+/****************************************************************************************
+ * Get direct runtime dependencies (implementation + runtimeOnly).
+ ****************************************************************************************/
+ext.getRuntimeDependencies = {
+    getDirectDependencies('runtimeClasspath')
+}
+
+
+/****************************************************************************************
+ * Get direct compile-time-only dependencies (compileOnly + annotationProcessor) —
+ * i.e. deps on the compileClasspath that are NOT on the runtimeClasspath.
+ ****************************************************************************************/
+ext.getCompileTimeDependencies = {
+    def runtimeCoords = getDirectDependencies('runtimeClasspath')
+        .collect { "${it.group}:${it.artifact}" }.toSet()
+    getDirectDependencies('compileClasspath')
+        .findAll { !runtimeCoords.contains("${it.group}:${it.artifact}") }
+}
+
+
+/****************************************************************************************
+ * Export request dependency
  ****************************************************************************************/
 task exportRequestDepndency {
     doLast { 

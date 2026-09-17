@@ -19,6 +19,7 @@ ARG DEFAULT_ENCODING="@@dockerDefaultEncoding@@"
 ARG DEFAULT_LOCALE="@@dockerDefaultLocale@@"
 ARG DEFAULT_LANGUAGE="@@dockerDefaultLanguage@@"
 ARG DEFAULT_JAVA_OPTIONS="@@dockerDefaultJavaOptions@@"
+ARG JAVA_AGENT="@@dockerJavaAgent@@"
 ARG REMOVE_NON_ESSENTIAL_BINARIES="@@dockerRemoveNonEssentialBinaries@@"
 ARG REMOVE_IMAGE_VERSION="@@dockerRemoveImageVersion@@"
 ARG MAKE_FILESYSTEM_READONLY="@@dockerMakeFilesystemReadonly@@"
@@ -74,14 +75,15 @@ RUN mkdir -p ${DEPLOYMENT_PATH} \
     && chmod -R 755 ${DEPLOYMENT_PATH} \
     && chmod -R g=u ${DEPLOYMENT_PATH}
 
-# copy application
-COPY --chown=${RUNTIMEUSER} ${DEPLOYMENT_SOURCE_PATH} ${DEPLOYMENT_PATH}/app.jar
+# copy application (app.jar and optionally java agent)
+COPY --chown=${RUNTIMEUSER} ${DEPLOYMENT_SOURCE_PATH}/ ${DEPLOYMENT_PATH}/
 
 # set language
 ENV LANG="${DEFAULT_LOCALE}.${DEFAULT_ENCODING}" LANGUAGE="${DEFAULT_LOCALE}:${DEFAULT_LANGUAGE}"
 
 # define JAVA_OPTIONS; with can be used to display the heap size: -XshowSettings:vm
 ENV JAVA_OPTIONS="${DEFAULT_JAVA_OPTIONS}"
+ENV JAVA_AGENT="${JAVA_AGENT}"
 ENV EXPOSE_PORT="${EXPOSE_PORT}"
 
 # remove non-essential binaries (keep only what java runtime needs)
@@ -122,4 +124,4 @@ USER ${RUNTIMEUSER}
 WORKDIR ${DEPLOYMENT_PATH}
 
 # start service
-ENTRYPOINT [ "java", "-jar", "/deployment/app.jar" ]
+ENTRYPOINT ["/bin/sh", "-c", "exec java ${JAVA_AGENT:+-javaAgent:${JAVA_AGENT}} $JAVA_OPTIONS -jar /deployment/app.jar"]

@@ -603,9 +603,23 @@ build { ->
 				copyFile("${commonGradleTemplateQuarkusPath}/${dockerMeminfo}", "${quarkusAppDirectory}/${dockerMeminfo}")
 			}
 
-			if (project.hasProperty('createServiceJavaAgent') && project.getProperty('createServiceJavaAgent') && project.getProperty('dockerJavaAgent')!=null && !project.getProperty('dockerJavaAgent').toString().trim().isEmpty()) {
-				// TODO:
-				copyFile("${commonGradleTemplateQuarkusPath}/${dockerJavaAgent}", "${quarkusAppDirectory}/${dockerJavaAgent}")
+			if (project.hasProperty('toolariumJavaAgentEnabled') && project.getProperty('toolariumJavaAgentEnabled')) {
+				def agentCoords = "${toolariumJavaAgentGroup}:${toolariumJavaAgentArtifact}:${toolariumJavaAgentVersion}"
+				logInfo("Resolving toolarium-java-agent ${agentCoords}...")
+				try {
+					def agentCfg = configurations.detachedConfiguration(dependencies.create(agentCoords))
+					def agentFile = agentCfg.resolvedConfiguration.resolvedArtifacts
+						.find { it.name == toolariumJavaAgentArtifact }?.file
+					if (agentFile) {
+						copyFile("${agentFile}", "${quarkusAppDirectory}/${agentFile.name}")
+						setCommonGradleProperty("dockerJavaAgent", "/deployment/${agentFile.name}")
+						logInfo("toolarium-java-agent packaged: ${agentFile.name}")
+					} else {
+						logWarn("Could not find toolarium-java-agent artifact in resolved configuration")
+					}
+				} catch (Exception e) {
+					logWarn("Could not resolve toolarium-java-agent ${agentCoords}: ${e.getMessage()}")
+				}
 			}
 		}
 		

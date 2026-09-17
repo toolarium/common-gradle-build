@@ -487,6 +487,8 @@ printEndedMessage="true"
 [ "$CB_VERBOSE" = "true" ] && printf "${CB_LINEHEADER}Set java executable [${NO_COLOR}$EXECUTABLE${HIGHLITE_LEVEL}]${NO_COLOR}\n"
 
 JAVAAGENT="${JAVAAGENT# }"
+# pick up javaAgent env var (set via Dockerfile ARG JAVA_AGENT → ENV javaAgent); CLI --javaAgent takes precedence
+[ -z "$JAVAAGENT" ] && [ -n "$javaAgent" ] && JAVAAGENT="-javaAgent:$javaAgent"
 [ "$CB_VERBOSE" = "true" ] && printf "${CB_LINEHEADER}Set java agent      [${NO_COLOR}$JAVAAGENT${HIGHLITE_LEVEL}]${NO_COLOR}\n"
 
 ! [ -n "$JARFILE" ] && JARFILE="app.jar" # prepare jar file

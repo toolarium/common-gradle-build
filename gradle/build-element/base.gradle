@@ -102,6 +102,7 @@ apply from: "${commonGradleBuildElementPath}/base/security.gradle"
 apply from: "${commonGradleBuildElementPath}/base/project-report.gradle"
 apply from: "${commonGradleBuildElementPath}/base/exec.gradle"
 apply from: "${commonGradleBuildElementPath}/base/changelog.gradle"
+apply from: "${commonGradleBuildElementPath}/base/dependencies-json.gradle"
 apply from: "${commonGradleBuildElementPath}/base/release.gradle"
 apply from: "${commonGradleBuildElementPath}/scm/git.gradle"
 
