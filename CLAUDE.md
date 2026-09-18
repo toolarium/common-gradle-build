@@ -12,6 +12,8 @@ apply from: "https://raw.githubusercontent.com/toolarium/common-gradle-build/mas
 
 There is no build process — this project is purely script-based (Gradle/Groovy). Do not attempt to compile or run `gradle build`.
 
+**NEVER run `gradle`, `cb`, or any Gradle command inside `gradle/sample/`.** That directory is a demo consumer project that applies the framework from the live GitHub URL. Running Gradle there triggers the framework's initialization logic, which generates files (`settings.gradle`, `gradle.properties`, `VERSION`, `README.md`, `LICENSE`, `CHANGELOG.md`) and pollutes the working tree. There is no testing or development reason to execute anything in `gradle/sample/`.
+
 ## Architecture
 
 ### Entry Point
