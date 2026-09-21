@@ -330,6 +330,21 @@ check_ca_certificates_installed() {
 }
 
 #########################################################################
+# check_java_runner_applets <slug>
+# Asserts that the busybox symlink set covers the applets
+# toolarium-java-runner.sh calls: cut (timestamp and word wrap) and rev
+# (word wrap). Without them the runner logs "cut: not found" on every start
+# and the log header wrapping is broken.
+#########################################################################
+check_java_runner_applets() {
+    local file="$TEST_DIR/${1}.Dockerfile"
+    assert_file_contains "$1: cut in busybox symlinks" \
+        "sh cat chmod cut date" "$file"
+    assert_file_contains "$1: rev in busybox symlinks" \
+        "cp mv rev readlink" "$file"
+}
+
+#########################################################################
 # check_tini_preserved <slug>
 # Asserts that /sbin/tini is saved before the busybox wipe and restored
 # after (quarkus templates only).
@@ -361,7 +376,6 @@ check_nginx_preserved() {
     assert_file_contains "$1: find restored at /usr/bin/find for the base entrypoint" \
         "ln -s /bin/busybox /usr/bin/find" "$file"
 }
-
 
 #########################################################################
 # check_nginx_config_writable <slug>
@@ -944,6 +958,7 @@ render_check "base-ro-only"    "$TMPL" "MAKE_READONLY=true"  "RM_PKG_BINARIES=fa
 render_check "base-pkg-only"   "$TMPL" "MAKE_READONLY=false" "RM_PKG_BINARIES=true"
 check_update_ca_certificates_preserved "base-defaults"
 check_ca_certificates_installed "base-defaults"
+assert_file_contains "base-defaults: rm -f /var/log/apk.log (not bare rm)" "rm -f /var/log/apk.log" "$TEST_DIR/base-defaults.Dockerfile"
 
 if [ "$LEVEL" -ge 1 ]; then
     render_template "$TMPL" "$TEST_DIR/base-lint.Dockerfile"
@@ -978,6 +993,7 @@ render_check "docker-all-false" "$TMPL" \
     'DOCKER_ENTRYPOINT="sh", "-c", "echo hello"'
 check_update_ca_certificates_preserved "docker-defaults"
 check_ca_certificates_installed "docker-defaults"
+assert_file_contains "docker-defaults: rm -f /var/log/apk.log (not bare rm)" "rm -f /var/log/apk.log" "$TEST_DIR/docker-defaults.Dockerfile"
 
 if [ "$LEVEL" -ge 1 ]; then
     render_template "$TMPL" "$TEST_DIR/docker-lint.Dockerfile" 'DOCKER_ENTRYPOINT="sh", "-c", "echo hello"'
@@ -1016,6 +1032,8 @@ render_check "k8s-all-false"   "$TMPL" "DOCKER_IMAGE=nginx:alpine" \
 render_check "k8s-subpath"     "$TMPL" "DOCKER_IMAGE=nginx:alpine" "SUBPATH=myapp/"
 render_check "k8s-acclog-on"   "$TMPL" "DOCKER_IMAGE=nginx:alpine" "ENABLE_ACCESS_LOG=true"
 check_update_ca_certificates_preserved "k8s-defaults"
+check_ca_certificates_installed "k8s-defaults"
+assert_file_contains "k8s-defaults: rm -f /var/log/apk.log (not bare rm)" "rm -f /var/log/apk.log" "$TEST_DIR/k8s-defaults.Dockerfile"
 check_nginx_preserved "k8s-defaults"
 check_nginx_http2 "k8s-defaults"
 check_nginx_config_writable "k8s-defaults"
@@ -1093,6 +1111,8 @@ render_check "nodejs-all-false" "$TMPL" "DOCKER_IMAGE=nginx:alpine" \
 render_check "nodejs-subpath"   "$TMPL" "DOCKER_IMAGE=nginx:alpine" "SUBPATH=app/"
 render_check "nodejs-acclog-on" "$TMPL" "DOCKER_IMAGE=nginx:alpine" "ENABLE_ACCESS_LOG=true"
 check_update_ca_certificates_preserved "nodejs-defaults"
+check_ca_certificates_installed "nodejs-defaults"
+assert_file_contains "nodejs-defaults: rm -f /var/log/apk.log (not bare rm)" "rm -f /var/log/apk.log" "$TEST_DIR/nodejs-defaults.Dockerfile"
 check_nginx_preserved "nodejs-defaults"
 check_nginx_compression "nodejs-defaults"
 check_nginx_http2 "nodejs-defaults"
@@ -1144,6 +1164,7 @@ render_check "node-all-false"   "$TMPL" \
     "RM_NON_ESSENTIAL=false" "MAKE_READONLY=false" "RM_PKG_BINARIES=false"
 check_update_ca_certificates_preserved "node-defaults"
 check_ca_certificates_installed "node-defaults"
+assert_file_contains "node-defaults: rm -f /var/log/apk.log (not bare rm)" "rm -f /var/log/apk.log" "$TEST_DIR/node-defaults.Dockerfile"
 
 if [ "$LEVEL" -ge 1 ]; then
     render_template "$TMPL" "$TEST_DIR/node-lint.Dockerfile" \
@@ -1183,7 +1204,9 @@ render_check "quarkus-defaults"  "$TMPL" "DOCKER_IMAGE=eclipse-temurin:21-jre-al
 render_check "quarkus-all-false" "$TMPL" "DOCKER_IMAGE=eclipse-temurin:21-jre-alpine" \
     "RM_NON_ESSENTIAL=false" "MAKE_READONLY=false" "RM_PKG_BINARIES=false"
 check_update_ca_certificates_preserved "quarkus-defaults"
+check_ca_certificates_installed "quarkus-defaults"
 check_tini_preserved "quarkus-defaults"
+check_java_runner_applets "quarkus-defaults"
 
 if [ "$LEVEL" -ge 1 ]; then
     render_template "$TMPL" "$TEST_DIR/quarkus-lint.Dockerfile" \
@@ -1224,7 +1247,9 @@ render_check "java-runner-defaults"  "$TMPL" "DOCKER_IMAGE=eclipse-temurin:21-jr
 render_check "java-runner-all-false" "$TMPL" "DOCKER_IMAGE=eclipse-temurin:21-jre-alpine" \
     "RM_NON_ESSENTIAL=false" "MAKE_READONLY=false" "RM_PKG_BINARIES=false"
 check_update_ca_certificates_preserved "java-runner-defaults"
+check_ca_certificates_installed "java-runner-defaults"
 check_tini_preserved "java-runner-defaults"
+check_java_runner_applets "java-runner-defaults"
 
 if [ "$LEVEL" -ge 1 ]; then
     render_template "$TMPL" "$TEST_DIR/java-runner-lint.Dockerfile" \
@@ -1299,7 +1324,9 @@ render_check "multistage-all-false" "$TMPL" \
     "DOCKER_IMAGE=eclipse-temurin:21-alpine" "DOCKER_RUNTIME_IMAGE=alpine:3.21" \
     "RM_NON_ESSENTIAL=false" "MAKE_READONLY=false" "RM_PKG_BINARIES=false"
 check_update_ca_certificates_preserved "multistage-defaults"
+check_ca_certificates_installed "multistage-defaults"
 check_tini_preserved "multistage-defaults"
+check_java_runner_applets "multistage-defaults"
 
 if [ "$LEVEL" -ge 1 ]; then
     render_template "$TMPL" "$TEST_DIR/multistage-lint.Dockerfile" \

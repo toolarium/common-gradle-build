@@ -59,7 +59,7 @@ RUN apk --no-cache -U upgrade \
 # remove version information and apk to prevent package installation
 RUN if [ "${REMOVE_PACKAGE_INSTALLATION_BINARIES}" = "true" ]; then \
     apk del apk-tools alpine-keys 2>/dev/null; \
-    rm /var/log/apk.log; \
+    rm -f /var/log/apk.log; \
     rm -rf /sbin/apk /etc/apk /lib/apk /usr/share/apk /var/lib/apk; \
     fi
 

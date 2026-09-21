@@ -44,7 +44,7 @@ RUN adduser -D ${RUNTIMEUSER}
 
 # update, set timezone and harden
 RUN apk --no-cache -U upgrade \
-    && apk --no-cache add tzdata \
+    && apk --no-cache add tzdata ca-certificates \
     && if [ -n "${ADDITIONAL_PACKAGES}" ]; then apk --no-cache add ${ADDITIONAL_PACKAGES}; fi \
     && cp "/usr/share/zoneinfo/${TIMEZONE}" /etc/localtime \
     && echo "${TIMEZONE}" > /etc/timezone \
@@ -103,7 +103,7 @@ RUN if [ "${REMOVE_NON_ESSENTIAL_BINARIES}" = "true" ]; then \
     [ -e /usr/bin/openssl ] && /tmp/busybox cp /usr/bin/openssl /tmp/openssl; \
     /tmp/busybox rm -f /bin/* /sbin/* /usr/bin/* /usr/sbin/* 2>/dev/null; \
     /tmp/busybox cp /tmp/busybox /bin/busybox && \
-    for cmd in sh cat chmod date dirname basename pwd ls hostname env grep tr sed stat tail sleep uname ps kill rm echo printf awk free cp mv readlink run-parts ash chgrp chown mkdir; do /bin/busybox ln -s busybox /bin/$cmd 2>/dev/null; done && \
+    for cmd in sh cat chmod cut date dirname basename pwd ls hostname env grep tr sed stat tail sleep uname ps kill rm echo printf awk free cp mv rev readlink run-parts ash chgrp chown mkdir; do /bin/busybox ln -s busybox /bin/$cmd 2>/dev/null; done && \
     [ -e /tmp/tini ] && /bin/cp /tmp/tini /sbin/tini && /bin/chmod 755 /sbin/tini; \
     [ -e /tmp/update-ca-certificates ] && /bin/cp /tmp/update-ca-certificates /usr/sbin/update-ca-certificates && /bin/chmod 755 /usr/sbin/update-ca-certificates; \
     [ -e /tmp/c_rehash ] && /bin/cp /tmp/c_rehash /usr/bin/c_rehash && /bin/chmod 755 /usr/bin/c_rehash; \
