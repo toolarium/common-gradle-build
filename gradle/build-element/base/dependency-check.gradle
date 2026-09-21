@@ -41,7 +41,7 @@ buildscript {
 		logInfo("toolarium dependency-check version: " + colorize(HIGHLITE_LEVEL, toolariumDependencyCheckVersion) + colorize(INFO_LEVEL, ".")); 
         classpath "org.owasp:dependency-check-gradle:${toolariumDependencyCheckVersion}"
 		
-		def toolariumDependencyCheckUtilVersion="1.1.0"
+		def toolariumDependencyCheckUtilVersion="1.1.1"
 		if (project.hasProperty('toolariumDependencyCheckUtilVersion')) {
 			toolariumDependencyCheckUtilVersion = project.getProperty('toolariumDependencyCheckUtilVersion')
 		}

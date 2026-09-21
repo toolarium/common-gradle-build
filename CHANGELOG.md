@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.6.15] - 2026-09-21
+### Changed
+- `image-version-resolver.gradle`: variant tags (e.g. `nginx:alpine`) now resolve to the newest `X.Y[.Z]-<variant>` tag; falls back to plain version tags when none exist.
+- Updated `toolarium-changelog-parser` to `1.1.2`, `toolarium-common` to `1.1.0`, `toolarium-dependency-check-util` to `1.1.1`.
+
 ## [v1.6.14] - 2026-09-17
 ### Added
 - `dockerPinImageDigest=true` now resolves the newest matching tag via the Docker Hub API before pinning the digest — e.g. `eclipse-temurin:25-jdk-alpine` → `eclipse-temurin:25.0.4_7-jdk-alpine@sha256:…`. Already-pinned references (`image:tag@sha256:…`) are passed through unchanged. Falls back to `docker pull` + inspect for private/non-Hub registries. Results are cached daily under `<tmp>/cgb-<user>/cgb-image-version-cache/` (configurable via `dockerImageVersionCacheDir` or `CB_IMAGE_VERSION_RESOLVER_PATH`).

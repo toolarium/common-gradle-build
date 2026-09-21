@@ -323,7 +323,7 @@ setCommonGradleDefaultPropertyIfNull("enumConfigurationDocProvisionedKeys", "") 
 /***************************************************************************************
  * toolarium changelog parser support
  ***************************************************************************************/
-setCommonGradleDefaultPropertyIfNull("toolariumChangelogParserVersion", "1.1.1")
+setCommonGradleDefaultPropertyIfNull("toolariumChangelogParserVersion", "1.1.2")
 
 
 /***************************************************************************************

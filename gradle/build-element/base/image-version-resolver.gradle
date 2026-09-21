@@ -211,6 +211,10 @@ class ImageVersionResolver {
 
     // --- tag selection ----------------------------------------------------
 
+    /** Tags which float over the whole repository and carry no variant. */
+    static final List<String> FLOATING_TAGS = ['latest', 'edge']
+
+
     /**
      * Selects the newest tag from {@code allTags} that matches the same version
      * family as {@code baseTag}.
@@ -222,6 +226,8 @@ class ImageVersionResolver {
      *   <li>Otherwise, filter by major version + suffix and pick the highest.</li>
      *   <li>When no suffix is present but a major version exists (e.g. "24"),
      *       restrict to that major line.</li>
+     *   <li>When the tag names a variant instead of a version (e.g. nginx "alpine",
+     *     node "alpine"), restrict to {@code X.Y[.Z]-variant} so the variant is kept.</li>
      *   <li>For floating tags ("latest", "edge"), pick the newest x.y[.z] release.</li>
      * </ol>
      *
@@ -241,16 +247,27 @@ class ImageVersionResolver {
             }
         }
 
+        // a tag which is neither a version nor a floating tag names a variant: nginx "alpine", node "alpine"
+        boolean isVariant = !major && !suffix && !FLOATING_TAGS.contains(baseTag.toLowerCase())
+
         List<String> candidates
         if (suffix) {
             def majorPattern = ~/^${Pattern.quote(major)}([._-]|$)/
             candidates = allTags.findAll { t ->
-                (t ==~ /^\d.*/) && (t =~ majorPattern) && t.contains(suffix)
+                (t ==~ /^\d.*/) && (t =~ majorPattern) && t.endsWith(suffix)
             }
         } else if (major) {
             def pattern = ~/^${Pattern.quote(major)}(\.\d+)*$/
             candidates = allTags.findAll { it ==~ pattern }
+        } else if (isVariant) {
+            def variantPattern = ~/^\d+\.\d+(\.\d+)?-${Pattern.quote(baseTag)}$/
+            candidates = allTags.findAll { it ==~ variantPattern }
         } else {
+              candidates = allTags.findAll { it ==~ /^\d+\.\d+(\.\d+)?$/ }
+        }
+
+        // a variant which is not published per version (e.g. "stable"): fall back to the version tags
+        if (!candidates && isVariant) {
             candidates = allTags.findAll { it ==~ /^\d+\.\d+(\.\d+)?$/ }
         }
 
