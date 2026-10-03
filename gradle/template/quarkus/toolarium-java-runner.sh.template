@@ -41,6 +41,8 @@ LOG_CAT_MAX="@@toolariumJavaRunnerLogCategoryMax@@"
 LOG_INFO_WIDTH="@@toolariumJavaRunnerLogInfoWidth@@"
 LOG_INFO_MAX="@@toolariumJavaRunnerLogInfoMax@@"
 exitCode=""
+stopSignal=""
+signalExitCode=""
 printEndedMessage="false"
 
 
@@ -177,17 +179,26 @@ errorhandler() {
 #########################################################################
 signalhandler() {
     _sig="$1"
+    # conventional exit code for signal: 128 + signal number
+    case "$_sig" in
+        TERM) signalExitCode=143 ;;  # 128 + 15
+        INT)  signalExitCode=130 ;;  # 128 + 2
+        HUP)  signalExitCode=129 ;;  # 128 + 1
+        *)    signalExitCode=1 ;;
+    esac
+    stopSignal="$_sig"
+
+    # forward the signal and keep the real exit code of the java process: after a
+    # graceful shutdown the JVM ends with 128 + signal number itself, any other code
+    # means the shutdown failed and must not be hidden
+    exitCode="$signalExitCode"
     if [ -n "$JAVA_PID" ]; then
         kill -"$_sig" "$JAVA_PID" 2>/dev/null
         wait "$JAVA_PID" 2>/dev/null
+        _rc=$?
+        # 127: the process was already reaped, its exit code is unknown
+        [ "$_rc" -ne 127 ] && exitCode="$_rc"
     fi
-    # conventional exit code for signal: 128 + signal number
-    case "$_sig" in
-        TERM) exitCode=143 ;;  # 128 + 15
-        INT)  exitCode=130 ;;  # 128 + 2
-        HUP)  exitCode=129 ;;  # 128 + 1
-        *)    exitCode=1 ;;
-    esac
     exithandler
 }
 
@@ -221,6 +232,10 @@ exithandler() {
         _dur=$((_end - _start_epoch))
         if [ "$exitCode" -eq 0 ] 2>/dev/null; then
             printLogMessage "I" "Stopped (duration: ${_dur}s, exit: $exitCode)"
+        elif [ -n "$stopSignal" ] && [ "$exitCode" = "$signalExitCode" ]; then
+            # requested stop (e.g. SIGTERM from kubernetes): 128 + signal number is the
+            # conventional result of a graceful shutdown, not an error
+            printLogMessage "I" "Stopped by signal $stopSignal (duration: ${_dur}s, exit: $exitCode)"
         else
             printLogMessage "E" "Stopped (duration: ${_dur}s, exit: $exitCode)"
         fi
