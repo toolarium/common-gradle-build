@@ -849,6 +849,89 @@ echo ""
 
 
 #########################################################################
+# Test 36: SIGTERM is forwarded to java and its exit code is kept
+#########################################################################
+printf "[Test Group 36] SIGTERM forwarding and exit code\n"
+
+#########################################################################
+# create_mock_java_signal - creates a fake java executable which runs
+# until it receives SIGTERM and then exits with the given exit code
+#   $1 = exit code on SIGTERM (143 = graceful JVM shutdown)
+#########################################################################
+create_mock_java_signal() {
+    mock_java="$TEST_DIR/mock-java-signal-$1"
+    cat > "$mock_java" <<MOCKEOF
+#!/bin/sh
+if [ "\$1" = "-version" ]; then
+    echo "mock java version \"17.0.1\" 2024-01-01" >&2
+    exit 0
+fi
+trap 'echo "TERM" > "$TEST_DIR/signal-received"; kill \$SLEEP_PID 2>/dev/null; exit $1' TERM
+sleep 30 &
+SLEEP_PID=\$!
+touch "$TEST_DIR/signal-started"
+wait \$SLEEP_PID
+exit 0
+MOCKEOF
+    chmod +x "$mock_java"
+    echo "$mock_java"
+}
+
+#########################################################################
+# run_runner_with_sigterm - starts the runner, sends SIGTERM to it once
+# the java process runs and sets $signal_output and $signal_exit_code
+#   $1 = mock java executable
+#########################################################################
+run_runner_with_sigterm() {
+    rm -f "$TEST_DIR/signal-started" "$TEST_DIR/signal-received" "$TEST_DIR/signal-output"
+    (cd "$TEST_DIR" && TERM="" exec sh "$RUNNER" --nocolor \
+        --executable "$1" \
+        --jar "$mock_jar" > "$TEST_DIR/signal-output" 2>&1) &
+    runner_pid=$!
+
+    # wait until the java process runs (max 10s)
+    i=0
+    while [ ! -f "$TEST_DIR/signal-started" ] && [ "$i" -lt 100 ]; do
+        sleep 0.1
+        i=$((i + 1))
+    done
+
+    # watchdog: a runner which does not end on SIGTERM must not block the suite;
+    # it ends its own sleep when it is stopped, otherwise the orphaned sleep holds
+    # the output of the suite open
+    (trap 'kill $sleep_pid 2>/dev/null; exit 0' TERM
+     sleep 20 & sleep_pid=$!
+     wait $sleep_pid && kill -9 "$runner_pid" 2>/dev/null) > /dev/null 2>&1 &
+    watchdog_pid=$!
+
+    kill -TERM "$runner_pid"
+    wait "$runner_pid"
+    signal_exit_code=$?
+    kill "$watchdog_pid" 2>/dev/null
+    wait "$watchdog_pid" 2>/dev/null
+    signal_output=$(cat "$TEST_DIR/signal-output")
+}
+
+mock_jar=$(create_mock_jar)
+
+# graceful shutdown: the JVM ends with 128 + 15 itself, a requested stop is not an error
+run_runner_with_sigterm "$(create_mock_java_signal 143)"
+assert_exit_code "SIGTERM graceful exit code" 143 "$signal_exit_code"
+assert_output_contains "SIGTERM forwarded to java" "TERM" "$(cat "$TEST_DIR/signal-received" 2>/dev/null)"
+assert_output_contains "SIGTERM graceful stop message" "Stopped by signal TERM" "$signal_output"
+assert_output_contains "SIGTERM graceful info log" " - I - " "$signal_output"
+assert_output_not_contains "SIGTERM graceful no error log" " - E - " "$signal_output"
+
+# failed shutdown: the real exit code of java is kept and reported as error
+run_runner_with_sigterm "$(create_mock_java_signal 1)"
+assert_exit_code "SIGTERM failed shutdown exit code" 1 "$signal_exit_code"
+assert_output_contains "SIGTERM failed shutdown error log" " - E - " "$signal_output"
+assert_output_not_contains "SIGTERM failed shutdown no stop message" "Stopped by signal" "$signal_output"
+
+echo ""
+
+
+#########################################################################
 # Summary
 #########################################################################
 printf "=========================================================================\n"
