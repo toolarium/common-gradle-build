@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+● [v1.6.17] - 2026-10-03
+### Changed
+- Quarkus templates support graceful shutdown: application.properties sets quarkus.shutdown.delay / timeout for the %prod profile, the kubernetes template activates terminationGracePeriodSeconds (default 45s).
+### Fixed
+- Java runner: on SIGTERM the real exit code of the java process is kept; a graceful stop (143) is logged as info instead of error, a failed shutdown is no longer reported as 143.
+- Quarkus application.properties template: the Oracle jdbc driver properties are quoted, otherwise they are ignored on a named datasource.
+
 ## [v1.6.16] - 2026-09-21
 ### Fixed
 - All Dockerfile templates (`base`, `docker`, `kubernetes`, `nodejs/Dockerfile.template`, `nodejs/Dockerfile-node.template`).
