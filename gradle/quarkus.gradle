@@ -95,7 +95,15 @@ ext.validateQuarkusVersion = { ->
 		}
 		
 		if (loadVersionList) {
-			def releases = readGithubReleases("https://api.github.com/repos/quarkusio/quarkus/releases");
+			def releases = []
+			for (int page = 1; page <= 3; page++) {
+			    def pageReleases = readGithubReleases("https://api.github.com/repos/quarkusio/quarkus/releases?per_page=100&page=" + page)
+			    if (pageReleases == null || pageReleases.isEmpty()) {
+			             break
+			    }
+			    releases.addAll(pageReleases)
+			}
+			
 			releases.findAll{ "false".equalsIgnoreCase(it.prerelease.toString()) }.findAll{ 
 					def versionStr = it.name.toString();
 					if (versionStr!=null) {
@@ -206,16 +214,18 @@ ext.validateQuarkusVersion = { ->
 					logInfo("Current quarkus version " + quarkusPluginVersion + " is compliant with " + defaultQuarkusPluginVersion + ".")
 				}
 			}
-			
+
 			if (verifyNewestVersion) {
-				def newestVersion = versionInformation.getProperty("" + currentVersion.getMajorNumber() + "." + currentVersion.getMinorNumber());
-				def newestQuarkusVersion = parseReleaseVersion(newestVersion);
-				if (currentVersion.compareTo(newestQuarkusVersion) < 0) {
-					printWarn("There is a newer quarkus version available " + colorize(HIGHLITE_LEVEL, newestVersion)  + colorize(WARN_LEVEL, ", current: $quarkusPluginVersion!"))
-				} else {
-					logInfo("Current quarkus version " + quarkusPluginVersion + " is up-to-date.")
-				}
-			}
+			     def mainVersion = "" + currentVersion.getMajorNumber() + "." + currentVersion.getMinorNumber()
+			     def newestVersion = versionInformation.getProperty(mainVersion)
+			     if (newestVersion == null || newestVersion.isBlank()) {
+			         logInfo("No release information found for quarkus " + mainVersion + ", skip newest version check.")
+			     } else if (currentVersion.compareTo(parseReleaseVersion(newestVersion)) < 0) {
+			         printWarn("There is a newer quarkus version available " + colorize(HIGHLITE_LEVEL, newestVersion)  + colorize(WARN_LEVEL, ", current: $quarkusPluginVersion!"))
+			     } else {
+			         logInfo("Current quarkus version " + quarkusPluginVersion + " is up-to-date.")
+			     }
+			 }			
 		}
 	} catch (Exception e) {
 		printWarn("Could not check quarlus version: " + e.getMessage())
