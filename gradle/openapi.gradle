@@ -318,7 +318,7 @@ task openApiProcess {
 							    inputSpec.set("${yamlPath}/${fileName}".toString())         // plugin < 7.22.0
 							}
 
-						   if (outputDir instanceof org.gradle.api.file.DirectoryProperty)
+						   if (outputDir instanceof org.gradle.api.file.DirectoryProperty) {
 								outputDir.set(file("${outPath}".toString()))                // plugin >= 7.22.0
 							} else {
 								outputDir.set("${outPath}".toString())                      // plugin < 7.22.0
