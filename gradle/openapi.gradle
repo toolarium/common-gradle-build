@@ -324,7 +324,6 @@ task openApiProcess {
 								outputDir.set("${outPath}".toString())                      // plugin < 7.22.0
 							}
 							
-							outputDir = "${outPath}".toString()
 							generatorName = "${openapiGeneratorName}".toString()
 							id = "${rootProject.name}".toString()
 							groupId = "${project.ext.projectGroupId}".toString()					
