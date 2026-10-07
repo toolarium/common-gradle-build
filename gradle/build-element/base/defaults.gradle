@@ -586,7 +586,7 @@ setCommonGradleDefaultPropertyIfNull("resolveParentResourceIfNotFound", "")
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("srcMainApiSpecDirectoryName", "api-spec")
 setCommonGradleDefaultPropertyIfNull("srcMainApiSpecDirectory", "${srcMainDirectory}/${srcMainApiSpecDirectoryName}")
-setCommonGradleDefaultPropertyIfNull("defaultOpenapiPluginVersion", "7.12.0") // 7.21.0 has breaking changes in DTO generation (no longer extends HashMap)
+setCommonGradleDefaultPropertyIfNull("defaultOpenapiPluginVersion", "7.25.0")
 setCommonGradleDefaultPropertyIfNull("openapiPluginVersion", "${defaultOpenapiPluginVersion}")
 //setCommonGradleDefaultPropertyIfNull("openapiLibrary", 'okhttp-gson')
 //setCommonGradleDefaultPropertyIfNull("openapiGeneratorName", 'java')
