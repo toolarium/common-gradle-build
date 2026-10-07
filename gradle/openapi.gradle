@@ -354,7 +354,7 @@ task openApiProcess {
 								//useLombok: "true",
 								fullJavaUtil : 'true',
 								useSwaggerAnnotations : 'false',
-								disallowAdditionalPropertiesIfNotPresent : 'false',
+								disallowAdditionalPropertiesIfNotPresent : 'true',
 								openApiNullable : "${openapiNullable}".toString(),
 								asyncNative : "${openapiAsyncNative}".toString(),
 								bigDecimalAsString : "${openapiBigDecimalAsString}".toString(),
