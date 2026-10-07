@@ -388,6 +388,11 @@ task openApiProcess {
 								compileOnly "org.openapitools:jackson-databind-nullable:${openapiJacksonDatabindNullableVersion}"
 							}
 						}
+						// api spec projects: deprecated elements (deprecated: true) must not raise compiler warnings
+						compileJava.options.deprecation = false
+						if (!compileJava.options.compilerArgs.contains('-Xlint:-deprecation')) {
+								compileJava.options.compilerArgs << '-Xlint:-deprecation' << '-XDsuppressNotes'
+						}						
 					}
 				}
 			}
