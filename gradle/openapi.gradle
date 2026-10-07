@@ -381,7 +381,13 @@ task openApiProcess {
 							logInfo("Set source set to " + colorize(HIGHLITE_LEVEL, sourceSets.main.java.srcDirs))
 						}
 
-						compileJava.dependsOn createOpenApi						
+ 						compileJava.dependsOn createOpenApi						
+					    // openApiNullable: the generated models import org.openapitools.jackson.nullable.JsonNullable (plugin >= 7.18.0)
+						if ("true".equalsIgnoreCase("${openapiNullable}".toString())) {
+							dependencies {
+								compileOnly "org.openapitools:jackson-databind-nullable:${openapiJacksonDatabindNullableVersion}"
+							}
+						}
 					}
 				}
 			}
