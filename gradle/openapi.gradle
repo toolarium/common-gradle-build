@@ -313,13 +313,13 @@ task openApiProcess {
 							verbose = false
 
 							if (inputSpec instanceof org.gradle.api.file.RegularFileProperty) {
-							    inputSpec.set(file("${yamlPath}/${fileName}".toString()))   // plugin >= 7.22.0
+							    inputSpec.set(project.file("${yamlPath}/${fileName}".toString()))   // plugin >= 7.22.0
 							} else {
 							    inputSpec.set("${yamlPath}/${fileName}".toString())         // plugin < 7.22.0
 							}
 
 						   if (outputDir instanceof org.gradle.api.file.DirectoryProperty) {
-								outputDir.set(file("${outPath}".toString()))                // plugin >= 7.22.0
+								outputDir.set(project.file("${outPath}".toString()))                // plugin >= 7.22.0
 							} else {
 								outputDir.set("${outPath}".toString())                      // plugin < 7.22.0
 							}
