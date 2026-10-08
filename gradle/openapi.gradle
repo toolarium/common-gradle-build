@@ -255,6 +255,7 @@ task openApiProcess {
 							+ "booleanGetterPrefix: " + colorize(HIGHLITE_LEVEL, "${openapiBooleanGetterPrefix}".toString()) + "\n"
 							+ "               hideGenerationTimestamp: " + colorize(HIGHLITE_LEVEL, "${openapiHideGenerationTimestamp}".toString()) + ", "
 							+ "useGzipFeature: " + colorize(HIGHLITE_LEVEL, "${openapiUseGzipFeature}".toString()) + "\n"
+                            + "containerDefaultToNull: " + colorize(HIGHLITE_LEVEL, "${openapiContainerDefaultToNull}".toString()) + "\n"						
 							+ "openapiUseJakartaEe: " + colorize(HIGHLITE_LEVEL, "${openapiUseJakartaEe}".toString()))
 			
 				for (File file : files) {
