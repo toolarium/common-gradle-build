@@ -180,7 +180,7 @@ task createMeateInfFiles() {
 	onlyIf { return project.compileTimestamp != null }
 	
 	doFirst {
-		new File("$commonGradleResourcebundleOutputPath/META-INF").mkdirs()
+		project.file("$commonGradleResourcebundleOutputPath/META-INF").mkdirs()
 	}
 }
 jar.dependsOn(createMeateInfFiles)
