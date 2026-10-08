@@ -367,6 +367,7 @@ task openApiProcess {
 								useSwaggerAnnotations : 'false',
 								disallowAdditionalPropertiesIfNotPresent : 'true',
 								openApiNullable : "${openapiNullable}".toString(),
+                                containerDefaultToNull : "${openapiContainerDefaultToNull}".toString(),
 								asyncNative : "${openapiAsyncNative}".toString(),
 								bigDecimalAsString : "${openapiBigDecimalAsString}".toString(),
 								booleanGetterPrefix : "${openapiBooleanGetterPrefix}".toString(),
