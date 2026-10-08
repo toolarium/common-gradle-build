@@ -29,7 +29,7 @@ buildscript {
 		gradlePluginPortal()
 	}
 	dependencies {
-		def openapiPluginVersion="7.12.0"
+		def openapiPluginVersion="7.25.0"
 		if (project.hasProperty('openapiPluginVersion')) {
 			openapiPluginVersion = project.getProperty('openapiPluginVersion')
 		}
@@ -419,8 +419,8 @@ if (!project.getProperty('IS_NEW')) {
 createMeateInfFiles {
 	doLast {
 		// create empty beans.xml in META-INF
-		if (new File("$commonGradleResourcebundleOutputPath/META-INF/").exists()) {
-			new File("$commonGradleResourcebundleOutputPath/META-INF/beans.xml").createNewFile()
+		if (project.file("$commonGradleResourcebundleOutputPath/META-INF/").exists()) {
+			project.file("$commonGradleResourcebundleOutputPath/META-INF/beans.xml").createNewFile()
 		}
 	}
 }
