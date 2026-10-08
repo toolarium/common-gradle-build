@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.6.20] - 2026-10-08
+### Added
+- OpenAPI: new property `openapiContainerDefaultToNull` (default `true`). Lists in generated models start as `null` again instead of an empty list (behaviour of generator 7.2.0), so an omitted list can be told apart from an empty one. The value is shown in the build output.
+
+### Fixed
+- `META-INF/beans.xml` was missing from api-spec jars built after `clean`. The META-INF path was resolved against the JVM working directory instead of the project directory, so Quarkus no longer indexed the jar and dropped its REST resources.
+
+## [v1.6.19] - 2026-10-07
+### Changed
+- OpenAPI: default generator plugin version raised from 7.12.0 to 7.25.0.
+- OpenAPI: `disallowAdditionalPropertiesIfNotPresent` is now `true`, so models without `additionalProperties` in the spec no longer accept unknown properties.
+- OpenAPI: api-spec projects compile without deprecation warnings for elements marked `deprecated: true`.
+
+### Added
+- OpenAPI: when `openapiNullable` is set, `jackson-databind-nullable` is added as a compileOnly dependency (version `openapiJacksonDatabindNullableVersion`, default `0.2.12`).
+
+### Fixed
+- OpenAPI: `inputSpec` and `outputDir` are set as file properties for generator plugin 7.22.0 and later.
+
 ## [v1.6.18] - 2026-10-03
 ### Fixed
 - Fetch Quarkus release version
