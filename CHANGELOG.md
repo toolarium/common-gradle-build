@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.6.21] - 2026-10-11
+### Fixed
+- `.claude` removed from the default `disallowedCheckedInFiles` list — the project-level `.claude/` directory contains Claude Code project configuration (e.g. `CLAUDE.md`) that teams intentionally version-control, so it should not be auto-removed from the git index or added to `.gitignore`.
+
 ## [v1.6.20] - 2026-10-08
 ### Added
 - OpenAPI: new property `openapiContainerDefaultToNull` (default `true`). Lists in generated models start as `null` again instead of an empty list (behaviour of generator 7.2.0), so an omitted list can be told apart from an empty one. The value is shown in the build output.

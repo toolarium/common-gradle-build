@@ -671,7 +671,6 @@ addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/.vscode")
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("gitCleanupDisallowedFiles", true)
 addCommonGradlePropertyList("disallowedCheckedInFiles", "build")
-addCommonGradlePropertyList("disallowedCheckedInFiles", ".claude")
 addCommonGradlePropertyList("disallowedCheckedInFiles", ".gradle")
 addCommonGradlePropertyList("disallowedCheckedInFiles", ".classpath")
 addCommonGradlePropertyList("disallowedCheckedInFiles", ".project")
