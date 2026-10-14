@@ -223,7 +223,9 @@ class ImageVersionResolver {
      * <ol>
      *   <li>If a suffix is present, prefer tags of the form {@code baseTag-X.Y}
      *       (e.g. eclipse-temurin "25-jre-alpine-3.24").</li>
-     *   <li>Otherwise, filter by major version + suffix and pick the highest.</li>
+     *   <li>Otherwise, filter by major version + suffix and pick the highest. Only release
+     *       tags qualify: the version is followed directly by the suffix, so pre-releases
+     *       such as python "3.15.0rc3-slim" are skipped.</li>
      *   <li>When no suffix is present but a major version exists (e.g. "24"),
      *       restrict to that major line.</li>
      *   <li>When the tag names a variant instead of a version (e.g. nginx "alpine",
@@ -253,8 +255,11 @@ class ImageVersionResolver {
         List<String> candidates
         if (suffix) {
             def majorPattern = ~/^${Pattern.quote(major)}([._-]|$)/
+            // version directly followed by the suffix: excludes pre-releases (3.15.0rc3-slim, 3.15.0b4-slim),
+            // which versionCompare would rank above the release because "rc" sorts after "-slim"
+            def releasePattern = ~/^\d[\d._]*${Pattern.quote(suffix)}$/
             candidates = allTags.findAll { t ->
-                (t ==~ /^\d.*/) && (t =~ majorPattern) && t.endsWith(suffix)
+                (t =~ majorPattern) && (t ==~ releasePattern)
             }
         } else if (major) {
             def pattern = ~/^${Pattern.quote(major)}(\.\d+)*$/
