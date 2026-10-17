@@ -858,6 +858,24 @@ printf "[Test Group 36] SIGTERM forwarding and exit code\n"
 # until it receives SIGTERM and then exits with the given exit code
 #   $1 = exit code on SIGTERM (143 = graceful JVM shutdown)
 #########################################################################
+create_mock_java_versioned() {
+    local ver="$1"
+    local mock_path="$TEST_DIR/mock-java-v${ver}"
+    cat > "$mock_path" <<MOCKEOF
+#!/bin/sh
+if [ "\$1" = "-version" ]; then
+    echo "mock java version \"${ver}\" 2025-01-01" >&2
+    echo "MockJVM (build ${ver}+0)" >&2
+    echo "MockJVM 64-Bit Server VM (build ${ver}+0, mixed mode)" >&2
+    exit 0
+fi
+echo "MOCK_JAVA_ARGS: \$*"
+exit 0
+MOCKEOF
+    chmod +x "$mock_path"
+    echo "$mock_path"
+}
+
 create_mock_java_signal() {
     mock_java="$TEST_DIR/mock-java-signal-$1"
     cat > "$mock_java" <<MOCKEOF
@@ -927,6 +945,48 @@ run_runner_with_sigterm "$(create_mock_java_signal 1)"
 assert_exit_code "SIGTERM failed shutdown exit code" 1 "$signal_exit_code"
 assert_output_contains "SIGTERM failed shutdown error log" " - E - " "$signal_output"
 assert_output_not_contains "SIGTERM failed shutdown no stop message" "Stopped by signal" "$signal_output"
+
+echo ""
+
+
+#########################################################################
+# Test 37: -XX:+UseCompactObjectHeaders auto-enabled on Java 25+
+#########################################################################
+printf "[Test Group 37] Compact object headers (Java 25+)\n"
+
+mock_java_v25=$(create_mock_java_versioned 25)
+mock_java_v27=$(create_mock_java_versioned 27)
+mock_java_v24=$(create_mock_java_versioned 24)
+
+output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor --verbose \
+    --executable "$mock_java_v25" \
+    --jar "$mock_jar" 2>&1)
+assert_output_contains "java 25 gets CompactObjectHeaders" "-XX:+UseCompactObjectHeaders" "$output"
+
+output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor --verbose \
+    --executable "$mock_java_v27" \
+    --jar "$mock_jar" 2>&1)
+assert_output_contains "java 27 gets CompactObjectHeaders" "-XX:+UseCompactObjectHeaders" "$output"
+
+output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor --verbose \
+    --executable "$mock_java_v24" \
+    --jar "$mock_jar" 2>&1)
+assert_output_not_contains "java 24 no CompactObjectHeaders" "-XX:+UseCompactObjectHeaders" "$output"
+
+output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor --verbose \
+    --executable "$mock_java" \
+    --jar "$mock_jar" 2>&1)
+assert_output_not_contains "java 17 no CompactObjectHeaders" "-XX:+UseCompactObjectHeaders" "$output"
+
+output=$(cd "$TEST_DIR" && TERM="" COMPACT_OBJECT_HEADERS=false sh "$RUNNER" --nocolor --verbose \
+    --executable "$mock_java_v25" \
+    --jar "$mock_jar" 2>&1)
+assert_output_not_contains "COMPACT_OBJECT_HEADERS=false suppresses flag on java 25" "-XX:+UseCompactObjectHeaders" "$output"
+
+output=$(cd "$TEST_DIR" && TERM="" COMPACT_OBJECT_HEADERS=false sh "$RUNNER" --nocolor --verbose \
+    --executable "$mock_java_v27" \
+    --jar "$mock_jar" 2>&1)
+assert_output_not_contains "COMPACT_OBJECT_HEADERS=false suppresses flag on java 27" "-XX:+UseCompactObjectHeaders" "$output"
 
 echo ""
 
