@@ -521,6 +521,12 @@ fi
 [ "$gcLogging" = "true" ] && JAVA_OPTIONS="${JAVA_OPTIONS} -Xlog:gc*=info -XX:+PrintFlagsFinal"
 [ "$exitOnOutOfMemory" = "true" ] && JAVA_OPTIONS="${JAVA_OPTIONS} -XX:+ExitOnOutOfMemoryError"
 [ "$nativeMemoryTracking" = "true" ] && JAVA_OPTIONS="${JAVA_OPTIONS} -XX:NativeMemoryTracking=summary"
+if [ "$COMPACT_OBJECT_HEADERS" != "false" ]; then
+    javaMajorVersion=$("$EXECUTABLE" -version 2>&1 | head -1 | sed 's/.*version "\([0-9]*\).*/\1/')
+    if [ "$javaMajorVersion" -ge 25 ] 2>/dev/null; then
+        JAVA_OPTIONS="${JAVA_OPTIONS} -XX:+UseCompactObjectHeaders"
+    fi
+fi
 [ -n "$logLevel" ] && JAVA_OPTIONS="${JAVA_OPTIONS} $logLevel"
 [ -n "$javaOptions" ] && JAVA_OPTIONS="${JAVA_OPTIONS} $javaOptions"
 
