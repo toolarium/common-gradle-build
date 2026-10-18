@@ -861,15 +861,15 @@ printf "[Test Group 36] SIGTERM forwarding and exit code\n"
 create_mock_java_versioned() {
     local ver="$1"
     local mock_path="$TEST_DIR/mock-java-v${ver}"
-    cat > "$mock_path" <<MOCKEOF
+    sed "s/__VER__/${ver}/g" <<'MOCKEOF' > "$mock_path"
 #!/bin/sh
-if [ "\$1" = "-version" ]; then
-    echo "mock java version \"${ver}\" 2025-01-01" >&2
-    echo "MockJVM (build ${ver}+0)" >&2
-    echo "MockJVM 64-Bit Server VM (build ${ver}+0, mixed mode)" >&2
+if [ "$1" = "-version" ]; then
+    echo 'openjdk version "__VER__" 2025-01-01' >&2
+    echo "OpenJDK Runtime Environment (build __VER__+0)" >&2
+    echo "OpenJDK 64-Bit Server VM (build __VER__+0, mixed mode)" >&2
     exit 0
 fi
-echo "MOCK_JAVA_ARGS: \$*"
+echo "MOCK_JAVA_ARGS: $*"
 exit 0
 MOCKEOF
     chmod +x "$mock_path"
