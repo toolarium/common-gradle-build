@@ -256,9 +256,9 @@ test_no_code_column() {
 }
 
 test_jit_column_name_in_help() {
-	echo "TEST: help text documents JIT column (via -jvm)"
+	echo "TEST: help text documents -jvm option"
 	output=$("$MI" --help 2>&1)
-	assertContains "jstat" "$output" "help mentions jstat for used columns"
+	assertContains "NativeMemoryTracking" "$output" "help mentions NativeMemoryTracking for -jvm"
 }
 
 test_quiet_with_timestamp() {
