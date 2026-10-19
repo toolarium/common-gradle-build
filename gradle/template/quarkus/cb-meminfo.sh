@@ -195,7 +195,7 @@ freeMemory=$((totalMemory - usedMemory))
 # Collect JVM NativeMemoryTracking data (single jcmd + single awk)
 #########################################################################
 jvmAvailable=""
-jvmTotal=0; jvmHeap=0; jvmNonHeap=0; jvmThread=0; jvmGc=0; jvmCode=0
+jvmTotal=0; jvmHeap=0; jvmNonHeap=0; jvmThread=0; jvmGc=0; jvmJit=0;jvmUsedAvailable="";jvmHeapUsed=0; jvmNonHeapUsed=0
 if [ "$showJvm" = "true" ] && [ -n "$pidId" ]; then
     # Locate jcmd
     jcmdBin=""
@@ -219,7 +219,7 @@ if [ "$showJvm" = "true" ] && [ -n "$pidId" ]; then
                     /^-.*Class/,/\)$/   { if(/committed=/) printf "jvmNonHeap=%d\n", cv()*mul }
                     /^-.*Thread/,/\)$/  { if(/committed=/) printf "jvmThread=%d\n",  cv()*mul }
                     /^-.*GC/,/\)$/      { if(/committed=/) printf "jvmGc=%d\n",      cv()*mul }
-                    /^-.*Code/,/\)$/    { if(/committed=/) printf "jvmCode=%d\n",    cv()*mul }
+                    /^-.*Code/,/\)$/    { if(/committed=/) printf "jvmJit=%d\n",     cv()*mul }
                 ' <<EOF
 $nmtOutput
 EOF
@@ -231,13 +231,41 @@ fi
 
 
 #########################################################################
+# Collect JVM used heap/non-heap via jstat -gc (reads hsperfdata; no attach needed)
+# jstat -gc columns (KB): S0U S1U EU OU = used heap; MU = used non-heap (Metaspace)
+#########################################################################
+if [ "$showJvm" = "true" ] && [ -n "$pidId" ]; then
+    jstatBin=""
+    for _p in jstat "${JAVA_HOME:+$JAVA_HOME/bin/jstat}"; do
+        [ -n "$_p" ] && command -v "$_p" >/dev/null 2>&1 && jstatBin="$_p" && break
+    done
+
+    if [ -n "$jstatBin" ]; then
+        eval "$("$jstatBin" -gc "$pidId" 1 2>/dev/null | awk '
+            NR==1 { for (i=1; i<=NF; i++) col[$i]=i; next }
+            NR==2 {
+                s0u = col["S0U"] ? $col["S0U"]+0 : 0
+                s1u = col["S1U"] ? $col["S1U"]+0 : 0
+                eu  = col["EU"]  ? $col["EU"]+0  : 0
+                ou  = col["OU"]  ? $col["OU"]+0  : 0
+                mu  = col["MU"]  ? $col["MU"]+0  : 0
+                printf "jvmHeapUsed=%d jvmNonHeapUsed=%d jvmUsedAvailable=true\n", int((s0u+s1u+eu+ou)*1024), int(mu*1024)
+            }
+        ')"
+    fi
+fi
+
+
+#########################################################################
 # Output header
 #########################################################################
 if [ "$quiet" = "true" ]; then
     [ "$showTimestamp" = "true" ] && printf '%-24s' "Timestamp"
     printf '%-15s%-15s%-15s' "Total" "Used" "Free"
     [ -n "$pidId" ] && printf '%-15s' "Process[$pidId]"
-    [ "$jvmAvailable" = "true" ] && printf '%-15s%-15s%-15s%-15s%-15s%-15s' "JVM-Total" "Heap" "Non-Heap" "Thread" "GC" "Code"
+    [ "$jvmAvailable" = "true" ] && printf '%-15s%-15s%-15s' "JVM-Total" "Heap" "Non-Heap"
+    [ "$jvmUsedAvailable" = "true" ] && printf '%-15s%-15s' "Heap-Used" "Non-Heap-Used"
+    [ "$jvmAvailable" = "true" ] && printf '%-15s%-15s%-15s' "Thread" "GC" "JIT"
     printf '\n'
 fi
 
@@ -254,9 +282,15 @@ if [ "$jvmAvailable" = "true" ]; then
     printColumn "$jvmTotal" "$divideFactor"
     printColumn "$jvmHeap" "$divideFactor"
     printColumn "$jvmNonHeap" "$divideFactor"
+fi
+if [ "$jvmUsedAvailable" = "true" ]; then
+    printColumn "$jvmHeapUsed" "$divideFactor"
+    printColumn "$jvmNonHeapUsed" "$divideFactor"
+fi
+if [ "$jvmAvailable" = "true" ]; then
     printColumn "$jvmThread" "$divideFactor"
     printColumn "$jvmGc" "$divideFactor"
-    printColumn "$jvmCode" "$divideFactor"
+    printColumn "$jvmJit" "$divideFactor"
 fi
 printf '\n'
 
