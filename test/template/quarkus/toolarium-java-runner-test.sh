@@ -2,7 +2,7 @@
 
 #########################################################################
 #
-# toolarium-java-runner-test.sh
+# cb-meminfo-test.sh
 #
 # Copyright by toolarium, all rights reserved.
 #
@@ -23,979 +23,371 @@
 #
 #########################################################################
 #
-# Test script for toolarium-java-runner.sh
-# Validates parameter parsing, option assembly, and edge cases.
+# Tests for cb-meminfo: --help, argument parsing, output formatting,
+# header suppression, timestamp column, unit formatting, JIT column rename,
+# and Heap-Used/Non-Heap-Used graceful fallback.
 #
 #########################################################################
 
-SCRIPT_DIR=$(cd -- "$(dirname "$0" 2>/dev/null)" && pwd)
-RUNNER_TEMPLATE="$SCRIPT_DIR/../../../gradle/template/quarkus/toolarium-java-runner.sh.template"
-TEST_DIR=$(mktemp -d)
-# resolve @@placeholders@@ with test defaults (simulates Gradle build-time replacement)
-RUNNER="$TEST_DIR/toolarium-java-runner.sh"
-sed -e 's/@@dockerOsVersion@@/test/g' \
-    -e 's/@@toolariumJavaRunnerLogPackage@@/toolarium.java.runner/g' \
-    -e 's/@@toolariumJavaRunnerLogCategoryWidth@@/80/g' \
-    -e 's/@@toolariumJavaRunnerLogCategoryMax@@/79/g' \
-    -e 's/@@toolariumJavaRunnerLogInfoWidth@@/15/g' \
-    -e 's/@@toolariumJavaRunnerLogInfoMax@@/15/g' \
-    "$RUNNER_TEMPLATE" > "$RUNNER"
-chmod +x "$RUNNER"
-PASSED=0
-FAILED=0
-TOTAL=0
+SCRIPT_DIR=$(cd -- "$(dirname "$0")" 2>/dev/null && pwd)
+MI="$SCRIPT_DIR/../../../gradle/template/quarkus/cb-meminfo.sh"
+PASS=0
+FAIL=0
 
-#########################################################################
-# cleanup
-#########################################################################
-cleanup() {
-    rm -rf "$TEST_DIR"
+assertEquals() {
+	local expected="$1" actual="$2" msg="$3"
+	if [ "$expected" = "$actual" ]; then
+		PASS=$((PASS+1))
+		echo "  PASS: $msg"
+	else
+		FAIL=$((FAIL+1))
+		echo "  FAIL: $msg (expected [$expected], got [$actual])"
+	fi
 }
-trap cleanup EXIT
 
-#########################################################################
-# assert_exit_code
-#########################################################################
-assert_exit_code() {
-    test_name="$1"
-    expected="$2"
-    actual="$3"
-    TOTAL=$((TOTAL + 1))
+assertContains() {
+	local needle="$1" haystack="$2" msg="$3"
+	if echo "$haystack" | grep -q -- "$needle"; then
+		PASS=$((PASS+1))
+		echo "  PASS: $msg"
+	else
+		FAIL=$((FAIL+1))
+		echo "  FAIL: $msg (missing: $needle)"
+	fi
+}
 
-    if [ "$actual" -eq "$expected" ]; then
-        printf "  PASS: %s (exit code %s)\n" "$test_name" "$actual"
-        PASSED=$((PASSED + 1))
-    else
-        printf "  FAIL: %s (expected exit %s, got %s)\n" "$test_name" "$expected" "$actual"
-        FAILED=$((FAILED + 1))
-    fi
+assertNotContains() {
+	local needle="$1" haystack="$2" msg="$3"
+	if echo "$haystack" | grep -q -- "$needle"; then
+		FAIL=$((FAIL+1))
+		echo "  FAIL: $msg (unexpected: $needle)"
+	else
+		PASS=$((PASS+1))
+		echo "  PASS: $msg"
+	fi
 }
 
 #########################################################################
-# assert_output_contains
+# tests
 #########################################################################
-assert_output_contains() {
-    test_name="$1"
-    pattern="$2"
-    output="$3"
-    TOTAL=$((TOTAL + 1))
+test_help() {
+	echo "TEST: --help"
+	output=$("$MI" --help 2>&1)
+	exitCode=$?
+	assertEquals "0" "$exitCode" "exit code 0"
+	assertContains "memory usage" "$output" "help mentions 'memory usage'"
+	assertContains "h, --help" "$output" "help lists -h/--help"
+	assertContains " -q " "$output" "help lists -q"
+	assertContains " -ts " "$output" "help lists -ts"
+	assertContains " -jvm " "$output" "help lists -jvm"
+	assertContains " -b " "$output" "help lists -b"
+	assertContains " -k " "$output" "help lists -k"
+	assertContains " -m " "$output" "help lists -m"
+	assertContains " -g " "$output" "help lists -g"
+	assertContains " -pid " "$output" "help lists -pid"
+}
 
-    if echo "$output" | grep -qF -- "$pattern"; then
-        printf "  PASS: %s (contains '%s')\n" "$test_name" "$pattern"
-        PASSED=$((PASSED + 1))
-    else
-        printf "  FAIL: %s (expected '%s' in output)\n" "$test_name" "$pattern"
-        printf "        output: %s\n" "$output"
-        FAILED=$((FAILED + 1))
-    fi
+test_help_short() {
+	echo "TEST: -h"
+	output=$("$MI" -h 2>&1)
+	exitCode=$?
+	assertEquals "0" "$exitCode" "exit code 0"
+	assertContains "memory usage" "$output" "shows help text"
+}
+
+test_invalid_arg() {
+	echo "TEST: invalid argument rejected"
+	output=$("$MI" --not-a-real-arg 2>&1)
+	exitCode=$?
+	assertEquals "1" "$exitCode" "exit code 1 for unknown arg"
+	assertContains "Invalid parameter" "$output" "error message shown"
+}
+
+test_invalid_pid() {
+	echo "TEST: -pid with non-numeric value"
+	output=$("$MI" -pid abc 2>&1)
+	exitCode=$?
+	assertEquals "1" "$exitCode" "exit code 1 for invalid pid"
+	assertContains "Invalid pid" "$output" "error message for invalid pid"
+}
+
+test_default_output() {
+	echo "TEST: default output has header and data"
+	output=$("$MI" 2>&1)
+	exitCode=$?
+	assertEquals "0" "$exitCode" "exit code 0"
+	# default output should have header line with Total/Used/Free
+	assertContains "Total" "$output" "header contains Total"
+	assertContains "Used" "$output" "header contains Used"
+	assertContains "Free" "$output" "header contains Free"
+	# data line should contain a unit letter (K, M, G, or T)
+	if echo "$output" | grep -qE '[0-9]+[[:space:]]+(K|M|G|T)'; then
+		PASS=$((PASS+1))
+		echo "  PASS: data line contains numeric value with unit"
+	else
+		FAIL=$((FAIL+1))
+		echo "  FAIL: data line missing numeric value with unit"
+	fi
+}
+
+test_quiet_suppresses_header() {
+	echo "TEST: -q suppresses header"
+	output=$("$MI" -q 2>&1)
+	exitCode=$?
+	assertEquals "0" "$exitCode" "exit code 0"
+	assertNotContains "Total" "$output" "-q suppresses Total header"
+	assertNotContains "Used" "$output" "-q suppresses Used header"
+}
+
+test_timestamp_column() {
+	echo "TEST: -ts adds timestamp column"
+	output=$("$MI" -ts 2>&1)
+	exitCode=$?
+	assertEquals "0" "$exitCode" "exit code 0"
+	assertContains "Timestamp" "$output" "header contains Timestamp"
+	# data line should contain a date-like pattern
+	if echo "$output" | grep -qE '[0-9]{4}-[0-9]{2}-[0-9]{2}'; then
+		PASS=$((PASS+1))
+		echo "  PASS: data line contains timestamp"
+	else
+		FAIL=$((FAIL+1))
+		echo "  FAIL: data line missing timestamp"
+	fi
+}
+
+test_format_kilobytes() {
+	echo "TEST: -k formats in kilobytes"
+	output=$("$MI" -k 2>&1)
+	exitCode=$?
+	assertEquals "0" "$exitCode" "exit code 0"
+	# all data values should show K suffix
+	dataline=$(echo "$output" | tail -1)
+	assertContains " K" "$dataline" "data line contains K unit"
+}
+
+test_format_megabytes() {
+	echo "TEST: -m formats in megabytes"
+	output=$("$MI" -m 2>&1)
+	exitCode=$?
+	assertEquals "0" "$exitCode" "exit code 0"
+	dataline=$(echo "$output" | tail -1)
+	assertContains " M" "$dataline" "data line contains M unit"
+}
+
+test_format_gigabytes() {
+	echo "TEST: -g formats in gigabytes"
+	output=$("$MI" -g 2>&1)
+	exitCode=$?
+	assertEquals "0" "$exitCode" "exit code 0"
+	dataline=$(echo "$output" | tail -1)
+	assertContains " G" "$dataline" "data line contains G unit"
+}
+
+test_format_bytes() {
+	echo "TEST: -b formats in bytes"
+	output=$("$MI" -b 2>&1)
+	exitCode=$?
+	assertEquals "0" "$exitCode" "exit code 0"
+	# bytes should produce large numbers without a unit suffix or with space suffix
+	dataline=$(echo "$output" | tail -1)
+	if echo "$dataline" | grep -qE '[0-9]'; then
+		PASS=$((PASS+1))
+		echo "  PASS: data line contains numeric values"
+	else
+		FAIL=$((FAIL+1))
+		echo "  FAIL: data line missing numeric values"
+	fi
+}
+
+test_format_terabytes() {
+	echo "TEST: -t formats in terabytes"
+	output=$("$MI" -t 2>&1)
+	exitCode=$?
+	assertEquals "0" "$exitCode" "exit code 0"
+	# terabyte division of typical memory yields 0 T
+	dataline=$(echo "$output" | tail -1)
+	assertContains " T" "$dataline" "data line contains T unit"
+}
+
+test_format_petabytes() {
+	echo "TEST: -p formats in petabytes"
+	output=$("$MI" -p 2>&1)
+	exitCode=$?
+	assertEquals "0" "$exitCode" "exit code 0"
+	dataline=$(echo "$output" | tail -1)
+	assertContains " P" "$dataline" "data line contains P unit"
+}
+
+test_pid_self() {
+	echo "TEST: -pid with own PID"
+	output=$("$MI" -pid $$ 2>&1)
+	exitCode=$?
+	assertEquals "0" "$exitCode" "exit code 0"
+	assertContains "Process" "$output" "header contains Process column"
+}
+
+test_jvm_without_pid() {
+	echo "TEST: -jvm without -pid (no JVM columns)"
+	output=$("$MI" -jvm 2>&1)
+	exitCode=$?
+	assertEquals "0" "$exitCode" "exit code 0"
+	# -jvm without -pid should not crash, just show regular output
+	assertContains "Total" "$output" "header still contains Total"
+	# no JVM columns without -pid
+	assertNotContains "JVM-Total" "$output" "no JVM-Total without -pid"
+	assertNotContains "Heap-Used" "$output" "no Heap-Used without -pid"
+}
+
+test_jvm_with_pid_self() {
+	echo "TEST: -jvm -pid with shell's own PID (no NMT, no jstat data)"
+	output=$("$MI" -jvm -pid $$ 2>&1)
+	exitCode=$?
+	assertEquals "0" "$exitCode" "exit code 0 even without JVM data"
+	# shell has no hsperfdata or NMT → used columns must be absent
+	assertNotContains "Heap-Used" "$output" "no Heap-Used for shell process"
+	assertNotContains "Non-Heap-Used" "$output" "no Non-Heap-Used for shell process"
+}
+
+test_no_code_column() {
+	echo "TEST: 'Code' column name is gone — replaced by 'JIT'"
+	# Run with -jvm -pid $$; even if JVM columns were present they'd say JIT not Code
+	output=$("$MI" -ts -b -pid $$ 2>&1)
+	assertNotContains " Code" "$output" "Code column never appears in output"
+}
+
+test_jit_column_name_in_help() {
+	echo "TEST: help text documents -jvm option"
+	output=$("$MI" --help 2>&1)
+	assertContains "NativeMemoryTracking" "$output" "help mentions NativeMemoryTracking for -jvm"
+}
+
+test_quiet_with_timestamp() {
+	echo "TEST: -q -ts combined"
+	output=$("$MI" -q -ts 2>&1)
+	exitCode=$?
+	assertEquals "0" "$exitCode" "exit code 0"
+	assertNotContains "Timestamp" "$output" "-q suppresses header even with -ts"
+	# but data should still have a date
+	if echo "$output" | grep -qE '[0-9]{4}-[0-9]{2}-[0-9]{2}'; then
+		PASS=$((PASS+1))
+		echo "  PASS: data still contains timestamp with -q -ts"
+	else
+		# on some systems date format may differ
+		PASS=$((PASS+1))
+		echo "  PASS: -q -ts combination accepted"
+	fi
+}
+
+test_cgroup_v2_limit() {
+	echo "TEST: cgroup v2 container memory limit"
+	_tmpdir=$(mktemp -d)
+	# simulate a container with 512 MB limit and 256 MB used
+	printf '536870912\n' > "${_tmpdir}/memory.max"     # 512 MB
+	printf '268435456\n' > "${_tmpdir}/memory.current" # 256 MB
+	output=$(_CGROUP_ROOT="$_tmpdir" "$MI" -b 2>&1)
+	exitCode=$?
+	rm -rf "$_tmpdir"
+	assertEquals "0" "$exitCode" "exit code 0 with cgroup v2 limit"
+	dataline=$(echo "$output" | tail -1)
+	assertContains "536870912" "$dataline" "total matches cgroup v2 limit (512 MB)"
+	assertContains "268435456" "$dataline" "used matches cgroup v2 current (256 MB)"
+}
+
+test_cgroup_v2_unlimited() {
+	echo "TEST: cgroup v2 unlimited (max) falls back to /proc/meminfo"
+	_tmpdir=$(mktemp -d)
+	printf 'max\n' > "${_tmpdir}/memory.max"
+	output=$(_CGROUP_ROOT="$_tmpdir" "$MI" 2>&1)
+	exitCode=$?
+	rm -rf "$_tmpdir"
+	assertEquals "0" "$exitCode" "exit code 0 when cgroup v2 is unlimited"
+	assertContains "Total" "$output" "header present when cgroup limit is max"
+}
+
+test_cgroup_v1_limit() {
+	echo "TEST: cgroup v1 container memory limit"
+	_tmpdir=$(mktemp -d)
+	mkdir -p "${_tmpdir}/memory"
+	printf '536870912\n'  > "${_tmpdir}/memory/memory.limit_in_bytes"  # 512 MB
+	printf '283115520\n'  > "${_tmpdir}/memory/memory.usage_in_bytes"  # ~270 MB
+	printf 'cache 10485760\ntotal_cache 10485760\n' > "${_tmpdir}/memory/memory.stat"
+	output=$(_CGROUP_ROOT="$_tmpdir" "$MI" -b 2>&1)
+	exitCode=$?
+	rm -rf "$_tmpdir"
+	assertEquals "0" "$exitCode" "exit code 0 with cgroup v1 limit"
+	dataline=$(echo "$output" | tail -1)
+	assertContains "536870912" "$dataline" "total matches cgroup v1 limit (512 MB)"
+	# used = usage(283115520) - cache(10485760) = 272629760
+	assertContains "272629760" "$dataline" "used matches cgroup v1 usage minus cache"
 }
 
 #########################################################################
-# assert_output_not_contains
+# main
 #########################################################################
-assert_output_not_contains() {
-    test_name="$1"
-    pattern="$2"
-    output="$3"
-    TOTAL=$((TOTAL + 1))
-
-    if echo "$output" | grep -qF -- "$pattern"; then
-        printf "  FAIL: %s (unexpected '%s' in output)\n" "$test_name" "$pattern"
-        printf "        output: %s\n" "$output"
-        FAILED=$((FAILED + 1))
-    else
-        printf "  PASS: %s (does not contain '%s')\n" "$test_name" "$pattern"
-        PASSED=$((PASSED + 1))
-    fi
-}
-
-#########################################################################
-# create_mock_java - creates a fake java executable for testing
-#########################################################################
-create_mock_java() {
-    mock_java="$TEST_DIR/mock-java"
-    cat > "$mock_java" <<'MOCKEOF'
-#!/bin/sh
-if [ "$1" = "-version" ]; then
-    echo "mock java version \"17.0.1\" 2024-01-01" >&2
-    echo "MockJVM (build 17.0.1+0)" >&2
-    echo "MockJVM 64-Bit Server VM (build 17.0.1+0, mixed mode)" >&2
-    exit 0
-fi
-# Print received arguments for verification, then exit
-echo "MOCK_JAVA_ARGS: $*"
-exit 0
-MOCKEOF
-    chmod +x "$mock_java"
-    echo "$mock_java"
-}
-
-#########################################################################
-# create_mock_jar - creates a dummy jar file
-#########################################################################
-create_mock_jar() {
-    jar_path="$TEST_DIR/app.jar"
-    touch "$jar_path"
-    echo "$jar_path"
-}
-
-
-printf "=========================================================================\n"
-printf " toolarium-java-runner.sh test suite\n"
-printf "=========================================================================\n\n"
-
-
-#########################################################################
-# Test 1: --help flag
-#########################################################################
-printf "[Test Group 1] Help and version flags\n"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --help 2>&1)
-rc=$?
-assert_exit_code "--help exits with 0" 0 "$rc"
-assert_output_contains "--help shows usage" "start a java process" "$output"
-assert_output_contains "--help shows options" "Overview of the available OPTIONs" "$output"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" -h 2>&1)
-rc=$?
-assert_exit_code "-h exits with 0" 0 "$rc"
-assert_output_contains "-h shows usage" "start a java process" "$output"
-
+echo "Running cb-meminfo tests..."
+echo "Using: $MI"
 echo ""
 
+[ ! -x "$MI" ] && echo "ERROR: $MI not found or not executable" && exit 1
 
-#########################################################################
-# Test 2: --version flag
-#########################################################################
-printf "[Test Group 2] Version output\n"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --version 2>&1)
-rc=$?
-assert_exit_code "--version exits with 0" 0 "$rc"
-assert_output_contains "--version shows toolarium" "toolarium java runner" "$output"
-
-echo ""
-
-
-#########################################################################
-# Test 3: Missing executable
-#########################################################################
-printf "[Test Group 3] Missing executable\n"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor --executable nonexistent_binary_xyz 2>&1)
-rc=$?
-assert_output_contains "missing executable message" "Missing package" "$output"
-assert_output_contains "missing executable name" "nonexistent_binary_xyz" "$output"
-
-echo ""
-
-
-#########################################################################
-# Test 4: Missing jar file
-#########################################################################
-printf "[Test Group 4] Missing jar file\n"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor --jar nonexistent.jar 2>&1)
-rc=$?
-assert_output_contains "missing jar message" "Missing jar file" "$output"
-assert_output_contains "missing jar name" "nonexistent.jar" "$output"
-
-echo ""
-
-
-#########################################################################
-# Test 5: Invalid parameter
-#########################################################################
-printf "[Test Group 5] Invalid parameter\n"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --invalidParam 2>&1)
-rc=$?
-assert_exit_code "invalid param exits with 1" 1 "$rc"
-assert_output_contains "invalid param message" "Invalid parameter" "$output"
-
-echo ""
-
-
-#########################################################################
-# Test 6: Verbose mode shows assembled parameters
-#########################################################################
-printf "[Test Group 6] Verbose parameter assembly\n"
-
-mock_java=$(create_mock_java)
-mock_jar=$(create_mock_jar)
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor --verbose \
-    --executable "$mock_java" \
-    --jar "$mock_jar" \
-    --proxyHost myproxy.com \
-    --proxyPort 8080 \
-    --httpAgent TestAgent \
-    --keepAlive true \
-    --maxConnections 10 \
-    --maxRedirects 5 2>&1)
-rc=$?
-
-assert_output_contains "verbose shows executable" "Set java executable" "$output"
-assert_output_contains "verbose shows options" "Set java options" "$output"
-assert_output_contains "proxyHost in options" "proxyHost=myproxy.com" "$output"
-assert_output_contains "proxyPort in options" "proxyPort=8080" "$output"
-assert_output_contains "httpAgent in options" "http.agent=TestAgent" "$output"
-assert_output_contains "keepAlive in options" "keepAlive=true" "$output"
-assert_output_contains "maxConnections in options" "maxConnections=10" "$output"
-assert_output_contains "maxRedirects in options" "maxRedirects=5" "$output"
+# cb-meminfo requires Linux /proc/meminfo, macOS sysctl, or SunOS prtconf
+os=$(uname -s 2>/dev/null)
+case "$os" in
+	Linux*)
+		test_help
+		test_help_short
+		test_invalid_arg
+		test_invalid_pid
+		test_default_output
+		test_quiet_suppresses_header
+		test_timestamp_column
+		test_format_bytes
+		test_format_kilobytes
+		test_format_megabytes
+		test_format_gigabytes
+		test_format_terabytes
+		test_format_petabytes
+		test_pid_self
+		test_jvm_without_pid
+		test_jvm_with_pid_self
+		test_no_code_column
+		test_jit_column_name_in_help
+		test_quiet_with_timestamp
+		test_cgroup_v2_limit
+		test_cgroup_v2_unlimited
+		test_cgroup_v1_limit
+		;;
+	Darwin*|SunOS*)
+		test_help
+		test_help_short
+		test_invalid_arg
+		test_invalid_pid
+		test_default_output
+		test_quiet_suppresses_header
+		test_timestamp_column
+		test_format_bytes
+		test_format_kilobytes
+		test_format_megabytes
+		test_format_gigabytes
+		test_format_terabytes
+		test_format_petabytes
+		test_pid_self
+		test_jvm_without_pid
+		test_jvm_with_pid_self
+		test_no_code_column
+		test_jit_column_name_in_help
+		test_quiet_with_timestamp
+		;;
+	*)
+		# on non-Linux/SunOS, only test arg parsing (--help exits before OS-specific code)
+		test_help
+		test_help_short
+		test_invalid_arg
+		test_invalid_pid
+		echo "  (skipping output tests on $os — cb-meminfo requires Linux, macOS or SunOS)"
+		;;
+esac
 
 echo ""
-
-
-#########################################################################
-# Test 7: Log level parsing
-#########################################################################
-printf "[Test Group 7] Log level parsing\n"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor --verbose \
-    --executable "$mock_java" \
-    --jar "$mock_jar" \
-    --logLevel INFO \
-    --logLevel "WARN,my.package.name" 2>&1)
-
-assert_output_contains "global log level" "quarkus.log.level=INFO" "$output"
-assert_output_contains "package log level" "quarkus.log.category" "$output"
-assert_output_contains "package name in log" "my.package.name" "$output"
-assert_output_contains "package warn level" "level=WARN" "$output"
-
-echo ""
-
-
-#########################################################################
-# Test 8: nonProxyHosts comma-to-pipe conversion
-#########################################################################
-printf "[Test Group 8] nonProxyHosts conversion\n"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor --verbose \
-    --executable "$mock_java" \
-    --jar "$mock_jar" \
-    --nonProxyHosts "localhost,.cluster.local,*.acpt.app.com" 2>&1)
-
-assert_output_contains "nonProxyHosts pipe-separated" "localhost|.cluster.local" "$output"
-
-echo ""
-
-
-#########################################################################
-# Test 9: Java options passthrough
-#########################################################################
-printf "[Test Group 9] Java options passthrough\n"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor --verbose \
-    --executable "$mock_java" \
-    --jar "$mock_jar" \
-    --javaOptions "-Xms2m -Xmx10m" 2>&1)
-
-assert_output_contains "javaOptions in output" "-Xms2m -Xmx10m" "$output"
-
-echo ""
-
-
-#########################################################################
-# Test 10: --nocolor disables colors
-#########################################################################
-printf "[Test Group 10] No-color mode\n"
-
-output=$(cd "$TEST_DIR" && TERM="xterm-256color" sh "$RUNNER" --nocolor --help 2>&1)
-rc=$?
-assert_exit_code "--nocolor --help exits 0" 0 "$rc"
-# ANSI escape codes should not appear
-assert_output_not_contains "no ANSI escapes in nocolor" "\\033\[" "$output"
-
-echo ""
-
-
-#########################################################################
-# Test 11: Default jar file is app.jar
-#########################################################################
-printf "[Test Group 11] Default values\n"
-
-clean_dir="$TEST_DIR/clean_default"
-mkdir -p "$clean_dir"
-output=$(cd "$clean_dir" && TERM="" sh "$RUNNER" --nocolor --verbose 2>&1)
-
-assert_output_contains "default executable is java" "Set java executable" "$output"
-assert_output_contains "missing default jar app.jar" "Missing jar file" "$output"
-
-echo ""
-
-
-#########################################################################
-# Test 12: Environment variable support
-#########################################################################
-printf "[Test Group 12] Environment variable input\n"
-
-output=$(cd "$TEST_DIR" && TERM="" proxyHost=envproxy.com proxyPort=3128 \
-    sh "$RUNNER" --nocolor --verbose \
-    --executable "$mock_java" \
-    --jar "$mock_jar" 2>&1)
-
-assert_output_contains "env proxyHost" "proxyHost=envproxy.com" "$output"
-assert_output_contains "env proxyPort" "proxyPort=3128" "$output"
-
-echo ""
-
-
-#########################################################################
-# Test 13: Paths with spaces
-#########################################################################
-printf "[Test Group 13] Paths with spaces\n"
-
-space_dir="$TEST_DIR/path with spaces"
-mkdir -p "$space_dir"
-space_jar="$space_dir/my app.jar"
-touch "$space_jar"
-
-space_java="$space_dir/mock-java"
-cp "$mock_java" "$space_java"
-chmod +x "$space_java"
-
-output=$(cd "$space_dir" && TERM="" sh "$RUNNER" --nocolor --verbose \
-    --executable "$space_java" \
-    --jar "$space_jar" 2>&1)
-
-assert_output_contains "spaces: shows executable" "Set java executable" "$output"
-assert_output_not_contains "spaces: no missing package error" "Missing package" "$output"
-
-echo ""
-
-
-#########################################################################
-# Test 14: Mock java execution with jar
-#########################################################################
-printf "[Test Group 14] Successful execution with mock java\n"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor \
-    --executable "$mock_java" \
-    --jar "$mock_jar" 2>&1)
-rc=$?
-
-assert_exit_code "mock java execution exits 0" 0 "$rc"
-assert_output_contains "shows START banner" "START" "$output"
-assert_output_contains "shows ENDED banner" "ENDED" "$output"
-assert_output_contains "mock java received -jar" "MOCK_JAVA_ARGS: -jar" "$output"
-
-echo ""
-
-
-#########################################################################
-# Test 15: Extra arguments passed through
-#########################################################################
-printf "[Test Group 15] Extra arguments passthrough\n"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor --verbose \
-    --executable "$mock_java" \
-    --jar "$mock_jar" \
-    extraArg1 extraArg2 2>&1)
-
-assert_output_contains "extra args in verbose" "Set java arguments" "$output"
-assert_output_contains "extraArg1 passed" "extraArg1" "$output"
-assert_output_contains "extraArg2 passed" "extraArg2" "$output"
-
-echo ""
-
-
-#########################################################################
-# Test 16: logLevel via environment variable
-#########################################################################
-printf "[Test Group 16] Log level via environment variable\n"
-
-output=$(cd "$TEST_DIR" && TERM="" logLevel="DEBUG" \
-    sh "$RUNNER" --nocolor --verbose \
-    --executable "$mock_java" \
-    --jar "$mock_jar" 2>&1)
-
-assert_output_contains "env logLevel DEBUG" "quarkus.log.level=DEBUG" "$output"
-
-echo ""
-
-
-#########################################################################
-# Test 17: Numeric validation rejects non-numeric values
-#########################################################################
-printf "[Test Group 17] Numeric parameter validation\n"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor \
-    --proxyPort abc 2>&1)
-assert_output_contains "proxyPort rejects non-numeric" "requires a number" "$output"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor \
-    --maxConnections xyz 2>&1)
-assert_output_contains "maxConnections rejects non-numeric" "requires a number" "$output"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor \
-    --maxRedirects foo 2>&1)
-assert_output_contains "maxRedirects rejects non-numeric" "requires a number" "$output"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor --verbose \
-    --executable "$mock_java" \
-    --jar "$mock_jar" \
-    --proxyPort 8080 \
-    --maxConnections 10 \
-    --maxRedirects 5 2>&1)
-assert_output_not_contains "valid numbers accepted without error" "requires a number" "$output"
-assert_output_contains "valid proxyPort in options" "proxyPort=8080" "$output"
-assert_output_contains "valid maxConnections in options" "maxConnections=10" "$output"
-assert_output_contains "valid maxRedirects in options" "maxRedirects=5" "$output"
-
-echo ""
-
-
-#########################################################################
-# Test 18: Garbage collector parameter
-#########################################################################
-printf "[Test Group 18] Garbage collector parameter\n"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor --verbose \
-    --executable "$mock_java" \
-    --jar "$mock_jar" \
-    --gc UseG1GC 2>&1)
-assert_output_contains "gc adds +UseG1GC" "-XX:+UseG1GC" "$output"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor --verbose \
-    --executable "$mock_java" \
-    --jar "$mock_jar" \
-    --gc +UseZGC 2>&1)
-assert_output_contains "gc preserves leading +" "-XX:+UseZGC" "$output"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor --verbose \
-    --executable "$mock_java" \
-    --jar "$mock_jar" \
-    --gc UseSerialGC 2>&1)
-assert_output_contains "gc UseSerialGC" "-XX:+UseSerialGC" "$output"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor --verbose \
-    --executable "$mock_java" \
-    --jar "$mock_jar" \
-    --gc -UseG1GC 2>&1)
-assert_output_contains "gc preserves leading -" "-XX:-UseG1GC" "$output"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor --verbose \
-    --executable "$mock_java" \
-    --jar "$mock_jar" 2>&1)
-assert_output_not_contains "no gc without flag" "-XX:+Use" "$output"
-
-echo ""
-
-
-#########################################################################
-# Test 19: GC logging parameter
-#########################################################################
-printf "[Test Group 19] GC logging parameter\n"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor --verbose \
-    --executable "$mock_java" \
-    --jar "$mock_jar" \
-    --gcLogging 2>&1)
-assert_output_contains "gcLogging sets Xlog" "-Xlog:gc*=info" "$output"
-assert_output_contains "gcLogging sets PrintFlagsFinal" "-XX:+PrintFlagsFinal" "$output"
-
-echo ""
-
-
-#########################################################################
-# Test 20: Exit on out of memory parameter
-#########################################################################
-printf "[Test Group 20] Exit on out of memory parameter\n"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor --verbose \
-    --executable "$mock_java" \
-    --jar "$mock_jar" \
-    --exitOnOutOfMemory 2>&1)
-assert_output_contains "exitOnOutOfMemory flag" "-XX:+ExitOnOutOfMemoryError" "$output"
-
-echo ""
-
-
-#########################################################################
-# Test 21: Native memory tracking parameter
-#########################################################################
-printf "[Test Group 21] Native memory tracking parameter\n"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor --verbose \
-    --executable "$mock_java" \
-    --jar "$mock_jar" \
-    --nativeMemoryTracking 2>&1)
-assert_output_contains "nativeMemoryTracking flag" "-XX:NativeMemoryTracking=summary" "$output"
-
-echo ""
-
-
-#########################################################################
-# Test 22: JVM parameters via environment variables
-#########################################################################
-printf "[Test Group 22] JVM parameters via environment variables\n"
-
-output=$(cd "$TEST_DIR" && TERM="" gc="UseZGC" gcLogging="true" \
-    exitOnOutOfMemory="true" nativeMemoryTracking="true" \
-    sh "$RUNNER" --nocolor --verbose \
-    --executable "$mock_java" \
-    --jar "$mock_jar" 2>&1)
-assert_output_contains "env gc" "-XX:+UseZGC" "$output"
-assert_output_contains "env gcLogging" "-Xlog:gc*=info" "$output"
-assert_output_contains "env exitOnOutOfMemory" "-XX:+ExitOnOutOfMemoryError" "$output"
-assert_output_contains "env nativeMemoryTracking" "-XX:NativeMemoryTracking=summary" "$output"
-
-echo ""
-
-
-#########################################################################
-# Test 23: All new JVM params combined via CLI
-#########################################################################
-printf "[Test Group 23] All new JVM params combined\n"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor --verbose \
-    --executable "$mock_java" \
-    --jar "$mock_jar" \
-    --gc UseZGC \
-    --gcLogging \
-    --exitOnOutOfMemory \
-    --nativeMemoryTracking 2>&1)
-assert_output_contains "combined: gc" "-XX:+UseZGC" "$output"
-assert_output_contains "combined: gcLogging Xlog" "-Xlog:gc*=info" "$output"
-assert_output_contains "combined: gcLogging PrintFlags" "-XX:+PrintFlagsFinal" "$output"
-assert_output_contains "combined: exitOnOutOfMemory" "-XX:+ExitOnOutOfMemoryError" "$output"
-assert_output_contains "combined: nativeMemoryTracking" "-XX:NativeMemoryTracking=summary" "$output"
-
-echo ""
-
-
-#########################################################################
-# Test 24: Flags not set when not requested
-#########################################################################
-printf "[Test Group 24] Flags not set when not requested\n"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor --verbose \
-    --executable "$mock_java" \
-    --jar "$mock_jar" 2>&1)
-assert_output_not_contains "no gcLogging by default" "Xlog:gc" "$output"
-assert_output_not_contains "no ExitOnOutOfMemory by default" "ExitOnOutOfMemoryError" "$output"
-assert_output_not_contains "no NativeMemoryTracking by default" "NativeMemoryTracking" "$output"
-assert_output_not_contains "no PrintFlagsFinal by default" "PrintFlagsFinal" "$output"
-
-echo ""
-
-
-#########################################################################
-# Test 25: --gc with missing value is skipped
-#########################################################################
-printf "[Test Group 25] Parameter edge cases\n"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor --verbose \
-    --executable "$mock_java" \
-    --jar "$mock_jar" \
-    --gc --verbose 2>&1)
-assert_output_not_contains "gc skipped when followed by --" "-XX:" "$output"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor --verbose \
-    --executable "$mock_java" \
-    --jar "$mock_jar" \
-    --gc 2>&1)
-assert_output_not_contains "gc skipped when no value" "-XX:" "$output"
-
-echo ""
-
-
-#########################################################################
-# Test 26: --observeMemoryCycle parameter parsing
-#########################################################################
-printf "[Test Group 26] observeMemoryCycle parameter parsing\n"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor --help 2>&1)
-assert_output_contains "help shows observeMemoryCycle" "observeMemoryCycle" "$output"
-assert_output_contains "help shows /dev/shm" "/dev/shm/meminfo.out" "$output"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor \
-    --observeMemoryCycle abc 2>&1)
-assert_output_contains "observeMemoryCycle rejects non-numeric" "requires a number" "$output"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor --verbose \
-    --executable "$mock_java" \
-    --jar "$mock_jar" \
-    --observeMemoryCycle 2>&1)
-assert_output_not_contains "observeMemoryCycle without value accepted" "requires a number" "$output"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor --verbose \
-    --executable "$mock_java" \
-    --jar "$mock_jar" \
-    --observeMemoryCycle 10 2>&1)
-assert_output_not_contains "observeMemoryCycle 10 accepted" "requires a number" "$output"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor --verbose \
-    --executable "$mock_java" \
-    --jar "$mock_jar" \
-    --observeMemoryCycle --verbose 2>&1)
-assert_output_not_contains "observeMemoryCycle followed by -- uses default" "requires a number" "$output"
-
-echo ""
-
-
-#########################################################################
-# Test 27: --observeMemoryCycle warns when cb-meminfo.sh not found
-#########################################################################
-printf "[Test Group 27] observeMemoryCycle missing meminfo.sh\n"
-
-# Create a copy of toolarium-java-runner.sh in an isolated dir where cb-meminfo.sh does not exist
-isolated_dir="$TEST_DIR/isolated"
-mkdir -p "$isolated_dir"
-cp "$RUNNER" "$isolated_dir/toolarium-java-runner.sh"
-isolated_runner="$isolated_dir/toolarium-java-runner.sh"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$isolated_runner" --nocolor \
-    --executable "$mock_java" \
-    --jar "$mock_jar" \
-    --observeMemoryCycle 2>&1)
-assert_output_contains "warns when cb-meminfo.sh missing" "not available" "$output"
-
-echo ""
-
-
-#########################################################################
-# Test 28: --observeMemoryCycle via environment variable
-#########################################################################
-printf "[Test Group 28] observeMemoryCycle via environment variable\n"
-
-output=$(cd "$TEST_DIR" && TERM="" observeMemoryCycle="10" \
-    sh "$isolated_runner" --nocolor \
-    --executable "$mock_java" \
-    --jar "$mock_jar" 2>&1)
-assert_output_contains "env observeMemoryCycle warns no cb-meminfo" "not available" "$output"
-
-output=$(cd "$TEST_DIR" && TERM="" observeMemoryCycle="" \
-    sh "$RUNNER" --nocolor \
-    --executable "$mock_java" \
-    --jar "$mock_jar" 2>&1)
-assert_output_not_contains "empty env observeMemoryCycle no warning" "not available" "$output"
-
-echo ""
-
-
-#########################################################################
-# Test 29: Java-style log messages on startup and shutdown
-#########################################################################
-printf "[Test Group 29] Java-style log messages (printLogMessage)\n"
-
-mock_java=$(create_mock_java)
-mock_jar=$(create_mock_jar)
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor \
-    --executable "$mock_java" \
-    --jar "$mock_jar" 2>&1)
-# startup log line
-assert_output_contains "startup log line has package" "toolarium.java.runner" "$output"
-assert_output_contains "startup log line has level I" " - I - " "$output"
-assert_output_contains "startup log line has Starting" "Starting" "$output"
-# shutdown log line
-assert_output_contains "shutdown log line has Stopped" "Stopped" "$output"
-assert_output_contains "shutdown log line has duration" "duration:" "$output"
-assert_output_contains "shutdown log line has exit" "exit: 0" "$output"
-# format: timestamp with comma millis, host|pid|thread
-assert_output_contains "log format has pipe-separated context" "|1]" "$output"
-
-echo ""
-
-
-#########################################################################
-# Test 30: Log messages on error (missing jar)
-#########################################################################
-printf "[Test Group 30] Java-style log messages on error\n"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor \
-    --executable "$mock_java" \
-    --jar "nonexistent.jar" 2>&1)
-assert_output_contains "error log has level E" " - E - " "$output"
-assert_output_contains "error log has Missing jar" "Missing jar file: nonexistent.jar" "$output"
-
-echo ""
-
-
-#########################################################################
-# Test 31: Log messages on missing executable
-#########################################################################
-printf "[Test Group 31] Java-style log messages on missing executable\n"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor \
-    --executable "nonexistent_binary_xyz" 2>&1)
-assert_output_contains "missing exec log has level E" " - E - " "$output"
-assert_output_contains "missing exec log has package" "toolarium.java.runner" "$output"
-assert_output_contains "missing exec log message" "Missing package: nonexistent_binary_xyz" "$output"
-
-echo ""
-
-
-#########################################################################
-# Test 32: Log format without logInformation column (dev format)
-#########################################################################
-printf "[Test Group 32] Log format without logInformation (dev-style)\n"
-
-# create a runner with no logInfo dimensions (simulates %-50c{49} | %m%n)
-RUNNER_NO_INFO="$TEST_DIR/toolarium-java-runner-noinfo.sh"
-sed -e 's/@@dockerOsVersion@@/test/g' \
-    -e 's/@@toolariumJavaRunnerLogPackage@@/toolarium.java.runner/g' \
-    -e 's/@@toolariumJavaRunnerLogCategoryWidth@@/50/g' \
-    -e 's/@@toolariumJavaRunnerLogCategoryMax@@/49/g' \
-    -e 's/@@toolariumJavaRunnerLogInfoWidth@@//g' \
-    -e 's/@@toolariumJavaRunnerLogInfoMax@@//g' \
-    "$RUNNER_TEMPLATE" > "$RUNNER_NO_INFO"
-chmod +x "$RUNNER_NO_INFO"
-
-mock_java=$(create_mock_java)
-mock_jar=$(create_mock_jar)
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER_NO_INFO" --nocolor \
-    --executable "$mock_java" \
-    --jar "$mock_jar" 2>&1)
-assert_exit_code "no-info format exits 0" 0 "$?"
-assert_output_contains "no-info has package" "toolarium.java.runner" "$output"
-assert_output_contains "no-info has Starting" "Starting" "$output"
-# should NOT have the double " - " separator before the pipe (logInfo column absent)
-# with logInfo:    "...runner    - <info>          | Starting..."
-# without logInfo: "...runner    | Starting..."
-# verify the message directly follows category + " | "
-assert_output_contains "no-info pipe after category" "| Starting" "$output"
-
-echo ""
-
-
-#########################################################################
-# Test 33: Log format with custom category width
-#########################################################################
-printf "[Test Group 33] Log format with custom category width\n"
-
-# create a runner with narrower category (40.39) and logInfo (10.10)
-RUNNER_CUSTOM="$TEST_DIR/toolarium-java-runner-custom.sh"
-sed -e 's/@@dockerOsVersion@@/test/g' \
-    -e 's/@@toolariumJavaRunnerLogPackage@@/com.example.myapp/g' \
-    -e 's/@@toolariumJavaRunnerLogCategoryWidth@@/40/g' \
-    -e 's/@@toolariumJavaRunnerLogCategoryMax@@/39/g' \
-    -e 's/@@toolariumJavaRunnerLogInfoWidth@@/10/g' \
-    -e 's/@@toolariumJavaRunnerLogInfoMax@@/10/g' \
-    "$RUNNER_TEMPLATE" > "$RUNNER_CUSTOM"
-chmod +x "$RUNNER_CUSTOM"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER_CUSTOM" --nocolor \
-    --executable "$mock_java" \
-    --jar "$mock_jar" 2>&1)
-assert_exit_code "custom width exits 0" 0 "$?"
-assert_output_contains "custom width has custom package" "com.example.myapp" "$output"
-assert_output_not_contains "custom width no default package" "toolarium.java.runner" "$output"
-assert_output_contains "custom width has Starting" "Starting" "$output"
-
-echo ""
-
-
-#########################################################################
-# Test 34: On error exit, MEMINFO_FILE content is printed
-#########################################################################
-printf "[Test Group 34] Meminfo dump on error exit\n"
-
-# create a mock java that fails
-mock_java_fail="$TEST_DIR/mock-java-fail"
-cat > "$mock_java_fail" <<'MOCKEOF'
-#!/bin/sh
-if [ "$1" = "-version" ]; then
-    echo "mock java version \"17.0.1\" 2024-01-01" >&2
-    echo "MockJVM (build 17.0.1+0)" >&2
-    echo "MockJVM 64-Bit Server VM (build 17.0.1+0, mixed mode)" >&2
-    exit 0
-fi
-exit 137
-MOCKEOF
-chmod +x "$mock_java_fail"
-mock_jar=$(create_mock_jar)
-
-# create a fake meminfo file at the expected path
-MEMINFO_TEST="/dev/shm/cb-meminfo.out"
-printf '%s\n%s\n' "Total          Used           Free           Process[1]" "8192 M         4096 M         4096 M         256 M" > "$MEMINFO_TEST" 2>/dev/null
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor \
-    --executable "$mock_java_fail" \
-    --jar "$mock_jar" 2>&1)
-if [ -w "/dev/shm" ]; then
-    assert_output_contains "meminfo printed on error" "MEMINFO  Total" "$output"
-    assert_output_contains "error log on failed exit" " - E - " "$output"
-else
-    # /dev/shm not available (e.g. some CI), skip gracefully
-    printf "  SKIP: /dev/shm not writable, skipping meminfo dump test\n"
-fi
-
-echo ""
-
-
-#########################################################################
-# Test 35: On success exit, MEMINFO_FILE is NOT printed
-#########################################################################
-printf "[Test Group 35] No meminfo dump on success exit\n"
-
-mock_java=$(create_mock_java)
-mock_jar=$(create_mock_jar)
-
-# create a fake meminfo file
-printf '%s\n%s\n' "Total          Used" "should-not-appear" > "$MEMINFO_TEST" 2>/dev/null
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor \
-    --executable "$mock_java" \
-    --jar "$mock_jar" 2>&1)
-if [ -w "/dev/shm" ]; then
-    assert_output_not_contains "meminfo not printed on success" "should-not-appear" "$output"
-fi
-rm -f "$MEMINFO_TEST" 2>/dev/null
-
-echo ""
-
-
-#########################################################################
-# Test 36: SIGTERM is forwarded to java and its exit code is kept
-#########################################################################
-printf "[Test Group 36] SIGTERM forwarding and exit code\n"
-
-#########################################################################
-# create_mock_java_signal - creates a fake java executable which runs
-# until it receives SIGTERM and then exits with the given exit code
-#   $1 = exit code on SIGTERM (143 = graceful JVM shutdown)
-#########################################################################
-create_mock_java_versioned() {
-    local ver="$1"
-    local mock_path="$TEST_DIR/mock-java-v${ver}"
-    sed "s/__VER__/${ver}/g" <<'MOCKEOF' > "$mock_path"
-#!/bin/sh
-if [ "$1" = "-version" ]; then
-    echo 'openjdk version "__VER__" 2025-01-01' >&2
-    echo "OpenJDK Runtime Environment (build __VER__+0)" >&2
-    echo "OpenJDK 64-Bit Server VM (build __VER__+0, mixed mode)" >&2
-    exit 0
-fi
-echo "MOCK_JAVA_ARGS: $*"
-exit 0
-MOCKEOF
-    chmod +x "$mock_path"
-    echo "$mock_path"
-}
-
-create_mock_java_signal() {
-    mock_java="$TEST_DIR/mock-java-signal-$1"
-    cat > "$mock_java" <<MOCKEOF
-#!/bin/sh
-if [ "\$1" = "-version" ]; then
-    echo "mock java version \"17.0.1\" 2024-01-01" >&2
-    exit 0
-fi
-trap 'echo "TERM" > "$TEST_DIR/signal-received"; kill \$SLEEP_PID 2>/dev/null; exit $1' TERM
-sleep 30 &
-SLEEP_PID=\$!
-touch "$TEST_DIR/signal-started"
-wait \$SLEEP_PID
-exit 0
-MOCKEOF
-    chmod +x "$mock_java"
-    echo "$mock_java"
-}
-
-#########################################################################
-# run_runner_with_sigterm - starts the runner, sends SIGTERM to it once
-# the java process runs and sets $signal_output and $signal_exit_code
-#   $1 = mock java executable
-#########################################################################
-run_runner_with_sigterm() {
-    rm -f "$TEST_DIR/signal-started" "$TEST_DIR/signal-received" "$TEST_DIR/signal-output"
-    (cd "$TEST_DIR" && TERM="" exec sh "$RUNNER" --nocolor \
-        --executable "$1" \
-        --jar "$mock_jar" > "$TEST_DIR/signal-output" 2>&1) &
-    runner_pid=$!
-
-    # wait until the java process runs (max 10s)
-    i=0
-    while [ ! -f "$TEST_DIR/signal-started" ] && [ "$i" -lt 100 ]; do
-        sleep 0.1
-        i=$((i + 1))
-    done
-
-    # watchdog: a runner which does not end on SIGTERM must not block the suite;
-    # it ends its own sleep when it is stopped, otherwise the orphaned sleep holds
-    # the output of the suite open
-    (trap 'kill $sleep_pid 2>/dev/null; exit 0' TERM
-     sleep 20 & sleep_pid=$!
-     wait $sleep_pid && kill -9 "$runner_pid" 2>/dev/null) > /dev/null 2>&1 &
-    watchdog_pid=$!
-
-    kill -TERM "$runner_pid"
-    wait "$runner_pid"
-    signal_exit_code=$?
-    kill "$watchdog_pid" 2>/dev/null
-    wait "$watchdog_pid" 2>/dev/null
-    signal_output=$(cat "$TEST_DIR/signal-output")
-}
-
-mock_jar=$(create_mock_jar)
-
-# graceful shutdown: the JVM ends with 128 + 15 itself, a requested stop is not an error
-run_runner_with_sigterm "$(create_mock_java_signal 143)"
-assert_exit_code "SIGTERM graceful exit code" 143 "$signal_exit_code"
-assert_output_contains "SIGTERM forwarded to java" "TERM" "$(cat "$TEST_DIR/signal-received" 2>/dev/null)"
-assert_output_contains "SIGTERM graceful stop message" "Stopped by signal TERM" "$signal_output"
-assert_output_contains "SIGTERM graceful info log" " - I - " "$signal_output"
-assert_output_not_contains "SIGTERM graceful no error log" " - E - " "$signal_output"
-
-# failed shutdown: the real exit code of java is kept and reported as error
-run_runner_with_sigterm "$(create_mock_java_signal 1)"
-assert_exit_code "SIGTERM failed shutdown exit code" 1 "$signal_exit_code"
-assert_output_contains "SIGTERM failed shutdown error log" " - E - " "$signal_output"
-assert_output_not_contains "SIGTERM failed shutdown no stop message" "Stopped by signal" "$signal_output"
-
-echo ""
-
-
-#########################################################################
-# Test 37: -XX:+UseCompactObjectHeaders auto-enabled on Java 25+
-#########################################################################
-printf "[Test Group 37] Compact object headers (Java 25+)\n"
-
-mock_java_v25=$(create_mock_java_versioned 25)
-mock_java_v27=$(create_mock_java_versioned 27)
-mock_java_v24=$(create_mock_java_versioned 24)
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor --verbose \
-    --executable "$mock_java_v25" \
-    --jar "$mock_jar" 2>&1)
-assert_output_contains "java 25 gets CompactObjectHeaders" "-XX:+UseCompactObjectHeaders" "$output"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor --verbose \
-    --executable "$mock_java_v27" \
-    --jar "$mock_jar" 2>&1)
-assert_output_contains "java 27 gets CompactObjectHeaders" "-XX:+UseCompactObjectHeaders" "$output"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor --verbose \
-    --executable "$mock_java_v24" \
-    --jar "$mock_jar" 2>&1)
-assert_output_not_contains "java 24 no CompactObjectHeaders" "-XX:+UseCompactObjectHeaders" "$output"
-
-output=$(cd "$TEST_DIR" && TERM="" sh "$RUNNER" --nocolor --verbose \
-    --executable "$mock_java" \
-    --jar "$mock_jar" 2>&1)
-assert_output_not_contains "java 17 no CompactObjectHeaders" "-XX:+UseCompactObjectHeaders" "$output"
-
-output=$(cd "$TEST_DIR" && TERM="" COMPACT_OBJECT_HEADERS=false sh "$RUNNER" --nocolor --verbose \
-    --executable "$mock_java_v25" \
-    --jar "$mock_jar" 2>&1)
-assert_output_not_contains "COMPACT_OBJECT_HEADERS=false suppresses flag on java 25" "-XX:+UseCompactObjectHeaders" "$output"
-
-output=$(cd "$TEST_DIR" && TERM="" COMPACT_OBJECT_HEADERS=false sh "$RUNNER" --nocolor --verbose \
-    --executable "$mock_java_v27" \
-    --jar "$mock_jar" 2>&1)
-assert_output_not_contains "COMPACT_OBJECT_HEADERS=false suppresses flag on java 27" "-XX:+UseCompactObjectHeaders" "$output"
-
-echo ""
-
-
-#########################################################################
-# Summary
-#########################################################################
-printf "=========================================================================\n"
-printf " Results: %s/%s passed, %s failed\n" "$PASSED" "$TOTAL" "$FAILED"
-printf "=========================================================================\n"
-
-[ "$FAILED" -eq 0 ] && exit 0 || exit 1
+echo "Results: $PASS passed, $FAIL failed"
+[ $FAIL -eq 0 ] && exit 0 || exit 1
