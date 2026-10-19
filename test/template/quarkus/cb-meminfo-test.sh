@@ -24,7 +24,8 @@
 #########################################################################
 #
 # Tests for cb-meminfo: --help, argument parsing, output formatting,
-# header suppression, timestamp column, and unit formatting.
+# header suppression, timestamp column, unit formatting, JIT column rename,
+# and Heap-Used/Non-Heap-Used graceful fallback.
 #
 #########################################################################
 
@@ -232,6 +233,32 @@ test_jvm_without_pid() {
 	assertEquals "0" "$exitCode" "exit code 0"
 	# -jvm without -pid should not crash, just show regular output
 	assertContains "Total" "$output" "header still contains Total"
+	# no JVM columns without -pid
+	assertNotContains "JVM-Total" "$output" "no JVM-Total without -pid"
+	assertNotContains "Heap-Used" "$output" "no Heap-Used without -pid"
+}
+
+test_jvm_with_pid_self() {
+	echo "TEST: -jvm -pid with shell's own PID (no NMT, no jstat data)"
+	output=$("$MI" -jvm -pid $$ 2>&1)
+	exitCode=$?
+	assertEquals "0" "$exitCode" "exit code 0 even without JVM data"
+	# shell has no hsperfdata or NMT → used columns must be absent
+	assertNotContains "Heap-Used" "$output" "no Heap-Used for shell process"
+	assertNotContains "Non-Heap-Used" "$output" "no Non-Heap-Used for shell process"
+}
+
+test_no_code_column() {
+	echo "TEST: 'Code' column name is gone — replaced by 'JIT'"
+	# Run with -jvm -pid $$; even if JVM columns were present they'd say JIT not Code
+	output=$("$MI" -ts -b -pid $$ 2>&1)
+	assertNotContains " Code" "$output" "Code column never appears in output"
+}
+
+test_jit_column_name_in_help() {
+	echo "TEST: help text documents JIT column (via -jvm)"
+	output=$("$MI" --help 2>&1)
+	assertContains "jstat" "$output" "help mentions jstat for used columns"
 }
 
 test_quiet_with_timestamp() {
@@ -279,6 +306,9 @@ case "$os" in
 		test_format_petabytes
 		test_pid_self
 		test_jvm_without_pid
+		test_jvm_with_pid_self
+		test_no_code_column
+		test_jit_column_name_in_help
 		test_quiet_with_timestamp
 		;;
 	*)
