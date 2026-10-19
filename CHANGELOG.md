@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v1.6.21] - 2026-10-11
+## [v1.6.21] - 2026-10-19
 ### Changed
 - `toolarium-java-runner.sh`: `-XX:+UseCompactObjectHeaders` is now added automatically when the JVM is Java 25 or later. Set the environment variable `COMPACT_OBJECT_HEADERS=false` to opt out.
 - `cb-meminfo.sh`: two new columns `Heap-Used` and `Non-Heap-Used` are written alongside the existing NMT columns when `-jvm` is active. Values are read from the JVM's hsperfdata file via `jstat -gc` (no JVM attach, ~5–10 ms); columns are omitted when `jstat` is unavailable.
