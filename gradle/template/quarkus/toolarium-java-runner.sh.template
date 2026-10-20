@@ -178,29 +178,6 @@ case "$(uname -s)" in
         totalMemory=$((${_memtotal:-0} * 1024))
         usedMemory=$(( (${_memtotal:-0} - ${_memavail:-0}) * 1024 ))
 
-        # Container-aware: override with cgroup memory limits if lower than physical memory
-        # _CGROUP_ROOT can be overridden for testing; defaults to /sys/fs/cgroup
-        _cgroot="${_CGROUP_ROOT:-/sys/fs/cgroup}"
-        # cgroups v2
-        if [ -f "${_cgroot}/memory.max" ]; then
-            _cgmax=$(cat "${_cgroot}/memory.max" 2>/dev/null)
-            if [ "$_cgmax" != "max" ] && validate_number "$_cgmax" && [ "$_cgmax" -gt 0 ] && [ "$_cgmax" -lt "$totalMemory" ] 2>/dev/null; then
-                _cgcurrent=$(cat "${_cgroot}/memory.current" 2>/dev/null)
-                totalMemory="$_cgmax"
-                usedMemory="${_cgcurrent:-0}"
-            fi
-        # cgroups v1
-        elif [ -f "${_cgroot}/memory/memory.limit_in_bytes" ]; then
-            _cgmax=$(cat "${_cgroot}/memory/memory.limit_in_bytes" 2>/dev/null)
-            if validate_number "$_cgmax" && [ "$_cgmax" -gt 0 ] && [ "$_cgmax" -lt "$totalMemory" ] 2>/dev/null; then
-                _cgusage=$(cat "${_cgroot}/memory/memory.usage_in_bytes" 2>/dev/null)
-                _cgcache=$(awk '/^total_cache /{print $2; exit}' "${_cgroot}/memory/memory.stat" 2>/dev/null)
-                totalMemory="$_cgmax"
-                usedMemory=$(( ${_cgusage:-0} - ${_cgcache:-0} ))
-                [ "$usedMemory" -lt 0 ] 2>/dev/null && usedMemory=0
-            fi
-        fi
-
         # Per-PID: read /proc directly (zero forks); fall back to ps filter
         if [ -n "$pidId" ]; then
             _pidrss=$(awk '/^VmRSS:/{print $2; exit}' "/proc/$pidId/status" 2>/dev/null)
@@ -208,6 +185,28 @@ case "$(uname -s)" in
                 _pidrss=$(ps -o pid,rss 2>/dev/null | awk "\$1==$pidId{print \$2; exit}")
             fi
             processMemory=$((${_pidrss:-0} * 1024))
+        fi
+
+        # Override with cgroup memory limit when running in a container.
+        # _CGROUP_ROOT can be overridden for testing (default: /sys/fs/cgroup).
+        _cgroot="${_CGROUP_ROOT:-/sys/fs/cgroup}"
+        if [ -r "${_cgroot}/memory.max" ]; then
+            # cgroup v2
+            _cgmax=$(cat "${_cgroot}/memory.max" 2>/dev/null)
+            if [ -n "$_cgmax" ] && [ "$_cgmax" != "max" ]; then
+                totalMemory=$_cgmax
+                _cgcurrent=$(cat "${_cgroot}/memory.current" 2>/dev/null)
+                usedMemory=${_cgcurrent:-0}
+            fi
+        elif [ -r "${_cgroot}/memory/memory.limit_in_bytes" ]; then
+            # cgroup v1: sentinel for "unlimited" is 9223372036854771712 (2^63 - 4096)
+            _cgmax=$(cat "${_cgroot}/memory/memory.limit_in_bytes" 2>/dev/null)
+            if [ "${_cgmax:-0}" -gt 0 ] 2>/dev/null && [ "${_cgmax:-0}" -lt "9223372036854771712" ] 2>/dev/null; then
+                totalMemory=$_cgmax
+                _cgusage=$(cat "${_cgroot}/memory/memory.usage_in_bytes" 2>/dev/null)
+                _cgcache=$(awk '/^cache /{print $2; exit}' "${_cgroot}/memory/memory.stat" 2>/dev/null)
+                usedMemory=$(( ${_cgusage:-0} - ${_cgcache:-0} ))
+            fi
         fi
         ;;
 esac
@@ -264,7 +263,7 @@ if [ "$showJvm" = "true" ] && [ -n "$pidId" ]; then
     done
 
     if [ -n "$jstatBin" ]; then
-        eval "$("$jstatBin" -gc "$pidId" 1 1 2>/dev/null | awk '
+        eval "$("$jstatBin" -gc "$pidId" 1 2>/dev/null | awk '
             NR==1 { for (i=1; i<=NF; i++) col[$i]=i; next }
             NR==2 {
                 s0u = col["S0U"] ? $col["S0U"]+0 : 0
@@ -273,7 +272,6 @@ if [ "$showJvm" = "true" ] && [ -n "$pidId" ]; then
                 ou  = col["OU"]  ? $col["OU"]+0  : 0
                 mu  = col["MU"]  ? $col["MU"]+0  : 0
                 printf "jvmHeapUsed=%d jvmNonHeapUsed=%d jvmUsedAvailable=true\n", int((s0u+s1u+eu+ou)*1024), int(mu*1024)
-                exit
             }
         ')"
     fi
