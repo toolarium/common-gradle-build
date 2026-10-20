@@ -199,9 +199,12 @@ case "$(uname -s)" in
                 usedMemory=${_cgcurrent:-0}
             fi
         elif [ -r "${_cgroot}/memory/memory.limit_in_bytes" ]; then
-            # cgroup v1: sentinel for "unlimited" is 9223372036854771712 (2^63 - 4096)
+            # cgroup v1: unlimited sentinel is 9223372036854771712 (2^63 - 4096).
+            # Use awk (floating-point) instead of [ -lt ] to avoid 32-bit integer overflow
+            # in POSIX sh implementations (e.g. dash) on the sentinel value.
+            # Any real container limit is under 10 TB (10000000000000).
             _cgmax=$(cat "${_cgroot}/memory/memory.limit_in_bytes" 2>/dev/null)
-            if [ "${_cgmax:-0}" -gt 0 ] 2>/dev/null && [ "${_cgmax:-0}" -lt "9223372036854771712" ] 2>/dev/null; then
+            if awk -v v="${_cgmax:-0}" 'BEGIN{exit !(v > 0 && v < 10000000000000)}' 2>/dev/null; then
                 totalMemory=$_cgmax
                 _cgusage=$(cat "${_cgroot}/memory/memory.usage_in_bytes" 2>/dev/null)
                 _cgcache=$(awk '/^cache /{print $2; exit}' "${_cgroot}/memory/memory.stat" 2>/dev/null)
