@@ -60,6 +60,24 @@ validate_number() {
 
 
 #########################################################################
+# run_timeout: run a command with a timeout when the 'timeout' binary is
+# available (BusyBox / GNU coreutils). Falls back to a direct call when
+# 'timeout' is absent (e.g. macOS without coreutils, Solaris).
+# Override the deadline via _CB_JVM_TIMEOUT (default: 5 seconds).
+# Used to guard jcmd/jstat which use the JVM Dynamic Attach mechanism
+# and can block indefinitely in a container when the attach listener
+# has not yet started.
+#########################################################################
+run_timeout() {
+    if command -v timeout >/dev/null 2>&1; then
+        timeout "${_CB_JVM_TIMEOUT:-5}" "$@"
+    else
+        "$@"
+    fi
+}
+
+
+#########################################################################
 # Format bytes and print as a 15-char column. No subshells.
 # Usage: printColumn <bytes> <divideFactor>
 #   divideFactor: -1=auto, 0=bytes, 1=K, 2=M, 3=G, 4=T, 5=P
@@ -229,7 +247,7 @@ if [ "$showJvm" = "true" ] && [ -n "$pidId" ]; then
     done
 
     if [ -n "$jcmdBin" ]; then
-        nmtOutput=$("$jcmdBin" "$pidId" VM.native_memory summary 2>&1)
+        nmtOutput=$(run_timeout "$jcmdBin" "$pidId" VM.native_memory summary 2>&1)
         case "$nmtOutput" in
             *"Native Memory Tracking"*)
                 jvmAvailable="true"
@@ -266,7 +284,7 @@ if [ "$showJvm" = "true" ] && [ -n "$pidId" ]; then
     done
 
     if [ -n "$jstatBin" ]; then
-        eval "$("$jstatBin" -gc "$pidId" 1 2>/dev/null | awk '
+        eval "$(run_timeout "$jstatBin" -gc "$pidId" 1 2>/dev/null | awk '
             NR==1 { for (i=1; i<=NF; i++) col[$i]=i; next }
             NR==2 {
                 s0u = col["S0U"] ? $col["S0U"]+0 : 0
