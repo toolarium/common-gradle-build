@@ -284,7 +284,7 @@ if [ "$showJvm" = "true" ] && [ -n "$pidId" ]; then
     done
 
     if [ -n "$jstatBin" ]; then
-        eval "$(run_timeout "$jstatBin" -gc "$pidId" 1 2>/dev/null | awk '
+        eval "$(run_timeout "$jstatBin" -gc "$pidId" 2>/dev/null | awk '
             NR==1 { for (i=1; i<=NF; i++) col[$i]=i; next }
             NR==2 {
                 s0u = col["S0U"] ? $col["S0U"]+0 : 0
