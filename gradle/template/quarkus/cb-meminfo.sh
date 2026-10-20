@@ -186,6 +186,31 @@ case "$(uname -s)" in
             fi
             processMemory=$((${_pidrss:-0} * 1024))
         fi
+
+        # Override with cgroup memory limit when running in a container.
+        # _CGROUP_ROOT can be overridden for testing (default: /sys/fs/cgroup).
+        _cgroot="${_CGROUP_ROOT:-/sys/fs/cgroup}"
+        if [ -r "${_cgroot}/memory.max" ]; then
+            # cgroup v2
+            _cgmax=$(cat "${_cgroot}/memory.max" 2>/dev/null)
+            if [ -n "$_cgmax" ] && [ "$_cgmax" != "max" ]; then
+                totalMemory=$_cgmax
+                _cgcurrent=$(cat "${_cgroot}/memory.current" 2>/dev/null)
+                usedMemory=${_cgcurrent:-0}
+            fi
+        elif [ -r "${_cgroot}/memory/memory.limit_in_bytes" ]; then
+            # cgroup v1: unlimited sentinel is 9223372036854771712 (2^63 - 4096).
+            # Use awk (floating-point) instead of [ -lt ] to avoid 32-bit integer overflow
+            # in POSIX sh implementations (e.g. dash) on the sentinel value.
+            # Any real container limit is under 10 TB (10000000000000).
+            _cgmax=$(cat "${_cgroot}/memory/memory.limit_in_bytes" 2>/dev/null)
+            if awk -v v="${_cgmax:-0}" 'BEGIN{exit !(v > 0 && v < 10000000000000)}' 2>/dev/null; then
+                totalMemory=$_cgmax
+                _cgusage=$(cat "${_cgroot}/memory/memory.usage_in_bytes" 2>/dev/null)
+                _cgcache=$(awk '/^cache /{print $2; exit}' "${_cgroot}/memory/memory.stat" 2>/dev/null)
+                usedMemory=$(( ${_cgusage:-0} - ${_cgcache:-0} ))
+            fi
+        fi
         ;;
 esac
 freeMemory=$((totalMemory - usedMemory))
