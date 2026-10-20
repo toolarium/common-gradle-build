@@ -304,6 +304,38 @@ test_cgroup_v2_unlimited() {
 	assertContains "Total" "$output" "header present when cgroup limit is max"
 }
 
+test_jvm_timeout_respected() {
+	echo "TEST: _CB_JVM_TIMEOUT prevents jcmd/jstat hang"
+	# Inject a fake jcmd that sleeps longer than the timeout
+	_tmpdir=$(mktemp -d)
+	cat > "${_tmpdir}/jcmd" <<'FAKEJCMD'
+#!/bin/sh
+exec sleep 30
+FAKEJCMD
+	chmod +x "${_tmpdir}/jcmd"
+	cat > "${_tmpdir}/jstat" <<'FAKEJSTAT'
+#!/bin/sh
+exec sleep 30
+FAKEJSTAT
+	chmod +x "${_tmpdir}/jstat"
+
+	_start=$(date +%s)
+	output=$(PATH="${_tmpdir}:$PATH" _CB_JVM_TIMEOUT=2 "$MI" -jvm -pid $$ 2>&1)
+	exitCode=$?
+	_end=$(date +%s)
+	_elapsed=$(( _end - _start ))
+	rm -rf "$_tmpdir"
+
+	assertEquals "0" "$exitCode" "exit code 0 even with hanging jcmd/jstat"
+	if [ "$_elapsed" -lt 10 ]; then
+		PASS=$((PASS+1))
+		echo "  PASS: completed in ${_elapsed}s (timeout respected)"
+	else
+		FAIL=$((FAIL+1))
+		echo "  FAIL: took ${_elapsed}s (timeout NOT respected — hang detected)"
+	fi
+}
+
 test_cgroup_v1_limit() {
 	echo "TEST: cgroup v1 container memory limit"
 	_tmpdir=$(mktemp -d)
@@ -353,6 +385,7 @@ case "$os" in
 		test_no_code_column
 		test_jit_column_name_in_help
 		test_quiet_with_timestamp
+		test_jvm_timeout_respected
 		test_cgroup_v2_limit
 		test_cgroup_v2_unlimited
 		test_cgroup_v1_limit
@@ -377,6 +410,7 @@ case "$os" in
 		test_no_code_column
 		test_jit_column_name_in_help
 		test_quiet_with_timestamp
+		test_jvm_timeout_respected
 		;;
 	*)
 		# on non-Linux/SunOS, only test arg parsing (--help exits before OS-specific code)
