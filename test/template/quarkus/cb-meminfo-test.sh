@@ -278,6 +278,49 @@ test_quiet_with_timestamp() {
 	fi
 }
 
+test_cgroup_v2_limit() {
+	echo "TEST: cgroup v2 container memory limit"
+	_tmpdir=$(mktemp -d)
+	# simulate a container with 512 MB limit and 256 MB used
+	printf '536870912\n' > "${_tmpdir}/memory.max"     # 512 MB
+	printf '268435456\n' > "${_tmpdir}/memory.current" # 256 MB
+	output=$(_CGROUP_ROOT="$_tmpdir" "$MI" -b 2>&1)
+	exitCode=$?
+	rm -rf "$_tmpdir"
+	assertEquals "0" "$exitCode" "exit code 0 with cgroup v2 limit"
+	dataline=$(echo "$output" | tail -1)
+	assertContains "536870912" "$dataline" "total matches cgroup v2 limit (512 MB)"
+	assertContains "268435456" "$dataline" "used matches cgroup v2 current (256 MB)"
+}
+
+test_cgroup_v2_unlimited() {
+	echo "TEST: cgroup v2 unlimited (max) falls back to /proc/meminfo"
+	_tmpdir=$(mktemp -d)
+	printf 'max\n' > "${_tmpdir}/memory.max"
+	output=$(_CGROUP_ROOT="$_tmpdir" "$MI" 2>&1)
+	exitCode=$?
+	rm -rf "$_tmpdir"
+	assertEquals "0" "$exitCode" "exit code 0 when cgroup v2 is unlimited"
+	assertContains "Total" "$output" "header present when cgroup limit is max"
+}
+
+test_cgroup_v1_limit() {
+	echo "TEST: cgroup v1 container memory limit"
+	_tmpdir=$(mktemp -d)
+	mkdir -p "${_tmpdir}/memory"
+	printf '536870912\n'  > "${_tmpdir}/memory/memory.limit_in_bytes"  # 512 MB
+	printf '283115520\n'  > "${_tmpdir}/memory/memory.usage_in_bytes"  # ~270 MB
+	printf 'cache 10485760\ntotal_cache 10485760\n' > "${_tmpdir}/memory/memory.stat"
+	output=$(_CGROUP_ROOT="$_tmpdir" "$MI" -b 2>&1)
+	exitCode=$?
+	rm -rf "$_tmpdir"
+	assertEquals "0" "$exitCode" "exit code 0 with cgroup v1 limit"
+	dataline=$(echo "$output" | tail -1)
+	assertContains "536870912" "$dataline" "total matches cgroup v1 limit (512 MB)"
+	# used = usage(283115520) - cache(10485760) = 272629760
+	assertContains "272629760" "$dataline" "used matches cgroup v1 usage minus cache"
+}
+
 #########################################################################
 # main
 #########################################################################
@@ -290,7 +333,31 @@ echo ""
 # cb-meminfo requires Linux /proc/meminfo, macOS sysctl, or SunOS prtconf
 os=$(uname -s 2>/dev/null)
 case "$os" in
-	Linux*|Darwin*|SunOS*)
+	Linux*)
+		test_help
+		test_help_short
+		test_invalid_arg
+		test_invalid_pid
+		test_default_output
+		test_quiet_suppresses_header
+		test_timestamp_column
+		test_format_bytes
+		test_format_kilobytes
+		test_format_megabytes
+		test_format_gigabytes
+		test_format_terabytes
+		test_format_petabytes
+		test_pid_self
+		test_jvm_without_pid
+		test_jvm_with_pid_self
+		test_no_code_column
+		test_jit_column_name_in_help
+		test_quiet_with_timestamp
+		test_cgroup_v2_limit
+		test_cgroup_v2_unlimited
+		test_cgroup_v1_limit
+		;;
+	Darwin*|SunOS*)
 		test_help
 		test_help_short
 		test_invalid_arg
