@@ -58,6 +58,8 @@
   }
   .header img { height: 90px; border-radius: 12px; background: rgba(255,255,255,0.15); padding: 8px; }
   .header h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.5px; }
+  .header-home { display: flex; align-items: center; gap: 1.5rem; color: white; text-decoration: none; }
+  .header-home:hover { opacity: 0.9; }
   .header p { opacity: 0.92; font-size: 1.05rem; margin-top: 0.3rem; max-width: 650px; }
   .badge { display: inline-block; margin-top: 0.5rem; }
   .badge img { height: 20px; padding: 0; background: none; border-radius: 3px; }
@@ -236,9 +238,33 @@
 
   @media (max-width: 768px) {
     .header-inner { flex-direction: column; text-align: center; }
+    .header-home { flex-direction: column; }
     nav.toc ul { columns: 1; }
     .feature-grid { grid-template-columns: 1fr; }
     .container { padding: 1rem; }
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --primary: #52b788; --primary-light: #74c69d; --primary-dark: #95d5b2;
+      --accent: #40916c; --bg: #0d1117; --bg-card: #161b22; --bg-code: #1c2128;
+      --bg-table-header: #1c2a1c; --text: #e6edf3; --text-muted: #8b949e;
+      --border: #30363d; --border-light: #21262d; --link: #58a6ff;
+      --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+    }
+    .header { background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 50%, #40916c 100%); }
+    pre { background: #161b22; color: #e6edf3; }
+    pre .comment { color: #8b949e; }
+    pre .keyword { color: #7dd3fc; }
+    pre .string { color: #7ee787; }
+    tr:hover td { background: #1c2128; }
+    td:first-child code { color: var(--primary-dark); background: #1c2a1c; border-color: #2d4a2d; }
+    .highlight-box { background: linear-gradient(135deg, #1c2a1c 0%, #1a2316 100%); border-color: #2d4a2d; }
+    .highlight-box strong { color: var(--primary-light); }
+    .sister-banner { background: linear-gradient(135deg, #0d1b2a 0%, #111827 100%); border-color: #1e3a5f; border-left-color: #58a6ff; }
+    .sister-banner strong a { color: #58a6ff; }
+    .sister-banner p { color: #8b949e; }
+    .env-table td:first-child code { color: #f0b429; background: #2d2305; border-color: #5c4a0a; }
   }
 </style>
 </head>
@@ -246,12 +272,14 @@
 
 <div class="header">
   <div class="header-inner">
-    <img src="logo/common-gradle-build-small.png" alt="common-gradle-build logo">
-    <div>
-      <h1>common-gradle-build</h1>
-      <p>A shared, script-based Gradle build framework that provides a complete build lifecycle for multiple project types. One line integration &mdash; no plugins, no <code style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.2);color:white">buildscript</code> blocks.</p>
-      <span class="badge"><img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="GPL v3"></span>
-    </div>
+    <a href="https://github.com/toolarium/common-gradle-build" class="header-home">
+      <img src="logo/common-gradle-build-small.png" alt="common-gradle-build logo">
+      <div>
+        <h1>common-gradle-build</h1>
+        <p>A shared, script-based Gradle build framework that provides a complete build lifecycle for multiple project types. One line integration &mdash; no plugins, no <code style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.2);color:white">buildscript</code> blocks.</p>
+        <span class="badge"><img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="GPL v3"></span>
+      </div>
+    </a>
   </div>
 </div>
 
