@@ -30,11 +30,25 @@ if ("windows" == getOsName()) {
 	setCommonGradleDefaultPropertyIfNull("userHomeDirectory", '~/')
 }
 
+// Gradle 9 removed project.buildDir; re-expose it so all ${buildDir} references below continue to work.
+if (!project.hasProperty('buildDir') || project.buildDir == null) {
+    ext.buildDir = project.layout.buildDirectory.get().asFile.path
+}
+
 setCommonGradleDefaultPropertyIfNull("snakeYamlVersion", "2.3")
 setCommonGradleDefaultPropertyIfNull("grgitCoreVersion", "5.3.2")
 setCommonGradleDefaultPropertyIfNull("jsurferVersion", "1.6.3")
 setCommonGradleDefaultPropertyIfNull("semver4jVersion", "3.1.0")
-setCommonGradleDefaultPropertyIfNull("gradleWrapperDefaultVersion", "8.13")
+setCommonGradleDefaultPropertyIfNull("gradleWrapperDefaultVersion", "8.13")       // "9.7.1"
+setCommonGradleDefaultPropertyIfNull("sonarVersion", "7.4.0.8496")                // Gradle 9 support added in 7.0.0; 7.4.0 is latest (2026-08)
+def cgbGradleMajor = Integer.valueOf(gradle.gradleVersion.toString().split('\\.')[0])
+if (cgbGradleMajor >= 9) {
+    setCommonGradleDefaultPropertyIfNull("toolarimAsciiDoctor", "4.0.2")               // 4.x requires Gradle 9+
+    setCommonGradleDefaultPropertyIfNull("toolariumDependencyCheckVersion", "13.0.0")  // 13.x requires Gradle 9+
+} else {
+    setCommonGradleDefaultPropertyIfNull("toolarimAsciiDoctor", "3.3.2")               // 3.x for Gradle 6/7/8
+    setCommonGradleDefaultPropertyIfNull("toolariumDependencyCheckVersion", "12.2.2")  // 12.x for Gradle 7/8
+}
 setCommonGradleDefaultPropertyIfNull("gradleHome", "$userHomeDirectory/.gradle")
 setCommonGradleDefaultPropertyIfNull("gradleHomePropertiesFile", "$gradleHome/gradle.properties")
 setCommonGradleDefaultPropertyIfNull("defaultCommonGradleBuildUrl", "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/common.gradle")
@@ -340,7 +354,7 @@ if ("true".equalsIgnoreCase("" + project.getProperty('isReleaseVersion'))) {
 setCommonGradleDefaultPropertyIfNull("allowMavenCentralRepository", true)
 setCommonGradleDefaultPropertyIfNull("allowGoogleRepository", true)
 
-if (Integer.valueOf(gradle.gradleVersion.toString().split('\\.')[0])<7) {
+if (cgbGradleMajor < 7) {
     setCommonGradleDefaultPropertyIfNull("allowJCenterRepository", true)
     setCommonGradleDefaultPropertyIfNull("allowMavenCenterRepository", false)
 } else {
@@ -664,6 +678,7 @@ if (project.hasProperty('installGradleWrapper') && project.getProperty('installG
 addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/.settings")
 addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/.idea")
 addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/.vscode")
+addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/.claude")
 
 
 /***************************************************************************************
@@ -677,6 +692,7 @@ addCommonGradlePropertyList("disallowedCheckedInFiles", ".project")
 addCommonGradlePropertyList("disallowedCheckedInFiles", ".settings")
 addCommonGradlePropertyList("disallowedCheckedInFiles", ".idea")
 addCommonGradlePropertyList("disallowedCheckedInFiles", ".vscode")
+addCommonGradlePropertyList("disallowedCheckedInFiles", "CLAUDE.md")
 
 
 /***************************************************************************************
@@ -1189,7 +1205,7 @@ setCommonGradleDefaultPropertyIfNull("commonGradleConfigBlacklistDependenciesNam
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("commonGradleSlf4jApiVersion", "2.0.18")
 setCommonGradleDefaultPropertyIfNull("commonGradleLogbackVersion", "1.5.38")
-setCommonGradleDefaultPropertyIfNull("commonGradleJptoolsVersion", "1.7.12")
+setCommonGradleDefaultPropertyIfNull("commonGradleJptoolsVersion", "1.8.3")
 setCommonGradleDefaultPropertyIfNull("commonGradleJavaxValidtionVersion", "2.0.1.Final")
 setCommonGradleDefaultPropertyIfNull("commonGradleJavaxWsRSApiVersion", "2.1.1")
 setCommonGradleDefaultPropertyIfNull("commonGradleJacksonAnnotationVersion", "2.19.4")
