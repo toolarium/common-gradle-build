@@ -781,6 +781,7 @@ setCommonGradleDefaultPropertyIfNull("vulnerabilityScannerConfigurations", "runt
 setCommonGradleDefaultPropertyIfNull("vulnerabilityScannerReportMarkdown", true)
 setCommonGradleDefaultPropertyIfNull("vulnerabilityScannerReportAdoc", true)
 setCommonGradleDefaultPropertyIfNull("vulnerabilityScannerReportSbom", false)
+setCommonGradleDefaultPropertyIfNull("vulnerabilityScannerReportSbomSpecVersion", "1.6")
 setCommonGradleDefaultPropertyIfNull("vulnerabilityScannerReportSarif", false)
 setCommonGradleDefaultPropertyIfNull("vulnerabilityScannerReportOutputPath", "$generatedCommonGradleBuildSources/vulnerability-report")
 setCommonGradleDefaultPropertyIfNull("vulnerabilityScannerReportIncludeInJar", true)
