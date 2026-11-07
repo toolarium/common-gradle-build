@@ -230,28 +230,39 @@ tasks.matching { it != projectValidation }.all {
  ***************************************************************************************/
 ext.currentTask = null
 ext.failedTask = null
-gradle.taskGraph.beforeTask { Task task ->
-	ext.currentTask = task
-}
-gradle.taskGraph.afterTask { Task task, TaskState state ->
-    if (state.failure) {
-		failedTask = task
-    }
-    else {
-		currentTask = null
-    }
-}
+def cgbProjectRef = project
+gradle.taskGraph.addTaskExecutionListener(new org.gradle.api.execution.TaskExecutionListener() {
+	void beforeExecute(Task task) {
+		cgbProjectRef.ext.currentTask = task
+	}
+	void afterExecute(Task task, TaskState state) {
+		if (state.failure) {
+			cgbProjectRef.ext.failedTask = task
+		} else {
+			cgbProjectRef.ext.currentTask = null
+		}
+	}
+})
 
 
 /***************************************************************************************
- * Build finish
+ * Build finish: uses BuildService.close() (Gradle 6.1+) instead of the deprecated
+ * gradle.buildFinished. close() is invoked after all tasks complete (success or
+ * failure); throwing a GradleException from close() causes a build failure.
  ***************************************************************************************/
-gradle.buildFinished { buildResult ->
+abstract class CgbBuildSummaryService
+		implements org.gradle.api.services.BuildService<org.gradle.api.services.BuildServiceParameters.None>,
+		           AutoCloseable {
+	Closure onFinish
+	@Override
+	void close() { onFinish?.call() }
+}
+
+def cgbBuildFinishLogic = { boolean buildHasFailed ->
 	//println("=>"+gradle.startParameter.getConsoleOutput())
 	//println("=>"+gradle.startParameter.getWarningMode())
 	//println("=>"+gradle.startParameter.getShowStacktrace())
 	//println("=>"+gradle.startParameter.getTaskNames())
-	//println "BUILD FINISHED" + buildResult
 
 	def startupTime=NOW
 	//def startupTime = java.lang.management.ManagementFactory.getRuntimeMXBean().getStartTime()
@@ -270,7 +281,7 @@ gradle.buildFinished { buildResult ->
 			e.printStackTrace();
 		}
 	}
-	
+
 	def duration = ((((long)(new Date().getTime()/ 1000.0))*1000) - startupTime.getTime()) / 1000.0
 	if (duration == null || duration < 0) {
 		duration = 1
@@ -288,16 +299,16 @@ gradle.buildFinished { buildResult ->
 		}
 		if (errorMessage!=null && !errorMessage.isEmpty()) {
 			errorMessage = errorMessagePrefix + errorMessage
-			if (project.hasProperty('logErrorMessage') && project.getProperty('logErrorMessage')) {				
+			if (project.hasProperty('logErrorMessage') && project.getProperty('logErrorMessage')) {
 				printLine(ERROR_LINE_LEVEL, true)
 				printInfo(colorize(ERROR_LEVEL, errorMessage))
 				printLine(ERROR_LINE_LEVEL, true)
 			}
-			
+
 			if (project.hasProperty('errorMessageColor') && project.getProperty('errorMessageColor')!=null) {
-				errorMessage = colorize(project.getProperty('errorMessageColor'), errorMessage)				
+				errorMessage = colorize(project.getProperty('errorMessageColor'), errorMessage)
 			}
-			
+
 			throw new GradleException(errorMessage)
 		} else {
 			printLine(ERROR_LINE_LEVEL)
@@ -305,7 +316,7 @@ gradle.buildFinished { buildResult ->
 		}
 	}
 
-	def isFailed = (buildResult.getFailure()!=null  && failedTask!=null && failedTask.name!=null)
+	def isFailed = (buildHasFailed && failedTask!=null && failedTask.name!=null)
 	if (isFailed) {
 		if (gradle.startParameter.getLogLevel() == org.gradle.api.logging.LogLevel.QUIET) {
 			println(colorize(ERROR_LEVEL, 'FAILURE:') + " In task " + colorize(HIGHLITE_LEVEL, failedTask.name) + ", task execution used ~" + duration + "s")
@@ -324,8 +335,8 @@ gradle.buildFinished { buildResult ->
 		}
 	}
 
-	printLine()	
-	
+	printLine()
+
 	// support end message
 	if (!isFailed && project.hasProperty('endMessage')) {
 		printInfo ("")
@@ -334,6 +345,9 @@ gradle.buildFinished { buildResult ->
 		printLine(HIGHLITE_LEVEL, true)
 	}
 }
+
+def cgbBuildSvc = gradle.sharedServices.registerIfAbsent("cgbBuildSummary", CgbBuildSummaryService) {}
+cgbBuildSvc.get().onFinish = { cgbBuildFinishLogic(project.ext.failedTask != null) }
 
 
 /***************************************************************************************
@@ -438,6 +452,14 @@ projectValidation {
 		printWarn("Could not download common gradle build home: " + e.getMessage())
 	}
 
+	def projectComponentIdSeparator = getCommonGradleProperty('projectComponentIdSeparator', '-')
+	def initScmForNewProjects = getCommonGradleProperty('initScmForNewProjects', false)
+	def validateProjectNameAndFolder = getCommonGradleProperty('validateProjectNameAndFolder', false)
+	def validateRootFiles = getCommonGradleProperty('validateRootFiles', false)
+	def validateRootDirectories = getCommonGradleProperty('validateRootDirectories', false)
+	def initScmWithNewFiles = getCommonGradleProperty('initScmWithNewFiles', false)
+	def initShowScm = getCommonGradleProperty('initShowScm', false)
+
 	doFirst {
 		hasProjectValidationExecuted=true
 		logInfo("Project validation....")
@@ -473,11 +495,7 @@ projectValidation {
 				setCommonGradleProperty("validBuildMessage", "Invalid project component id!")
 			}
 
-			def projectComponentIdSeparator = "-"
-			if (project.hasProperty('projectComponentIdSeparator')) {
-				projectComponentIdSeparator = project.getProperty('projectComponentIdSeparator')
-			}
-
+	
 			def startOrEnd = ("${rootProject.name}".toString().equals(projectComponentId.toString()) || "${rootProject.name}".startsWith(projectComponentId+projectComponentIdSeparator) || "${rootProject.name}".endsWith(projectComponentIdSeparator+projectComponentId))
 			if (projectComponentIdIsPartOfProjectName && !startOrEnd) {
 				printWarn("Component id [$projectComponentId] should be part of the project name [$rootProject.name] (see projectComponentIdIsPartOfProjectName seetings)!")
@@ -494,14 +512,13 @@ projectValidation {
 		}
 		
 		// generate git files if necessary
-		if (project.hasProperty('initScmForNewProjects') && project.getProperty('initScmForNewProjects')) {
+		if (initScmForNewProjects) {
 			createGitFiles()
 		}
 
 		// cleanup disallowed tracked files
 		cleanupDisallowedTrackedFiles()
-		
-		def validateProjectNameAndFolder = project.hasProperty('validateProjectNameAndFolder') && project.getProperty('validateProjectNameAndFolder')
+	
 		if (validateProjectNameAndFolder) {
 			def userDir = cbProjectRootDir
 			def idx = userDir.lastIndexOf('/')
@@ -518,8 +535,6 @@ projectValidation {
 	
 	doLast {
 		// validate root directories and files
-		def validateRootFiles = project.hasProperty('validateRootFiles') && project.getProperty('validateRootFiles')
-		def validateRootDirectories = project.hasProperty('validateRootDirectories') && project.getProperty('validateRootDirectories')
 		def allowedMainDirectoryList = new ArrayList(Arrays.asList(allowedMainDirectories.split(", ")))
 		def allowedMainFileList = new ArrayList(Arrays.asList(allowedMainFiles.split(", ")))
 		
@@ -568,12 +583,12 @@ projectValidation {
 		}
 
 		// init scm
-		if (project.hasProperty('initScmForNewProjects') && project.getProperty('initScmForNewProjects')) {
+		if (initScmForNewProjects) {
 			if (!isGitAvailable()) {
 				printInfo("> Initiallize git repository and add first files...")
 				initGit()
 
-				if (project.hasProperty('initScmWithNewFiles') && project.getProperty('initScmWithNewFiles')) {
+				if (initScmWithNewFiles) {
 					if (result!=null && result.size()>0) {
 						addGit(result)
 						commitGit("Added project files.")
@@ -583,10 +598,10 @@ projectValidation {
 		}
 
 		if (isGitAvailable()) {
-			project.setProperty('scmVersionNumber', getGitCommitHash())
+			setCommonGradleProperty('scmVersionNumber', getGitCommitHash())
 		}
 
-		if (project.hasProperty('initShowScm') && project.getProperty('initShowScm')) {
+		if (initShowScm) {
 			if (isGitAvailable()) {
 				def branchName = getGitBranchName()
 				printInfo("> Git branch: " + colorize(HIGHLITE_LEVEL, branchName) + ", commit: " + colorize(HIGHLITE_LEVEL, "$scmVersionNumber"))

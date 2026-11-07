@@ -40,7 +40,7 @@ buildscript {
         gradlePluginPortal()
 	}
 	dependencies {
-		def sonarVersion="7.2.3.7755" // previous: 4.4.1.3373 --> version from https://plugins.gradle.org/plugin/org.sonarqube
+		def sonarVersion="7.4.0.8496" // previous: 7.2.3.7755 -> 7.0.0 added Gradle 9 support; see https://plugins.gradle.org/plugin/org.sonarqube
 		if (project.hasProperty('sonarVersion')) {
 			sonarVersion = project.getProperty('sonarVersion')
 		}

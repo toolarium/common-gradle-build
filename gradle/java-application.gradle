@@ -68,13 +68,17 @@ apply from: "${commonGradleBuildElementPath}/base/container.gradle"
  * Stage deployment directory before dockerBuild: always copies app.jar, optionally
  * resolves and adds the toolarium-java-agent JAR alongside it.
  ***************************************************************************************/
+def isNewProject = getCommonGradleProperty('IS_NEW', false)
+def initialDockerDeploymentSourcePath = getCommonGradleProperty('dockerDeploymentSourcePath', '')
+def toolariumJavaAgentEnabled = getCommonGradleProperty('toolariumJavaAgentEnabled', false)
+
 dockerBuild.doFirst {
-	if (!project.getProperty('IS_NEW')) {
+	if (!isNewProject) {
 		// Stage deployment directory: copy app JAR as app.jar, then override dockerDeploymentSourcePath
 		// so the Dockerfile template receives the staging directory path (not the versioned JAR path).
 		// Only stage when dockerDeploymentSourcePath points to a file (default: build/libs/<app>.jar).
 		// If already pointing to a directory (user override), skip staging and use it directly.
-		def sourcePath = project.getProperty('dockerDeploymentSourcePath')
+		def sourcePath = initialDockerDeploymentSourcePath
 		def sourceFile = new File("${cbProjectRootDir}/${sourcePath}")
 		def stageDir = new File("${cbProjectRootDir}/build/container-deployment")
 		if (sourceFile.isFile()) {
@@ -85,13 +89,14 @@ dockerBuild.doFirst {
 			logInfo("dockerDeploymentSourcePath is a directory — using directly: ${sourcePath}")
 		}
 
-		if (project.hasProperty('toolariumJavaAgentEnabled') && project.getProperty('toolariumJavaAgentEnabled')) {
+		if (toolariumJavaAgentEnabled) {
 			def agentCoords = "${toolariumJavaAgentGroup}:${toolariumJavaAgentArtifact}:${toolariumJavaAgentVersion}"
 			logInfo("Resolving toolarium-java-agent ${agentCoords}...")
 			try {
 				def agentCfg = configurations.detachedConfiguration(dependencies.create(agentCoords))
-				def agentFile = agentCfg.resolvedConfiguration.resolvedArtifacts
-					.find { it.name == toolariumJavaAgentArtifact }?.file
+				def agentFile = agentCfg.incoming.artifactView { it.lenient = true }.artifacts
+					.find { a -> a.id.componentIdentifier instanceof org.gradle.api.artifacts.component.ModuleComponentIdentifier &&
+					             a.id.componentIdentifier.module == toolariumJavaAgentArtifact }?.file
 				if (agentFile) {
 					copyFile("${agentFile}", "${stageDir}/${agentFile.name}")
 					setCommonGradleProperty("dockerJavaAgent", "/deployment/${agentFile.name}")
@@ -144,7 +149,7 @@ if (project.tasks.findByName('shadowJar')) {
 		}
 		
 		doLast {
-			def filename = prepareFilename(shadowJar.archivePath.getPath())
+			def filename = prepareFilename(shadowJar.archiveFile.get().asFile.path)
 			printInfo("> Created package " + colorize(HIGHLITE_LEVEL, filename) + ".")
 		}
 	}

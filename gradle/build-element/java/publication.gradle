@@ -136,7 +136,7 @@ publishing {
 		}		
 		
         maven {
-            url deployUrl
+            url = deployUrl
 
 			def mvnUsername = ''
 			if (project.hasProperty('mavenUsername')) {
@@ -149,8 +149,8 @@ publishing {
 			}
 			
             credentials {
-                    username "${mvnUsername}"
-                    password "${mvnPassword}"
+                    username = "${mvnUsername}"
+                    password = "${mvnPassword}"
             }
         }
     }

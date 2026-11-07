@@ -24,11 +24,15 @@
 	repositories {
         gradlePluginPortal()
         maven {
-            url 'https://repo1.maven.org/maven2/'
+            url = 'https://repo1.maven.org/maven2/'
         }
 	}
 	dependencies {
-		def toolarimAsciiDoctor="3.3.2" // "4.0.2"
+		// 4.x requires Gradle 9+; 3.x for Gradle 6/7/8 (maintenance-only); known issue #774 with Gradle 9.5+
+		def toolarimAsciiDoctor = "3.3.2"
+		if (Integer.valueOf(gradle.gradleVersion.toString().split('\\.')[0]) >= 9) {
+			toolarimAsciiDoctor = "4.0.2"
+		}
 		if (project.hasProperty('toolarimAsciiDoctor')) {
 			toolarimAsciiDoctor = project.getProperty('toolarimAsciiDoctor')
 		}

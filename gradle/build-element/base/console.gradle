@@ -18,10 +18,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
  */
-import groovy.swing.SwingBuilder
-
-
-/** 
+/**
  * Read input from console, samples:
  * def m = readConsoleInput()
  * m = readConsoleInput('My message')
@@ -34,34 +31,34 @@ ext.readConsoleInput = { inputMessage = 'Please enter data', defaultValue = null
 	if (inputMessage == null || inputMessage.isEmpty()) {
 		return defaultValue
 	}
-	
+
 	def console = System.console()
-	def message = LOGPREFIX + inputMessage	
-	if (defaultValue !=null) {
-		if (console) {	
+	def message = LOGPREFIX + inputMessage
+	if (defaultValue != null) {
+		if (console) {
 			message += " [" + colorize(HIGHLITE_LEVEL, defaultValue) + "]"
 		} else {
 			message += " [" + defaultValue + "]"
 		}
-	}	
-	
-	if (console) {	
+	}
+
+	if (console) {
 		message += ": "
 	}
-	
+
 	def readUserInput = true
-	def result;
+	def result
 	while (readUserInput) {
 		if (console) {
-			def userInput;
+			def userInput
 			if (isSecure) {
 				userInput = console.readPassword(message)
 			} else {
 				userInput = console.readLine(message)
 			}
-			
+
 			if (userInput == null || userInput.isEmpty()) {
-				if (allowEmptyInput || defaultValue!=null) {
+				if (allowEmptyInput || defaultValue != null) {
 					readUserInput = false
 					result = defaultValue
 				} else {
@@ -70,55 +67,13 @@ ext.readConsoleInput = { inputMessage = 'Please enter data', defaultValue = null
 			} else {
 				readUserInput = false
 				result = userInput
-			}			
-		} else {
-			try {
-				new SwingBuilder().edt {
-					dialog(	modal: true, title: "Common Gradle Build | Input", alwaysOnTop: true, resizable: false, locationRelativeTo: null, pack: true, show: true ) {
-					hbox{
-						vbox {
-							def fillup = LINE.replace('*', ' ').substring(message.length())
-							label(text: message + fillup)
-							//label.setBounds(10,10,80,25);
-							
-							if (isSecure) {
-								input = passwordField()
-							} else {
-								input = textField()
-							}
-							
-							button(defaultButton: true, text: 'OK', actionPerformed: {
-								if (isSecure) {
-									userInput = "" + input.password; 
-								} else {
-									userInput = input.text; 
-								}								
-														
-								if (userInput == null || userInput.isEmpty()) {
-									if (allowEmptyInput || defaultValue!=null) {
-										readUserInput = false
-										result = defaultValue
-										printInfo("Use default value")
-									} else {
-										printInfo("Empty input is not allowed!")
-									}
-								} else {
-									readUserInput = false
-									result = userInput
-								}			
-								
-								dispose();
-							})
-						}
-						}
-					}
-				}
-			} catch (Exception e) {		
-				readUserInput = false
-				result = defaultValue
 			}
+		} else {
+			// No system console (IDE / Gradle daemon). Return the default value.
+			readUserInput = false
+			result = defaultValue
 		}
 	}
-	
+
 	return result
 }

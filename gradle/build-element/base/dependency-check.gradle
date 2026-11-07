@@ -20,20 +20,25 @@
  */
 
 buildscript {
+    def gradleMajor = Integer.valueOf(gradle.gradleVersion.toString().split('\\.')[0])
     repositories {
-        if (Integer.valueOf(gradle.gradleVersion.toString().split('\\.')[0])<7) {
+        if (gradleMajor < 7) {
 			jcenter()
 		} else {
 			mavenCentral()
 			maven {
-				url "https://mvnrepository.com/artifact"
+				url = "https://mvnrepository.com/artifact"
 			}
-			maven { url("https://oss.sonatype.org/content/repositories/snapshots") }
+			maven { url = "https://oss.sonatype.org/content/repositories/snapshots" }
 			gradlePluginPortal()
 		}
     }
     dependencies {
-		def toolariumDependencyCheckVersion="12.2.2"
+		// 13.x requires Gradle 9+; 12.x for Gradle 7/8; published to Gradle Plugin Portal only (not Maven Central)
+		def toolariumDependencyCheckVersion = "12.2.2"
+		if (gradleMajor >= 9) {
+			toolariumDependencyCheckVersion = "13.0.0"
+		}
 		if (project.hasProperty('toolariumDependencyCheckVersion')) {
 			toolariumDependencyCheckVersion = project.getProperty('toolariumDependencyCheckVersion')
 		}

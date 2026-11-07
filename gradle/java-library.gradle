@@ -91,7 +91,10 @@ prepareApplicationConfiguration {
  * project java validation
  ***************************************************************************************/
 projectValidation {
-	if (project.getProperty('IS_NEW')) {
+	def projDir = project.projectDir
+	def createLogbackConfig = getCommonGradleProperty('createLogbackConfig', false)
+	def commonGradleTemplateJavaPath = getCommonGradleProperty('commonGradleTemplateJavaPath', '')
+	if (getCommonGradleProperty('IS_NEW', false)) {
 		bootStraplogLifecycle("  > Just create project structure, skip build.")
 		gradle.startParameter.excludedTaskNames += "build"
 	}
@@ -99,11 +102,10 @@ projectValidation {
 	doFirst {
 		createJavaSourcePath()
 
-		if (project.hasProperty('IS_NEW_SRC_FOLDER') && project.getProperty('IS_NEW_SRC_FOLDER')) {
+		if (getCommonGradleProperty('IS_NEW_SRC_FOLDER', false)) {
             logInfo("Create at least one java file...")
 			def javaLibraryTemplate = 'javaLibrary.template'
 			def slashedRootPackageName = projectRootPackageName.replace('.', '/')
-			def commonGradleTemplateJavaPath = project.getProperty('commonGradleTemplateJavaPath')
 
 			def mainJavaSourcPath = createPackagePath(srcMainJavaDirectory, projectRootPackageName)
 			
@@ -181,16 +183,16 @@ projectValidation {
 				}
 			}
 
-			if (project.hasProperty('createLogbackConfig') && project.getProperty('createLogbackConfig')) {
+			if (createLogbackConfig) {
 				setCommonGradleProperty("fileName", "logback.xml")
 				createFileFromTemplate("${logbackConfigPath}/${fileName}", getTemplateFile('logback.template', 'java'))
 			}
-			
+
 			registerEndMessage("" << NELINE \
-								<< "  To get started (build & package jars, run tests), go to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
+								<< "  To get started (build & package jars, run tests), go to " + colorize(HIGHLITE_LEVEL, projDir) + ":" << NELINE \
 								<< "      " + colorize(HIGHLITE_LEVEL, startExecutable) + "" << NELINE \
 								<< "" << NELINE \
-								<< "  To test, go to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
+								<< "  To test, go to " + colorize(HIGHLITE_LEVEL, projDir) + ":" << NELINE \
 								<< "      " + colorize(HIGHLITE_LEVEL, "$startExecutable test") + "" << NELINE)
 		}
 	}

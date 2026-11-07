@@ -123,9 +123,11 @@ if (project.hasProperty('initCheckstyle') && project.getProperty('initCheckstyle
  * Project validation
  ***************************************************************************************/
 projectValidation {
+	def initCheckstyle = getCommonGradleProperty('initCheckstyle', false)
+	def doCreateCheckstyleConfiguration = getCommonGradleProperty('doCreateCheckstyleConfiguration', false)
 	doFirst {
-		if (project.hasProperty('initCheckstyle') && project.getProperty('initCheckstyle')) {
-			if (project.hasProperty('doCreateCheckstyleConfiguration') && project.getProperty('doCreateCheckstyleConfiguration')) {
+		if (initCheckstyle) {
+			if (doCreateCheckstyleConfiguration) {
 				createCheckstyleConfiguration()
 			}
 		}

@@ -27,7 +27,7 @@ buildscript {
 		} else {
 			mavenCentral()
 			maven {
-				url "https://mvnrepository.com/artifact"
+				url = "https://mvnrepository.com/artifact"
 				
 			}
 		}

@@ -30,13 +30,40 @@ apply from: "${commonGradleBuildElementPath}/base/json.gradle"
  * Returns a list of maps: [group, artifact, version, file]
  ****************************************************************************************/
 ext.getDirectDependencies = { String configName = 'runtimeClasspath' ->
-    configurations[configName].resolvedConfiguration.firstLevelModuleDependencies
-        .collect { dep -> [
-            group   : dep.module.id.group,
-            artifact: dep.module.id.name,
-            version : dep.module.id.version,
-            file    : dep.moduleArtifacts[0]?.file?.toString()?.replace('\\', '/')
-        ]}
+    def config = configurations[configName]
+    def fileByGA = [:]
+    try {
+        config.incoming
+            .artifactView { it.lenient = true }
+            .artifacts
+            .each { artifact ->
+                def ci = artifact.id.componentIdentifier
+                if (ci instanceof org.gradle.api.artifacts.component.ModuleComponentIdentifier) {
+                    if (artifact.file != null) {
+                        fileByGA["${ci.group}:${ci.module}"] = artifact.file.toString().replace('\\', '/')
+                    }
+                }
+            }
+    } catch (Exception e) {
+        logInfo("Could not resolve artifact files for ${configName}: " + e.getMessage())
+    }
+
+    // root.dependencies gives only the direct (first-level) declared dependencies.
+    config.incoming.resolutionResult.root.dependencies
+        .findAll { it instanceof org.gradle.api.artifacts.result.ResolvedDependencyResult }
+        .collect { dep ->
+            def mid = dep.selected.moduleVersion
+            if (mid == null) {
+                return null
+            }
+            [
+                group   : mid.group,
+                artifact: mid.name,
+                version : mid.version,
+                file    : fileByGA["${mid.group}:${mid.name}"]
+            ]
+        }
+        .findAll { it != null && it.group != null }
 }
 
 
@@ -110,85 +137,103 @@ task exportRequestDepndency {
 
 
 /****************************************************************************************
- * Export dependency as json
- ****************************************************************************************/
-ext.exportResolvedDependency = { runtimeDependency, dep ->
-    def jsonOutputResult = ""
-    def dependencyChildType = "runtime"
-    if (!runtimeDependency) {
-        dependencyChildType = "compile"
-    }
-
-    def addToJson 
-    addToJson = { resolvedDep -> 
-        jsonOutputResult += "\n{"
-        jsonOutputResult += "\"groupId\":\"${resolvedDep.module.id.group}\",\"artifactId\":\"${resolvedDep.module.id.name}\",\"version\":\"${resolvedDep.module.id.version}\",\"file\":\"${resolvedDep.getModuleArtifacts()[0].file.toString().replace('\\', '/')}\""
-        jsonOutputResult += ",\"dependencies\":["
-        if (resolvedDep.children.size()!=0) {
-            resolvedDep.children.each { childResolvedDep ->
-                if (resolvedDep in childResolvedDep.getParents() && (childResolvedDep.getConfiguration() == "$dependencyChildType" /*'runtime'|| childResolvedDep.getConfiguration() == 'compile'*/)) {
-                    addToJson(childResolvedDep)
-                }
-            }
-            
-            if (jsonOutputResult[-1] == ',') {
-                jsonOutputResult = jsonOutputResult[0..-2]
-            }
-        }
-          
-        jsonOutputResult += "]},"
-    }
-       
-    addToJson(dep)
-    return jsonOutputResult
-}
-
-
-/****************************************************************************************
  * Export dependency tree as json
  ****************************************************************************************/
 task exportDependency {
     doLast {
-        def jsonOutput = "["
-        
-        jsonOutput += "\n{\"compileClasspath\": ["
-        configurations.compileClasspath.resolvedConfiguration.firstLevelModuleDependencies.each { dep ->
-            jsonOutput += exportResolvedDependency(false, dep)
-        }
-        if (jsonOutput[-1] == ',') {
-            jsonOutput = jsonOutput[0..-2]
-        }        
-        jsonOutput += "]}"
-        
-        jsonOutput += ",\n{\"runtimeClasspath\": ["
-        configurations.runtimeClasspath.resolvedConfiguration.firstLevelModuleDependencies.each { dep ->
-            jsonOutput += exportResolvedDependency(true, dep)
-        }
-        if (jsonOutput[-1] == ',') {
-            jsonOutput = jsonOutput[0..-2]
-        }
-        jsonOutput += "]}"
-        
-        jsonOutput += ",\n{\"testCompileClasspath\": ["
-        configurations.testCompileClasspath.resolvedConfiguration.firstLevelModuleDependencies.each { dep ->
-            jsonOutput += exportResolvedDependency(false, dep)
-        }
-        if (jsonOutput[-1] == ',') {
-            jsonOutput = jsonOutput[0..-2]
-        }
-        jsonOutput += "]}"
-        
-        jsonOutput += ",\n{\"testRuntimeClasspath\": ["
-        configurations.testRuntimeClasspath.resolvedConfiguration.firstLevelModuleDependencies.each { dep ->
-            jsonOutput += exportResolvedDependency(true, dep)
-        }
-        if (jsonOutput[-1] == ',') {
-            jsonOutput = jsonOutput[0..-2]
-        }        
-        jsonOutput += "]}"
-        
-        jsonOutput += "\n]"
+        def gradleMajor = Integer.valueOf(gradle.gradleVersion.toString().split('\\.')[0])
 
+        // Gradle 8+: resolvedConfiguration/ResolvedDependency deprecated (8) / removed (9);
+        // use ResolutionResult tree instead.
+        def exportComponentResultTree
+        exportComponentResultTree = { component, fileByGA, visited ->
+            def mid = component.moduleVersion
+            if (mid == null || !visited.add("${mid.group}:${mid.name}:${mid.version}")) return ""
+            def file = fileByGA["${mid.group}:${mid.name}"]
+            if (file == null) {
+                file = ""
+            }
+            def result = "\n{\"groupId\":\"${mid.group}\",\"artifactId\":\"${mid.name}\",\"version\":\"${mid.version}\",\"file\":\"${file}\""
+            result += ",\"dependencies\":["
+            def children = component.dependencies
+                .findAll { it instanceof org.gradle.api.artifacts.result.ResolvedDependencyResult }
+                .collect { exportComponentResultTree(it.selected, fileByGA, visited) }
+                .findAll { it }
+            if (children) result += children.join(',')
+            result += "]},"
+            return result
+        }
+
+        def exportConfigDeps = { configName, isRuntime ->
+            def out = ""
+            def config = configurations[configName]
+            if (gradleMajor < 8) {
+                config.resolvedConfiguration.firstLevelModuleDependencies.each { dep ->
+                    def depJson = ""
+                    def addToJson
+                    addToJson = { resolvedDep ->
+                        depJson += "\n{"
+                        depJson += "\"groupId\":\"${resolvedDep.module.id.group}\",\"artifactId\":\"${resolvedDep.module.id.name}\",\"version\":\"${resolvedDep.module.id.version}\",\"file\":\"${resolvedDep.getModuleArtifacts()[0].file.toString().replace('\\', '/')}\""
+                        depJson += ",\"dependencies\":["
+                        if (resolvedDep.children.size() != 0) {
+                            resolvedDep.children.each { childResolvedDep ->
+                                if (resolvedDep in childResolvedDep.getParents()) {
+                                    addToJson(childResolvedDep)
+                                }
+                            }
+                            if (depJson[-1] == ',') {
+                                depJson = depJson[0..-2]
+                            }
+                        }
+                        depJson += "]},"
+                    }
+                    addToJson(dep)
+                    out += depJson
+                }
+            } else {
+                def fileByGA = [:]
+                try {
+                    config.incoming.artifactView { it.lenient = true }.artifacts.each { a ->
+                        def ci = a.id.componentIdentifier
+                        if (ci instanceof org.gradle.api.artifacts.component.ModuleComponentIdentifier) {
+                            if (a.file != null) {
+                                fileByGA["${ci.group}:${ci.module}"] = a.file.toString().replace('\\', '/')
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    logInfo("Could not resolve artifact files for ${configName}: " + e.getMessage())
+                }
+                config.incoming.resolutionResult.root.dependencies
+                    .findAll { it instanceof org.gradle.api.artifacts.result.ResolvedDependencyResult }
+                    .each { dep -> out += exportComponentResultTree(dep.selected, fileByGA, new HashSet()) }
+            }
+            return out
+        }
+
+        def jsonOutput = "["
+
+        jsonOutput += "\n{\"compileClasspath\": ["
+        jsonOutput += exportConfigDeps('compileClasspath', false)
+        if (jsonOutput[-1] == ',') jsonOutput = jsonOutput[0..-2]
+        jsonOutput += "]}"
+
+        jsonOutput += ",\n{\"runtimeClasspath\": ["
+        jsonOutput += exportConfigDeps('runtimeClasspath', true)
+        if (jsonOutput[-1] == ',') jsonOutput = jsonOutput[0..-2]
+        jsonOutput += "]}"
+
+        jsonOutput += ",\n{\"testCompileClasspath\": ["
+        jsonOutput += exportConfigDeps('testCompileClasspath', false)
+        if (jsonOutput[-1] == ',') jsonOutput = jsonOutput[0..-2]
+        jsonOutput += "]}"
+
+        jsonOutput += ",\n{\"testRuntimeClasspath\": ["
+        jsonOutput += exportConfigDeps('testRuntimeClasspath', true)
+        if (jsonOutput[-1] == ',') jsonOutput = jsonOutput[0..-2]
+        jsonOutput += "]}"
+
+        jsonOutput += "\n]"
         println jsonOutput
     }
 }

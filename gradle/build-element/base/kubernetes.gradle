@@ -361,7 +361,7 @@ task kubernetesJar(type: Jar, dependsOn: ['kubernetesConfiguration', 'prepareToo
 	doLast {
 		if (project.hasProperty('showCreatedArtefacts') && project.getProperty('showCreatedArtefacts')) {
 			// jar.archiveFileName
-			def filename = prepareFilename(jar.archivePath.getPath())
+			def filename = prepareFilename(jar.archiveFile.get().asFile.path)
 			printInfo("> Created package " + colorize(HIGHLITE_LEVEL, filename) + ".")
 		}
 	}

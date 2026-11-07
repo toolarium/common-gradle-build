@@ -32,9 +32,10 @@ addCommonGradlePropertyList("allowedMainDirectories", "$rootDirectory/bin")
  * Project validation
  ***************************************************************************************/
 projectValidation {
+	def initEclipse = getCommonGradleProperty('initEclipse', false)
+	def isReleaseVersion = getCommonGradleProperty('isReleaseVersion', 'false')
 	doFirst {
-		if (project.hasProperty('initEclipse') && project.getProperty('initEclipse')
-			&& !"true".equalsIgnoreCase("" + project.getProperty('isReleaseVersion'))) {
+		if (initEclipse && !"true".equalsIgnoreCase("" + isReleaseVersion)) {
 			createEclipseFiles()
 		}
 	}

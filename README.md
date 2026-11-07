@@ -1416,6 +1416,23 @@ All shell scripts in this framework are POSIX-compatible and run on both bash an
 - Quoted variable expansions to prevent word splitting
 - `grep -F` with `--` separator for patterns starting with `-`
 
+## Gradle Compatibility
+
+The framework supports **Gradle 7, 8, and 9**. All internal APIs are selected to match the running Gradle version at runtime:
+
+| Area | Gradle 7 | Gradle 8 | Gradle 9 |
+|------|----------|----------|----------|
+| Dependency tree export (`exportDependency`) | `resolvedConfiguration` (old API) | `resolutionResult` + `artifactView` | `resolutionResult` + `artifactView` |
+| Blacklist / dependency tree resolution | `resolutionResult` + `artifactView` | `resolutionResult` + `artifactView` | `resolutionResult` + `artifactView` |
+| Agent JAR resolution | `artifactView { lenient }` | `artifactView { lenient }` | `artifactView { lenient }` |
+| Archive file path | `archiveFile.get().asFile.path` | `archiveFile.get().asFile.path` | `archiveFile.get().asFile.path` |
+| Compile output directory | `destinationDirectory.get().asFile` | `destinationDirectory.get().asFile` | `destinationDirectory.get().asFile` |
+
+**Version-specific notes:**
+- `exportDependency` uses a `gradleMajor < 8` guard: the deprecated `resolvedConfiguration` API is used only on Gradle 7; Gradle 8 and 9 both use the modern `ResolutionResult` tree, avoiding Gradle 8 deprecation warnings.
+- All other dependency resolution uses `incoming.resolutionResult` and `incoming.artifactView` exclusively (available since Gradle 4), with no version branching required.
+- The default `gradleWrapperDefaultVersion` is `9.7.1`. Gradle 9 requires **JVM 17+** for the Gradle daemon.
+
 ## License
 
 This project is licensed under the [GNU General Public License v3.0](LICENSE).

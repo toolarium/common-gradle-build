@@ -81,14 +81,14 @@ task javadocJar(type: Jar) { jar ->
 					'Build-Timestamp'	   	: BUILD_TIMESTAMP,
 					'Build-JDK'			   	: "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
 					'Build-OS'			   	: "${System.properties['os.name']} (${System.properties['os.version']}), ${System.properties['os.arch']}",
-					'Source-Compatibility'  : project.sourceCompatibility,
-					'Target-Compatibility'  : project.targetCompatibility
+					'Source-Compatibility'  : project.getProperty('sourceCompatibility').toString(),
+					'Target-Compatibility'  : project.getProperty('targetCompatibility').toString()
 	}
 
 	doLast {
 		if (project.hasProperty('showCreatedArtefacts') && project.getProperty('showCreatedArtefacts')) {
 			// jar.archiveFileName
-			def filename = prepareFilename(jar.archivePath.getPath())
+			def filename = prepareFilename(jar.archiveFile.get().asFile.path)
 			printInfo("> Created package " + colorize(HIGHLITE_LEVEL, filename) + ".")
 		}
 	}

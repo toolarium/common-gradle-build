@@ -40,10 +40,11 @@ apply from: "${commonGradleBuildUrl}/container.gradle"
  * project validation
  ***************************************************************************************/
 projectValidation {
+	def isReleaseVersion = getCommonGradleProperty('isReleaseVersion', 'false')
 	doFirst {
 		printWarn("Please change dependency from docker.gradle to container.gradle!")
-		
-		def failOnError = ("true".equalsIgnoreCase("" + project.getProperty('isReleaseVersion')));
+
+		def failOnError = ("true".equalsIgnoreCase("" + isReleaseVersion));
 		if (failOnError) {
 			addError("Please change dependency from docker.gradle to container.gradle!")
 		}

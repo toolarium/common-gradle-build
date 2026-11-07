@@ -43,7 +43,7 @@ if (!userDir.toString().equalsIgnoreCase(cbProjectRootDir.toString())) {
 }
 
 if (project.hasProperty('projectGroupId')) {
-	group projectGroupId
+	group = projectGroupId
 }
 
 
@@ -415,8 +415,8 @@ ext.projectInitialisation = { ->
 					<< "# tool information" << NELINE \
 					<< "# checkstyleToolVersion = ${checkstyleToolVersion}" << NELINE \
 					<< "# testDependencyVersion = ${testDependencyVersion}" << NELINE \
-					<< "# sourceCompatibility   = ${sourceCompatibility}" << NELINE \
-					<< "# targetCompatibility   = ${targetCompatibility}" << NELINE \
+					<< "# sourceCompatibility   = ${project.getProperty('sourceCompatibility')}" << NELINE \
+					<< "# targetCompatibility   = ${project.getProperty('targetCompatibility')}" << NELINE \
 					<< "" << NELINE \
 					<< "# jvm information" << NELINE \
 					<< "org.gradle.jvmargs       = ${project.ext.gradlePropertiesJvmArgs}" << NELINE \

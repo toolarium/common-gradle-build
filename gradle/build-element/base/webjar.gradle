@@ -267,11 +267,11 @@ if (project.hasProperty('createFatJar') && project.getProperty('createFatJar').t
 	}
 	artifacts {
 		archives(targetFatJar.archiveFile) {
-			name "${project.name}-${project.version}"
-			type "${fatJarPackageType}"
-			extension "${fatJarPackageType}"
+			name = "${project.name}-${project.version}"
+			type = "${fatJarPackageType}"
+			extension = "${fatJarPackageType}"
 			builtBy targetFatJar
-		}	
+		}
 	}	
     buildFatWebJar.dependsOn targetFatJar
 }

@@ -75,7 +75,7 @@ init {
 	def javaInfo = ""
 	if (initShowJava) {
 		userInfo = "(${System.properties['user.name']}, $encoding, ${System.properties['user.language']}, ${TimeZone.getDefault().getID()})"
-		javaInfo = "Java " + colorize(HIGHLITE_LEVEL, System.properties['java.version']) + "${isUnlimitedJurisdictionMsg}, target " + colorize(HIGHLITE_LEVEL, targetCompatibility) + " (${vendorName}-${System.properties['java.vm.version']}), "
+		javaInfo = "Java " + colorize(HIGHLITE_LEVEL, System.properties['java.version']) + "${isUnlimitedJurisdictionMsg}, target " + colorize(HIGHLITE_LEVEL, project.getProperty('targetCompatibility')) + " (${vendorName}-${System.properties['java.vm.version']}), "
 	}
 
 	def osInfo = "${System.properties['os.name']} (${System.properties['os.arch']}) on ${hostname}"
@@ -120,6 +120,27 @@ init {
 
 	//printLine(HIGHLITE_LEVEL, "[" + projectType + "]")
 	printLine(HIGHLITE_LEVEL, true)
+
+	// Warn during the Gradle 8→9 transition: running Gradle is < 9, the configured target wrapper
+	// version is >= 9, and the current JVM is too old for the Gradle 9 daemon (requires JVM 17+).
+	if (project.hasProperty('gradleWrapperDefaultVersion')) {
+		def runningMajor = Integer.valueOf(gradle.gradleVersion.toString().split('\\.')[0])
+		def wrapperMajor = "$gradleWrapperDefaultVersion".toString().split('\\.')[0].replaceAll('[^0-9]', '')
+		if (runningMajor < 9 && wrapperMajor.isInteger() && wrapperMajor.toInteger() >= 9) {
+			def jvmVersionStr = System.properties['java.version'].toString()
+			def jvmParts = jvmVersionStr.split('[._-]')
+			def jvmMajorStr = jvmParts[0]
+			if (jvmMajorStr == '1' && jvmParts.length > 1) {
+				jvmMajorStr = jvmParts[1]
+			}
+			def jvmMajor = jvmMajorStr.replaceAll('[^0-9]', '').toInteger()
+			if (jvmMajor < 17) {
+				printWarn("> Java " + colorize(HIGHLITE_LEVEL, jvmVersionStr) \
+					+ " detected — Gradle " + colorize(HIGHLITE_LEVEL, "$gradleWrapperDefaultVersion") \
+					+ " requires JVM 17+ for the daemon. Update JAVA_HOME before the wrapper upgrade takes effect.")
+			}
+		}
+	}
 }
 
 

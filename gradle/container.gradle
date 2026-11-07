@@ -110,7 +110,7 @@ task customJar(type: Jar) { jar ->
 	}
 	
 	doLast {
-		def filename = prepareFilename(jar.archivePath.getPath())
+		def filename = prepareFilename(jar.archiveFile.get().asFile.path)
 		printInfo("> Create custom jar " + colorize(HIGHLITE_LEVEL, filename) + ".")
 	}
 }

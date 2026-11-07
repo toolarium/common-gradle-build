@@ -216,16 +216,16 @@ ext.validateQuarkusVersion = { ->
 			}
 
 			if (verifyNewestVersion) {
-			     def mainVersion = "" + currentVersion.getMajorNumber() + "." + currentVersion.getMinorNumber()
-			     def newestVersion = versionInformation.getProperty(mainVersion)
-			     if (newestVersion == null || newestVersion.isBlank()) {
-			         logInfo("No release information found for quarkus " + mainVersion + ", skip newest version check.")
-			     } else if (currentVersion.compareTo(parseReleaseVersion(newestVersion)) < 0) {
-			         printWarn("There is a newer quarkus version available " + colorize(HIGHLITE_LEVEL, newestVersion)  + colorize(WARN_LEVEL, ", current: $quarkusPluginVersion!"))
-			     } else {
-			         logInfo("Current quarkus version " + quarkusPluginVersion + " is up-to-date.")
-			     }
-			 }			
+				def mainVersion = "" + currentVersion.getMajorNumber() + "." + currentVersion.getMinorNumber()
+				def newestVersion = versionInformation.getProperty(mainVersion)
+				if (newestVersion == null || newestVersion.isBlank()) {
+					logInfo("No release information found for quarkus " + mainVersion + ", skip newest version check.")
+				} else if (currentVersion.compareTo(parseReleaseVersion(newestVersion)) < 0) {
+					printWarn("There is a newer quarkus version available " + colorize(HIGHLITE_LEVEL, newestVersion)  + colorize(WARN_LEVEL, ", current: $quarkusPluginVersion!"))
+				} else {
+					logInfo("Current quarkus version " + quarkusPluginVersion + " is up-to-date.")
+				}
+			}
 		}
 	} catch (Exception e) {
 		printWarn("Could not check quarlus version: " + e.getMessage())
@@ -333,7 +333,7 @@ if (!project.getProperty('IS_NEW')) {
 if (project.hasProperty("quarkusRepository") && !project.getProperty("quarkusRepository").toString().trim().isEmpty()) {
 	repositories {
 		maven {
-			url "$quarkusRepository"
+			url = "$quarkusRepository"
 		}
 	}
 }
@@ -392,9 +392,9 @@ tasks.withType(JavaCompile) {
 			def generatedCommonGradleBuildJavaSources = project.getProperty('generatedCommonGradleBuildJavaSources');
 			def generatedCommonGradleBuildJavaTestSources = project.getProperty('generatedCommonGradleBuildJavaTestSources');
 			def packagePath
-			if (generatedCommonGradleBuildJavaSources.endsWith(destinationDir.getName())) {
+			if (generatedCommonGradleBuildJavaSources.endsWith(destinationDirectory.get().asFile.name)) {
 				packagePath = createPackagePath(generatedCommonGradleBuildJavaSources, packageName.replace('.', '/'))
-			} else if (generatedCommonGradleBuildJavaTestSources.endsWith(destinationDir.getName())) {
+			} else if (generatedCommonGradleBuildJavaTestSources.endsWith(destinationDirectory.get().asFile.name)) {
 				packagePath = createPackagePath(generatedCommonGradleBuildJavaTestSources, packageName.replace('.', '/'))
 			}
 			
@@ -473,37 +473,39 @@ test {
  * project java validation
  ***************************************************************************************/
 projectValidation {
+	def isNew = getCommonGradleProperty('IS_NEW', false)
+	def projDir = project.projectDir
 	def quarkusResourcePath = srcMainResourcesDirectory + "/META-INF/resources"
-	if (project.getProperty('IS_NEW')) {
+	if (isNew) {
 		gradle.startParameter.excludedTaskNames += "build"
 	} else { // in older versions
 		File f = new File (srcMainResourcesDirectory + "/META-INF/resources/index.html")
 		if (!f.exists()) {
-		    createFileFromTemplate("${quarkusResourcePath}/index.html", getTemplateFile("index.html.template")) 
+		    createFileFromTemplate("${quarkusResourcePath}/index.html", getTemplateFile("index.html.template"))
 		}
-	}	
+	}
 
 	// validate the quarkus version
 	validateQuarkusVersion()
 
 	doLast {
-		if (project.getProperty('IS_NEW')) {
+		if (isNew) {
 			new File(srcMainResourcesDirectory).mkdirs()
-			
+
 			setCommonGradleProperty("fileName", "application.properties")
-			createFileFromTemplate("${srcMainResourcesDirectory}/${fileName}", getTemplateFile("application.properties.template")) 
-			
+			createFileFromTemplate("${srcMainResourcesDirectory}/${fileName}", getTemplateFile("application.properties.template"))
+
 			new File(quarkusResourcePath).mkdirs()
-			createFileFromTemplate("${quarkusResourcePath}/index.html", getTemplateFile("index.html.template")) 
+			createFileFromTemplate("${quarkusResourcePath}/index.html", getTemplateFile("index.html.template"))
 
 			registerEndMessage("" << NELINE \
-								<< "  To get started, go to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
+								<< "  To get started, go to " + colorize(HIGHLITE_LEVEL, projDir) + ":" << NELINE \
 								<< "      " + colorize(HIGHLITE_LEVEL, "$startExecutable run") + "" << NELINE \
 								<< "" << NELINE \
-								<< "  To build (build & package jars, run tests), go to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
+								<< "  To build (build & package jars, run tests), go to " + colorize(HIGHLITE_LEVEL, projDir) + ":" << NELINE \
 								<< "      " + colorize(HIGHLITE_LEVEL, "$startExecutable") + "" << NELINE \
 								<< "" << NELINE \
-								<< "  To test, go to  " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
+								<< "  To test, go to  " + colorize(HIGHLITE_LEVEL, projDir) + ":" << NELINE \
 								<< "      " + colorize(HIGHLITE_LEVEL, "$startExecutable test") + "" << NELINE)
 		}
 	}
@@ -618,8 +620,9 @@ build { ->
 				logInfo("Resolving toolarium-java-agent ${agentCoords}...")
 				try {
 					def agentCfg = configurations.detachedConfiguration(dependencies.create(agentCoords))
-					def agentFile = agentCfg.resolvedConfiguration.resolvedArtifacts
-						.find { it.name == toolariumJavaAgentArtifact }?.file
+					def agentFile = agentCfg.incoming.artifactView { it.lenient = true }.artifacts
+						.find { a -> a.id.componentIdentifier instanceof org.gradle.api.artifacts.component.ModuleComponentIdentifier &&
+						             a.id.componentIdentifier.module == toolariumJavaAgentArtifact }?.file
 					if (agentFile) {
 						copyFile("${agentFile}", "${quarkusAppDirectory}/${agentFile.name}")
 						setCommonGradleProperty("dockerJavaAgent", "/deployment/${agentFile.name}")

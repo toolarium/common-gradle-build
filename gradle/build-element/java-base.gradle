@@ -158,9 +158,9 @@ if (project.hasProperty('generatedCommonGradleBuildSources') && !project.getProp
  * Prepare compile options
  ***************************************************************************************/
 tasks.withType(JavaCompile) {
+	def mainDirectoryName = getCommonGradleProperty('srcMainDirectoryName', '')
 	doFirst {
-		def mainDirectoryName = project.getProperty('srcMainDirectoryName')
-		if (destinationDir.getName().endsWith(mainDirectoryName)) {
+		if (destinationDirectory.get().asFile.name.endsWith(mainDirectoryName)) {
 
 			// create common gradle build java source path
 			createGenerateCommonGradleBuildJavaSourcePath()
@@ -168,7 +168,7 @@ tasks.withType(JavaCompile) {
 			// create java version
 			createJavaVersion()
 		} else {
-		    logInfo("Ignore:" + destinationDir.getName())
+		    logInfo("Ignore:" + destinationDirectory.get().asFile.name)
 		}
 	}
 }
@@ -242,11 +242,13 @@ ext.createJavaSourcePath = { ->
 	}
 
 	createGenerateCommonGradleBuildJavaSourcePath()
-	if (sourceCompatibility!=null && !sourceCompatibility.toString().isEmpty() && targetCompatibility!=null && !targetCompatibility.toString().isEmpty()) {
-		def sourceVersion = parseVersion(sourceCompatibility)
-		def targetVersion = parseVersion(targetCompatibility)
+	def extSrcCompat = project.hasProperty('sourceCompatibility') ? project.getProperty('sourceCompatibility') : null
+	def extTgtCompat = project.hasProperty('targetCompatibility') ? project.getProperty('targetCompatibility') : null
+	if (extSrcCompat!=null && !extSrcCompat.toString().isEmpty() && extTgtCompat!=null && !extTgtCompat.toString().isEmpty()) {
+		def sourceVersion = parseVersion(extSrcCompat)
+		def targetVersion = parseVersion(extTgtCompat)
 		if (sourceVersion!=null && targetVersion!=null && !targetVersion.isCompatibleWith(sourceVersion)) {
-			printInfo("The target (" + colorize(HIGHLITE_LEVEL, targetCompatibility) + ") is not compatible with the source (" + colorize(HIGHLITE_LEVEL, sourceCompatibility) + ") compatibility!")
+			printInfo("The target (" + colorize(HIGHLITE_LEVEL, extTgtCompat) + ") is not compatible with the source (" + colorize(HIGHLITE_LEVEL, extSrcCompat) + ") compatibility!")
 		}
 	}
 }

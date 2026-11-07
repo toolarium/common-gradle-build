@@ -65,15 +65,15 @@ test {
 			// set options for log level DEBUG
 			debug {
 				events "started", "skipped", "failed"
-				exceptionFormat "full"
+				exceptionFormat = "full"
 			}		
 
 			info.events = ["failed", "skipped"]			
 			
 			quiet {
 				events "failed"
-				exceptionFormat "full"				
-				showStackTraces true
+				exceptionFormat = "full"
+				showStackTraces = true
 			}
 		}
 		

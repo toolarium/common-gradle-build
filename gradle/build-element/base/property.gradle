@@ -89,7 +89,17 @@ ext.setCommonGradleProperty = { propertyName, propertytValue, propertyDefaultVal
 }
 
 
-/** 
+/**
+ * Get common gradle property value - safe to capture before doFirst/doLast for configuration cache compatibility.
+ * Reads the value at configuration time and returns a plain serializable object (String, Boolean, etc.).
+ * Usage: def myProp = getCommonGradleProperty('myProp', 'default')
+ */
+ext.getCommonGradleProperty = { String propertyName, def defaultValue = null ->
+	project.hasProperty(propertyName) ? project.getProperty(propertyName) : defaultValue
+}
+
+
+/**
  * Set gradle property value
  */
 ext.setGradleProperty = { propertyName, propertytValue, propertyDefaultValue = '', logValue = true ->

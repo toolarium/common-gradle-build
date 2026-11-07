@@ -26,9 +26,16 @@
 if ("$quarkusPluginVersion".toString().equals("3.20.6")) {
     configurations.all {
         resolutionStrategy {
-            force 'com.fasterxml.jackson.core:jackson-core:2.18.9'
-            force 'io.netty:netty-codec-http:4.1.132.Final'
-            force 'io.netty:netty-codec-http2:4.1.132.Final'
+            force 'com.fasterxml.jackson.core:jackson-core:2.18.11'
+            force 'com.fasterxml.jackson.core:jackson-databind:2.18.11'
+            force 'io.netty:netty-codec:4.1.137.Final'
+            force 'io.netty:netty-codec-http:4.1.137.Final'
+            force 'io.netty:netty-codec-http2:4.1.137.Final'
+            force 'io.netty:netty-codec-dns:4.1.137.Final'
+            force 'io.netty:netty-codec-haproxy:4.1.137.Final'
+            force 'io.netty:netty-handler:4.1.137.Final'
+            force 'io.netty:netty-resolver-dns:4.1.137.Final'
+            force 'io.netty:netty-handler-proxy:4.1.137.Final'
         }
     }
 }
@@ -36,15 +43,16 @@ if ("$quarkusPluginVersion".toString().equals("3.20.6")) {
 if ("$quarkusPluginVersion".toString().equals("3.20.6.2")) {
     configurations.all {
 	    resolutionStrategy {
-		    force 'com.fasterxml.jackson.core:jackson-core:2.18.9'
-		    force 'io.netty:netty-codec:4.1.136.Final'
-		    force 'io.netty:netty-codec-http:4.1.136.Final'
-		    force 'io.netty:netty-codec-http2:4.1.136.Final'
-		    force 'io.netty:netty-codec-dns:4.1.136.Final'
-		    force 'io.netty:netty-codec-haproxy:4.1.136.Final'
-		    force 'io.netty:netty-handler:4.1.136.Final'
-		    force 'io.netty:netty-resolver-dns:4.1.136.Final'
-		    force 'io.netty:netty-handler-proxy:4.1.136.Final'
+		    force 'com.fasterxml.jackson.core:jackson-core:2.18.11'
+		    force 'com.fasterxml.jackson.core:jackson-databind:2.18.11'
+		    force 'io.netty:netty-codec:4.1.137.Final'
+		    force 'io.netty:netty-codec-http:4.1.137.Final'
+		    force 'io.netty:netty-codec-http2:4.1.137.Final'
+		    force 'io.netty:netty-codec-dns:4.1.137.Final'
+		    force 'io.netty:netty-codec-haproxy:4.1.137.Final'
+		    force 'io.netty:netty-handler:4.1.137.Final'
+		    force 'io.netty:netty-resolver-dns:4.1.137.Final'
+		    force 'io.netty:netty-handler-proxy:4.1.137.Final'
 		    force 'io.vertx:vertx-core:4.5.27'
 	  }
   }
@@ -58,12 +66,29 @@ if ("$quarkusPluginVersion".toString().equals("3.20.6.2")) {
  ***************************************************************************************/
 configurations.all {
     resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+        // jackson-core: pin each active minor line to latest patch
+        if (details.requested.group == 'com.fasterxml.jackson.core' && details.requested.name == 'jackson-core') {
+            def ver = details.requested.version
+            if (ver?.startsWith('2.18.'))      { details.useVersion '2.18.11'; details.because 'pin 2.18.x to latest patch' }
+            else if (ver?.startsWith('2.19.')) { details.useVersion '2.21.7'; details.because '2.19.x has no fix; upgrade to 2.21.x' }
+            else if (ver?.startsWith('2.21.')) { details.useVersion '2.21.7'; details.because 'pin 2.21.x to latest patch' }
+            else if (ver?.startsWith('2.22.')) { details.useVersion '2.22.3'; details.because 'pin 2.22.x to latest patch' }
+        }
+        // jackson-annotations: keep in sync with core/databind
+        if (details.requested.group == 'com.fasterxml.jackson.core' && details.requested.name == 'jackson-annotations') {
+            def ver = details.requested.version
+            if (ver?.startsWith('2.18.'))      { details.useVersion '2.18.11'; details.because 'pin 2.18.x to match core/databind' }
+            else if (ver?.startsWith('2.19.')) { details.useVersion '2.21.7'; details.because '2.19.x has no fix; upgrade to 2.21.x' }
+            else if (ver?.startsWith('2.21.')) { details.useVersion '2.21.7'; details.because 'pin 2.21.x to match core/databind' }
+            else if (ver?.startsWith('2.22.')) { details.useVersion '2.22.3'; details.because 'pin 2.22.x to match core/databind' }
+        }
         // jackson-databind: pin each active minor line to latest patch
         if (details.requested.group == 'com.fasterxml.jackson.core' && details.requested.name == 'jackson-databind') {
             def ver = details.requested.version
-            if (ver?.startsWith('2.18.'))      { details.useVersion '2.18.9'; details.because 'pin 2.18.x to latest patch' }
-            else if (ver?.startsWith('2.21.')) { details.useVersion '2.21.5'; details.because 'pin 2.21.x to latest patch' }
-            else if (ver?.startsWith('2.22.')) { details.useVersion '2.22.1'; details.because 'pin 2.22.x to latest patch' }
+            if (ver?.startsWith('2.18.'))      { details.useVersion '2.18.11'; details.because 'pin 2.18.x to latest patch' }
+            else if (ver?.startsWith('2.19.')) { details.useVersion '2.21.7'; details.because '2.19.x has no fix; upgrade to 2.21.x' }
+            else if (ver?.startsWith('2.21.')) { details.useVersion '2.21.7'; details.because 'pin 2.21.x to latest patch' }
+            else if (ver?.startsWith('2.22.')) { details.useVersion '2.22.3'; details.because 'pin 2.22.x to latest patch' }
         }
         // logback-classic and logback-core must always be kept in sync
         if (details.requested.group == 'ch.qos.logback' && (details.requested.name == 'logback-classic' || details.requested.name == 'logback-core')) {

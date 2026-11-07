@@ -36,7 +36,8 @@ task configJar(type: Jar) { jar ->
 	group = 'Build'
     duplicatesStrategy = 'exclude' // work around, currendly don't work "$duplicatesStrategy"
 	description = 'Assembles the configuration into a jar file(s) depend on configPackages entries (default only one package)'
-	
+	def showCreatedArtefacts = getCommonGradleProperty('showCreatedArtefacts', false)
+
 	if (project.hasProperty('configPackageArchiveClassifier')) {
 		archiveClassifier = project.getProperty('configPackageArchiveClassifier')
 	}
@@ -78,9 +79,9 @@ task configJar(type: Jar) { jar ->
 	}
 
 	doLast {
-		if (project.hasProperty('showCreatedArtefacts') && project.getProperty('showCreatedArtefacts')) {
+		if (showCreatedArtefacts) {
 			// jar.archiveFileName
-			def filename = prepareFilename(jar.archivePath.getPath())
+			def filename = prepareFilename(jar.archiveFile.get().asFile.path)
 			printInfo("> Created package " + colorize(HIGHLITE_LEVEL, filename) + ".")
 		}
 	}
@@ -102,6 +103,7 @@ configPackages.each { configName ->
 			def taskName = "configJar${configTypeProperty}"
 			tasks.create(name: taskName, type: Jar) { jar ->
                 duplicatesStrategy = 'exclude' // work around, currendly don't work "$duplicatesStrategy"
+				def showCreatedArtefacts = getCommonGradleProperty('showCreatedArtefacts', false)
 				def prefix = ''
 				if (project.hasProperty('configPackageArchiveClassifier') && !project.getProperty('configPackageArchiveClassifier').toString().trim().isEmpty()) {
 					prefix = project.getProperty('configPackageArchiveClassifier') + '-'
@@ -146,9 +148,9 @@ configPackages.each { configName ->
 				}
 
 				doLast {
-					if (project.hasProperty('showCreatedArtefacts') && project.getProperty('showCreatedArtefacts')) {
+					if (showCreatedArtefacts) {
 						// jar.archiveFileName
-						def filename = prepareFilename(jar.archivePath.getPath())
+						def filename = prepareFilename(jar.archiveFile.get().asFile.path)
 						printInfo("> Created package " + colorize(HIGHLITE_LEVEL, filename) + ".")
 					}
 				}

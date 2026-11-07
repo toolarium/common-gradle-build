@@ -62,11 +62,12 @@ apply from: "${commonGradleBuildElementPath}/language-base.gradle"
 /***************************************************************************************
  * Build kubernetes jar file
  ***************************************************************************************/
+def createCustomJarEnabled = getCommonGradleProperty('createCustomJar', 'false').toString().equalsIgnoreCase("true")
 task customJar(type: Jar, dependsOn: ['generateAsciidoctorArtefacts']) { jar ->
 	group = 'Build'
     duplicatesStrategy = 'exclude' // work around, currendly don't work "$duplicatesStrategy"
 	description = 'Assembles the documentation generation output into a jar file'
-	onlyIf { return (project.hasProperty('createCustomJar') && project.getProperty('createCustomJar').toString().equalsIgnoreCase("true")) }
+	onlyIf { return createCustomJarEnabled }
 	
 	from "${asciidocOutputDirectory}"
 	
@@ -83,7 +84,7 @@ task customJar(type: Jar, dependsOn: ['generateAsciidoctorArtefacts']) { jar ->
 	}
 	
 	doLast {
-		def filename = prepareFilename(jar.archivePath.getPath())
+		def filename = prepareFilename(jar.archiveFile.get().asFile.path)
 		printInfo("> Create documentation jar " + colorize(HIGHLITE_LEVEL, filename) + ".")
 	}
 }
@@ -107,13 +108,14 @@ defaultTasks 'clean', 'projectValidation', 'build'
  * project java validation
  ***************************************************************************************/
 projectValidation {
-	if (project.getProperty('IS_NEW')) {
+	def projDir = project.projectDir
+	if (getCommonGradleProperty('IS_NEW', false)) {
 		bootStraplogLifecycle("  > Just create project structure, skip build.")
 		gradle.startParameter.excludedTaskNames += "build"
 	}
 
 	doLast {
-		if (project.hasProperty('IS_NEW_SRC_FOLDER') && project.getProperty('IS_NEW_SRC_FOLDER')) {
+		if (getCommonGradleProperty('IS_NEW_SRC_FOLDER', false)) {
             logInfo("Create at least one document file...")
 			def docTemplate = 'documentation.adoc.template'
 			setCommonGradleProperty("fileName", "documentation.adoc".toString())
@@ -141,7 +143,7 @@ projectValidation {
 			}
 
 			registerEndMessage("" << NELINE \
-								<< "  To get started (build & package jar), go to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
+								<< "  To get started (build & package jar), go to " + colorize(HIGHLITE_LEVEL, projDir) + ":" << NELINE \
 								<< "      " + colorize(HIGHLITE_LEVEL, startExecutable) + "" << NELINE \
 								<< "" << NELINE)
 		}

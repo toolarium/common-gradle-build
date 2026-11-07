@@ -22,6 +22,12 @@
 
 apply plugin: 'java'
 
+// Set source/target compatibility via JavaPluginExtension (Gradle 7+) — avoids deprecated JavaPluginConvention
+java {
+    sourceCompatibility = JavaVersion.toVersion(project.getProperty('sourceCompatibility').toString())
+    targetCompatibility = JavaVersion.toVersion(project.getProperty('targetCompatibility').toString())
+}
+
 
 /***************************************************************************************
  * Java cache strategy
@@ -58,28 +64,35 @@ tasks.withType(JavaCompile) { compile ->
     //options.compilerArgs << '-Aenumconfiguration.validate.strict=true'	
 
 	options.deprecation = true
-	sourceCompatibility = project.getProperty('sourceCompatibility')
-    targetCompatibility = project.getProperty('targetCompatibility')
+	// sourceCompatibility and targetCompatibility are set via java { } extension above
 
 	// set fork process
 	if (project.hasProperty('compileJavaFork')) {
 		compile.options.fork = project.getProperty('compileJavaFork')
 	}
 
-	// set compiler path
+	// set compiler path — forkOptions.javaHome removed in Gradle 9; use forkOptions.executable instead
+	def logCompileJavaHome = ''
 	if (project.hasProperty('compileJavaHome') && project.getProperty('compileJavaHome')!=null) {
 		def compileJavaHome = project.getProperty('compileJavaHome')
 		if (!compileJavaHome.trim().isEmpty()) {
-			compile.options.forkOptions.javaHome = new File(compileJavaHome)
+			logCompileJavaHome = compileJavaHome.trim()
+			compile.options.fork = true
+			def javaBinDir = new File(logCompileJavaHome, 'bin')
+			def javacExec = new File(javaBinDir, 'javac')
+			if (!javacExec.exists()) { javacExec = new File(javaBinDir, 'javac.exe') }
+			compile.options.forkOptions.executable = javacExec.absolutePath
 		}
 	}
 
-	// print source and target compatibility
-	if (sourceCompatibility!=null && !sourceCompatibility.toString().isEmpty() && targetCompatibility!=null && !targetCompatibility.toString().isEmpty()) {
-		def sourceVersion = parseVersion(sourceCompatibility)
-		def targetVersion = parseVersion(targetCompatibility)
+	// print source and target compatibility — use getProperty to avoid JavaPluginConvention access
+	def srcCompat = project.getProperty('sourceCompatibility')
+	def tgtCompat = project.getProperty('targetCompatibility')
+	if (srcCompat!=null && !srcCompat.toString().isEmpty() && tgtCompat!=null && !tgtCompat.toString().isEmpty()) {
+		def sourceVersion = parseVersion(srcCompat)
+		def targetVersion = parseVersion(tgtCompat)
 		if (sourceVersion!=null && targetVersion!=null && !targetVersion.isCompatibleWith(sourceVersion)) {
-			logInfo("The target (" + colorize(HIGHLITE_LEVEL, targetCompatibility) + colorize(INFO_LEVEL, ") is not compatible with the source (" ) + colorize(HIGHLITE_LEVEL, sourceCompatibility) + colorize(INFO_LEVEL, ") compatibility!"))
+			logInfo("The target (" + colorize(HIGHLITE_LEVEL, tgtCompat) + colorize(INFO_LEVEL, ") is not compatible with the source (" ) + colorize(HIGHLITE_LEVEL, srcCompat) + colorize(INFO_LEVEL, ") compatibility!"))
 		}
 	}
 
@@ -88,12 +101,12 @@ tasks.withType(JavaCompile) { compile ->
 		compileType = 'test'
 	}
 
-	logInfo("Java compiler (${compileType}): sourceCompatibility: " + colorize(HIGHLITE_LEVEL, sourceCompatibility) \
-			+ colorize(INFO_LEVEL, ", targetCompatibility: ") + colorize(HIGHLITE_LEVEL, targetCompatibility) \
+	logInfo("Java compiler (${compileType}): sourceCompatibility: " + colorize(HIGHLITE_LEVEL, srcCompat) \
+			+ colorize(INFO_LEVEL, ", targetCompatibility: ") + colorize(HIGHLITE_LEVEL, tgtCompat) \
 			+ colorize(INFO_LEVEL, ", encoding: ") + colorize(HIGHLITE_LEVEL, options.encoding) \
 			+ colorize(INFO_LEVEL, ", deprecation: ") + colorize(HIGHLITE_LEVEL, options.deprecation) \
 			+ colorize(INFO_LEVEL, ", fork: ") + colorize(HIGHLITE_LEVEL, options.fork) \
-			+ colorize(INFO_LEVEL, ", jdk: ") + colorize(HIGHLITE_LEVEL, options.forkOptions.javaHome) \
+			+ colorize(INFO_LEVEL, ", jdk: ") + colorize(HIGHLITE_LEVEL, logCompileJavaHome) \
 			+ colorize(INFO_LEVEL, ", args: ") + colorize(HIGHLITE_LEVEL, options.allCompilerArgs))
 }
 
@@ -141,8 +154,8 @@ jar { jar ->
 					'Build-Timestamp'	   	: BUILD_TIMESTAMP,
 					'Build-JDK'			   	: "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
 					'Build-OS'			   	: "${System.properties['os.name']} (${System.properties['os.version']}), ${System.properties['os.arch']}",
-					'Source-Compatibility'  : project.sourceCompatibility,
-					'Target-Compatibility'  : project.targetCompatibility
+					'Source-Compatibility'  : project.getProperty('sourceCompatibility').toString(),
+					'Target-Compatibility'  : project.getProperty('targetCompatibility').toString()
 
 		if (project.hasProperty('mainClassName') && !project.getProperty('mainClassName').toString().trim().isEmpty()) {
 			attributes 'Main-Class': project.getProperty('mainClassName')
@@ -164,7 +177,7 @@ jar { jar ->
 	doLast {
 		if (project.hasProperty('showCreatedArtefacts') && project.getProperty('showCreatedArtefacts')) {
 			// jar.archiveFileName
-			def filename = prepareFilename(jar.archivePath.getPath())
+			def filename = prepareFilename(jar.archiveFile.get().asFile.path)
 			printInfo("> Created package " + colorize(HIGHLITE_LEVEL, filename) + ".")
 		}
 	}
@@ -295,14 +308,14 @@ task sourcesJar(type: Jar, dependsOn: classes) { jar ->
 					'Build-Timestamp'	   	: BUILD_TIMESTAMP,
 					'Build-JDK'			   	: "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
 					'Build-OS'			   	: "${System.properties['os.name']} (${System.properties['os.version']}), ${System.properties['os.arch']}",
-					'Source-Compatibility'  : project.sourceCompatibility,
-					'Target-Compatibility'  : project.targetCompatibility
+					'Source-Compatibility'  : project.getProperty('sourceCompatibility').toString(),
+					'Target-Compatibility'  : project.getProperty('targetCompatibility').toString()
 	}
 
 	doLast {
 		if (project.hasProperty('showCreatedArtefacts') && project.getProperty('showCreatedArtefacts')) {
 			// jar.archiveFileName
-			def filename = prepareFilename(jar.archivePath.getPath())
+			def filename = prepareFilename(jar.archiveFile.get().asFile.path)
 			printInfo("> Created package " + colorize(HIGHLITE_LEVEL, filename) + ".")
 		}
 	}

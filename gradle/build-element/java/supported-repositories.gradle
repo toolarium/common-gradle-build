@@ -43,8 +43,7 @@ repositories {
 		logInfo("Allow mavenCenter repository")
 		mavenCentral()
 		maven {
-			url "https://mvnrepository.com/artifact"
-			
+			url = "https://mvnrepository.com/artifact"
 		}
 	}
 
@@ -52,7 +51,7 @@ repositories {
 		def mavenSnapshotRepositoryUrl = project.getProperty('mavenSnapshotRepositoryUrl')
 		if (mavenSnapshotRepositoryUrl!=null && !mavenSnapshotRepositoryUrl.isEmpty()) {	
 			logInfo("Allow maven snapshot repository " + colorize(HIGHLITE_LEVEL, mavenSnapshotRepositoryUrl))
-			maven { url mavenSnapshotRepositoryUrl }
+			maven { url = mavenSnapshotRepositoryUrl }
 		}
 	}
 
@@ -60,7 +59,7 @@ repositories {
 		def mavenStagingRepositoryUrl = project.getProperty('mavenStagingRepositoryUrl')
 		if (mavenStagingRepositoryUrl!=null && !mavenStagingRepositoryUrl.isEmpty()) {	
 			logInfo("Allow maven staging repository " + colorize(HIGHLITE_LEVEL, mavenStagingRepositoryUrl))
-			maven { url mavenStagingRepositoryUrl }
+			maven { url = mavenStagingRepositoryUrl }
 		}
 	}
 
@@ -68,7 +67,7 @@ repositories {
 		def mavenRepositoryUrl = project.getProperty('mavenRepositoryUrl')
 		if (mavenRepositoryUrl!=null && !mavenRepositoryUrl.isEmpty()) {	
 			logInfo("Allow maven repository " + colorize(HIGHLITE_LEVEL, mavenRepositoryUrl))
-			maven { url mavenRepositoryUrl }
+			maven { url = mavenRepositoryUrl }
 		}
 	}
 }

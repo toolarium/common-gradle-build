@@ -203,13 +203,17 @@ addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/app.config.ts")
  * project validation
  ***************************************************************************************/
 projectValidation {
-	if (project.getProperty('IS_NEW')) {
+	def isNew = getCommonGradleProperty('IS_NEW', false)
+	def projDir = project.projectDir
+	def initScmForNewProjects = getCommonGradleProperty('initScmForNewProjects', false)
+	def generateTypescriptVersionFile = getCommonGradleProperty('generateTypescriptVersionFile', false)
+	if (isNew) {
 		bootStraplogLifecycle("  > Just create project structure, skip build.")
 		gradle.startParameter.excludedTaskNames += "build"
 	}
 
 	doFirst {
-		if (project.getProperty('IS_NEW')) {
+		if (isNew) {
 			// use the defined files
 
 			new File("$rootDirectory/$licenseFilename").delete()
@@ -225,23 +229,23 @@ projectValidation {
 			createFileFromTemplate(editorConfigFile, getTemplateFile('editorconfig.template'))
 			
 			// generate git files if necessary
-			if (project.hasProperty('initScmForNewProjects') && project.getProperty('initScmForNewProjects')) {
+			if (initScmForNewProjects) {
 				createGitFiles(true)
 			}
 
 			registerEndMessage("" << NELINE \
-								<< "  To get started (equivalent to 'npm run dev'), go to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
+								<< "  To get started (equivalent to 'npm run dev'), go to " + colorize(HIGHLITE_LEVEL, projDir) + ":" << NELINE \
 								<< "      " + colorize(HIGHLITE_LEVEL, "$startExecutable run") + "" << NELINE \
 								<< "" << NELINE \
-								<< "  To build (equivalent to 'npm run build'), go to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
+								<< "  To build (equivalent to 'npm run build'), go to " + colorize(HIGHLITE_LEVEL, projDir) + ":" << NELINE \
 								<< "      " + colorize(HIGHLITE_LEVEL, "$startExecutable") + "" << NELINE \
 								<< "" << NELINE \
-								<< "  To test (equivalent to 'npm run test'), go to " + colorize(HIGHLITE_LEVEL, project.projectDir) + ":" << NELINE \
+								<< "  To test (equivalent to 'npm run test'), go to " + colorize(HIGHLITE_LEVEL, projDir) + ":" << NELINE \
 								<< "      " + colorize(HIGHLITE_LEVEL, "$startExecutable test") + "" << NELINE \
 								<< "" << NELINE \
 								<< "  For TypeScript users, see: " + colorize(HIGHLITE_LEVEL, "https://typescript.nuxtjs.org/cookbook/components/") + "" << NELINE)
 		} else {
-			if (project.hasProperty('generateTypescriptVersionFile') && project.getProperty('generateTypescriptVersionFile')) {
+			if (generateTypescriptVersionFile) {
 				new File("$srcDirectory").mkdirs()
 				new File(getFilePath(typescriptVersionFile)).mkdirs()
 				new File("${typescriptVersionFile}").withWriter { writer ->

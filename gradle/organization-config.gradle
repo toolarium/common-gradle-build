@@ -53,9 +53,10 @@ defaultTasks 'projectValidation'
  * project config validation
  ***************************************************************************************/
 projectValidation {
+	def isNew = getCommonGradleProperty('IS_NEW', false)
 	doLast {
 		def gradlePath = "$rootDirectory/gradle"
-		if (project.getProperty('IS_NEW') || !new File(gradlePath).exists() || !new File("$gradlePath/defaults.gradle").exists()) {			
+		if (isNew || !new File(gradlePath).exists() || !new File("$gradlePath/defaults.gradle").exists()) {			
 			printInfo("> Copy templates from " + colorize(HIGHLITE_LEVEL, commonGradleTemplatePath) + ".") 
 
 			new File(gradlePath).mkdirs()
