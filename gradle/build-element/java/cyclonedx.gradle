@@ -118,6 +118,10 @@ if (!project.getProperty('IS_NEW') && project.hasProperty("cyclonedxEnabled") &&
 	 ***************************************************************************************/
 	build.finalizedBy("cyclonedxDirectBom")
 
+	if (project.tasks.findByName('vulnerabilityScanner')) {
+		vulnerabilityScanner.mustRunAfter("cyclonedxDirectBom")
+	}
+
 	if (project.tasks.findByName('release')) {
 		project.tasks["release"].dependsOn("cyclonedxDirectBom")
 	}
