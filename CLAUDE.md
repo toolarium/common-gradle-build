@@ -42,6 +42,17 @@ Scaffolding templates (~90 files) for new projects: build files, Dockerfiles, Ku
 ## Key Conventions
 
 - All scripts use Groovy syntax within Gradle script files (`.gradle`).
+- **Never use the `?` character in any operator** — no ternary (`? :`), no safe-navigation (`?.`), no Elvis (`?:`). Use `if`/`else` blocks instead. Example: instead of `def x = (a != null) ? a : ""` write `def x = ""` followed by `if (a != null) { x = a }`.
+- **Never write single-line `if` statements.** Always break at `{` and `}`. Example:
+  ```groovy
+  // WRONG:
+  if (x != null) { x = a }
+  // CORRECT:
+  if (x != null) {
+      x = a
+  }
+  ```
+- **Extract repeated string literals into constants** defined at the top of the file. Use a prefix matching the file's domain (e.g., `VS_` for vulnerability-scanner). Never hardcode severity labels, display tags, scan labels, or map definitions inline — reference the constant instead.
 - Properties are set via `setCommonGradleDefaultPropertyIfNull()` — check `defaults.gradle` for available defaults.
 - Environment variable overrides: `COMMON_GRADLE_BUILD_CACHE`, `COMMON_GRADLE_BUILD_URL`, `COMMON_GRADLE_BUILD_HOME`, `CB_CUSTOM_CONFIG_VERSION`.
 - Organization-specific overrides live in `~/.common-build/conf/` with URL-based routing per git remote.

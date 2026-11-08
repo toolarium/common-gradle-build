@@ -98,7 +98,7 @@ if (!project.getProperty('IS_NEW') && project.hasProperty("cyclonedxEnabled") &&
 	tasks.named('cyclonedxDirectBom').configure {
 		doFirst {
 			new File(cyclonedxOutputDir).mkdirs()
-			printInfo("> Generate CycloneDX SBOM...")
+			logInfo("Generate CycloneDX SBOM...")
 		}
 
 		doLast {
@@ -107,7 +107,7 @@ if (!project.getProperty('IS_NEW') && project.hasProperty("cyclonedxEnabled") &&
 				sbomFile = new File("${cyclonedxOutputDir}/${cyclonedxOutName}.xml")
 			}
 			if (sbomFile.exists()) {
-				printInfo("> CycloneDX SBOM generated: " + colorize(HIGHLITE_LEVEL, prepareFilename(sbomFile.path)) + ".")
+				logInfo("CycloneDX SBOM generated: " + colorize(HIGHLITE_LEVEL, prepareFilename(sbomFile.path)) + ".")
 			}
 		}
 	}

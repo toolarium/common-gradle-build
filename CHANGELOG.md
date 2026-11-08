@@ -7,24 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [v1.7.0] - 2026-11-06
 ### Changed
-- Default Gradle plugin versions updated for Gradle 9 compatibility (sonarqube `7.4.0.8496`, asciidoctor `4.0.2` on Gradle 9+, owasp dependency-check `13.0.0` on Gradle 9+).
-- Early warning emitted during `init` when the running JVM is below version 17 with Gradle 9+.
+- Default sonarqube plugin version updated to `7.4.0.8496`.
+- Default asciidoctor plugin version auto-selects `4.0.2` on Gradle 9+ (remains `3.3.2` on Gradle 7/8).
+- Default owasp dependency-check plugin version auto-selects `13.0.0` on Gradle 9+ (remains `12.2.2` on Gradle 7/8).
+- Early warning emitted during `init` when the configured wrapper targets Gradle 9+ but the running JVM is below version 17.
+- New `getCommonGradleProperty(name, default)` helper in `property.gradle` — reads a project property at configuration time and returns a plain serializable value; replaces verbose `project.hasProperty(x) ? project.getProperty(x) : default` patterns framework-wide.
+
+### Added
+- CycloneDX Gradle plugin integration (`java/cyclonedx.gradle`).
+- Vulnerability scanner SBOM integration: when a CycloneDX SBOM is available.
+- Vulnerability scanner: findings from OS packages (base image) are tagged with `[os]` in console output, Markdown reports, and AsciiDoc reports (Notes column).
 
 ### Fixed
-- `.claude` removed from the default `disallowedCheckedInFiles` list — the project-level `.claude/` directory contains Claude Code project configuration (e.g. `CLAUDE.md`) that teams intentionally version-control, so it should not be auto-removed from the git index or added to `.gitignore`.
-- Gradle 9 compatibility: all removed APIs replaced across the framework — `archivePath`, `JavaCompile.destinationDir`, `resolvedConfiguration`/`ResolvedDependency` (dependency export, blacklist checking, vulnerability scanner dependency tree, agent JAR resolution), `project.buildDir`, `TaskExecutionGraph.beforeTask`/`afterTask`.
-- `gradle.buildFinished` replaced with `BuildService.close()` (Gradle 6.1+) — eliminates deprecation warnings on all Gradle versions.
-- Gradle 10 compatibility: Groovy space-assignment syntax (`url "..."`, `group value`, `exceptionFormat value`, `showStackTraces value`, `required { }`) replaced with explicit `=` assignment across all framework scripts — removal scheduled for Gradle 10.
-- Gradle 10 compatibility: `Task.project` access at execution time eliminated across all project-type scripts and build elements (`base.gradle`, `java-base.gradle`, `java-library.gradle`, `java-application.gradle`, `quarkus.gradle`, `documentation.gradle`, `vuejs.gradle`, `nuxtjs.gradle`, `react.gradle`, `docker.gradle`, `organization-config.gradle`, `eclipse.gradle`, `checkstyle.gradle`, `config.gradle`) — all property values are now captured at configuration time using `getCommonGradleProperty()` before `doFirst`/`doLast`/`onlyIf` blocks; non-property references (`projectDir`) captured as plain values likewise; `project.setProperty()` in task actions replaced with `setCommonGradleProperty()`.
-- New `getCommonGradleProperty(name, default)` helper in `property.gradle` — reads a project property at configuration time and returns a plain serializable value; replaces verbose `project.hasProperty(x) ? project.getProperty(x) : default` patterns framework-wide.
-- Gradle 10 compatibility: remaining Groovy space-assignment in `webjar.gradle` artifact block (`name`, `type`, `extension`) replaced with explicit `=` assignment.
-- Gradle 9 compatibility: `${sourceCompatibility}` and `${targetCompatibility}` bare GString interpolations in `initialisation.gradle` replaced with `${project.getProperty(...)}` to avoid triggering the removed `JavaPluginConvention` dispatch path.
-- Gradle 8 deprecation warnings eliminated: `exportDependency` now uses the modern `ResolutionResult` API on Gradle 8 and 9; old path retained for Gradle 7 only.
-- `console.gradle`: fixed hard build failure at script load on Gradle 9 due to `groovy-swing` no longer being bundled.
-- Vulnerability scanner: quoted container image names in `docker-reference.txt` are now handled correctly in the whitelist/blacklist lookup and the scan report.
-
-### Breaking
-- **Gradle 9 requires JVM 17+** for the Gradle daemon. Compilation targets can still use earlier Java versions.
+- Security: updated Jackson dependency pins.
+- Security: updated Netty pins for Quarkus.
+- Gradle 9 compatibility: removed APIs replaced across the framework.
+- Gradle 9 compatibility: `${sourceCompatibility}` and `${targetCompatibility}` bare GString interpolations.
+- Gradle 10 compatibility improvements.
 
 ## [v1.6.23] - 2026-10-19
 ### Fixed

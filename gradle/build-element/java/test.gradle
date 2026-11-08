@@ -85,8 +85,23 @@ test {
 	}
 	
 	if (testEnableDynamicAgentLoading) {
-		jvmArgs(['-XX:+EnableDynamicAgentLoading', '-Xshare:off'])		
-	}	
+		jvmArgs(['-XX:+EnableDynamicAgentLoading', '-Xshare:off'])
+	}
+
+	afterSuite { desc, result ->
+		if (desc.parent == null) {
+			def totalTests = result.testCount
+			def successfulTests = result.successfulTestCount
+			def skippedTests = result.skippedTestCount
+			def failedTests = result.failedTestCount
+
+			if (failedTests > 0) {
+				printInfo("> Results: " + colorize(HIGHLITE_LEVEL, "${totalTests}") + " tests executed, " + colorize(HIGHLITE_LEVEL, "${successfulTests}") + " successful, " + colorize(HIGHLITE_LEVEL, "${skippedTests}") + " skipped, " + colorize(ERROR_LEVEL, "${failedTests} failed") + ".")
+			} else {
+				printInfo("> Results: " + colorize(HIGHLITE_LEVEL, "${totalTests}") + " tests executed, " + colorize(HIGHLITE_LEVEL, "${successfulTests}") + " successful, " + colorize(HIGHLITE_LEVEL, "${skippedTests}") + " skipped, " + colorize(HIGHLITE_LEVEL, "${failedTests}") + " failed.")
+			}
+		}
+	}
 }
 
 
