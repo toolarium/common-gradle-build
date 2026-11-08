@@ -59,7 +59,7 @@ gradle.taskGraph.whenReady { taskGraph ->
 }
 
 signing {
-	required { !project.ext.isSnapshotVersion }
+	required = { !project.ext.isSnapshotVersion }
 
 	sign publishing.publications
 }

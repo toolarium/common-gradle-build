@@ -35,9 +35,10 @@ if (project.hasProperty("initResourceBundle") && project.getProperty("initResour
 task createResourceBundle {
 	group = 'Verification'
 	description = 'Create resource bundles.'
-	
-    doLast {	
-		if (project.hasProperty("hasResourceBundle") && project.getProperty("hasResourceBundle")) {
+
+	def hasBundle = project.hasProperty("hasResourceBundle") && project.getProperty("hasResourceBundle")
+    doLast {
+		if (hasBundle) {
 			generateResourceBundle()
 		}
     }

@@ -162,9 +162,14 @@ jar { jar ->
 		}
 	}
 
+	def hasMainClassPath = project.hasProperty('mainClassPath') && !project.getProperty('mainClassPath').toString().trim().isEmpty()
+	def mainClassPathValue = ''
+	if (hasMainClassPath) {
+		mainClassPathValue = project.getProperty('mainClassPath').toString().trim()
+	}
 	doFirst {
-		if (project.hasProperty('mainClassPath') && !project.getProperty('mainClassPath').toString().trim().isEmpty()) {
-			def classPath = project.getProperty('mainClassPath').toString().trim()
+		if (hasMainClassPath) {
+			def classPath = mainClassPathValue
 			if (classPath == 'auto') {
 				classPath = configurations.runtimeClasspath.files.collect { it.getName() }.join(' ')
 			} else {
@@ -174,8 +179,9 @@ jar { jar ->
 		}
 	}
 
+	def showArtefactsJar = project.hasProperty('showCreatedArtefacts') && project.getProperty('showCreatedArtefacts')
 	doLast {
-		if (project.hasProperty('showCreatedArtefacts') && project.getProperty('showCreatedArtefacts')) {
+		if (showArtefactsJar) {
 			// jar.archiveFileName
 			def filename = prepareFilename(jar.archiveFile.get().asFile.path)
 			printInfo("> Created package " + colorize(HIGHLITE_LEVEL, filename) + ".")
@@ -191,9 +197,10 @@ task createMeateInfFiles() {
 	group = 'Build'
 	description = 'Prepares additional files for META-INF jar folder.'
 	onlyIf { return project.compileTimestamp != null }
-	
+
+	def metaInfDir = project.file("$commonGradleResourcebundleOutputPath/META-INF")
 	doFirst {
-		project.file("$commonGradleResourcebundleOutputPath/META-INF").mkdirs()
+		metaInfDir.mkdirs()
 	}
 }
 jar.dependsOn(createMeateInfFiles)
@@ -312,8 +319,9 @@ task sourcesJar(type: Jar, dependsOn: classes) { jar ->
 					'Target-Compatibility'  : project.getProperty('targetCompatibility').toString()
 	}
 
+	def showArtefactsSrc = project.hasProperty('showCreatedArtefacts') && project.getProperty('showCreatedArtefacts')
 	doLast {
-		if (project.hasProperty('showCreatedArtefacts') && project.getProperty('showCreatedArtefacts')) {
+		if (showArtefactsSrc) {
 			// jar.archiveFileName
 			def filename = prepareFilename(jar.archiveFile.get().asFile.path)
 			printInfo("> Created package " + colorize(HIGHLITE_LEVEL, filename) + ".")
