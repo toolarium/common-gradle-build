@@ -34,6 +34,7 @@ SCRIPT="$SCRIPT_DIR/../../../gradle/template/nodejs/apply-subpath.sh.template"
 TEST_DIR=$(mktemp -d)
 PASSED=0
 FAILED=0
+SKIPPED=0
 TOTAL=0
 
 #########################################################################
@@ -788,7 +789,7 @@ assert_file_contains "scss replaced" "path: newpath/myapp" "$deploy/newpath/myap
 # Summary
 #########################################################################
 printf "\n=========================================================================\n"
-printf " Results: %s passed, %s failed, %s total\n" "$PASSED" "$FAILED" "$TOTAL"
+printf " Results: %s tests executed, %s successful, %s skipped, %s failed\n" "$TOTAL" "$PASSED" "$SKIPPED" "$FAILED"
 printf "=========================================================================\n"
 
 [ "$FAILED" -gt 0 ] && exit 1

@@ -178,14 +178,11 @@ fi
 TOTAL_END=$(date +%s)
 TOTAL_ELAPSED=$(( TOTAL_END - TOTAL_START ))
 
+SUITE_TOTAL=$(( SUITE_PASSED + SUITE_FAILED + SUITE_SKIPPED ))
 printf "\n"
-printf "########################################################################\n"
-printf "# SUMMARY                                                              #\n"
-printf "########################################################################\n"
-printf "  Total time : %ss\n" "$TOTAL_ELAPSED"
-printf "  Passed     : %s\n" "$SUITE_PASSED"
-printf "  Failed     : %s\n" "$SUITE_FAILED"
-printf "  Skipped    : %s\n" "$SUITE_SKIPPED"
+printf "=========================================================================\n"
+printf " Results: %s suites executed, %s successful, %s skipped, %s failed [%ss]\n" "$SUITE_TOTAL" "$SUITE_PASSED" "$SUITE_SKIPPED" "$SUITE_FAILED" "$TOTAL_ELAPSED"
+printf "=========================================================================\n"
 
 if [ "$SUITE_FAILED" -gt 0 ]; then
     printf "\n  Failed suites:\n"

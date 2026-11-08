@@ -68,6 +68,7 @@ LEVEL=0
 CERT_TEST=0
 PASSED=0
 FAILED=0
+SKIPPED=0
 TOTAL=0
 
 for arg in "$@"; do
@@ -1494,9 +1495,9 @@ fi
 #########################################################################
 # Summary
 #########################################################################
-printf "\n=== Summary (level=%s) ===\n" "$LEVEL"
-printf "  Passed: %s / %s\n" "$PASSED" "$TOTAL"
-printf "  Failed: %s / %s\n" "$FAILED" "$TOTAL"
+printf "\n=========================================================================\n"
+printf " Results: %s tests executed, %s successful, %s skipped, %s failed\n" "$TOTAL" "$PASSED" "$SKIPPED" "$FAILED"
+printf "=========================================================================\n"
 if [ "$FAILED" -gt 0 ]; then
     exit 1
 fi

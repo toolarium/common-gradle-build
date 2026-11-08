@@ -33,6 +33,7 @@ SCRIPT_DIR=$(cd -- "$(dirname "$0")" 2>/dev/null && pwd)
 MI="$SCRIPT_DIR/../../../gradle/template/quarkus/cb-meminfo.sh"
 PASS=0
 FAIL=0
+SKIP=0
 
 assertEquals() {
 	local expected="$1" actual="$2" msg="$3"
@@ -422,6 +423,9 @@ case "$os" in
 		;;
 esac
 
+TOTAL=$((PASS + FAIL + SKIP))
 echo ""
-echo "Results: $PASS passed, $FAIL failed"
+printf "=========================================================================\n"
+printf " Results: %s tests executed, %s successful, %s skipped, %s failed\n" "$TOTAL" "$PASS" "$SKIP" "$FAIL"
+printf "=========================================================================\n"
 [ $FAIL -eq 0 ] && exit 0 || exit 1

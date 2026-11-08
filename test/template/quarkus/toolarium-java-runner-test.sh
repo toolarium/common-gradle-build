@@ -43,6 +43,7 @@ sed -e 's/@@dockerOsVersion@@/test/g' \
 chmod +x "$RUNNER"
 PASSED=0
 FAILED=0
+SKIPPED=0
 TOTAL=0
 
 #########################################################################
@@ -995,7 +996,7 @@ echo ""
 # Summary
 #########################################################################
 printf "=========================================================================\n"
-printf " Results: %s/%s passed, %s failed\n" "$PASSED" "$TOTAL" "$FAILED"
+printf " Results: %s tests executed, %s successful, %s skipped, %s failed\n" "$TOTAL" "$PASSED" "$SKIPPED" "$FAILED"
 printf "=========================================================================\n"
 
 [ "$FAILED" -eq 0 ] && exit 0 || exit 1

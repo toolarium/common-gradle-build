@@ -51,6 +51,7 @@ TEST_SCRIPT="$SCRIPT_DIR/dockerfile-test.sh"
 
 PASSED=0
 FAILED=0
+SKIPPED=0
 TOTAL=0
 
 #########################################################################
@@ -272,9 +273,9 @@ printf "        the overlay must be reported as not trusted), so no mutation run
 #########################################################################
 # Summary
 #########################################################################
-printf "\n=== Summary ===\n"
-printf "  Passed: %s / %s\n" "$PASSED" "$TOTAL"
-printf "  Failed: %s / %s\n" "$FAILED" "$TOTAL"
+printf "\n=========================================================================\n"
+printf " Results: %s tests executed, %s successful, %s skipped, %s failed\n" "$TOTAL" "$PASSED" "$SKIPPED" "$FAILED"
+printf "=========================================================================\n"
 if [ "$FAILED" -gt 0 ]; then
     # Emergency cleanup in case mutation is still injected
     sed -i "/$MUTATION_MARKER/d" "$MUTATION_TARGET" 2>/dev/null || true
