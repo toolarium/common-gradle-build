@@ -1,0 +1,124 @@
+/*
+ * cyclonedx.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ *
+ * This file is part of the toolarium common-gradle-build.
+ *
+ * The common-gradle-build is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * The common-gradle-build is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+buildscript {
+	repositories {
+		mavenCentral()
+		maven {
+			url = "https://mvnrepository.com/artifact"
+		}
+		gradlePluginPortal()
+	}
+	dependencies {
+		// 3.x requires Gradle 8.4+
+		def cyclonedxPluginVersion = "3.5.1"
+		if (project.hasProperty('cyclonedxVersion')) {
+			cyclonedxPluginVersion = project.getProperty('cyclonedxVersion')
+		}
+
+		logInfo("cyclonedx version: " + colorize(HIGHLITE_LEVEL, cyclonedxPluginVersion) + colorize(INFO_LEVEL, "."))
+		classpath "org.cyclonedx:cyclonedx-gradle-plugin:${cyclonedxPluginVersion}"
+	}
+}
+
+import org.cyclonedx.Version
+import org.cyclonedx.model.Component
+
+
+/***************************************************************************************
+ * CycloneDX SBOM generation
+ ***************************************************************************************/
+if (!project.getProperty('IS_NEW') && project.hasProperty("cyclonedxEnabled") && "true".toString().equalsIgnoreCase(project.getProperty("cyclonedxEnabled").toString())) {
+	logInfo("Enable CycloneDX SBOM generation.")
+
+	org.cyclonedx.gradle.CyclonedxPlugin p = new org.cyclonedx.gradle.CyclonedxPlugin()
+	p.apply(project)
+
+	def cyclonedxOutputDir = project.getProperty('cyclonedxOutputDirectory')
+	def cyclonedxFormat = project.getProperty('cyclonedxOutputFormat')
+	def cyclonedxOutName = project.getProperty('cyclonedxOutputName')
+
+	// Map schema version string to Version enum
+	def schemaVersionStr = project.getProperty('cyclonedxSchemaVersion').toString()
+	def schemaVersionEnum = Version.values().find { it.versionString == schemaVersionStr }
+	if (schemaVersionEnum == null) {
+		schemaVersionEnum = Version.VERSION_16
+	}
+
+	// Map project type
+	def componentType = Component.Type.LIBRARY
+	if (project.hasProperty('projectType')) {
+		def pType = project.getProperty('projectType').toString()
+		if (pType.contains('application') || pType.contains('quarkus')) {
+			componentType = Component.Type.APPLICATION
+		}
+	}
+
+	// Disable the aggregate task — use the direct task which supports includeConfigs
+	tasks.named('cyclonedxBom').configure {
+		enabled = false
+	}
+
+	// Configure the direct task: scan only runtimeClasspath
+	tasks.named('cyclonedxDirectBom').configure {
+		schemaVersion = schemaVersionEnum
+		projectType = componentType
+		includeLicenseText = Boolean.parseBoolean(project.getProperty('cyclonedxIncludeLicenseText').toString())
+		includeBomSerialNumber = true
+		includeConfigs = ["runtimeClasspath"]
+
+		// Output location
+		def outDir = new File(cyclonedxOutputDir)
+		if (cyclonedxFormat == "xml" || cyclonedxFormat == "all") {
+			xmlOutput = outDir.toPath().resolve("${cyclonedxOutName}.xml").toFile()
+		}
+		if (cyclonedxFormat != "xml") {
+			jsonOutput = outDir.toPath().resolve("${cyclonedxOutName}.json").toFile()
+		}
+	}
+
+	tasks.named('cyclonedxDirectBom').configure {
+		doFirst {
+			new File(cyclonedxOutputDir).mkdirs()
+			printInfo("> Generate CycloneDX SBOM...")
+		}
+
+		doLast {
+			def sbomFile = new File("${cyclonedxOutputDir}/${cyclonedxOutName}.json")
+			if (cyclonedxFormat == "xml") {
+				sbomFile = new File("${cyclonedxOutputDir}/${cyclonedxOutName}.xml")
+			}
+			if (sbomFile.exists()) {
+				printInfo("> CycloneDX SBOM generated: " + colorize(HIGHLITE_LEVEL, prepareFilename(sbomFile.path)) + ".")
+			}
+		}
+	}
+
+
+	/***************************************************************************************
+	 * define project dependency
+	 ***************************************************************************************/
+	build.finalizedBy("cyclonedxDirectBom")
+
+	if (project.tasks.findByName('release')) {
+		project.tasks["release"].dependsOn("cyclonedxDirectBom")
+	}
+}

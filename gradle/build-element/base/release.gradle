@@ -249,9 +249,17 @@ ext.updateReleaseArtefact = { isSnapshotArtefact = false ->
 			}
 		} 
 
+		if (project.hasProperty('cyclonedxOutputDirectory')) {
+			def sbomDir = new File(project.getProperty('cyclonedxOutputDirectory').toString())
+			if (sbomDir.exists()) {
+				logInfo("Copy CycloneDX SBOM to " + colorize(HIGHLITE_LEVEL, releaseInfoDirectory) + colorize(INFO_LEVEL, "."))
+				copy { from sbomDir include '**/*.*' into "${releaseInfoDirectory}/sbom" }
+			}
+		}
+
 		if (new File("$rootDirectory/build/docs/javadoc").exists()) {
 			new File("${releaseInfoDirectory}/javadoc").mkdirs()
-			copy { from "$rootDirectory/build/docs/javadoc" include '**/*.*' into "${releaseInfoDirectory}/javadoc" } 
+			copy { from "$rootDirectory/build/docs/javadoc" include '**/*.*' into "${releaseInfoDirectory}/javadoc" }
 		}
 
 		if (new File("$rootDirectory/build/reports/checkstyle").exists()) {

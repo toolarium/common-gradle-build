@@ -437,6 +437,19 @@ setCommonGradleDefaultPropertyIfNull("dependenciesFile", "${dependenciesReportPa
 
 
 /***************************************************************************************
+ * cyclonedx SBOM: https://plugins.gradle.org/plugin/org.cyclonedx.bom
+ ***************************************************************************************/
+setCommonGradleDefaultPropertyIfNull("cyclonedxEnabled", true)
+setCommonGradleDefaultPropertyIfNull("cyclonedxVersion", "3.5.1")
+setCommonGradleDefaultPropertyIfNull("cyclonedxSchemaVersion", "1.6")
+setCommonGradleDefaultPropertyIfNull("cyclonedxOutputFormat", "json")
+setCommonGradleDefaultPropertyIfNull("cyclonedxOutputName", "bom")
+setCommonGradleDefaultPropertyIfNull("cyclonedxOutputDirectory", "${reportsPath}/sbom")
+setCommonGradleDefaultPropertyIfNull("cyclonedxIncludeLicenseText", false)
+setCommonGradleDefaultPropertyIfNull("cyclonedxSkipConfigs", "checkstyle,jacocoAnt,annotationProcessor")
+
+
+/***************************************************************************************
  * dependency-check: https://plugins.gradle.org/plugin/org.owasp.dependencycheck
  ***************************************************************************************/
 setCommonGradleDefaultPropertyIfNull("toolariumDependencyCheckVersion", '12.2.2')

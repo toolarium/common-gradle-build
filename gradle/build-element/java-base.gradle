@@ -34,6 +34,13 @@ apply from: "${commonGradleBuildElementPath}/java/checkstyle.gradle"
 apply from: "${commonGradleBuildElementPath}/java/testcoverage.gradle"
 apply from: "${commonGradleBuildElementPath}/java/eclipse.gradle"
 
+try {
+	apply from: "${commonGradleBuildElementPath}/java/cyclonedx.gradle"
+} catch (Exception e) {
+	printWarn("Ignore cyclonedx.gradle: " + e.getMessage())
+	//e.printStackTrace()
+}
+
 defaultTasks 'clean', 'projectValidation', 'build'
 jar.dependsOn(createResourceBundle)
 
